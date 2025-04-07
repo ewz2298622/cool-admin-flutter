@@ -1,0 +1,238 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_app/views/search/result/search_result.dart';
+import 'package:tdesign_flutter/tdesign_flutter.dart';
+
+import '../../api/api.dart';
+import '../../components/video_scroll.dart';
+import '../../components/video_three.dart';
+import '../../db/entity/searchEntity.dart';
+import '../../db/manager/serverManager.dart';
+import '../../entity/video_page_entity.dart';
+import '../../style/layout.dart';
+
+class VideoSearch extends StatefulWidget {
+  const VideoSearch({super.key});
+
+  @override
+  VideoSearchState createState() => VideoSearchState();
+}
+
+class VideoSearchState extends State<VideoSearch>
+    with SingleTickerProviderStateMixin {
+  late final String inputText;
+  List<VideoPageDataList> videoPageData = [];
+  List<SearchHistoryEntity> searchHistoryEntityList = [];
+
+  var _futureBuilderFuture;
+
+  Future<String> init() async {
+    try {
+      await getVideoPages();
+      await getSearchHistoryEntity();
+      return "init success";
+    } catch (e) {
+      // 捕获并处理异常
+      print('Initialization failed: $e');
+      return "init success";
+    }
+  }
+
+  @override
+  void initState() {
+    _futureBuilderFuture = init();
+    super.initState();
+  }
+
+  Future<void> getVideoPages() async {
+    try {
+      List<VideoPageDataList> list =
+          (await Api.getVideoPages({})).data?.list ??
+          [] as List<VideoPageDataList>;
+      videoPageData = list;
+    } catch (e) {
+      // 捕获并处理异常
+      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+    }
+  }
+
+  Future<void> getSearchHistoryEntity() async {
+    try {
+      searchHistoryEntityList =
+          await ServerManager.getInstance().searchService().queryAll() ?? [];
+      debugPrint(
+        'Initialization getSearchHistoryEntity success: $searchHistoryEntityList',
+      );
+    } catch (e) {
+      // 捕获并处理异常
+      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+    }
+  }
+
+  Widget _buildDefaultSearchBar() {
+    return TDSearchBar(
+      placeHolder: '',
+      action: "搜索",
+      backgroundColor: Colors.transparent,
+      style: TDSearchStyle.round,
+      onTextChanged: (String text) {
+        setState(() {
+          inputText = text;
+        });
+        SearchHistoryEntity object = SearchHistoryEntity(keyWord: text);
+        ServerManager.getInstance().searchService().insert(object);
+      },
+      onActionClick: (contexts) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SearchResult(keyWord: inputText),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildContent() {
+    return FutureBuilder<String>(
+      future: _futureBuilderFuture,
+      builder: (context, snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.done:
+            if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}');
+            }
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                children: [
+                  _buildDefaultSearchBar(),
+                  Container(
+                    padding: EdgeInsets.only(
+                      left: Layout.paddingL,
+                      right: Layout.paddingR,
+                      bottom: Layout.paddingB,
+                      top: Layout.paddingT,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SectionTitle('搜索历史'),
+                        const SizedBox(height: 12),
+                        SearchItem(),
+                        const SizedBox(height: 24),
+                        _buildRecommendations(),
+                        _buildAlbumItems(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          default:
+            return const Center(child: CircularProgressIndicator());
+        }
+      },
+    );
+  }
+
+  Widget _buildRecommendations() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(bottom: 12),
+          child: Text("猜你想搜", style: TextStyle(fontSize: 15)),
+        ),
+        HorizontalVideoList(videoPageData: videoPageData),
+      ],
+    );
+  }
+
+  Widget _buildAlbumItems() {
+    return Column(
+      children: [
+        Row(children: [Text("视频热搜榜")]),
+        VideoThree(videoPageData: videoPageData),
+      ],
+    );
+  }
+
+  // 区块标题组件
+  Widget SectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: Colors.black87,
+      ),
+    );
+  }
+
+  // 搜索历史项组件
+  Widget SearchItem() {
+    return Row(
+      spacing: 5,
+      children: [TDTag('标签文字'), TDTag('标签文字'), TDTag('标签文字')],
+    );
+  }
+
+  // 推荐项组件
+  Widget RecommendItem(String keyword, String info) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(keyword, style: const TextStyle(fontSize: 16, color: Colors.blue)),
+        Text(info, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+      ],
+    );
+  }
+
+  // 热搜项组件
+  Widget HotItem(String title, double heat) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(fontSize: 16, color: Colors.black87),
+        ),
+        Text(
+          '${heat}万热搜值',
+          style: const TextStyle(fontSize: 14, color: Colors.grey),
+        ),
+      ],
+    );
+  }
+
+  // 提取常量
+  static const _gradientColors = [
+    Color.fromRGBO(255, 218, 112, 1),
+    Color.fromRGBO(255, 255, 255, 1),
+  ];
+  static const _gradientStops = [0.2, 0.8];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(toolbarHeight: 20, backgroundColor: _gradientColors[0]),
+      resizeToAvoidBottomInset: false,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: _gradientStops,
+                colors: _gradientColors,
+              ),
+            ),
+            child: _buildContent(),
+          ),
+        ],
+      ),
+    );
+  }
+}
