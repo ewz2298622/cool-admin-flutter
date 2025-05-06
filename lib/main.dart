@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/style/color_styles.dart';
 import 'package:flutter_app/views/home/home.dart';
+import 'package:flutter_app/views/my/my.dart';
 import 'package:flutter_app/views/ranking/ranking.dart';
 import 'package:flutter_app/views/video_filter/video_filter.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
-import 'db/manager/serverManager.dart';
+import 'db/manager/DBManager.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,6 +33,8 @@ class _MainPageState extends State<MainPage> {
     const Home(),
     const VideoFilter(),
     const VideoRanking(),
+    // const VideoService(),
+    const My(),
   ];
   int _selectedIndex = 0;
 
@@ -79,18 +82,6 @@ class _MainPageState extends State<MainPage> {
             ),
             label: '频道',
           ),
-          // BottomNavigationBarItem(
-          //     activeIcon: TDImage(
-          //         width: 25,
-          //         height: 25,
-          //         fit: BoxFit.cover,
-          //         assetUrl: 'assets/images/8.png'),
-          //     icon: TDImage(
-          //         width: 25,
-          //         height: 25,
-          //         fit: BoxFit.cover,
-          //         assetUrl: 'assets/images/7.png'),
-          //     label: '服务'),
           BottomNavigationBarItem(
             activeIcon: TDImage(
               width: 25,
@@ -107,17 +98,35 @@ class _MainPageState extends State<MainPage> {
             label: '排行',
           ),
           // BottomNavigationBarItem(
-          //     activeIcon: TDImage(
-          //         width: 25,
-          //         height: 25,
-          //         fit: BoxFit.cover,
-          //         assetUrl: 'assets/images/9.png'),
-          //     icon: TDImage(
-          //         width: 25,
-          //         height: 25,
-          //         fit: BoxFit.cover,
-          //         assetUrl: 'assets/images/10.png'),
-          //     label: '我的'),
+          //   activeIcon: TDImage(
+          //     width: 25,
+          //     height: 25,
+          //     fit: BoxFit.cover,
+          //     assetUrl: 'assets/images/8.png',
+          //   ),
+          //   icon: TDImage(
+          //     width: 25,
+          //     height: 25,
+          //     fit: BoxFit.cover,
+          //     assetUrl: 'assets/images/7.png',
+          //   ),
+          //   label: '服务',
+          // ),
+          BottomNavigationBarItem(
+            activeIcon: TDImage(
+              width: 25,
+              height: 25,
+              fit: BoxFit.cover,
+              assetUrl: 'assets/images/9.png',
+            ),
+            icon: TDImage(
+              width: 25,
+              height: 25,
+              fit: BoxFit.cover,
+              assetUrl: 'assets/images/10.png',
+            ),
+            label: '我的',
+          ),
         ],
         currentIndex: _selectedIndex,
         onTap: onTap,
@@ -134,9 +143,9 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  init() {
-    debugPrint('main dart init');
-    ServerManager.getInstance().init();
+  Future<void> init() async {
+    await DBManager.init();
+    debugPrint('main dart dbHelper init success');
   }
 
   @override

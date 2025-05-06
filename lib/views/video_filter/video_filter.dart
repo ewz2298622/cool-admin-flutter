@@ -3,10 +3,13 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
 import '../../components/video_three.dart';
+import '../../entity/dict_info_list_entity.dart';
 import '../../entity/video_category_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../style/layout.dart';
 import '../search/search.dart';
+
+String TAG = "VideoFilter";
 
 class VideoFilter extends StatefulWidget {
   //接受路由传递过来的props id
@@ -36,20 +39,28 @@ class VideoFilterState extends State<VideoFilter>
   List<VideoPageDataList> videoPageData = [];
   //实现一个从今年到15年前的list
   List<int> years = List.generate(20, (index) => DateTime.now().year - index);
-  final ValueNotifier<int> top0Notifier = ValueNotifier<int>(0);
-  final ValueNotifier<int> top1Notifier = ValueNotifier<int>(0);
+  final ValueNotifier<int> categoryCurrent = ValueNotifier<int>(0);
+  final ValueNotifier<int> yearCurrent = ValueNotifier<int>(0);
+  final ValueNotifier<int> regionCurrent = ValueNotifier<int>(0);
   bool disposed = false;
-  int category_pid = 0;
+  List<DictInfoListData> categoryDictList = [];
+  List<DictInfoListData> areaDictList = [];
+  List<DictInfoListData> categoryOriginalDictList = [];
   final GlobalKey<RefreshIndicatorState> refreshKey = GlobalKey();
 
   Future<void> getVideoPages() async {
     try {
       Map<String, dynamic>? data = {"page": currentPage};
-
+      //使用查找categoryOriginalDictList中parentId等于category_id的数据并返回
+      late List<DictInfoListData> category =
+          categoryOriginalDictList
+              .where((element) => element.parentId == categoryCurrent.value)
+              .toList();
       data = {
         "page": currentPage,
-        "category_pid": top0Notifier.value == 0 ? null : top0Notifier.value,
-        "year": top1Notifier.value == 0 ? null : top1Notifier.value,
+        "category_id": category.isEmpty ? null : category[0].id,
+        "year": yearCurrent.value == 0 ? null : yearCurrent.value,
+        "region": regionCurrent.value == 0 ? null : regionCurrent.value,
       };
 
       List<VideoPageDataList> list =
@@ -57,7 +68,7 @@ class VideoFilterState extends State<VideoFilter>
           [] as List<VideoPageDataList>;
       videoPageData = [...videoPageData, ...list];
       debugPrint(
-        'getVideoPages success data ${categoryData!.list?[top0Notifier.value]}',
+        'getVideoPages success data ${categoryData!.list?[categoryCurrent.value]}',
       );
     } catch (e) {
       // 捕获并处理异常
@@ -81,10 +92,55 @@ class VideoFilterState extends State<VideoFilter>
     }
   }
 
+  Future<void> getVideoAreaPages() async {
+    try {
+      areaDictList =
+          (await Api.getDictInfoPages({
+                "order": "orderNum",
+                "sort": "desc",
+                "typeId": 39,
+              })).data
+              as List<DictInfoListData>;
+      //返回parentId :  null 的数据
+      areaDictList =
+          areaDictList.where((element) => element.parentId == null).toList();
+    } catch (e) {
+      // 捕获并处理异常
+      print('获取视频地区数据失败: $e');
+    }
+  }
+
+  Future<void> getDictInfoPages() async {
+    try {
+      categoryDictList =
+          (await Api.getDictInfoPages({
+                "order": "orderNum",
+                "sort": "desc",
+                "typeId": 49,
+              })).data
+              as List<DictInfoListData>;
+      //使用浅拷贝
+      categoryOriginalDictList =
+          categoryDictList.map((e) {
+            return e;
+          }).toList();
+      //返回parentId :  null 的数据
+      categoryDictList =
+          categoryDictList
+              .where((element) => element.parentId == null)
+              .toList();
+    } catch (e) {
+      // 捕获并处理异常
+      print('获取视频分类数据失败: $e');
+    }
+  }
+
   Future<String> init() async {
     try {
       await getVideoPages();
       await getVideoCategoryPages();
+      await getDictInfoPages();
+      await getVideoAreaPages();
       _scrollControllerAdd();
       return "init success";
     } catch (e) {
@@ -120,8 +176,8 @@ class VideoFilterState extends State<VideoFilter>
     );
   }
 
-  Future<void> _category_pid_change(VideoCategoryDataList item) async {
-    top0Notifier.value = item.id ?? 0;
+  Future<void> _category_change(DictInfoListData item) async {
+    categoryCurrent.value = item.id ?? 0;
     videoPageData.clear();
     currentPage = 1;
     TDToast.showLoading(context: context, text: "加载中");
@@ -131,7 +187,7 @@ class VideoFilterState extends State<VideoFilter>
   }
 
   Future<void> _year_change(int item) async {
-    top1Notifier.value = item;
+    yearCurrent.value = item;
     videoPageData.clear();
     currentPage = 1;
     TDToast.showLoading(context: context, text: "加载中");
@@ -140,9 +196,19 @@ class VideoFilterState extends State<VideoFilter>
     setState(() {});
   }
 
-  Widget _buildCategoryRow(String title, VideoCategoryData items) {
+  Future<void> _area_change(DictInfoListData item) async {
+    regionCurrent.value = item.id ?? 0;
+    videoPageData.clear();
+    currentPage = 1;
+    TDToast.showLoading(context: context, text: "加载中");
+    await getVideoPages();
+    TDToast.dismissLoading();
+    setState(() {});
+  }
+
+  Widget _buildCategoryRow(String title, List<DictInfoListData> items) {
     return ValueListenableBuilder<int>(
-      valueListenable: top0Notifier,
+      valueListenable: categoryCurrent,
       builder: (context, key, child) {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -154,7 +220,7 @@ class VideoFilterState extends State<VideoFilter>
                   padding: const EdgeInsets.only(left: 8),
                   child: Center(child: Text(title ?? "")),
                 ),
-                ...(items.list ?? [])
+                ...(items ?? [])
                     .map(
                       (item) => Padding(
                         padding: const EdgeInsets.only(left: 8),
@@ -165,11 +231,53 @@ class VideoFilterState extends State<VideoFilter>
                             backgroundColor:
                                 key == item.id
                                     ? const Color.fromRGBO(249, 174, 61, 1)
-                                    : Color.fromRGBO(63, 158, 251, 1),
+                                    : Colors.transparent,
                             textColor:
                                 key == item.id ? Colors.white : Colors.black,
                           ),
-                          onTap: () => _category_pid_change(item),
+                          onTap: () => _category_change(item),
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAreaRow(String title, List<DictInfoListData> items) {
+    return ValueListenableBuilder<int>(
+      valueListenable: regionCurrent,
+      builder: (context, key, child) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Center(child: Text(title ?? "")),
+                ),
+                ...(items ?? [])
+                    .map(
+                      (item) => Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: TDButton(
+                          text: item.name ?? "",
+                          size: TDButtonSize.small,
+                          style: TDButtonStyle(
+                            backgroundColor:
+                                key == item.id
+                                    ? const Color.fromRGBO(249, 174, 61, 1)
+                                    : Colors.transparent,
+                            textColor:
+                                key == item.id ? Colors.white : Colors.black,
+                          ),
+                          onTap: () => _area_change(item),
                         ),
                       ),
                     )
@@ -184,7 +292,7 @@ class VideoFilterState extends State<VideoFilter>
 
   Widget _buildYearRow(String title, List<int> items) {
     return ValueListenableBuilder<int>(
-      valueListenable: top1Notifier,
+      valueListenable: yearCurrent,
       builder: (context, key, child) {
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
@@ -207,7 +315,7 @@ class VideoFilterState extends State<VideoFilter>
                             backgroundColor:
                                 key == item
                                     ? const Color.fromRGBO(249, 174, 61, 1)
-                                    : Color.fromRGBO(63, 158, 251, 1),
+                                    : Colors.transparent,
                             textColor:
                                 key == item ? Colors.white : Colors.black,
                           ),
@@ -240,8 +348,8 @@ class VideoFilterState extends State<VideoFilter>
   Future<void> onRefresh() async {
     videoPageData.clear();
     currentPage = 1;
-    top0Notifier.value = 0;
-    top1Notifier.value = 0;
+    categoryCurrent.value = 0;
+    yearCurrent.value = 0;
     await getVideoPages();
     if (disposed) {
       return;
@@ -336,7 +444,8 @@ class VideoFilterState extends State<VideoFilter>
               child: Column(
                 children: [
                   _buildDefaultSearchBar(),
-                  _buildCategoryRow('全部影视', categoryData!),
+                  _buildCategoryRow('全部影视', categoryDictList),
+                  _buildAreaRow('全部地区', areaDictList),
                   _buildYearRow("全部年份", years),
                   VideoThree(videoPageData: videoPageData),
                 ],

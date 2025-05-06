@@ -1,5 +1,5 @@
-import 'package:flutter_app/entity/video_category_entity.dart';
 import 'package:flutter_app/generated/json/base/json_convert_content.dart';
+import 'package:flutter_app/entity/video_category_entity.dart';
 
 VideoCategoryEntity $VideoCategoryEntityFromJson(Map<String, dynamic> json) {
   final VideoCategoryEntity videoCategoryEntity = VideoCategoryEntity();
@@ -12,8 +12,7 @@ VideoCategoryEntity $VideoCategoryEntityFromJson(Map<String, dynamic> json) {
     videoCategoryEntity.message = message;
   }
   final VideoCategoryData? data = jsonConvert.convert<VideoCategoryData>(
-    json['data'],
-  );
+      json['data']);
   if (data != null) {
     videoCategoryEntity.data = data;
   }
@@ -43,19 +42,16 @@ extension VideoCategoryEntityExtension on VideoCategoryEntity {
 
 VideoCategoryData $VideoCategoryDataFromJson(Map<String, dynamic> json) {
   final VideoCategoryData videoCategoryData = VideoCategoryData();
-  final List<VideoCategoryDataList>? list =
-      (json['list'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<VideoCategoryDataList>(e)
-                    as VideoCategoryDataList,
-          )
-          .toList();
+  final List<VideoCategoryDataList>? list = (json['list'] as List<dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<VideoCategoryDataList>(e) as VideoCategoryDataList)
+      .toList();
   if (list != null) {
     videoCategoryData.list = list;
   }
-  final VideoCategoryDataPagination? pagination = jsonConvert
-      .convert<VideoCategoryDataPagination>(json['pagination']);
+  final VideoCategoryDataPagination? pagination = jsonConvert.convert<
+      VideoCategoryDataPagination>(json['pagination']);
   if (pagination != null) {
     videoCategoryData.pagination = pagination;
   }
@@ -81,8 +77,7 @@ extension VideoCategoryDataExtension on VideoCategoryData {
 }
 
 VideoCategoryDataList $VideoCategoryDataListFromJson(
-  Map<String, dynamic> json,
-) {
+    Map<String, dynamic> json) {
   final VideoCategoryDataList videoCategoryDataList = VideoCategoryDataList();
   final String? parentId = jsonConvert.convert<String>(json['parent_id']);
   if (parentId != null) {
@@ -148,8 +143,7 @@ VideoCategoryDataList $VideoCategoryDataListFromJson(
 }
 
 Map<String, dynamic> $VideoCategoryDataListToJson(
-  VideoCategoryDataList entity,
-) {
+    VideoCategoryDataList entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['parent_id'] = entity.parentId;
   data['type'] = entity.type;
@@ -207,10 +201,8 @@ extension VideoCategoryDataListExtension on VideoCategoryDataList {
 }
 
 VideoCategoryDataPagination $VideoCategoryDataPaginationFromJson(
-  Map<String, dynamic> json,
-) {
-  final VideoCategoryDataPagination videoCategoryDataPagination =
-      VideoCategoryDataPagination();
+    Map<String, dynamic> json) {
+  final VideoCategoryDataPagination videoCategoryDataPagination = VideoCategoryDataPagination();
   final int? page = jsonConvert.convert<int>(json['page']);
   if (page != null) {
     videoCategoryDataPagination.page = page;
@@ -227,8 +219,7 @@ VideoCategoryDataPagination $VideoCategoryDataPaginationFromJson(
 }
 
 Map<String, dynamic> $VideoCategoryDataPaginationToJson(
-  VideoCategoryDataPagination entity,
-) {
+    VideoCategoryDataPagination entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['page'] = entity.page;
   data['size'] = entity.size;
@@ -237,7 +228,11 @@ Map<String, dynamic> $VideoCategoryDataPaginationToJson(
 }
 
 extension VideoCategoryDataPaginationExtension on VideoCategoryDataPagination {
-  VideoCategoryDataPagination copyWith({int? page, int? size, int? total}) {
+  VideoCategoryDataPagination copyWith({
+    int? page,
+    int? size,
+    int? total,
+  }) {
     return VideoCategoryDataPagination()
       ..page = page ?? this.page
       ..size = size ?? this.size

@@ -78,6 +78,20 @@ class _Video_DetailState extends State<Video_Detail>
     }
   }
 
+  Future<void> addViews() async {
+    try {
+      await Api.addViews({
+        "title": videoData?.title,
+        "associationId": videoData?.id,
+        "type": 19,
+        "cover": videoData?.surfacePlot,
+      });
+    } catch (e) {
+      // 捕获并处理异常
+      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+    }
+  }
+
   Future<void> getVideoLinePages() async {
     try {
       videoLineData =
@@ -128,6 +142,7 @@ class _Video_DetailState extends State<Video_Detail>
       await getVideoLinePages();
       await getPlayLinePages();
       await getVideoPages();
+      await addViews();
       setVideoUrl(playerLineData?[currentPlay.value].file ?? "");
       currentPlay.value = playerLineData?[currentPlay.value].id ?? 0;
       return "init success";
@@ -176,11 +191,7 @@ class _Video_DetailState extends State<Video_Detail>
     } else if (snapshot.hasError) {
       return Text('Error: ${snapshot.error}');
     } else if (snapshot.hasData) {
-      return SingleChildScrollView(
-        child: Column(
-          children: [_buildVideo(), _buildSponsorBar(), _buildNavigationTabs()],
-        ),
-      );
+      return Column(children: [_buildSponsorBar(), _buildNavigationTabs()]);
     } else {
       return Text('No data available');
     }
@@ -202,46 +213,6 @@ class _Video_DetailState extends State<Video_Detail>
         ),
         marquee: true,
       ),
-    );
-  }
-
-  Widget _buildVideo() {
-    return Column(
-      children: [
-        FView(
-          player: player,
-          width: double.infinity,
-          height: 200, // 需自行设置，此处宽度/高度=16/9
-          color: Colors.black,
-          fsFit: FFit.contain, // 全屏模式下的填充
-          fit: FFit.fill, // 正常模式下的填充
-          panelBuilder: fPanelBuilder(
-            // 视频列表开关
-            isVideos: true,
-            // 视频列表列表
-            videoList: videoList,
-            // 当前视频索引
-            videoIndex: currentPlay.value,
-            // 全屏模式下点击播放下一集视频回调
-            playNextVideoFun: () {
-              setState(() {
-                currentPlay.value += 1;
-              });
-            },
-            // 视频播放完成回调
-            onVideoEnd: () async {
-              var index = currentPlay.value + 1;
-              if (index < videoList.length) {
-                await player.reset();
-                setState(() {
-                  currentPlay.value = index;
-                });
-                setVideoUrl(videoList[index].url);
-              }
-            },
-          ),
-        ),
-      ],
     );
   }
 
@@ -414,7 +385,7 @@ class _Video_DetailState extends State<Video_Detail>
           //   },
           // ),
           // 自定义小屏列表
-          Container(
+          SizedBox(
             width: double.infinity,
             height: 30,
             child: ListView.builder(
@@ -771,13 +742,29 @@ class _Video_DetailState extends State<Video_Detail>
   Widget build(BuildContext context) {
     _context = context;
     return Scaffold(
-      appBar: AppBar(toolbarHeight: 20, backgroundColor: primaryColor),
+      appBar: AppBar(
+        toolbarHeight: 20,
+        backgroundColor: primaryColor,
+        automaticallyImplyLeading: false,
+      ),
       resizeToAvoidBottomInset: false,
+      //  Container(
+      //   decoration: const BoxDecoration(
+      //     gradient: LinearGradient(
+      //       begin: Alignment.topCenter,
+      //       end: Alignment.bottomCenter,
+      //       stops: [0.2, 0.8],
+      //       colors: [primaryColor, backgroundColor],
+      //     ),
+      //   ),
+      //   child: _buildVideo(),
+      // ),// 错误
       body: Stack(
-        fit: StackFit.expand,
         children: [
+          // 背景
+          _buildVideo(),
           Container(
-            padding: EdgeInsets.only(top: 10),
+            margin: EdgeInsets.only(top: 200),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
@@ -787,9 +774,49 @@ class _Video_DetailState extends State<Video_Detail>
               ),
             ),
             child: _buildContent(),
-          ),
+          ), // 错误
         ],
       ),
+    );
+  }
+
+  Widget _buildVideo() {
+    return Column(
+      children: [
+        FView(
+          player: player,
+          width: double.infinity,
+          height: 200, // 需自行设置，此处宽度/高度=16/9
+          color: Colors.black,
+          fsFit: FFit.contain, // 全屏模式下的填充
+          fit: FFit.fill, // 正常模式下的填充
+          panelBuilder: fPanelBuilder(
+            // 视频列表开关
+            isVideos: true,
+            // 视频列表列表
+            videoList: videoList,
+            // 当前视频索引
+            videoIndex: currentPlay.value,
+            // 全屏模式下点击播放下一集视频回调
+            playNextVideoFun: () {
+              setState(() {
+                currentPlay.value += 1;
+              });
+            },
+            // 视频播放完成回调
+            onVideoEnd: () async {
+              var index = currentPlay.value + 1;
+              if (index < videoList.length) {
+                await player.reset();
+                setState(() {
+                  currentPlay.value = index;
+                });
+                setVideoUrl(videoList[index].url);
+              }
+            },
+          ),
+        ),
+      ],
     );
   }
 }

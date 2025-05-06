@@ -1,18 +1,12 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_app/http/print_log_interceptor.dart';
 import 'package:flutter_app/http/requestConfig.dart';
+import 'package:flutter_app/http/tokenInterceptors.dart';
 
 import 'http_method.dart';
 
-class DioInstance {
-  static DioInstance? _instance;
-
-  DioInstance._();
-
-  static DioInstance instance() {
-    return _instance ??= DioInstance._();
-  }
-
+class DioHttp {
   final Dio _dio = Dio(
     BaseOptions(
       baseUrl: RequestConfig.baseUrl, // 请求的基础路径
@@ -23,25 +17,11 @@ class DioInstance {
   );
   final _defaultTime = const Duration(seconds: 30);
 
-  void initDio({
-    required String baseUrl,
-    String? httpMethod = HttpMethod.GET,
-    Duration? connectTimeout,
-    Duration? receiveTimeout,
-    Duration? sendTimeout,
-    ResponseType? responseType,
-    String? contentType,
-  }) {
-    _dio.options = BaseOptions(
-      method: httpMethod,
-      baseUrl: baseUrl,
-      connectTimeout: connectTimeout ?? _defaultTime,
-      receiveTimeout: receiveTimeout ?? _defaultTime,
-      sendTimeout: sendTimeout ?? _defaultTime,
-      responseType: responseType ?? ResponseType.json,
-      contentType: contentType,
-    );
+  DioHttp() {
+    // 添加新的拦截器
+    debugPrint('DioInstance init');
     _dio.interceptors.add(PrintLogInterceptor());
+    _dio.interceptors.add(TokenInterceptors());
   }
 
   Future get<Response>(

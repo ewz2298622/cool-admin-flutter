@@ -1,20 +1,27 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_app/entity/dict_data_entity.dart';
+import 'package:flutter_app/entity/login_entity.dart';
 
 import '../entity/album_entity.dart';
 import '../entity/album_video_list_entity.dart';
+import '../entity/captcha_entity.dart';
+import '../entity/dict_info_list_entity.dart';
 import '../entity/play_line_entity.dart';
 import '../entity/swiper_entity.dart';
+import '../entity/user_info_entity.dart';
 import '../entity/video_album_entity.dart';
 import '../entity/video_category_entity.dart';
 import '../entity/video_detail_entity.dart';
 import '../entity/video_line_entity.dart';
+import '../entity/video_live_entity.dart';
 import '../entity/video_page_entity.dart';
 import '../entity/video_sort_entity.dart';
+import '../entity/views_entity.dart';
 import '../http/request.dart';
 
 /// 请求接口
 class Api {
-  static DioInstance server = DioInstance.instance();
+  static DioHttp server = DioHttp();
 
   /// 异步获取轮播图页面数据
   ///
@@ -179,7 +186,7 @@ class Api {
           videoCategoryIds.map((id) async {
             AlbumEntity videoAlbumData = (await Api.getVideoAlbumPages({
               "page": 1,
-              "type": id,
+              "category_id": id,
               "status": 1,
               "size": 5,
             }));
@@ -316,6 +323,129 @@ class Api {
       ); // 添加注释说明 ONE 的含义});
       // 将服务器返回的JSON数据解析为[VideoCategoryEntity]对象并返回
       return VideoSortEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //获取某一个字典数据
+  static Future<DictInfoListEntity> getDictInfoPages(
+    Map<String, dynamic>? data,
+  ) async {
+    try {
+      final response = await server.post(
+        "/app/dict/info/list",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
+
+      // 将服务器返回的JSON数据解析为[VideoCategoryEntity]对象并返回
+      return DictInfoListEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //获取某一个字典数据
+  static Future<DictDataEntity> getDictData(Map<String, dynamic>? data) async {
+    try {
+      final response = await server.post(
+        "/app/dict/info/data",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
+
+      // 将服务器返回的JSON数据解析为[VideoCategoryEntity]对象并返回
+      return DictDataEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //获取直播列表
+  static Future<VideoLiveEntity> getVideoLivePages(
+    Map<String, dynamic>? data,
+  ) async {
+    try {
+      final response = await server.post(
+        "/app/video/live/page",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
+
+      // 将服务器返回的JSON数据解析为[VideoCategoryEntity]对象并返回
+      return VideoLiveEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //获取验证码
+  static Future<CaptchaEntity> getCaptcha(Map<String, dynamic>? param) async {
+    try {
+      final response = await server.get(
+        "/app/user/login/captcha",
+        param: param,
+      ); // 添加注释说明 ONE 的含义});
+
+      // 将服务器返回的JSON数据解析为[VideoCategoryEntity]对象并返回
+      return CaptchaEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //获取登录信息
+  static Future<LoginEntity> getLogin(Map<String, dynamic>? data) async {
+    try {
+      final response = await server.post(
+        "/app/user/login/password",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
+      // 将服务器返回的JSON数据解析为[VideoCategoryEntity]对象并返回
+      return LoginEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //获取登录信息
+  static Future<UserInfoEntity> getUserInfo(Map<String, dynamic>? data) async {
+    try {
+      final response = await server.get(
+        "/app/user/info/person",
+      ); // 添加注释说明 ONE 的含义});
+      return UserInfoEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //获取浏览记录
+  static Future<ViewsEntity> getViews(Map<String, dynamic>? data) async {
+    try {
+      final response = await server.post(
+        "/app/application/views/page",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
+      return ViewsEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //添加浏览揭露
+  static Future<void> addViews(Map<String, dynamic>? data) async {
+    try {
+      await server.post(
+        "/app/application/views/add",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
     } catch (error) {
       // 重新抛出异常以便上层处理
       rethrow;

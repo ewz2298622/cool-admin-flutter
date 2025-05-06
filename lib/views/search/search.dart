@@ -5,8 +5,8 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 import '../../api/api.dart';
 import '../../components/video_scroll.dart';
 import '../../components/video_three.dart';
-import '../../db/entity/searchEntity.dart';
-import '../../db/manager/serverManager.dart';
+import '../../db/entity/SearchHistoryEntity.dart';
+import '../../db/manager/SearchHistoryDatabaseHelper.dart';
 import '../../entity/video_page_entity.dart';
 import '../../style/layout.dart';
 
@@ -21,7 +21,8 @@ class VideoSearchState extends State<VideoSearch>
     with SingleTickerProviderStateMixin {
   late final String inputText;
   List<VideoPageDataList> videoPageData = [];
-  List<SearchHistoryEntity> searchHistoryEntityList = [];
+  final searchHistory = SearchHistoryDatabaseHelper();
+  Iterable<SearchHistoryEntity> searchHistoryList = [];
 
   var _futureBuilderFuture;
 
@@ -57,15 +58,18 @@ class VideoSearchState extends State<VideoSearch>
 
   Future<void> getSearchHistoryEntity() async {
     try {
-      searchHistoryEntityList =
-          await ServerManager.getInstance().searchService().queryAll() ?? [];
-      debugPrint(
-        'Initialization getSearchHistoryEntity success: $searchHistoryEntityList',
-      );
+      searchHistoryList = searchHistory.getSearchHistoryByPage(1, 4);
     } catch (e) {
       // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
     }
+  }
+
+  goToSearchResult() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SearchResult(keyWord: inputText)),
+    );
   }
 
   Widget _buildDefaultSearchBar() {
@@ -78,16 +82,12 @@ class VideoSearchState extends State<VideoSearch>
         setState(() {
           inputText = text;
         });
-        SearchHistoryEntity object = SearchHistoryEntity(keyWord: text);
-        ServerManager.getInstance().searchService().insert(object);
+        searchHistory.insertSearchHistory(
+          SearchHistoryEntity(query: inputText, timestamp: DateTime.now()),
+        );
       },
       onActionClick: (contexts) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SearchResult(keyWord: inputText),
-          ),
-        );
+        goToSearchResult();
       },
     );
   }
@@ -173,7 +173,16 @@ class VideoSearchState extends State<VideoSearch>
   Widget SearchItem() {
     return Row(
       spacing: 5,
-      children: [TDTag('标签文字'), TDTag('标签文字'), TDTag('标签文字')],
+      children:
+          searchHistoryList.map((entity) {
+            return GestureDetector(
+              child: TDTag(entity.query),
+              onTap: () {
+                inputText = entity.query;
+                goToSearchResult();
+              },
+            );
+          }).toList(),
     );
   }
 

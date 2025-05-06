@@ -1,5 +1,5 @@
-import 'package:flutter_app/entity/video_album_entity.dart';
 import 'package:flutter_app/generated/json/base/json_convert_content.dart';
+import 'package:flutter_app/entity/video_album_entity.dart';
 
 VideoAlbumEntity $VideoAlbumEntityFromJson(Map<String, dynamic> json) {
   final VideoAlbumEntity videoAlbumEntity = VideoAlbumEntity();
@@ -12,8 +12,7 @@ VideoAlbumEntity $VideoAlbumEntityFromJson(Map<String, dynamic> json) {
     videoAlbumEntity.message = message;
   }
   final VideoAlbumData? data = jsonConvert.convert<VideoAlbumData>(
-    json['data'],
-  );
+      json['data']);
   if (data != null) {
     videoAlbumEntity.data = data;
   }
@@ -88,26 +87,22 @@ VideoAlbumData $VideoAlbumDataFromJson(Map<String, dynamic> json) {
     videoAlbumData.introduce = introduce;
   }
   final String? popularityDay = jsonConvert.convert<String>(
-    json['popularity_day'],
-  );
+      json['popularity_day']);
   if (popularityDay != null) {
     videoAlbumData.popularityDay = popularityDay;
   }
   final String? popularityWeek = jsonConvert.convert<String>(
-    json['popularity_week'],
-  );
+      json['popularity_week']);
   if (popularityWeek != null) {
     videoAlbumData.popularityWeek = popularityWeek;
   }
   final String? popularityMonth = jsonConvert.convert<String>(
-    json['popularity_month'],
-  );
+      json['popularity_month']);
   if (popularityMonth != null) {
     videoAlbumData.popularityMonth = popularityMonth;
   }
   final String? popularitySum = jsonConvert.convert<String>(
-    json['popularity_sum'],
-  );
+      json['popularity_sum']);
   if (popularitySum != null) {
     videoAlbumData.popularitySum = popularitySum;
   }

@@ -1,5 +1,7 @@
 // second_page.dart
 
+import 'dart:core';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_swiper_null_safety/flutter_swiper_null_safety.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -7,9 +9,10 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 import '../../api/api.dart';
 import '../../components/auto_height_page_view/auto_height_page_view.dart';
 import '../../entity/album_entity.dart';
+import '../../entity/dict_info_list_entity.dart';
 import '../../entity/swiper_entity.dart';
-import '../../entity/video_category_entity.dart';
 import '../../style/layout.dart';
+import '../../utils/user.dart';
 import '../album/album.dart';
 import '../search/search.dart';
 import '../video_detail/detail.dart';
@@ -24,7 +27,6 @@ class Home extends StatefulWidget {
 class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
   //定义swiperData
   SwiperData? swiperData;
-  VideoCategoryData? videoCategoryData;
   TabController? _tabController;
   String inputText = '';
   List<TDTab> tabs = [];
@@ -32,7 +34,9 @@ class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
   final GlobalKey<RefreshIndicatorState> refreshKey = GlobalKey();
   final PageController pageController = PageController(initialPage: 0);
   bool disposed = false;
+  bool isLogin = false;
   var _futureBuilderFuture;
+  List<DictInfoListData> dictInfoListData = [];
 
   Map<int, List<SwiperDataList>> swiperMap = {};
   Map<int, List<AlbumDataList>> albumMap = {};
@@ -52,20 +56,28 @@ class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
     }
   }
 
-  Future<void> getVideoCategoryPage() async {
+  Future<void> getDictInfoPages() async {
     try {
-      videoCategoryData =
-          (await Api.getVideoCategoryPages({"parent_id": 0, "type": 1})).data
-              as VideoCategoryData;
+      dictInfoListData =
+          (await Api.getDictInfoPages({
+                "order": "orderNum",
+                "sort": "desc",
+                "typeId": 49,
+              })).data
+              as List<DictInfoListData>;
+      //返回parentId :  null 的数据
+      dictInfoListData =
+          dictInfoListData
+              .where((element) => element.parentId == null)
+              .toList();
+      videoCategoryIds = dictInfoListData.map((e) => e.id ?? 0).toList() ?? [];
       tabs.clear();
-      for (var element in videoCategoryData?.list ?? []) {
+      for (var element in dictInfoListData ?? []) {
         tabs.add(TDTab(text: element.name));
       }
-      videoCategoryIds =
-          videoCategoryData?.list?.map((e) => e.id ?? 0).toList() ?? [];
     } catch (e) {
       // 捕获并处理异常
-      debugPrint('getVideoCategoryPage failed: ${e.toString()}');
+      print('获取视频分类数据失败: $e');
     }
   }
 
@@ -81,7 +93,6 @@ class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
   Future<void> getAlbumListByCategoryIds() async {
     try {
       albumMap = await Api.getAlbumListByCategoryIds(videoCategoryIds);
-      debugPrint('albumMap111: ${albumMap[43]}');
     } catch (e) {
       // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
@@ -102,15 +113,14 @@ class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
 
   Future<String> init() async {
     try {
-      await getVideoCategoryPage();
+      await getDictInfoPages();
       _initTabController(0);
       await getSwiperListByCategoryIds();
       await getAlbumListByCategoryIds();
+      User.isUserLoginView(context);
       return "init success";
     } catch (e) {
-      // 捕获并处理异常
-      print('Initialization failed: $e');
-      return "init success";
+      return "init err";
     }
   }
 
@@ -118,7 +128,7 @@ class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
     swiperMap.clear();
     albumMap.clear();
     tabs.clear();
-    await getVideoCategoryPage();
+    await getDictInfoPages();
     await getSwiperListByCategoryIds();
     await getAlbumListByCategoryIds();
     setState(() {});
@@ -240,7 +250,7 @@ class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
   }
 
   List<Widget> _getTabViews() {
-    if (videoCategoryData?.list == null) {
+    if (dictInfoListData.isEmpty) {
       return [];
     } else {
       List<Widget> tabViews;
@@ -250,13 +260,11 @@ class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
             children: [
               SizedBox(
                 height: 200,
-                child: _buildDotsSwiper(
-                  videoCategoryData?.list?[index].id ?? 0,
-                ),
+                child: _buildDotsSwiper(dictInfoListData[index].id ?? 0),
               ),
               Column(
                 children: _buildAlbumContentList(
-                  albumMap[videoCategoryData?.list?[index].id] ?? [],
+                  albumMap[dictInfoListData[index].id] ?? [],
                 ),
               ),
             ],

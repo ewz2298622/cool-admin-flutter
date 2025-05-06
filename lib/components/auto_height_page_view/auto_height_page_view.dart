@@ -6,12 +6,14 @@ class AutoHeightPageView extends StatefulWidget {
   final List<Widget> children;
   final PageController pageController;
   final Function(int index)? onPageChanged;
+  final Axis? scrollDirection;
 
   const AutoHeightPageView({
     Key? key,
     required this.children,
     required this.pageController,
     this.onPageChanged,
+    this.scrollDirection,
   }) : super(key: key);
 
   @override
@@ -79,6 +81,7 @@ class AutoHeightPageViewState extends State<AutoHeightPageView> {
                 child: PageView(
                   controller: widget.pageController,
                   onPageChanged: widget.onPageChanged,
+                  scrollDirection: widget.scrollDirection ?? Axis.horizontal,
                   children: widget.children,
                 ),
               ),

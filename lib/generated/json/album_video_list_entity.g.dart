@@ -1,5 +1,5 @@
-import 'package:flutter_app/entity/album_video_list_entity.dart';
 import 'package:flutter_app/generated/json/base/json_convert_content.dart';
+import 'package:flutter_app/entity/album_video_list_entity.dart';
 
 AlbumVideoListEntity $AlbumVideoListEntityFromJson(Map<String, dynamic> json) {
   final AlbumVideoListEntity albumVideoListEntity = AlbumVideoListEntity();
@@ -12,8 +12,7 @@ AlbumVideoListEntity $AlbumVideoListEntityFromJson(Map<String, dynamic> json) {
     albumVideoListEntity.message = message;
   }
   final AlbumVideoListData? data = jsonConvert.convert<AlbumVideoListData>(
-    json['data'],
-  );
+      json['data']);
   if (data != null) {
     albumVideoListEntity.data = data;
   }
@@ -43,19 +42,16 @@ extension AlbumVideoListEntityExtension on AlbumVideoListEntity {
 
 AlbumVideoListData $AlbumVideoListDataFromJson(Map<String, dynamic> json) {
   final AlbumVideoListData albumVideoListData = AlbumVideoListData();
-  final List<AlbumVideoListDataList>? list =
-      (json['list'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<AlbumVideoListDataList>(e)
-                    as AlbumVideoListDataList,
-          )
-          .toList();
+  final List<AlbumVideoListDataList>? list = (json['list'] as List<dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<AlbumVideoListDataList>(e) as AlbumVideoListDataList)
+      .toList();
   if (list != null) {
     albumVideoListData.list = list;
   }
-  final AlbumVideoListDataPagination? pagination = jsonConvert
-      .convert<AlbumVideoListDataPagination>(json['pagination']);
+  final AlbumVideoListDataPagination? pagination = jsonConvert.convert<
+      AlbumVideoListDataPagination>(json['pagination']);
   if (pagination != null) {
     albumVideoListData.pagination = pagination;
   }
@@ -81,10 +77,8 @@ extension AlbumVideoListDataExtension on AlbumVideoListData {
 }
 
 AlbumVideoListDataList $AlbumVideoListDataListFromJson(
-  Map<String, dynamic> json,
-) {
-  final AlbumVideoListDataList albumVideoListDataList =
-      AlbumVideoListDataList();
+    Map<String, dynamic> json) {
+  final AlbumVideoListDataList albumVideoListDataList = AlbumVideoListDataList();
   final String? albumId = jsonConvert.convert<String>(json['album_id']);
   if (albumId != null) {
     albumVideoListDataList.albumId = albumId;
@@ -130,8 +124,7 @@ AlbumVideoListDataList $AlbumVideoListDataListFromJson(
     albumVideoListDataList.categoryPid = categoryPid;
   }
   final String? categoryChildId = jsonConvert.convert<String>(
-    json['category_child_id'],
-  );
+      json['category_child_id']);
   if (categoryChildId != null) {
     albumVideoListDataList.categoryChildId = categoryChildId;
   }
@@ -152,8 +145,7 @@ AlbumVideoListDataList $AlbumVideoListDataListFromJson(
     albumVideoListDataList.cycleImg = cycleImg;
   }
   final String? chargingMode = jsonConvert.convert<String>(
-    json['charging_mode'],
-  );
+      json['charging_mode']);
   if (chargingMode != null) {
     albumVideoListDataList.chargingMode = chargingMode;
   }
@@ -178,8 +170,7 @@ AlbumVideoListDataList $AlbumVideoListDataListFromJson(
     albumVideoListDataList.imdbScore = imdbScore;
   }
   final String? imdbScoreId = jsonConvert.convert<String>(
-    json['imdb_score_id'],
-  );
+      json['imdb_score_id']);
   if (imdbScoreId != null) {
     albumVideoListDataList.imdbScoreId = imdbScoreId;
   }
@@ -188,8 +179,7 @@ AlbumVideoListDataList $AlbumVideoListDataListFromJson(
     albumVideoListDataList.doubanScore = doubanScore;
   }
   final String? doubanScoreId = jsonConvert.convert<String>(
-    json['douban_score_id'],
-  );
+      json['douban_score_id']);
   if (doubanScoreId != null) {
     albumVideoListDataList.doubanScoreId = doubanScoreId;
   }
@@ -218,8 +208,7 @@ AlbumVideoListDataList $AlbumVideoListDataListFromJson(
     albumVideoListDataList.duration = duration;
   }
   final String? serialNumber = jsonConvert.convert<String>(
-    json['serial_number'],
-  );
+      json['serial_number']);
   if (serialNumber != null) {
     albumVideoListDataList.serialNumber = serialNumber;
   }
@@ -236,26 +225,22 @@ AlbumVideoListDataList $AlbumVideoListDataListFromJson(
     albumVideoListDataList.status = status;
   }
   final String? popularitySum = jsonConvert.convert<String>(
-    json['popularity_sum'],
-  );
+      json['popularity_sum']);
   if (popularitySum != null) {
     albumVideoListDataList.popularitySum = popularitySum;
   }
   final String? popularityDay = jsonConvert.convert<String>(
-    json['popularity_day'],
-  );
+      json['popularity_day']);
   if (popularityDay != null) {
     albumVideoListDataList.popularityDay = popularityDay;
   }
   final String? popularityMonth = jsonConvert.convert<String>(
-    json['popularity_month'],
-  );
+      json['popularity_month']);
   if (popularityMonth != null) {
     albumVideoListDataList.popularityMonth = popularityMonth;
   }
   final String? popularityWeek = jsonConvert.convert<String>(
-    json['popularity_week'],
-  );
+      json['popularity_week']);
   if (popularityWeek != null) {
     albumVideoListDataList.popularityWeek = popularityWeek;
   }
@@ -296,14 +281,12 @@ AlbumVideoListDataList $AlbumVideoListDataListFromJson(
     albumVideoListDataList.total = total;
   }
   final String? horizontalPoster = jsonConvert.convert<String>(
-    json['horizontal_poster'],
-  );
+      json['horizontal_poster']);
   if (horizontalPoster != null) {
     albumVideoListDataList.horizontalPoster = horizontalPoster;
   }
   final String? verticalPoster = jsonConvert.convert<String>(
-    json['vertical_poster'],
-  );
+      json['vertical_poster']);
   if (verticalPoster != null) {
     albumVideoListDataList.verticalPoster = verticalPoster;
   }
@@ -315,8 +298,7 @@ AlbumVideoListDataList $AlbumVideoListDataListFromJson(
 }
 
 Map<String, dynamic> $AlbumVideoListDataListToJson(
-  AlbumVideoListDataList entity,
-) {
+    AlbumVideoListDataList entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['album_id'] = entity.albumId;
   data['videos_id'] = entity.videosId;
@@ -482,10 +464,8 @@ extension AlbumVideoListDataListExtension on AlbumVideoListDataList {
 }
 
 AlbumVideoListDataPagination $AlbumVideoListDataPaginationFromJson(
-  Map<String, dynamic> json,
-) {
-  final AlbumVideoListDataPagination albumVideoListDataPagination =
-      AlbumVideoListDataPagination();
+    Map<String, dynamic> json) {
+  final AlbumVideoListDataPagination albumVideoListDataPagination = AlbumVideoListDataPagination();
   final int? page = jsonConvert.convert<int>(json['page']);
   if (page != null) {
     albumVideoListDataPagination.page = page;
@@ -502,8 +482,7 @@ AlbumVideoListDataPagination $AlbumVideoListDataPaginationFromJson(
 }
 
 Map<String, dynamic> $AlbumVideoListDataPaginationToJson(
-  AlbumVideoListDataPagination entity,
-) {
+    AlbumVideoListDataPagination entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['page'] = entity.page;
   data['size'] = entity.size;
@@ -511,9 +490,12 @@ Map<String, dynamic> $AlbumVideoListDataPaginationToJson(
   return data;
 }
 
-extension AlbumVideoListDataPaginationExtension
-    on AlbumVideoListDataPagination {
-  AlbumVideoListDataPagination copyWith({int? page, int? size, int? total}) {
+extension AlbumVideoListDataPaginationExtension on AlbumVideoListDataPagination {
+  AlbumVideoListDataPagination copyWith({
+    int? page,
+    int? size,
+    int? total,
+  }) {
     return AlbumVideoListDataPagination()
       ..page = page ?? this.page
       ..size = size ?? this.size

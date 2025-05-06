@@ -1,5 +1,5 @@
-import 'package:flutter_app/entity/album_entity.dart';
 import 'package:flutter_app/generated/json/base/json_convert_content.dart';
+import 'package:flutter_app/entity/album_entity.dart';
 
 AlbumEntity $AlbumEntityFromJson(Map<String, dynamic> json) {
   final AlbumEntity albumEntity = AlbumEntity();
@@ -27,7 +27,11 @@ Map<String, dynamic> $AlbumEntityToJson(AlbumEntity entity) {
 }
 
 extension AlbumEntityExtension on AlbumEntity {
-  AlbumEntity copyWith({int? code, String? message, AlbumData? data}) {
+  AlbumEntity copyWith({
+    int? code,
+    String? message,
+    AlbumData? data,
+  }) {
     return AlbumEntity()
       ..code = code ?? this.code
       ..message = message ?? this.message
@@ -37,10 +41,10 @@ extension AlbumEntityExtension on AlbumEntity {
 
 AlbumData $AlbumDataFromJson(Map<String, dynamic> json) {
   final AlbumData albumData = AlbumData();
-  final List<AlbumDataList>? list =
-      (json['list'] as List<dynamic>?)
-          ?.map((e) => jsonConvert.convert<AlbumDataList>(e) as AlbumDataList)
-          .toList();
+  final List<AlbumDataList>? list = (json['list'] as List<dynamic>?)
+      ?.map(
+          (e) => jsonConvert.convert<AlbumDataList>(e) as AlbumDataList)
+      .toList();
   if (list != null) {
     albumData.list = list;
   }
@@ -54,8 +58,11 @@ Map<String, dynamic> $AlbumDataToJson(AlbumData entity) {
 }
 
 extension AlbumDataExtension on AlbumData {
-  AlbumData copyWith({List<AlbumDataList>? list}) {
-    return AlbumData()..list = list ?? this.list;
+  AlbumData copyWith({
+    List<AlbumDataList>? list,
+  }) {
+    return AlbumData()
+      ..list = list ?? this.list;
   }
 }
 
@@ -106,26 +113,22 @@ AlbumDataList $AlbumDataListFromJson(Map<String, dynamic> json) {
     albumDataList.introduce = introduce;
   }
   final String? popularityDay = jsonConvert.convert<String>(
-    json['popularity_day'],
-  );
+      json['popularity_day']);
   if (popularityDay != null) {
     albumDataList.popularityDay = popularityDay;
   }
   final String? popularityWeek = jsonConvert.convert<String>(
-    json['popularity_week'],
-  );
+      json['popularity_week']);
   if (popularityWeek != null) {
     albumDataList.popularityWeek = popularityWeek;
   }
   final String? popularityMonth = jsonConvert.convert<String>(
-    json['popularity_month'],
-  );
+      json['popularity_month']);
   if (popularityMonth != null) {
     albumDataList.popularityMonth = popularityMonth;
   }
   final String? popularitySum = jsonConvert.convert<String>(
-    json['popularity_sum'],
-  );
+      json['popularity_sum']);
   if (popularitySum != null) {
     albumDataList.popularitySum = popularitySum;
   }
@@ -153,13 +156,10 @@ AlbumDataList $AlbumDataListFromJson(Map<String, dynamic> json) {
   if (siteId != null) {
     albumDataList.siteId = siteId;
   }
-  final List<AlbumDataListList>? list =
-      (json['list'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<AlbumDataListList>(e) as AlbumDataListList,
-          )
-          .toList();
+  final List<AlbumDataListList>? list = (json['list'] as List<dynamic>?)
+      ?.map(
+          (e) => jsonConvert.convert<AlbumDataListList>(e) as AlbumDataListList)
+      .toList();
   if (list != null) {
     albumDataList.list = list;
   }
@@ -275,8 +275,7 @@ AlbumDataListList $AlbumDataListListFromJson(Map<String, dynamic> json) {
     albumDataListList.categoryPid = categoryPid;
   }
   final String? categoryChildId = jsonConvert.convert<String>(
-    json['category_child_id'],
-  );
+      json['category_child_id']);
   if (categoryChildId != null) {
     albumDataListList.categoryChildId = categoryChildId;
   }
@@ -297,8 +296,7 @@ AlbumDataListList $AlbumDataListListFromJson(Map<String, dynamic> json) {
     albumDataListList.cycleImg = cycleImg;
   }
   final String? chargingMode = jsonConvert.convert<String>(
-    json['charging_mode'],
-  );
+      json['charging_mode']);
   if (chargingMode != null) {
     albumDataListList.chargingMode = chargingMode;
   }
@@ -323,8 +321,7 @@ AlbumDataListList $AlbumDataListListFromJson(Map<String, dynamic> json) {
     albumDataListList.imdbScore = imdbScore;
   }
   final String? imdbScoreId = jsonConvert.convert<String>(
-    json['imdb_score_id'],
-  );
+      json['imdb_score_id']);
   if (imdbScoreId != null) {
     albumDataListList.imdbScoreId = imdbScoreId;
   }
@@ -333,8 +330,7 @@ AlbumDataListList $AlbumDataListListFromJson(Map<String, dynamic> json) {
     albumDataListList.doubanScore = doubanScore;
   }
   final String? doubanScoreId = jsonConvert.convert<String>(
-    json['douban_score_id'],
-  );
+      json['douban_score_id']);
   if (doubanScoreId != null) {
     albumDataListList.doubanScoreId = doubanScoreId;
   }
@@ -343,26 +339,22 @@ AlbumDataListList $AlbumDataListListFromJson(Map<String, dynamic> json) {
     albumDataListList.introduce = introduce;
   }
   final String? popularityDay = jsonConvert.convert<String>(
-    json['popularity_day'],
-  );
+      json['popularity_day']);
   if (popularityDay != null) {
     albumDataListList.popularityDay = popularityDay;
   }
   final String? popularityWeek = jsonConvert.convert<String>(
-    json['popularity_week'],
-  );
+      json['popularity_week']);
   if (popularityWeek != null) {
     albumDataListList.popularityWeek = popularityWeek;
   }
   final String? popularityMonth = jsonConvert.convert<String>(
-    json['popularity_month'],
-  );
+      json['popularity_month']);
   if (popularityMonth != null) {
     albumDataListList.popularityMonth = popularityMonth;
   }
   final String? popularitySum = jsonConvert.convert<String>(
-    json['popularity_sum'],
-  );
+      json['popularity_sum']);
   if (popularitySum != null) {
     albumDataListList.popularitySum = popularitySum;
   }
@@ -415,14 +407,12 @@ AlbumDataListList $AlbumDataListListFromJson(Map<String, dynamic> json) {
     albumDataListList.total = total;
   }
   final String? horizontalPoster = jsonConvert.convert<String>(
-    json['horizontal_poster'],
-  );
+      json['horizontal_poster']);
   if (horizontalPoster != null) {
     albumDataListList.horizontalPoster = horizontalPoster;
   }
   final String? verticalPoster = jsonConvert.convert<String>(
-    json['vertical_poster'],
-  );
+      json['vertical_poster']);
   if (verticalPoster != null) {
     albumDataListList.verticalPoster = verticalPoster;
   }
@@ -431,8 +421,7 @@ AlbumDataListList $AlbumDataListListFromJson(Map<String, dynamic> json) {
     albumDataListList.publish = publish;
   }
   final String? serialNumber = jsonConvert.convert<String>(
-    json['serial_number'],
-  );
+      json['serial_number']);
   if (serialNumber != null) {
     albumDataListList.serialNumber = serialNumber;
   }
@@ -469,8 +458,7 @@ AlbumDataListList $AlbumDataListListFromJson(Map<String, dynamic> json) {
     albumDataListList.watch = watch;
   }
   final String? collectionId = jsonConvert.convert<String>(
-    json['collection_id'],
-  );
+      json['collection_id']);
   if (collectionId != null) {
     albumDataListList.collectionId = collectionId;
   }
@@ -491,14 +479,12 @@ AlbumDataListList $AlbumDataListListFromJson(Map<String, dynamic> json) {
     albumDataListList.siteId = siteId;
   }
   final int? categoryPidStatus = jsonConvert.convert<int>(
-    json['category_pid_status'],
-  );
+      json['category_pid_status']);
   if (categoryPidStatus != null) {
     albumDataListList.categoryPidStatus = categoryPidStatus;
   }
   final int? categoryChildIdStatus = jsonConvert.convert<int>(
-    json['category_child_id_status'],
-  );
+      json['category_child_id_status']);
   if (categoryChildIdStatus != null) {
     albumDataListList.categoryChildIdStatus = categoryChildIdStatus;
   }
@@ -696,8 +682,8 @@ extension AlbumDataListListExtension on AlbumDataListList {
       ..trailerTime = trailerTime ?? this.trailerTime
       ..siteId = siteId ?? this.siteId
       ..categoryPidStatus = categoryPidStatus ?? this.categoryPidStatus
-      ..categoryChildIdStatus =
-          categoryChildIdStatus ?? this.categoryChildIdStatus
+      ..categoryChildIdStatus = categoryChildIdStatus ??
+          this.categoryChildIdStatus
       ..playUrl = playUrl ?? this.playUrl
       ..playUrlPutIn = playUrlPutIn ?? this.playUrlPutIn;
   }

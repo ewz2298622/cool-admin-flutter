@@ -1,6 +1,5 @@
+import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 import 'package:flutter_app/entity/play_line_entity.dart';
-
-import 'base/json_convert_content.dart';
 
 PlayLineEntity $PlayLineEntityFromJson(Map<String, dynamic> json) {
   final PlayLineEntity playLineEntity = PlayLineEntity();
@@ -28,7 +27,11 @@ Map<String, dynamic> $PlayLineEntityToJson(PlayLineEntity entity) {
 }
 
 extension PlayLineEntityExtension on PlayLineEntity {
-  PlayLineEntity copyWith({int? code, String? message, PlayLineData? data}) {
+  PlayLineEntity copyWith({
+    int? code,
+    String? message,
+    PlayLineData? data,
+  }) {
     return PlayLineEntity()
       ..code = code ?? this.code
       ..message = message ?? this.message
@@ -38,17 +41,15 @@ extension PlayLineEntityExtension on PlayLineEntity {
 
 PlayLineData $PlayLineDataFromJson(Map<String, dynamic> json) {
   final PlayLineData playLineData = PlayLineData();
-  final List<PlayLineDataList>? list =
-      (json['list'] as List<dynamic>?)
-          ?.map(
-            (e) => jsonConvert.convert<PlayLineDataList>(e) as PlayLineDataList,
-          )
-          .toList();
+  final List<PlayLineDataList>? list = (json['list'] as List<dynamic>?)
+      ?.map(
+          (e) => jsonConvert.convert<PlayLineDataList>(e) as PlayLineDataList)
+      .toList();
   if (list != null) {
     playLineData.list = list;
   }
-  final PlayLineDataPagination? pagination = jsonConvert
-      .convert<PlayLineDataPagination>(json['pagination']);
+  final PlayLineDataPagination? pagination = jsonConvert.convert<
+      PlayLineDataPagination>(json['pagination']);
   if (pagination != null) {
     playLineData.pagination = pagination;
   }
@@ -76,8 +77,7 @@ extension PlayLineDataExtension on PlayLineData {
 PlayLineDataList $PlayLineDataListFromJson(Map<String, dynamic> json) {
   final PlayLineDataList playLineDataList = PlayLineDataList();
   final String? videoLineId = jsonConvert.convert<String>(
-    json['video_line_id'],
-  );
+      json['video_line_id']);
   if (videoLineId != null) {
     playLineDataList.videoLineId = videoLineId;
   }
@@ -94,8 +94,7 @@ PlayLineDataList $PlayLineDataListFromJson(Map<String, dynamic> json) {
     playLineDataList.file = file;
   }
   final String? chargingMode = jsonConvert.convert<String>(
-    json['charging_mode'],
-  );
+      json['charging_mode']);
   if (chargingMode != null) {
     playLineDataList.chargingMode = chargingMode;
   }
@@ -228,10 +227,8 @@ extension PlayLineDataListExtension on PlayLineDataList {
 }
 
 PlayLineDataPagination $PlayLineDataPaginationFromJson(
-  Map<String, dynamic> json,
-) {
-  final PlayLineDataPagination playLineDataPagination =
-      PlayLineDataPagination();
+    Map<String, dynamic> json) {
+  final PlayLineDataPagination playLineDataPagination = PlayLineDataPagination();
   final int? page = jsonConvert.convert<int>(json['page']);
   if (page != null) {
     playLineDataPagination.page = page;
@@ -248,8 +245,7 @@ PlayLineDataPagination $PlayLineDataPaginationFromJson(
 }
 
 Map<String, dynamic> $PlayLineDataPaginationToJson(
-  PlayLineDataPagination entity,
-) {
+    PlayLineDataPagination entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['page'] = entity.page;
   data['size'] = entity.size;
@@ -258,7 +254,11 @@ Map<String, dynamic> $PlayLineDataPaginationToJson(
 }
 
 extension PlayLineDataPaginationExtension on PlayLineDataPagination {
-  PlayLineDataPagination copyWith({int? page, int? size, int? total}) {
+  PlayLineDataPagination copyWith({
+    int? page,
+    int? size,
+    int? total,
+  }) {
     return PlayLineDataPagination()
       ..page = page ?? this.page
       ..size = size ?? this.size

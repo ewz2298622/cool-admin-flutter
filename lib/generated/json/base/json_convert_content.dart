@@ -6,14 +6,21 @@
 import 'package:flutter/material.dart' show debugPrint;
 import 'package:flutter_app/entity/album_entity.dart';
 import 'package:flutter_app/entity/album_video_list_entity.dart';
+import 'package:flutter_app/entity/captcha_entity.dart';
+import 'package:flutter_app/entity/dict_data_entity.dart';
+import 'package:flutter_app/entity/dict_info_list_entity.dart';
+import 'package:flutter_app/entity/login_entity.dart';
 import 'package:flutter_app/entity/play_line_entity.dart';
 import 'package:flutter_app/entity/swiper_entity.dart';
+import 'package:flutter_app/entity/user_info_entity.dart';
 import 'package:flutter_app/entity/video_album_entity.dart';
 import 'package:flutter_app/entity/video_category_entity.dart';
 import 'package:flutter_app/entity/video_detail_entity.dart';
 import 'package:flutter_app/entity/video_line_entity.dart';
+import 'package:flutter_app/entity/video_live_entity.dart';
 import 'package:flutter_app/entity/video_page_entity.dart';
 import 'package:flutter_app/entity/video_sort_entity.dart';
+import 'package:flutter_app/entity/views_entity.dart';
 
 JsonConvert jsonConvert = JsonConvert();
 
@@ -225,6 +232,77 @@ class JsonConvert {
               .toList()
           as M;
     }
+    if (<CaptchaEntity>[] is M) {
+      return data
+              .map<CaptchaEntity>(
+                (Map<String, dynamic> e) => CaptchaEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<CaptchaData>[] is M) {
+      return data
+              .map<CaptchaData>(
+                (Map<String, dynamic> e) => CaptchaData.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<DictDataEntity>[] is M) {
+      return data
+              .map<DictDataEntity>(
+                (Map<String, dynamic> e) => DictDataEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<DictDataData>[] is M) {
+      return data
+              .map<DictDataData>(
+                (Map<String, dynamic> e) => DictDataData.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<DictDataDataVideoCategory>[] is M) {
+      return data
+              .map<DictDataDataVideoCategory>(
+                (Map<String, dynamic> e) =>
+                    DictDataDataVideoCategory.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<DictInfoListEntity>[] is M) {
+      return data
+              .map<DictInfoListEntity>(
+                (Map<String, dynamic> e) => DictInfoListEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<DictInfoListData>[] is M) {
+      return data
+              .map<DictInfoListData>(
+                (Map<String, dynamic> e) => DictInfoListData.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<LoginEntity>[] is M) {
+      return data
+              .map<LoginEntity>(
+                (Map<String, dynamic> e) => LoginEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<LoginData>[] is M) {
+      return data
+              .map<LoginData>((Map<String, dynamic> e) => LoginData.fromJson(e))
+              .toList()
+          as M;
+    }
     if (<PlayLineEntity>[] is M) {
       return data
               .map<PlayLineEntity>(
@@ -285,6 +363,22 @@ class JsonConvert {
       return data
               .map<SwiperDataPagination>(
                 (Map<String, dynamic> e) => SwiperDataPagination.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<UserInfoEntity>[] is M) {
+      return data
+              .map<UserInfoEntity>(
+                (Map<String, dynamic> e) => UserInfoEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<UserInfoData>[] is M) {
+      return data
+              .map<UserInfoData>(
+                (Map<String, dynamic> e) => UserInfoData.fromJson(e),
               )
               .toList()
           as M;
@@ -386,6 +480,38 @@ class JsonConvert {
               .toList()
           as M;
     }
+    if (<VideoLiveEntity>[] is M) {
+      return data
+              .map<VideoLiveEntity>(
+                (Map<String, dynamic> e) => VideoLiveEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<VideoLiveData>[] is M) {
+      return data
+              .map<VideoLiveData>(
+                (Map<String, dynamic> e) => VideoLiveData.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<VideoLiveDataList>[] is M) {
+      return data
+              .map<VideoLiveDataList>(
+                (Map<String, dynamic> e) => VideoLiveDataList.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<VideoLiveDataPagination>[] is M) {
+      return data
+              .map<VideoLiveDataPagination>(
+                (Map<String, dynamic> e) => VideoLiveDataPagination.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
     if (<VideoPageEntity>[] is M) {
       return data
               .map<VideoPageEntity>(
@@ -450,6 +576,36 @@ class JsonConvert {
               .toList()
           as M;
     }
+    if (<ViewsEntity>[] is M) {
+      return data
+              .map<ViewsEntity>(
+                (Map<String, dynamic> e) => ViewsEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<ViewsData>[] is M) {
+      return data
+              .map<ViewsData>((Map<String, dynamic> e) => ViewsData.fromJson(e))
+              .toList()
+          as M;
+    }
+    if (<ViewsDataList>[] is M) {
+      return data
+              .map<ViewsDataList>(
+                (Map<String, dynamic> e) => ViewsDataList.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<ViewsDataPagination>[] is M) {
+      return data
+              .map<ViewsDataPagination>(
+                (Map<String, dynamic> e) => ViewsDataPagination.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
 
     debugPrint("$M not found");
 
@@ -481,6 +637,15 @@ class JsonConvertClassCollection {
     (AlbumVideoListDataList).toString(): AlbumVideoListDataList.fromJson,
     (AlbumVideoListDataPagination).toString():
         AlbumVideoListDataPagination.fromJson,
+    (CaptchaEntity).toString(): CaptchaEntity.fromJson,
+    (CaptchaData).toString(): CaptchaData.fromJson,
+    (DictDataEntity).toString(): DictDataEntity.fromJson,
+    (DictDataData).toString(): DictDataData.fromJson,
+    (DictDataDataVideoCategory).toString(): DictDataDataVideoCategory.fromJson,
+    (DictInfoListEntity).toString(): DictInfoListEntity.fromJson,
+    (DictInfoListData).toString(): DictInfoListData.fromJson,
+    (LoginEntity).toString(): LoginEntity.fromJson,
+    (LoginData).toString(): LoginData.fromJson,
     (PlayLineEntity).toString(): PlayLineEntity.fromJson,
     (PlayLineData).toString(): PlayLineData.fromJson,
     (PlayLineDataList).toString(): PlayLineDataList.fromJson,
@@ -489,6 +654,8 @@ class JsonConvertClassCollection {
     (SwiperData).toString(): SwiperData.fromJson,
     (SwiperDataList).toString(): SwiperDataList.fromJson,
     (SwiperDataPagination).toString(): SwiperDataPagination.fromJson,
+    (UserInfoEntity).toString(): UserInfoEntity.fromJson,
+    (UserInfoData).toString(): UserInfoData.fromJson,
     (VideoAlbumEntity).toString(): VideoAlbumEntity.fromJson,
     (VideoAlbumData).toString(): VideoAlbumData.fromJson,
     (VideoCategoryEntity).toString(): VideoCategoryEntity.fromJson,
@@ -502,6 +669,10 @@ class JsonConvertClassCollection {
     (VideoLineData).toString(): VideoLineData.fromJson,
     (VideoLineDataList).toString(): VideoLineDataList.fromJson,
     (VideoLineDataPagination).toString(): VideoLineDataPagination.fromJson,
+    (VideoLiveEntity).toString(): VideoLiveEntity.fromJson,
+    (VideoLiveData).toString(): VideoLiveData.fromJson,
+    (VideoLiveDataList).toString(): VideoLiveDataList.fromJson,
+    (VideoLiveDataPagination).toString(): VideoLiveDataPagination.fromJson,
     (VideoPageEntity).toString(): VideoPageEntity.fromJson,
     (VideoPageData).toString(): VideoPageData.fromJson,
     (VideoPageDataList).toString(): VideoPageDataList.fromJson,
@@ -510,6 +681,10 @@ class JsonConvertClassCollection {
     (VideoSortData).toString(): VideoSortData.fromJson,
     (VideoSortDataList).toString(): VideoSortDataList.fromJson,
     (VideoSortDataPagination).toString(): VideoSortDataPagination.fromJson,
+    (ViewsEntity).toString(): ViewsEntity.fromJson,
+    (ViewsData).toString(): ViewsData.fromJson,
+    (ViewsDataList).toString(): ViewsDataList.fromJson,
+    (ViewsDataPagination).toString(): ViewsDataPagination.fromJson,
   };
 
   bool containsKey(String type) {
