@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
+import '../../components/loading.dart';
+import '../../components/sectionWithMore.dart';
 import '../../components/video_view.dart';
 import '../../db/entity/UserEntity.dart';
 import '../../db/manager/UserDatabaseHelper.dart';
 import '../../entity/video_page_entity.dart';
 import '../../entity/views_entity.dart';
 import '../../style/layout.dart';
+import '../../utils/user.dart';
 
 class My extends StatefulWidget {
   const My({super.key});
@@ -53,7 +56,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
     try {
       viewsData =
           (await Api.getViews({
-                "createUserId": user?.id,
+                "createUserId": user?.userId,
                 "type": 19,
               })).data?.list
               as List<ViewsDataList>;
@@ -83,14 +86,118 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
   }
 
   Widget _buildRecommendations() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 10,
-      children: [
-        Text("猜你喜欢", style: TextStyle(fontSize: 14)),
-        VideoViews(videoPageData: viewsData),
-      ],
-    );
+    if (viewsData.isEmpty) {
+      return Container();
+    } else {
+      return Container(
+        //设置背景色
+        padding: EdgeInsets.only(right: 5, left: 5, top: 5, bottom: 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          //设置圆角
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        // child: Column(
+        //   crossAxisAlignment: CrossAxisAlignment.start,
+        //   spacing: 10,
+        //   children: [
+        //     Row(
+        //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //       crossAxisAlignment: CrossAxisAlignment.center,
+        //       children: [
+        //         Text(
+        //           "浏览记录",
+        //           style: const TextStyle(
+        //             fontSize: 16,
+        //             color: Color.fromRGBO(1, 1, 1, 1),
+        //             fontWeight: FontWeight.w600,
+        //           ),
+        //         ),
+        //         GestureDetector(
+        //           onTap: () {
+        //             Navigator.pushNamed(context, "/views");
+        //           },
+        //           child: Row(
+        //             children: [
+        //               Text(
+        //                 "更多",
+        //                 style: TextStyle(
+        //                   fontSize: 12,
+        //                   color: Color.fromRGBO(162, 162, 162, 1),
+        //                 ),
+        //               ),
+        //               Icon(
+        //                 Icons.arrow_forward_ios,
+        //                 size: 14,
+        //                 color: Color.fromRGBO(203, 203, 203, 1),
+        //               ),
+        //             ],
+        //           ),
+        //         ),
+        //       ],
+        //     ),
+        //     VideoViews(videoPageData: viewsData),
+        //   ],
+        // ),
+        child: Column(
+          spacing: 10,
+          children: [
+            SectionWithMore(
+              title: "浏览记录", // 传入标题
+              onMorePressed: () {
+                Navigator.pushNamed(context, "/views"); // 传入更多点击事件
+              },
+            ),
+            VideoViews(videoPageData: viewsData),
+          ],
+        ),
+      );
+    }
+  }
+
+  Widget _buildLogin() {
+    if (user == null) {
+      return GestureDetector(
+        onTap: () {
+          User.isUserLoginView(context);
+        },
+        child: Text(
+          "点击登录",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      );
+    } else {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            verticalDirection: VerticalDirection.down,
+            spacing: 10,
+            children: [
+              Text(
+                user?.phone ?? "",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              TDImage(
+                width: 30,
+                height: 30,
+                assetUrl: "assets/images/member.png",
+              ),
+            ],
+          ),
+
+          Text(
+            "尊贵会员",
+            style: TextStyle(
+              fontSize: 14,
+              color: Color.fromRGBO(161, 151, 141, 1),
+            ),
+          ),
+        ],
+      );
+    }
   }
 
   Widget _buildHead() {
@@ -103,20 +210,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
           avatarUrl: user?.avatarUrl ?? "",
         ),
         SizedBox(height: 16.0),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              user?.nickName ?? "",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            //进度条组件 Slider
-            Text(
-              user?.phone.toString() ?? "",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
+        Padding(padding: EdgeInsets.only(left: 15), child: _buildLogin()),
 
         // 用户姓名
         SizedBox(height: 8.0),
@@ -229,31 +323,40 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
   }
 
   Widget _buildModelList() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "常用功能",
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
-        ),
-        GridView(
-          padding: EdgeInsets.zero,
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
-            crossAxisSpacing: 10,
+    return Container(
+      //设置背景色
+      padding: EdgeInsets.only(right: 5, left: 5, top: 5),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        //设置圆角
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "常用功能",
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
           ),
-          children: [
-            _buildModelItem("assets/images/opinion.png", "系统公告"),
-            _buildModelItem("assets/images/collect.png", "我的收藏"),
-            _buildModelItem("assets/images/share.png", "分享好友"),
-            _buildModelItem("assets/images/customersService.png", "在线客服"),
-            _buildModelItem("assets/images/install.png", "设置"),
-            _buildModelItem("assets/images/about.png", "关于"),
-          ],
-        ),
-      ],
+          GridView(
+            padding: EdgeInsets.zero,
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              crossAxisSpacing: 10,
+            ),
+            children: [
+              _buildModelItem("assets/images/opinion.png", "系统公告"),
+              _buildModelItem("assets/images/collect.png", "我的收藏"),
+              _buildModelItem("assets/images/share.png", "分享好友"),
+              _buildModelItem("assets/images/customersService.png", "在线客服"),
+              _buildModelItem("assets/images/install.png", "设置"),
+              _buildModelItem("assets/images/about.png", "关于"),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -287,6 +390,11 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
         break;
       case "分享好友":
         // 处理分享好友点击事件
+        TDToast.showIconText(
+          '复制链接成功',
+          icon: TDIcons.check_circle,
+          context: context,
+        );
         break;
       case "在线客服":
         // 处理在线客服点击事件
@@ -305,7 +413,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
       future: _futureBuilderFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return PageLoading();
         } else if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         } else if (snapshot.hasData) {
@@ -338,6 +446,10 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
     );
   }
 
+  //页面显示的回调
+  void _handleContentLoaded() {
+    // 在这里执行页面显示的回调逻辑
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

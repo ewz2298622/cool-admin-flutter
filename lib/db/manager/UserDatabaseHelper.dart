@@ -81,6 +81,11 @@ class UserDatabaseHelper {
         avatarUrl: row.columnAt(4),
         nickName: row.columnAt(5),
         phone: row.columnAt(6),
+        gender: row.columnAt(7),
+        status: row.columnAt(8),
+        loginType: row.columnAt(9),
+        password: row.columnAt(10),
+        userId: row.columnAt(11),
       );
     });
   }
@@ -107,6 +112,7 @@ class UserDatabaseHelper {
       status: result.first.columnAt(8),
       loginType: result.first.columnAt(9),
       password: result.first.columnAt(10),
+      userId: result.first.columnAt(11),
     );
   }
 }

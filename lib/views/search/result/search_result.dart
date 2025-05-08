@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../../api/api.dart';
+import '../../../components/loading.dart';
 import '../../../entity/video_page_entity.dart';
 import '../../video_detail/detail.dart';
 
@@ -19,7 +20,7 @@ class SearchResultState extends State<SearchResult>
   // 提取常量
   static const _gradientColors = [
     Color.fromRGBO(255, 218, 112, 1),
-    Color.fromRGBO(255, 255, 255, 1)
+    Color.fromRGBO(255, 255, 255, 1),
   ];
   static const _gradientStops = [0.2, 0.8];
   static const _hdTagTextStyle = TextStyle(
@@ -135,7 +136,7 @@ class SearchResultState extends State<SearchResult>
       builder: (context, snapshot) {
         debugPrint('snapshot: ${snapshot.hasData}');
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return PageLoading();
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}'); // 显示错误信息
         } else if (snapshot.hasData) {
@@ -148,8 +149,6 @@ class SearchResultState extends State<SearchResult>
                 Container(
                   padding: const EdgeInsets.only(top: 10),
                   width: double.infinity,
-                  //白色圆角背景
-                  decoration: BoxDecoration(color: Colors.white),
                   child: Column(children: [_buildAlbumItems()]),
                 ),
               ],
@@ -175,7 +174,7 @@ class SearchResultState extends State<SearchResult>
         return GestureDetector(
           onTap: () => {_buildvideo_onClick(videoPageData[i].id ?? 0)},
           child: Container(
-            height: 185,
+            height: 140,
             padding: const EdgeInsets.only(left: 4, right: 4, bottom: 15),
             child: Row(
               children: [
@@ -183,48 +182,53 @@ class SearchResultState extends State<SearchResult>
                   children: [
                     TDImage(
                       fit: BoxFit.cover,
-                      width: 120,
-                      height: 180,
-                      imgUrl: videoPageData?[i].cycleImg ?? "",
+                      width: 100,
+                      height: 140,
+                      imgUrl: videoPageData[i].surfacePlot ?? "",
                       errorWidget: const TDImage(
                         width: 150,
                         assetUrl: 'assets/images/loading.gif',
                       ),
                     ),
-                    _buildVideoItemOverlay(videoPageData?[i]),
+                    _buildVideoItemOverlay(videoPageData[i]),
                   ],
                 ),
                 SizedBox(
-                  width: 220, // 调整宽度以确保有足够的空间
-                  height: 180,
+                  width: 280, // 调整宽度以确保有足够的空间
+                  height: 140,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start, // 左对齐
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Text(
-                        videoPageData?[i].title ?? "",
+                        videoPageData[i].title ?? "",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w500),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        "${videoPageData?[i].year ?? ''} / ${videoPageData?[i].actors}",
-                        maxLines: 3, // 限制最多显示 3 行
+                        "${videoPageData[i].year ?? ''} / ${videoPageData[i].actors}",
+                        maxLines: 2, // 限制最多显示 3 行
                         overflow: TextOverflow.ellipsis, // 超出部分用省略号表示
                         style: const TextStyle(
+                          color: Color.fromRGBO(153, 153, 153, 1),
                           fontSize: 12, // 调整字体大小
                           fontWeight: FontWeight.w400,
                         ),
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        videoPageData?[i].introduce ?? "",
-                        maxLines: 3, // 限制最多显示 3 行
+                        videoPageData[i].introduce ?? "",
+                        maxLines: 2, // 限制最多显示 3 行
                         overflow: TextOverflow.ellipsis, // 超出部分用省略号表示
                         style: const TextStyle(
                           fontSize: 12, // 调整字体大小
                           fontWeight: FontWeight.w400,
+                          color: Color.fromRGBO(153, 153, 153, 1),
                         ),
                       ),
                     ],
@@ -240,7 +244,7 @@ class SearchResultState extends State<SearchResult>
 
   Widget _buildVideoItemOverlay(dynamic item) {
     return Container(
-      width: 130,
+      width: 110,
       height: 175,
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
       child: Column(
@@ -252,6 +256,9 @@ class SearchResultState extends State<SearchResult>
   }
 
   Widget _buildVideoItemNote(dynamic item) {
+    if (item?.note == null) {
+      return Container();
+    }
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -278,7 +285,7 @@ class SearchResultState extends State<SearchResult>
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Container(
-          margin: const EdgeInsets.only(right: 15, top: 5),
+          margin: const EdgeInsets.only(right: 12, top: 5),
           padding: const EdgeInsets.only(top: 2, bottom: 2, left: 4, right: 4),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
@@ -291,10 +298,7 @@ class SearchResultState extends State<SearchResult>
               ],
             ),
           ),
-          child: const Text(
-            "高清",
-            style: _hdTagTextStyle,
-          ),
+          child: const Text("高清", style: _hdTagTextStyle),
         ),
       ],
     );
@@ -303,10 +307,7 @@ class SearchResultState extends State<SearchResult>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 20,
-        backgroundColor: _gradientColors[0],
-      ),
+      appBar: AppBar(toolbarHeight: 20, backgroundColor: _gradientColors[0]),
       resizeToAvoidBottomInset: false,
       body: Stack(
         fit: StackFit.expand,

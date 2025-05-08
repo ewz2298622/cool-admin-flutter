@@ -8,6 +8,8 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
 import '../../components/auto_height_page_view/auto_height_page_view.dart';
+import '../../components/loading.dart';
+import '../../components/sectionWithMore.dart';
 import '../../entity/album_entity.dart';
 import '../../entity/dict_info_list_entity.dart';
 import '../../entity/swiper_entity.dart';
@@ -40,21 +42,6 @@ class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
 
   Map<int, List<SwiperDataList>> swiperMap = {};
   Map<int, List<AlbumDataList>> albumMap = {};
-
-  Future<void> getSwiperPage() async {
-    try {
-      swiperData =
-          (await Api.getSwiperPage({
-                "page": 1,
-                "type": 1,
-                "status": 1,
-                "size": 5,
-              })).data
-              as SwiperData;
-    } catch (e) {
-      // 捕获并处理异常
-    }
-  }
 
   Future<void> getDictInfoPages() async {
     try {
@@ -193,7 +180,7 @@ class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
       builder: (context, snapshot) {
         debugPrint('snapshot: ${snapshot.hasData}');
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return PageLoading();
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}'); // 显示错误信息
         } else if (snapshot.hasData) {
@@ -325,37 +312,16 @@ class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
   Widget _buildAlbumHeader(AlbumDataList album) {
     return Container(
       margin: const EdgeInsets.only(top: 16, bottom: 16),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            album.title ?? "",
-            style: const TextStyle(
-              fontSize: 16,
-              color: Color.fromRGBO(1, 1, 1, 1),
-              fontWeight: FontWeight.w600,
+      child: SectionWithMore(
+        title: album.title ?? "", // 传入标题
+        onMorePressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => VideoAlbum(id: album.id ?? 0),
             ),
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => VideoAlbum(id: album.id ?? 0),
-                ),
-              );
-            },
-            child: const Text(
-              '更多',
-              style: TextStyle(
-                fontSize: 14,
-                color: Color.fromRGBO(252, 119, 66, 1),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -463,6 +429,9 @@ class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
   }
 
   Widget _buildAlbumItemNote(dynamic item) {
+    if (item?.note == null) {
+      return Container();
+    }
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
+import '../../components/loading.dart';
 import '../../components/video_three.dart';
 import '../../entity/album_video_list_entity.dart';
 import '../../entity/video_album_entity.dart';
@@ -84,7 +85,7 @@ class VideoAlbumState extends State<VideoAlbum>
       future: _futureBuilderFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return PageLoading();
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else if (snapshot.hasData) {

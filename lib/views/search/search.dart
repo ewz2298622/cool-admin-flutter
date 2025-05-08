@@ -3,6 +3,8 @@ import 'package:flutter_app/views/search/result/search_result.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
+import '../../components/loading.dart';
+import '../../components/sectionWithMore.dart';
 import '../../components/video_scroll.dart';
 import '../../components/video_three.dart';
 import '../../db/entity/SearchHistoryEntity.dart';
@@ -129,7 +131,7 @@ class VideoSearchState extends State<VideoSearch>
               ),
             );
           default:
-            return const Center(child: CircularProgressIndicator());
+            return PageLoading();
         }
       },
     );
@@ -138,20 +140,22 @@ class VideoSearchState extends State<VideoSearch>
   Widget _buildRecommendations() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 10,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(bottom: 12),
-          child: Text("猜你想搜", style: TextStyle(fontSize: 15)),
+        SectionWithMore(title: '猜你想搜'),
+        Padding(
+          padding: EdgeInsets.only(bottom: 15),
+          child: HorizontalVideoList(videoPageData: videoPageData),
         ),
-        HorizontalVideoList(videoPageData: videoPageData),
       ],
     );
   }
 
   Widget _buildAlbumItems() {
     return Column(
+      spacing: 10,
       children: [
-        Row(children: [Text("视频热搜榜")]),
+        SectionWithMore(title: '视频热搜榜'),
         VideoThree(videoPageData: videoPageData),
       ],
     );

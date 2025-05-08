@@ -26,7 +26,7 @@ class VideoThree extends StatelessWidget {
                     fit: BoxFit.cover,
                     width: 120,
                     height: 180,
-                    imgUrl: videoPageData[i].cycleImg ?? "",
+                    imgUrl: videoPageData[i].surfacePlot ?? "",
                     errorWidget: const TDImage(
                       fit: BoxFit.fill,
                       width: 120,
@@ -74,6 +74,9 @@ class VideoThree extends StatelessWidget {
   }
 
   Widget _buildVideoItemNote(dynamic item) {
+    if (item.note == null) {
+      return Container();
+    }
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [

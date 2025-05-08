@@ -10,6 +10,7 @@ import 'package:flutter_app/entity/captcha_entity.dart';
 import 'package:flutter_app/entity/dict_data_entity.dart';
 import 'package:flutter_app/entity/dict_info_list_entity.dart';
 import 'package:flutter_app/entity/login_entity.dart';
+import 'package:flutter_app/entity/notice_info_entity.dart';
 import 'package:flutter_app/entity/play_line_entity.dart';
 import 'package:flutter_app/entity/swiper_entity.dart';
 import 'package:flutter_app/entity/user_info_entity.dart';
@@ -300,6 +301,39 @@ class JsonConvert {
     if (<LoginData>[] is M) {
       return data
               .map<LoginData>((Map<String, dynamic> e) => LoginData.fromJson(e))
+              .toList()
+          as M;
+    }
+    if (<NoticeInfoEntity>[] is M) {
+      return data
+              .map<NoticeInfoEntity>(
+                (Map<String, dynamic> e) => NoticeInfoEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<NoticeInfoData>[] is M) {
+      return data
+              .map<NoticeInfoData>(
+                (Map<String, dynamic> e) => NoticeInfoData.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<NoticeInfoDataList>[] is M) {
+      return data
+              .map<NoticeInfoDataList>(
+                (Map<String, dynamic> e) => NoticeInfoDataList.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<NoticeInfoDataPagination>[] is M) {
+      return data
+              .map<NoticeInfoDataPagination>(
+                (Map<String, dynamic> e) =>
+                    NoticeInfoDataPagination.fromJson(e),
+              )
               .toList()
           as M;
     }
@@ -646,6 +680,10 @@ class JsonConvertClassCollection {
     (DictInfoListData).toString(): DictInfoListData.fromJson,
     (LoginEntity).toString(): LoginEntity.fromJson,
     (LoginData).toString(): LoginData.fromJson,
+    (NoticeInfoEntity).toString(): NoticeInfoEntity.fromJson,
+    (NoticeInfoData).toString(): NoticeInfoData.fromJson,
+    (NoticeInfoDataList).toString(): NoticeInfoDataList.fromJson,
+    (NoticeInfoDataPagination).toString(): NoticeInfoDataPagination.fromJson,
     (PlayLineEntity).toString(): PlayLineEntity.fromJson,
     (PlayLineData).toString(): PlayLineData.fromJson,
     (PlayLineDataList).toString(): PlayLineDataList.fromJson,

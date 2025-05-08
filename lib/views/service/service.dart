@@ -3,6 +3,7 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
 import '../../components/auto_height_page_view/auto_height_page_view.dart';
+import '../../components/loading.dart';
 import '../../entity/dict_info_list_entity.dart';
 import '../../entity/video_category_entity.dart';
 import '../../entity/video_live_entity.dart';
@@ -340,7 +341,7 @@ class VideoServiceState extends State<VideoService>
       builder: (context, snapshot) {
         debugPrint('snapshot: ${snapshot.hasData}');
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return PageLoading();
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}'); // 显示错误信息
         } else if (snapshot.hasData) {

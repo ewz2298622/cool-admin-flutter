@@ -3,6 +3,7 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
 import '../../components/auto_height_page_view/auto_height_page_view.dart';
+import '../../components/loading.dart';
 import '../../components/video_one.dart';
 import '../../entity/video_sort_entity.dart';
 import '../../style/layout.dart';
@@ -144,7 +145,7 @@ class VideoRankingState extends State<VideoRanking>
       future: _futureBuilderFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return PageLoading();
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else if (snapshot.hasData) {

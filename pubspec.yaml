@@ -49,6 +49,7 @@ dependencies:
   flustars: ^2.0.1
   sp_util: ^2.0.3
   dlna_dart: ^0.0.8
+  flutter_html: ^3.0.0
 
 dev_dependencies:
   flutter_test:

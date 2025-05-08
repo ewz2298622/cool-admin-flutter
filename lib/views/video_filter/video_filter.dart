@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
+import '../../components/loading.dart';
 import '../../components/video_three.dart';
 import '../../entity/dict_info_list_entity.dart';
 import '../../entity/video_category_entity.dart';
@@ -211,7 +212,7 @@ class VideoFilterState extends State<VideoFilter>
       valueListenable: categoryCurrent,
       builder: (context, key, child) {
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: EdgeInsets.only(left: 8, right: 8, top: 0, bottom: 0),
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -253,7 +254,7 @@ class VideoFilterState extends State<VideoFilter>
       valueListenable: regionCurrent,
       builder: (context, key, child) {
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: EdgeInsets.only(left: 8, right: 8, top: 0, bottom: 0),
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -295,7 +296,7 @@ class VideoFilterState extends State<VideoFilter>
       valueListenable: yearCurrent,
       builder: (context, key, child) {
         return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
+          padding: EdgeInsets.only(left: 8, right: 8, top: 0, bottom: 0),
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -429,7 +430,7 @@ class VideoFilterState extends State<VideoFilter>
       builder: (context, snapshot) {
         debugPrint('snapshot: ${snapshot.hasData}');
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return PageLoading();
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}'); // 显示错误信息
         } else if (snapshot.hasData) {
@@ -447,7 +448,10 @@ class VideoFilterState extends State<VideoFilter>
                   _buildCategoryRow('全部影视', categoryDictList),
                   _buildAreaRow('全部地区', areaDictList),
                   _buildYearRow("全部年份", years),
-                  VideoThree(videoPageData: videoPageData),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: VideoThree(videoPageData: videoPageData),
+                  ),
                 ],
               ),
             ),

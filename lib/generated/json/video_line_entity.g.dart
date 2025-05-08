@@ -1,5 +1,5 @@
-import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 import 'package:flutter_app/entity/video_line_entity.dart';
+import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 
 VideoLineEntity $VideoLineEntityFromJson(Map<String, dynamic> json) {
   final VideoLineEntity videoLineEntity = VideoLineEntity();
@@ -27,11 +27,7 @@ Map<String, dynamic> $VideoLineEntityToJson(VideoLineEntity entity) {
 }
 
 extension VideoLineEntityExtension on VideoLineEntity {
-  VideoLineEntity copyWith({
-    int? code,
-    String? message,
-    VideoLineData? data,
-  }) {
+  VideoLineEntity copyWith({int? code, String? message, VideoLineData? data}) {
     return VideoLineEntity()
       ..code = code ?? this.code
       ..message = message ?? this.message
@@ -41,15 +37,18 @@ extension VideoLineEntityExtension on VideoLineEntity {
 
 VideoLineData $VideoLineDataFromJson(Map<String, dynamic> json) {
   final VideoLineData videoLineData = VideoLineData();
-  final List<VideoLineDataList>? list = (json['list'] as List<dynamic>?)
-      ?.map(
-          (e) => jsonConvert.convert<VideoLineDataList>(e) as VideoLineDataList)
-      .toList();
+  final List<VideoLineDataList>? list =
+      (json['list'] as List<dynamic>?)
+          ?.map(
+            (e) =>
+                jsonConvert.convert<VideoLineDataList>(e) as VideoLineDataList,
+          )
+          .toList();
   if (list != null) {
     videoLineData.list = list;
   }
-  final VideoLineDataPagination? pagination = jsonConvert.convert<
-      VideoLineDataPagination>(json['pagination']);
+  final VideoLineDataPagination? pagination = jsonConvert
+      .convert<VideoLineDataPagination>(json['pagination']);
   if (pagination != null) {
     videoLineData.pagination = pagination;
   }
@@ -76,29 +75,9 @@ extension VideoLineDataExtension on VideoLineData {
 
 VideoLineDataList $VideoLineDataListFromJson(Map<String, dynamic> json) {
   final VideoLineDataList videoLineDataList = VideoLineDataList();
-  final String? videoId = jsonConvert.convert<String>(json['video_id']);
-  if (videoId != null) {
-    videoLineDataList.videoId = videoId;
-  }
-  final String? name = jsonConvert.convert<String>(json['name']);
-  if (name != null) {
-    videoLineDataList.name = name;
-  }
-  final String? createAt = jsonConvert.convert<String>(json['create_at']);
-  if (createAt != null) {
-    videoLineDataList.createAt = createAt;
-  }
-  final String? updateAt = jsonConvert.convert<String>(json['update_at']);
-  if (updateAt != null) {
-    videoLineDataList.updateAt = updateAt;
-  }
-  final int? siteId = jsonConvert.convert<int>(json['site_id']);
-  if (siteId != null) {
-    videoLineDataList.siteId = siteId;
-  }
-  final String? tag = jsonConvert.convert<String>(json['tag']);
-  if (tag != null) {
-    videoLineDataList.tag = tag;
+  final int? id = jsonConvert.convert<int>(json['id']);
+  if (id != null) {
+    videoLineDataList.id = id;
   }
   final String? createTime = jsonConvert.convert<String>(json['createTime']);
   if (createTime != null) {
@@ -108,6 +87,10 @@ VideoLineDataList $VideoLineDataListFromJson(Map<String, dynamic> json) {
   if (updateTime != null) {
     videoLineDataList.updateTime = updateTime;
   }
+  final dynamic tenantId = json['tenantId'];
+  if (tenantId != null) {
+    videoLineDataList.tenantId = tenantId;
+  }
   final dynamic createUserId = json['createUserId'];
   if (createUserId != null) {
     videoLineDataList.createUserId = createUserId;
@@ -116,9 +99,15 @@ VideoLineDataList $VideoLineDataListFromJson(Map<String, dynamic> json) {
   if (updateUserId != null) {
     videoLineDataList.updateUserId = updateUserId;
   }
-  final int? id = jsonConvert.convert<int>(json['id']);
-  if (id != null) {
-    videoLineDataList.id = id;
+  final String? videoId = jsonConvert.convert<String>(json['video_id']);
+  if (videoId != null) {
+    videoLineDataList.videoId = videoId;
+  }
+  final String? collectionName = jsonConvert.convert<String>(
+    json['collection_name'],
+  );
+  if (collectionName != null) {
+    videoLineDataList.collectionName = collectionName;
   }
   final int? playerId = jsonConvert.convert<int>(json['player_id']);
   if (playerId != null) {
@@ -128,63 +117,77 @@ VideoLineDataList $VideoLineDataListFromJson(Map<String, dynamic> json) {
   if (sort != null) {
     videoLineDataList.sort = sort;
   }
+  final String? tag = jsonConvert.convert<String>(json['tag']);
+  if (tag != null) {
+    videoLineDataList.tag = tag;
+  }
+  final int? collectionId = jsonConvert.convert<int>(json['collection_id']);
+  if (collectionId != null) {
+    videoLineDataList.collectionId = collectionId;
+  }
+  final String? videoName = jsonConvert.convert<String>(json['video_name']);
+  if (videoName != null) {
+    videoLineDataList.videoName = videoName;
+  }
   return videoLineDataList;
 }
 
 Map<String, dynamic> $VideoLineDataListToJson(VideoLineDataList entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
-  data['video_id'] = entity.videoId;
-  data['name'] = entity.name;
-  data['create_at'] = entity.createAt;
-  data['update_at'] = entity.updateAt;
-  data['site_id'] = entity.siteId;
-  data['tag'] = entity.tag;
+  data['id'] = entity.id;
   data['createTime'] = entity.createTime;
   data['updateTime'] = entity.updateTime;
+  data['tenantId'] = entity.tenantId;
   data['createUserId'] = entity.createUserId;
   data['updateUserId'] = entity.updateUserId;
-  data['id'] = entity.id;
+  data['video_id'] = entity.videoId;
+  data['collection_name'] = entity.collectionName;
   data['player_id'] = entity.playerId;
   data['sort'] = entity.sort;
+  data['tag'] = entity.tag;
+  data['collection_id'] = entity.collectionId;
+  data['video_name'] = entity.videoName;
   return data;
 }
 
 extension VideoLineDataListExtension on VideoLineDataList {
   VideoLineDataList copyWith({
-    String? videoId,
-    String? name,
-    String? createAt,
-    String? updateAt,
-    int? siteId,
-    String? tag,
+    int? id,
     String? createTime,
     String? updateTime,
+    dynamic tenantId,
     dynamic createUserId,
     dynamic updateUserId,
-    int? id,
+    String? videoId,
+    String? collectionName,
     int? playerId,
     int? sort,
+    String? tag,
+    int? collectionId,
+    String? videoName,
   }) {
     return VideoLineDataList()
-      ..videoId = videoId ?? this.videoId
-      ..name = name ?? this.name
-      ..createAt = createAt ?? this.createAt
-      ..updateAt = updateAt ?? this.updateAt
-      ..siteId = siteId ?? this.siteId
-      ..tag = tag ?? this.tag
+      ..id = id ?? this.id
       ..createTime = createTime ?? this.createTime
       ..updateTime = updateTime ?? this.updateTime
+      ..tenantId = tenantId ?? this.tenantId
       ..createUserId = createUserId ?? this.createUserId
       ..updateUserId = updateUserId ?? this.updateUserId
-      ..id = id ?? this.id
+      ..videoId = videoId ?? this.videoId
+      ..collectionName = collectionName ?? this.collectionName
       ..playerId = playerId ?? this.playerId
-      ..sort = sort ?? this.sort;
+      ..sort = sort ?? this.sort
+      ..tag = tag ?? this.tag
+      ..collectionId = collectionId ?? this.collectionId
+      ..videoName = videoName ?? this.videoName;
   }
 }
 
 VideoLineDataPagination $VideoLineDataPaginationFromJson(
-    Map<String, dynamic> json) {
-  final VideoLineDataPagination videoLineDataPagination = VideoLineDataPagination();
+  Map<String, dynamic> json,
+) {
+  final VideoLineDataPagination videoLineDataPagination =
+      VideoLineDataPagination();
   final int? page = jsonConvert.convert<int>(json['page']);
   if (page != null) {
     videoLineDataPagination.page = page;
@@ -201,7 +204,8 @@ VideoLineDataPagination $VideoLineDataPaginationFromJson(
 }
 
 Map<String, dynamic> $VideoLineDataPaginationToJson(
-    VideoLineDataPagination entity) {
+  VideoLineDataPagination entity,
+) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['page'] = entity.page;
   data['size'] = entity.size;
@@ -210,11 +214,7 @@ Map<String, dynamic> $VideoLineDataPaginationToJson(
 }
 
 extension VideoLineDataPaginationExtension on VideoLineDataPagination {
-  VideoLineDataPagination copyWith({
-    int? page,
-    int? size,
-    int? total,
-  }) {
+  VideoLineDataPagination copyWith({int? page, int? size, int? total}) {
     return VideoLineDataPagination()
       ..page = page ?? this.page
       ..size = size ?? this.size

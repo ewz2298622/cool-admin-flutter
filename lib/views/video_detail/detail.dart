@@ -1,4 +1,5 @@
 import 'package:chewie/chewie.dart';
+import 'package:flustars/flustars.dart';
 import 'package:flutter/material.dart';
 import 'package:fplayer/fplayer.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -6,12 +7,16 @@ import 'package:video_player/video_player.dart';
 
 import '../../api/api.dart';
 import '../../components/auto_height_page_view/auto_height_page_view.dart';
+import '../../components/loading.dart';
+import '../../components/sectionWithMore.dart';
 import '../../components/video_scroll.dart';
 import '../../entity/play_line_entity.dart';
 import '../../entity/video_detail_entity.dart';
 import '../../entity/video_line_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../style/layout.dart';
+
+String TAG = 'Video_Detail';
 
 class Video_Detail extends StatefulWidget {
   //接受路由传递过来的props id
@@ -68,7 +73,7 @@ class _Video_DetailState extends State<Video_Detail>
     try {
       List<VideoPageDataList> list =
           (await Api.getVideoPages({
-            "category_child_id": videoData?.categoryChildId,
+            "category_id": videoData?.categoryChildId,
           })).data?.list ??
           [] as List<VideoPageDataList>;
       videoPageData = list;
@@ -112,6 +117,7 @@ class _Video_DetailState extends State<Video_Detail>
                 "size": 10000,
               })).data?.list
               as List<PlayLineDataList>;
+      LogUtil.d("getPlayLinePages", tag: TAG);
       playerLineData?.forEach((element) {
         videoList.add(
           VideoItem(
@@ -187,7 +193,7 @@ class _Video_DetailState extends State<Video_Detail>
 
   Widget _handleFutureBuilder(AsyncSnapshot<String> snapshot) {
     if (snapshot.connectionState == ConnectionState.waiting) {
-      return const Center(child: CircularProgressIndicator());
+      return PageLoading();
     } else if (snapshot.hasError) {
       return Text('Error: ${snapshot.error}');
     } else if (snapshot.hasData) {
@@ -347,43 +353,6 @@ class _Video_DetailState extends State<Video_Detail>
               ),
             ],
           ),
-          // ValueListenableBuilder<int>(
-          //   valueListenable: currentPlay,
-          //   builder: (context, key, child) {
-          //     return Padding(
-          //       padding: const EdgeInsets.symmetric(vertical: 8),
-          //       child: SingleChildScrollView(
-          //         scrollDirection: Axis.horizontal,
-          //         child: Row(
-          //           children: [
-          //             ...(playerLineData ?? [])
-          //                 .map(
-          //                   (item) => Padding(
-          //                     padding: const EdgeInsets.only(left: 8),
-          //                     child: TDButton(
-          //                       text: item.name.toString(),
-          //                       size: TDButtonSize.small,
-          //                       style: TDButtonStyle(
-          //                         backgroundColor:
-          //                             key == item.id
-          //                                 ? const Color(0xFFE37318)
-          //                                 : Color.fromRGBO(59, 101, 244, 1),
-          //                         textColor:
-          //                             key == item.id
-          //                                 ? Colors.white
-          //                                 : Colors.black,
-          //                       ),
-          //                       onTap: () => _play_change(item),
-          //                     ),
-          //                   ),
-          //                 )
-          //                 .toList(),
-          //           ],
-          //         ),
-          //       ),
-          //     );
-          //   },
-          // ),
           // 自定义小屏列表
           SizedBox(
             width: double.infinity,
@@ -394,13 +363,11 @@ class _Video_DetailState extends State<Video_Detail>
               itemCount: videoList.length,
               itemBuilder: (context, index) {
                 bool isCurrent = currentPlay.value == index;
-                Color textColor = Theme.of(context).primaryColor;
-                Color bgColor = Theme.of(context).primaryColorDark;
-                Color borderColor = Theme.of(context).primaryColor;
+                Color textColor = Colors.white;
+                Color bgColor = Color.fromRGBO(232, 192, 44, 1);
                 if (isCurrent) {
-                  textColor = Theme.of(context).primaryColorDark;
-                  bgColor = Theme.of(context).primaryColor;
-                  borderColor = Theme.of(context).primaryColor;
+                  textColor = Colors.black;
+                  bgColor = Color.fromRGBO(232, 220, 99, 1);
                 }
                 return GestureDetector(
                   onTap: () async {
@@ -416,7 +383,6 @@ class _Video_DetailState extends State<Video_Detail>
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(5),
                       color: bgColor,
-                      border: Border.all(width: 1.5, color: borderColor),
                     ),
                     alignment: Alignment.center,
                     child: Text(
@@ -454,15 +420,13 @@ class _Video_DetailState extends State<Video_Detail>
                       (item) => Padding(
                         padding: const EdgeInsets.only(left: 8),
                         child: TDButton(
-                          text: item.name.toString(),
+                          text: item.collectionName,
                           size: TDButtonSize.small,
                           style: TDButtonStyle(
-                            backgroundColor:
-                                key == item.id
-                                    ? const Color(0xFFE37318)
-                                    : Color.fromRGBO(59, 101, 244, 1),
                             textColor:
-                                key == item.id ? Colors.white : Colors.black,
+                                key == item.id
+                                    ? const Color.fromRGBO(249, 174, 61, 1)
+                                    : Colors.black,
                           ),
                           onTap: () => {_play_change_line(item)},
                         ),
@@ -484,6 +448,7 @@ class _Video_DetailState extends State<Video_Detail>
       type: TDButtonType.fill,
       shape: TDButtonShape.round,
       theme: TDButtonTheme.primary,
+      style: TDButtonStyle(backgroundColor: Colors.transparent),
       onTap: () {
         Navigator.of(context).push(
           TDSlidePopupRoute(
@@ -491,7 +456,7 @@ class _Video_DetailState extends State<Video_Detail>
             slideTransitionFrom: SlideTransitionFrom.bottom,
             builder: (context) {
               return TDPopupBottomDisplayPanel(
-                title: '切换线路',
+                title: '选集',
                 titleLeft: true,
                 closeClick: () {
                   Navigator.maybePop(context);
@@ -509,16 +474,12 @@ class _Video_DetailState extends State<Video_Detail>
                           Padding(
                             padding: const EdgeInsets.only(bottom: 16),
                             child: Text(
-                              videoData?.note ?? "未知",
+                              '更新${playerLineData!.length}集',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: Colors.grey,
                                 fontSize: 12,
-                                decoration: TextDecoration.underline,
-                                decorationColor: Colors.blue,
-                                decorationStyle: TextDecorationStyle.solid,
-                                decorationThickness: 2.0,
                               ),
                             ),
                           ),
@@ -549,11 +510,16 @@ class _Video_DetailState extends State<Video_Detail>
                                             style: TDButtonStyle(
                                               backgroundColor:
                                                   key == item.id
-                                                      ? const Color(0xFFE37318)
+                                                      ? Color.fromRGBO(
+                                                        255,
+                                                        218,
+                                                        112,
+                                                        1,
+                                                      )
                                                       : Color.fromRGBO(
-                                                        59,
-                                                        101,
-                                                        244,
+                                                        255,
+                                                        236,
+                                                        180,
                                                         1,
                                                       ),
                                               textColor:
@@ -619,8 +585,9 @@ class _Video_DetailState extends State<Video_Detail>
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 16,
         children: [
-          Text("猜你喜欢", style: TextStyle(fontSize: 14)),
+          SectionWithMore(title: "猜你喜欢"),
           HorizontalVideoList(videoPageData: videoPageData),
         ],
       ),

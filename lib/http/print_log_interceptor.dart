@@ -7,6 +7,7 @@ String TAG = "RequestLog";
 class PrintLogInterceptor extends InterceptorsWrapper {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    TAG = options.path;
     LogUtil.e("请求头:${options.headers}", tag: TAG);
     LogUtil.e("请求路径:${options.path}", tag: TAG);
     LogUtil.e("请求方法:${options.method}", tag: TAG);
@@ -21,6 +22,7 @@ class PrintLogInterceptor extends InterceptorsWrapper {
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
+    TAG = response.requestOptions.path;
     LogUtil.e("响应数据:${response.data}", tag: TAG);
     LogUtil.e("响应头:${response.headers}", tag: TAG);
     LogUtil.e("响应状态码:${response.statusCode}", tag: TAG);

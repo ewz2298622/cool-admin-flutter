@@ -36,7 +36,7 @@ class Api {
   static Future<SwiperEntity> getSwiperPage(Map<String, dynamic>? data) async {
     try {
       // 发起POST请求获取轮播图页面数据
-      final response = await server.post("/app/swiper/swiper/page", data: data);
+      final response = await server.post("/app/video/swiper/page", data: data);
       // 将响应的JSON数据转换为SwiperEntity对象并返回
       return SwiperEntity.fromJson(response.data);
     } catch (error) {
@@ -148,7 +148,7 @@ class Api {
           videoCategoryIds.map((id) async {
             SwiperEntity swiperData = (await Api.getSwiperPage({
               "page": 1,
-              "type": id,
+              "category": id,
               "status": 1,
               "size": 5,
             }));
@@ -429,7 +429,7 @@ class Api {
   static Future<ViewsEntity> getViews(Map<String, dynamic>? data) async {
     try {
       final response = await server.post(
-        "/app/application/views/page",
+        "/app/user/views/page",
         data: data,
       ); // 添加注释说明 ONE 的含义});
       return ViewsEntity.fromJson(response.data);
@@ -439,11 +439,34 @@ class Api {
     }
   }
 
-  //添加浏览揭露
+  //添加浏览记录
   static Future<void> addViews(Map<String, dynamic>? data) async {
     try {
+      await server.post("/app/user/views/add", data: data); // 添加注释说明 ONE 的含义});
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //添加浏览记录
+  static Future<void> register(Map<String, dynamic>? data) async {
+    try {
       await server.post(
-        "/app/application/views/add",
+        "/app/user/login/register",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //添加公告
+  static Future<void> noticeInfo(Map<String, dynamic>? data) async {
+    try {
+      await server.post(
+        "/app/application/noticeInfo/page",
         data: data,
       ); // 添加注释说明 ONE 的含义});
     } catch (error) {

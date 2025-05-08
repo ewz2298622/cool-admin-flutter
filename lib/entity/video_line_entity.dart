@@ -44,24 +44,24 @@ class VideoLineData {
 
 @JsonSerializable()
 class VideoLineDataList {
-  @JSONField(name: 'video_id')
-  String? videoId;
-  String? name;
-  @JSONField(name: 'create_at')
-  String? createAt;
-  @JSONField(name: 'update_at')
-  String? updateAt;
-  @JSONField(name: 'site_id')
-  int? siteId;
-  String? tag;
+  int? id;
   String? createTime;
   String? updateTime;
+  dynamic tenantId;
   dynamic createUserId;
   dynamic updateUserId;
-  int? id;
+  @JSONField(name: 'video_id')
+  String? videoId;
+  @JSONField(name: 'collection_name')
+  String? collectionName;
   @JSONField(name: 'player_id')
   int? playerId;
   int? sort;
+  String? tag;
+  @JSONField(name: 'collection_id')
+  int? collectionId;
+  @JSONField(name: 'video_name')
+  String? videoName;
 
   VideoLineDataList();
 

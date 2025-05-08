@@ -11,7 +11,7 @@ class VideoViews extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 120,
+      height: 80,
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: List.generate(
@@ -22,14 +22,14 @@ class VideoViews extends StatelessWidget {
             },
             child: Container(
               width: 120,
-              height: 120,
+              height: 80,
               padding: const EdgeInsets.only(right: 4),
               child: Stack(
                 children: [
                   Positioned.fill(
                     child: TDImage(
                       width: 120,
-                      height: 120,
+                      height: 80,
                       fit: BoxFit.cover,
                       imgUrl: videoPageData[i].cover ?? "",
                       errorWidget: const TDImage(

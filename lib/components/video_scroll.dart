@@ -31,7 +31,7 @@ class HorizontalVideoList extends StatelessWidget {
                       width: 120,
                       height: 150,
                       fit: BoxFit.cover,
-                      imgUrl: videoPageData[i].cycleImg ?? "",
+                      imgUrl: videoPageData[i].surfacePlot ?? "",
                       errorWidget: const TDImage(
                         width: 120,
                         height: 150,
