@@ -32,6 +32,8 @@ class PrintLogInterceptor extends InterceptorsWrapper {
     LogUtil.e("响应编码:${response.requestOptions.sendTimeout}", tag: TAG);
     LogUtil.e("响应路径:${response.requestOptions.path}", tag: TAG);
     LogUtil.e("响应方法:${response.requestOptions.method}", tag: TAG);
+    LogUtil.e("响应参数:${response.requestOptions.queryParameters}", tag: TAG);
+    LogUtil.e("响应状态码${response.statusCode}", tag: TAG);
     return handler.next(response);
   }
 

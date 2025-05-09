@@ -1,12 +1,12 @@
 import 'package:chewie/chewie.dart';
 import 'package:flustars/flustars.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:fplayer/fplayer.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../api/api.dart';
-import '../../components/auto_height_page_view/auto_height_page_view.dart';
 import '../../components/loading.dart';
 import '../../components/sectionWithMore.dart';
 import '../../components/video_scroll.dart';
@@ -197,7 +197,72 @@ class _Video_DetailState extends State<Video_Detail>
     } else if (snapshot.hasError) {
       return Text('Error: ${snapshot.error}');
     } else if (snapshot.hasData) {
-      return Column(children: [_buildSponsorBar(), _buildNavigationTabs()]);
+      return Stack(
+        children: [
+          _buildSponsorBar(),
+          Padding(
+            padding: const EdgeInsets.only(
+              left: Layout.paddingL,
+              right: Layout.paddingR,
+              top: 0,
+            ),
+            // child: _buildNavigationTabs(),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 50),
+              child: DefaultTabController(
+                length: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TabBar(
+                      dividerHeight: 0,
+                      isScrollable: true,
+                      tabAlignment: TabAlignment.start,
+                      indicatorPadding: const EdgeInsets.all(0),
+                      indicator: UnderlineTabIndicator(
+                        borderSide: BorderSide(
+                          width: 0.0,
+                          color: Colors.transparent,
+                        ), // 将宽度设置为0来隐藏下划线
+                      ),
+                      //设置未选中的字体颜色
+                      unselectedLabelColor: const Color.fromRGBO(
+                        153,
+                        153,
+                        153,
+                        1,
+                      ),
+                      //选中的字体颜色
+                      labelColor: const Color.fromRGBO(252, 119, 66, 1),
+                      tabs: [Tab(text: '详情'), Tab(text: '简介')],
+                    ),
+                    Expanded(
+                      child: TabBarView(
+                        children: [
+                          ListView(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: [
+                              // 视频信息
+                              _buildVideoInfo(),
+                              _buildEpisodeList(),
+                              // 广告横幅
+                              _buildBanner(),
+                              // 猜你喜欢
+                              _buildRecommendations(),
+                            ],
+                          ),
+                          SingleChildScrollView(child: _buildTabsVideoInfo()),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
     } else {
       return Text('No data available');
     }
@@ -208,6 +273,7 @@ class _Video_DetailState extends State<Video_Detail>
       padding: const EdgeInsets.only(
         left: Layout.paddingL,
         right: Layout.paddingR,
+        top: Layout.paddingT,
       ),
       child: TDNoticeBar(
         context: '本片仅供学习参考，请勿用于商业用途。切勿传播违法信息。视频中的广告不参与本片制作，仅供学习参考。谨防上当受骗',
@@ -241,13 +307,6 @@ class _Video_DetailState extends State<Video_Detail>
           },
         ),
       ],
-    );
-  }
-
-  Widget _buildTabs() {
-    return AutoHeightPageView(
-      pageController: pageController,
-      children: _getTabViews(),
     );
   }
 
@@ -288,32 +347,6 @@ class _Video_DetailState extends State<Video_Detail>
         ],
       ),
     );
-  }
-
-  Widget _buildNavigationTabs() {
-    return Column(children: [_buildTabsContent(), _buildTabs()]);
-  }
-
-  List<Widget> _getTabViews() {
-    List<Widget> tabViews;
-    tabViews = [
-      ListView(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        children: [
-          // 视频信息
-          _buildVideoInfo(),
-          _buildEpisodeList(),
-          // 广告横幅
-          _buildBanner(),
-          // 猜你喜欢
-          _buildRecommendations(),
-        ],
-      ),
-      _buildTabsVideoInfo(),
-    ];
-
-    return tabViews;
   }
 
   _play_change(PlayLineDataList item) async {
@@ -600,9 +633,9 @@ class _Video_DetailState extends State<Video_Detail>
         left: Layout.paddingL,
         right: Layout.paddingR,
       ),
-      child: ListView(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
+      child: Column(
+        // 使用 Column 替代 ListView
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 标题部分
           Row(
@@ -618,48 +651,54 @@ class _Video_DetailState extends State<Video_Detail>
                   assetUrl: 'assets/images/loading.gif',
                 ),
               ),
-              SizedBox(
-                height: 100,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: 5,
-                  children: [
-                    Text(
-                      videoData?.title ?? "",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        height: 1.5,
-                      ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                spacing: 5,
+                children: [
+                  Text(
+                    videoData?.title ?? "",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      height: 1.5,
                     ),
-                    Row(
-                      spacing: 5,
-                      children: [
-                        TDTag(videoData?.year ?? "2021"),
-                        TDTag(videoData?.region ?? ""),
-                        TDTag(videoData?.language ?? ""),
-                        TDTag(videoData?.note ?? ""),
-                      ],
-                    ),
-                    TDRate(value: (videoData?.doubanScore ?? 0).toDouble()),
-                  ],
-                ),
+                  ),
+                  Row(
+                    spacing: 5,
+                    children: [
+                      TDTag(videoData?.year ?? "2021"),
+                      TDTag(videoData?.region ?? ""),
+                      TDTag(videoData?.language ?? ""),
+                      TDTag(videoData?.note ?? ""),
+                    ],
+                  ),
+                  TDRate(value: (videoData?.doubanScore ?? 0).toDouble()),
+                ],
               ),
             ],
           ),
           // 导演
-          _buildSection('导演', [videoData?.directors ?? "暂无"]),
+          _buildSection('导演', formatString(videoData?.directors ?? "")),
           // 演员分组
-          //将字符串 videoData?.actors以 /分割成list
-          _buildSection('演员', videoData?.actors?.split('/') ?? []),
-
+          _buildSection('演员', formatString(videoData!.actors ?? "")),
           // 剧情
           _buildPlotSection(),
         ],
       ),
     );
+  }
+
+  //实现一个格式化函数 判断传入的字符串是否含有,或者/ 如果有就按照这两个字符串分割返回一个list
+  List<String> formatString(String str) {
+    if (str.contains(',')) {
+      return str.split(',');
+    }
+    if (str.contains('/')) {
+      return str.split('/');
+    }
+    return [str];
   }
 
   Widget _buildSection(String title, List<String> items) {
@@ -674,10 +713,18 @@ class _Video_DetailState extends State<Video_Detail>
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
-        Wrap(
-          spacing: 12,
-          runSpacing: 8,
-          children: items.map((item) => TDTag(item)).toList(),
+        SizedBox(
+          // 使用 SizedBox 限制高度
+          height: 40, // 设置最大高度为 40（可根据需要调整）
+          child: SingleChildScrollView(
+            // 添加滚动支持
+            scrollDirection: Axis.horizontal, // 水平滚动
+            child: Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              children: items.map((item) => TDTag(item)).toList(),
+            ),
+          ),
         ),
       ],
     );
@@ -695,12 +742,7 @@ class _Video_DetailState extends State<Video_Detail>
             height: 2,
           ),
         ),
-        Text(
-          videoData?.introduce ?? "",
-          // maxLines: 8,
-          // overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontSize: 13, height: 1.5),
-        ),
+        Html(data: videoData?.introduce ?? ""),
       ],
     );
   }

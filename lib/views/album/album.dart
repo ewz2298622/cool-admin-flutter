@@ -7,7 +7,6 @@ import '../../components/video_three.dart';
 import '../../entity/album_video_list_entity.dart';
 import '../../entity/video_album_entity.dart';
 import '../../style/layout.dart';
-import '../video_detail/detail.dart';
 
 class VideoAlbum extends StatefulWidget {
   //接受路由传递过来的props id
@@ -106,7 +105,7 @@ class VideoAlbumState extends State<VideoAlbum>
                       ),
                     ),
                     Container(
-                      margin: const EdgeInsets.only(top: 20, left: 20),
+                      margin: const EdgeInsets.only(top: 50, left: 20),
                       child: Text(
                         albumInfoData?.title ?? "",
                         style: const TextStyle(
@@ -147,28 +146,31 @@ class VideoAlbumState extends State<VideoAlbum>
       ),
       child: SingleChildScrollView(
         physics: BouncingScrollPhysics(),
-        child: Container(child: VideoThree(videoPageData: videoPageData)),
+        // child: Container(child: VideoThree(videoPageData: videoPageData)),
+        //重构videoPageData数据将videos_id设置成id
+        child: Container(
+          child: VideoThree(
+            videoPageData:
+                videoPageData?.map((e) {
+                  String videosId = e.videosId ?? "";
+                  //将videos_id 转成int并设置成id
+                  e.id = int.parse(videosId);
+                  return e;
+                }).toList(),
+          ),
+        ),
       ),
-    );
-  }
-
-  void _buildvideo_onClick(int id) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => Video_Detail(id: id)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(toolbarHeight: 20, backgroundColor: _gradientColors[0]),
       resizeToAvoidBottomInset: false,
       body: Stack(
         fit: StackFit.expand,
         children: [
           Container(
-            padding: EdgeInsets.only(top: 10),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,

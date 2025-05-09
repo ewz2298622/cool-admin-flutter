@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../db/entity/UserEntity.dart';
+import '../db/manager/TokenDatabaseHelper.dart';
 import '../db/manager/UserDatabaseHelper.dart';
 import '../views/login/login.dart';
 
 class User {
   static final UserDatabaseHelper userDatabaseHelper = UserDatabaseHelper();
+  static final TokenDatabaseHelper tokenDatabaseHelper = TokenDatabaseHelper();
   static isLogin() {
     try {
       Iterable<UserEntity> user = userDatabaseHelper.list();
@@ -39,5 +41,11 @@ class User {
     } else {
       return true;
     }
+  }
+
+  //删除用户信息
+  static void deleteUser() {
+    userDatabaseHelper.deleteAll();
+    tokenDatabaseHelper.deleteAll();
   }
 }

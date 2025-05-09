@@ -1,5 +1,5 @@
-// second_page.dart
-
+// // second_page.dart
+//
 import 'dart:core';
 
 import 'package:flutter/material.dart';
@@ -7,7 +7,6 @@ import 'package:flutter_swiper_null_safety/flutter_swiper_null_safety.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
-import '../../components/auto_height_page_view/auto_height_page_view.dart';
 import '../../components/loading.dart';
 import '../../components/sectionWithMore.dart';
 import '../../entity/album_entity.dart';
@@ -184,18 +183,8 @@ class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}'); // 显示错误信息
         } else if (snapshot.hasData) {
-          return Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              scrollDirection: Axis.vertical,
-              child: Column(
-                children: <Widget>[
-                  _buildDefaultSearchBar(),
-                  _buildTabsContent(),
-                  _buildTabs(),
-                ],
-              ),
-            ),
+          return Stack(
+            children: <Widget>[_buildTabs(), _buildDefaultSearchBar()],
           );
         } else {
           return Text('No data available');
@@ -205,34 +194,81 @@ class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
   }
 
   Widget _buildTabs() {
-    return AutoHeightPageView(
-      pageController: pageController,
-      onPageChanged: (index) {
-        _tabController?.animateTo(index);
-      },
-      children: _getTabViews(),
+    return Padding(
+      padding: const EdgeInsets.only(top: 50),
+      child: DefaultTabController(
+        //清理下边框的样式
+        length: tabs.length,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TabBar(
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              dividerHeight: 0,
+              //移除下划线
+              // 使用空的指示器来移除下划线
+              indicator: UnderlineTabIndicator(
+                borderSide: BorderSide(
+                  width: 0.0,
+                  color: Colors.transparent,
+                ), // 将宽度设置为0来隐藏下划线
+              ),
+              //设置未选中的字体颜色
+              unselectedLabelColor: const Color.fromRGBO(102, 102, 102, 1),
+              //选中的字体颜色
+              labelColor: const Color.fromRGBO(252, 119, 66, 1),
+              tabs: tabs,
+            ),
+            Expanded(
+              child: TabBarView(
+                children: List.generate(tabs.length, (index) {
+                  return SingleChildScrollView(
+                    child: SizedBox(
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height: 200,
+                            child: _buildDotsSwiper(
+                              dictInfoListData[index].id ?? 0,
+                            ),
+                          ),
+                          Column(
+                            children: _buildAlbumContentList(
+                              albumMap[dictInfoListData[index].id] ?? [],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   /// tabs 视图
   Widget _buildTabsContent() {
     // 返回一个Widget自动填充剩余高度
-    return Column(
-      children: [
-        TDTabBar(
-          tabs: tabs,
-          controller: _tabController,
-          showIndicator: false,
-          dividerHeight: 0,
-          isScrollable: true,
-          labelColor: const Color.fromRGBO(252, 119, 66, 1),
-          unselectedLabelColor: const Color.fromRGBO(102, 102, 102, 1),
-          labelPadding: const EdgeInsets.only(left: 16, right: 16),
-          onTap: (index) {
-            pageController.jumpToPage(index);
-          },
-        ),
-      ],
+    return Container(
+      height: 50, // 设置固定高度
+      child: TDTabBar(
+        tabs: tabs,
+        controller: _tabController,
+        showIndicator: false,
+        dividerHeight: 0,
+        isScrollable: true,
+        labelColor: const Color.fromRGBO(252, 119, 66, 1),
+        unselectedLabelColor: const Color.fromRGBO(102, 102, 102, 1),
+        labelPadding: const EdgeInsets.only(left: 16, right: 16),
+        onTap: (index) {
+          pageController.jumpToPage(index);
+        },
+      ),
     );
   }
 
@@ -466,6 +502,60 @@ class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
           color: Colors.black,
           fontWeight: FontWeight.w400,
         ),
+      ),
+    );
+  }
+}
+
+// import 'package:flutter/material.dart';
+
+// class Home extends StatelessWidget {
+//   const Home({super.key});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: const Text('Demo')),
+//       body: const DefaultTabController(
+//         length: 4,
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.stretch,
+//           children: [
+//             TabBar(
+//               //移除下划线
+//               indicator: const BoxDecoration(),
+//               tabs: [
+//                 Tab(text: '日韩'),
+//                 Tab(text: '欧美'),
+//                 Tab(text: '国产'),
+//                 Tab(text: '毛豆'),
+//               ],
+//             ),
+//             Expanded(
+//               child: TabBarView(
+//                 children: [DemoBody(), DemoBody(), DemoBody(), DemoBody()],
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+//
+class DemoBody extends StatelessWidget {
+  const DemoBody({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(height: 200),
+          Text('这里是你的内容'),
+          SizedBox(height: 1000),
+        ],
       ),
     );
   }

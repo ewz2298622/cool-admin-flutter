@@ -7,7 +7,6 @@ import '../../components/loading.dart';
 import '../../components/video_one.dart';
 import '../../entity/video_sort_entity.dart';
 import '../../style/layout.dart';
-import '../video_detail/detail.dart';
 
 class VideoRanking extends StatefulWidget {
   const VideoRanking({super.key});
@@ -166,7 +165,7 @@ class VideoRankingState extends State<VideoRanking>
                       ),
                     ),
                     Container(
-                      margin: const EdgeInsets.only(top: 20, left: 20),
+                      margin: const EdgeInsets.only(top: 70, left: 20),
                       child: Text(
                         "排行榜",
                         style: const TextStyle(
@@ -273,165 +272,13 @@ class VideoRankingState extends State<VideoRanking>
     );
   }
 
-  Widget _buildAlbumItems() {
-    return Column(
-      children: List<Widget>.generate(videoPageData.length, (i) {
-        return GestureDetector(
-          onTap: () => {_buildvideo_onClick(videoPageData[i].id ?? 0)},
-          child: Container(
-            height: 185,
-            padding: const EdgeInsets.only(left: 4, right: 4, bottom: 15),
-            child: Row(
-              children: [
-                Stack(
-                  children: [
-                    TDImage(
-                      fit: BoxFit.cover,
-                      width: 120,
-                      height: 180,
-                      imgUrl: videoPageData?[i].cycleImg ?? "",
-                      errorWidget: const TDImage(
-                        width: 150,
-                        assetUrl: 'assets/images/loading.gif',
-                      ),
-                    ),
-                    _buildVideoItemOverlay(videoPageData?[i]),
-                  ],
-                ),
-                SizedBox(
-                  width: 220, // 调整宽度以确保有足够的空间
-                  height: 180,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start, // 左对齐
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        videoPageData?[i].title ?? "",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        "${videoPageData?[i].year ?? ''} / ${videoPageData?[i].actors}",
-                        maxLines: 3, // 限制最多显示 3 行
-                        overflow: TextOverflow.ellipsis, // 超出部分用省略号表示
-                        style: const TextStyle(
-                          fontSize: 12, // 调整字体大小
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        videoPageData?[i].introduce ?? "",
-                        maxLines: 3, // 限制最多显示 3 行
-                        overflow: TextOverflow.ellipsis, // 超出部分用省略号表示
-                        style: const TextStyle(
-                          fontSize: 12, // 调整字体大小
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }),
-    );
-  }
-
-  Widget _buildVideoItemOverlay(dynamic item) {
-    return Container(
-      width: 130,
-      height: 175,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [_buildVideoItemHDTag(), _buildVideoItemNote(item)],
-      ),
-    );
-  }
-
-  Widget _buildVideoItemNote(dynamic item) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(right: 15, top: 2),
-          padding: const EdgeInsets.only(top: 2, bottom: 2, left: 4, right: 4),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            color: const Color.fromRGBO(0, 0, 0, 0.302),
-          ),
-          child: Text(
-            item?.note ?? '',
-            maxLines: 1, // 限制最大显示一行
-            overflow: TextOverflow.ellipsis, // 溢出时显示省略号
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.white,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildVideoItemHDTag() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(right: 15, top: 5),
-          padding: const EdgeInsets.only(top: 2, bottom: 2, left: 4, right: 4),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color.fromRGBO(59, 101, 244, 1),
-                Color.fromRGBO(64, 177, 254, 1),
-              ],
-            ),
-          ),
-          child: const Text(
-            "高清",
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.white,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _buildvideo_onClick(int id) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => Video_Detail(id: id)),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 20,
-        backgroundColor: Color.fromRGBO(255, 218, 112, 1),
-      ),
-      resizeToAvoidBottomInset: false,
       body: Stack(
         fit: StackFit.expand,
         children: [
           Container(
-            padding: EdgeInsets.only(top: 10),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,

@@ -2,19 +2,18 @@ import 'package:flutter/material.dart';
 // 导入 webview_flutter 包，用于在 Flutter 应用中嵌入 WebView 来显示网页内容
 import 'package:webview_flutter/webview_flutter.dart';
 
-// 定义一个名为 HtmlPage 的有状态组件，用于展示一个包含 WebView 的页面
-class HtmlPage extends StatefulWidget {
+// 定义一个名为 About 的有状态组件，用于展示一个包含 WebView 的页面
+class About extends StatefulWidget {
   // 构造函数，Key? key 是可选参数，用于在组件树中唯一标识该组件
-  final String content; // 标题
-  const HtmlPage({Key? key, required this.content});
+  const About({Key? key}) : super(key: key);
 
   // 创建该组件对应的状态类实例
   @override
-  State<HtmlPage> createState() => _HtmlPageState();
+  State<About> createState() => _AboutState();
 }
 
-// 定义 HtmlPage 组件对应的状态类
-class _HtmlPageState extends State<HtmlPage> {
+// 定义 About 组件对应的状态类
+class _AboutState extends State<About> {
   // 定义一个 WebViewController 类型的变量 controller，用于控制 WebView 的行为
   // late 关键字表示该变量会在使用前被初始化
   late WebViewController controller;
@@ -64,7 +63,7 @@ class _HtmlPageState extends State<HtmlPage> {
           )
           // 加载指定 URL 的网页
           // ..loadRequest(Uri.parse('https://www.geekailab.com'));
-          ..loadHtmlString(widget.content);
+          ..loadHtmlString("<H1>你好</H1>");
   }
 
   // 构建组件的 UI 界面
@@ -73,11 +72,7 @@ class _HtmlPageState extends State<HtmlPage> {
     // 返回一个 Scaffold 组件，它是 Flutter 中常用的页面布局组件
     return Scaffold(
       // 设置页面的顶部导航栏，显示标题为 'Flutter Simple Example'
-      appBar: AppBar(
-        toolbarHeight: 20,
-        automaticallyImplyLeading: false, //设置为false
-        backgroundColor: const Color.fromRGBO(255, 218, 112, 1),
-      ),
+      appBar: AppBar(title: const Text('Flutter Simple Example')),
       // 设置页面的主体内容，使用 WebViewWidget 组件来显示 WebView
       // 将之前初始化好的 controller 传递给 WebViewWidget，用于控制 WebView 的行为
       body: WebViewWidget(controller: controller),

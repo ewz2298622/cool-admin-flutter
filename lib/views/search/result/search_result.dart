@@ -149,6 +149,8 @@ class SearchResultState extends State<SearchResult>
                 Container(
                   padding: const EdgeInsets.only(top: 10),
                   width: double.infinity,
+                  //设置白色背景
+                  decoration: BoxDecoration(color: Colors.white),
                   child: Column(children: [_buildAlbumItems()]),
                 ),
               ],
@@ -193,45 +195,47 @@ class SearchResultState extends State<SearchResult>
                     _buildVideoItemOverlay(videoPageData[i]),
                   ],
                 ),
-                SizedBox(
-                  width: 280, // 调整宽度以确保有足够的空间
-                  height: 140,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start, // 左对齐
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        videoPageData[i].title ?? "",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
+                Expanded(
+                  // 使用 Expanded 替代 SizedBox
+                  child: Container(
+                    height: 140,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(
+                          videoPageData[i].title ?? "",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black54,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        "${videoPageData[i].year ?? ''} / ${videoPageData[i].actors}",
-                        maxLines: 2, // 限制最多显示 3 行
-                        overflow: TextOverflow.ellipsis, // 超出部分用省略号表示
-                        style: const TextStyle(
-                          color: Color.fromRGBO(153, 153, 153, 1),
-                          fontSize: 12, // 调整字体大小
-                          fontWeight: FontWeight.w400,
+                        const SizedBox(height: 10),
+                        Text(
+                          "${videoPageData[i].year ?? ''} / ${videoPageData[i].actors}",
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Color.fromRGBO(153, 153, 153, 1),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        videoPageData[i].introduce ?? "",
-                        maxLines: 2, // 限制最多显示 3 行
-                        overflow: TextOverflow.ellipsis, // 超出部分用省略号表示
-                        style: const TextStyle(
-                          fontSize: 12, // 调整字体大小
-                          fontWeight: FontWeight.w400,
-                          color: Color.fromRGBO(153, 153, 153, 1),
+                        const SizedBox(height: 10),
+                        Text(
+                          videoPageData[i].introduce ?? "",
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            color: Color.fromRGBO(153, 153, 153, 1),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -307,23 +311,21 @@ class SearchResultState extends State<SearchResult>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(toolbarHeight: 20, backgroundColor: _gradientColors[0]),
-      resizeToAvoidBottomInset: false,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: _gradientStops,
-                colors: _gradientColors,
-              ),
-            ),
-            child: _buildContent(),
+      appBar: AppBar(
+        toolbarHeight: 20,
+        automaticallyImplyLeading: false, //设置为false
+        backgroundColor: const Color.fromRGBO(255, 218, 112, 1),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            stops: _gradientStops,
+            colors: _gradientColors,
           ),
-        ],
+        ),
+        child: _buildContent(),
       ),
     );
   }

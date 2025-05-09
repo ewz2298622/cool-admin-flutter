@@ -2,8 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_app/http/print_log_interceptor.dart';
 import 'package:flutter_app/http/requestConfig.dart';
+import 'package:flutter_app/http/responseInterceptor.dart';
 import 'package:flutter_app/http/tokenInterceptors.dart';
 
+import 'errorInterceptor.dart';
 import 'http_method.dart';
 
 class DioHttp {
@@ -20,8 +22,10 @@ class DioHttp {
   DioHttp() {
     // 添加新的拦截器
     debugPrint('DioInstance init');
-    _dio.interceptors.add(PrintLogInterceptor());
-    _dio.interceptors.add(TokenInterceptors());
+    _dio.interceptors.add(TokenInterceptors()); //token
+    _dio.interceptors.add(ResponseInterceptor()); //response
+    _dio.interceptors.add(ErrorInterceptor()); //error
+    _dio.interceptors.add(PrintLogInterceptor()); //日志
   }
 
   Future get<Response>(

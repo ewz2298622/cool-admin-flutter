@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/views/search/result/search_result.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -23,6 +25,8 @@ class VideoSearchState extends State<VideoSearch>
     with SingleTickerProviderStateMixin {
   late final String inputText;
   List<VideoPageDataList> videoPageData = [];
+  //定义猜你喜欢数据
+  List<VideoPageDataList> videoPageDataList = [];
   final searchHistory = SearchHistoryDatabaseHelper();
   Iterable<SearchHistoryEntity> searchHistoryList = [];
 
@@ -48,10 +52,16 @@ class VideoSearchState extends State<VideoSearch>
 
   Future<void> getVideoPages() async {
     try {
-      List<VideoPageDataList> list =
-          (await Api.getVideoPages({})).data?.list ??
+      videoPageData =
+          (await Api.getVideoPages({
+            "page": Random().nextInt(30) + 1,
+          })).data?.list ??
           [] as List<VideoPageDataList>;
-      videoPageData = list;
+      videoPageDataList =
+          (await Api.getVideoPages({
+            "page": Random().nextInt(30) + 1,
+          })).data?.list ??
+          [] as List<VideoPageDataList>;
     } catch (e) {
       // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
@@ -156,7 +166,7 @@ class VideoSearchState extends State<VideoSearch>
       spacing: 10,
       children: [
         SectionWithMore(title: '视频热搜榜'),
-        VideoThree(videoPageData: videoPageData),
+        VideoThree(videoPageData: videoPageDataList),
       ],
     );
   }
@@ -228,7 +238,11 @@ class VideoSearchState extends State<VideoSearch>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(toolbarHeight: 20, backgroundColor: _gradientColors[0]),
+      appBar: AppBar(
+        toolbarHeight: 20,
+        automaticallyImplyLeading: false, //设置为false
+        backgroundColor: const Color.fromRGBO(255, 218, 112, 1),
+      ),
       resizeToAvoidBottomInset: false,
       body: Stack(
         fit: StackFit.expand,

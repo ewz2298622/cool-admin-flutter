@@ -11,6 +11,8 @@ import '../../entity/video_page_entity.dart';
 import '../../entity/views_entity.dart';
 import '../../style/layout.dart';
 import '../../utils/user.dart';
+import '../about/about.dart';
+import '../notice/notice.dart';
 
 class My extends StatefulWidget {
   const My({super.key});
@@ -348,9 +350,9 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
             ),
             children: [
               _buildModelItem("assets/images/opinion.png", "系统公告"),
-              _buildModelItem("assets/images/collect.png", "我的收藏"),
               _buildModelItem("assets/images/share.png", "分享好友"),
-              _buildModelItem("assets/images/customersService.png", "在线客服"),
+              // _buildModelItem("assets/images/collect.png", "我的收藏"),
+              // _buildModelItem("assets/images/customersService.png", "在线客服"),
               _buildModelItem("assets/images/install.png", "设置"),
               _buildModelItem("assets/images/about.png", "关于"),
             ],
@@ -384,6 +386,11 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
   void _handleModelItemClick(String label) {
     switch (label) {
       case "系统公告":
+        //跳转Notice
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Notice()),
+        );
         break;
       case "我的收藏":
         // 处理我的收藏点击事件
@@ -403,7 +410,11 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
         // 处理设置点击事件
         break;
       case "关于":
-        // 处理关于点击事件
+        // 跳转About页面
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => About()),
+        );
         break;
     }
   }

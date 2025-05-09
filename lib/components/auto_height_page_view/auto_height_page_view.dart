@@ -54,7 +54,7 @@ class AutoHeightPageViewState extends State<AutoHeightPageView> {
           children: [
             Visibility(
               visible: isMeasureHeight,
-              child: Stack(
+              child: Column(
                 children:
                     widget.children
                         .map(

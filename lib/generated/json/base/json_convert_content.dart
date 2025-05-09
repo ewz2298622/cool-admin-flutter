@@ -10,7 +10,7 @@ import 'package:flutter_app/entity/captcha_entity.dart';
 import 'package:flutter_app/entity/dict_data_entity.dart';
 import 'package:flutter_app/entity/dict_info_list_entity.dart';
 import 'package:flutter_app/entity/login_entity.dart';
-import 'package:flutter_app/entity/notice_info_entity.dart';
+import 'package:flutter_app/entity/notice_Info_entity.dart';
 import 'package:flutter_app/entity/play_line_entity.dart';
 import 'package:flutter_app/entity/swiper_entity.dart';
 import 'package:flutter_app/entity/user_info_entity.dart';

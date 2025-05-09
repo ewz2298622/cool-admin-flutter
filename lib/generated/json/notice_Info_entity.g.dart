@@ -1,4 +1,4 @@
-import 'package:flutter_app/entity/notice_info_entity.dart';
+import 'package:flutter_app/entity/notice_Info_entity.dart';
 import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 
 NoticeInfoEntity $NoticeInfoEntityFromJson(Map<String, dynamic> json) {
@@ -122,6 +122,10 @@ NoticeInfoDataList $NoticeInfoDataListFromJson(Map<String, dynamic> json) {
   if (status != null) {
     noticeInfoDataList.status = status;
   }
+  final String? summary = jsonConvert.convert<String>(json['summary']);
+  if (summary != null) {
+    noticeInfoDataList.summary = summary;
+  }
   return noticeInfoDataList;
 }
 
@@ -137,6 +141,7 @@ Map<String, dynamic> $NoticeInfoDataListToJson(NoticeInfoDataList entity) {
   data['content'] = entity.content;
   data['type'] = entity.type;
   data['status'] = entity.status;
+  data['summary'] = entity.summary;
   return data;
 }
 
@@ -152,6 +157,7 @@ extension NoticeInfoDataListExtension on NoticeInfoDataList {
     String? content,
     int? type,
     int? status,
+    String? summary,
   }) {
     return NoticeInfoDataList()
       ..id = id ?? this.id
@@ -163,7 +169,8 @@ extension NoticeInfoDataListExtension on NoticeInfoDataList {
       ..title = title ?? this.title
       ..content = content ?? this.content
       ..type = type ?? this.type
-      ..status = status ?? this.status;
+      ..status = status ?? this.status
+      ..summary = summary ?? this.summary;
   }
 }
 

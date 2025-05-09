@@ -50,6 +50,8 @@ dependencies:
   sp_util: ^2.0.3
   dlna_dart: ^0.0.8
   flutter_html: ^3.0.0
+  webview_flutter: ^4.11.0
+  fluttertoast: ^8.2.12
 
 dev_dependencies:
   flutter_test:

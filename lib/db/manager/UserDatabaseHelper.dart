@@ -115,4 +115,10 @@ class UserDatabaseHelper {
       userId: result.first.columnAt(11),
     );
   }
+
+  //删除表里面所有数据
+  void deleteAll() {
+    final query = 'DELETE FROM user;';
+    _database.execute(query);
+  }
 }

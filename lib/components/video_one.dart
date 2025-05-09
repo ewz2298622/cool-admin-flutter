@@ -33,40 +33,42 @@ class VideoItem extends StatelessWidget {
                     _buildVideoItemOverlay(videoData?[i]),
                   ],
                 ),
-                SizedBox(
-                  width: 220, // 调整宽度以确保有足够的空间
-                  height: 180,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start, // 左对齐
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        videoData?[i].title ?? "",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        "${videoData?[i].year ?? ''} / ${videoData?[i].actors}",
-                        maxLines: 3, // 限制最多显示 3 行
-                        overflow: TextOverflow.ellipsis, // 超出部分用省略号表示
-                        style: const TextStyle(
-                          fontSize: 12, // 调整字体大小
-                          fontWeight: FontWeight.w400,
+                Expanded(
+                  // 使用 Expanded 替代 SizedBox
+                  child: SizedBox(
+                    height: 180,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(
+                          videoData?[i].title ?? "",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w500),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        videoData?[i].introduce ?? "",
-                        maxLines: 3, // 限制最多显示 3 行
-                        overflow: TextOverflow.ellipsis, // 超出部分用省略号表示
-                        style: const TextStyle(
-                          fontSize: 12, // 调整字体大小
-                          fontWeight: FontWeight.w400,
+                        const SizedBox(height: 10),
+                        Text(
+                          "${videoData?[i].year ?? ''} / ${videoData?[i].actors}",
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 10),
+                        Text(
+                          videoData?[i].introduce ?? "",
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
