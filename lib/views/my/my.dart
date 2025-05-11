@@ -62,7 +62,10 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
                 "type": 19,
               })).data?.list
               as List<ViewsDataList>;
-      debugPrint('Initialization getViews success: ${viewsData.length}');
+      //重构数据将associationId赋值给id
+      for (var element in viewsData) {
+        element.id = element.associationId;
+      }
     } catch (e) {
       // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
