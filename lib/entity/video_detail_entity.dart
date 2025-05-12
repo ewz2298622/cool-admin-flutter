@@ -29,24 +29,23 @@ class VideoDetailData {
   int? id;
   String? createTime;
   String? updateTime;
+  dynamic tenantId;
   dynamic createUserId;
   dynamic updateUserId;
   String? title;
-  @JSONField(name: 'category_pid')
-  String? categoryPid;
-  @JSONField(name: 'category_child_id')
-  String? categoryChildId;
+  @JSONField(name: 'category_id')
+  int? categoryId;
   @JSONField(name: 'surface_plot')
   String? surfacePlot;
-  String? recommend;
+  dynamic recommend;
   String? cycle;
   @JSONField(name: 'cycle_img')
-  String? cycleImg;
+  dynamic cycleImg;
   @JSONField(name: 'charging_mode')
   String? chargingMode;
   @JSONField(name: 'buy_mode')
-  String? buyMode;
-  String? gold;
+  dynamic buyMode;
+  dynamic gold;
   String? directors;
   String? actors;
   @JSONField(name: 'imdb_score')
@@ -66,52 +65,40 @@ class VideoDetailData {
   String? popularityMonth;
   @JSONField(name: 'popularity_sum')
   String? popularitySum;
-  String? note;
+  dynamic note;
   String? year;
   @JSONField(name: 'album_id')
-  int? albumId;
+  dynamic albumId;
   String? status;
-  @JSONField(name: 'create_at')
-  String? createAt;
-  @JSONField(name: 'update_at')
-  String? updateAt;
-  String? duration;
-  String? region;
-  String? language;
-  String? label;
+  dynamic duration;
+  int? region;
+  int? language;
+  dynamic label;
   String? number;
   String? total;
   @JSONField(name: 'horizontal_poster')
   String? horizontalPoster;
   @JSONField(name: 'vertical_poster')
-  String? verticalPoster;
-  String? publish;
+  dynamic verticalPoster;
+  dynamic publish;
   @JSONField(name: 'serial_number')
-  String? serialNumber;
-  String? screenshot;
-  String? gif;
-  String? alias;
+  dynamic serialNumber;
+  dynamic screenshot;
+  dynamic gif;
+  dynamic alias;
   @JSONField(name: 'release_at')
-  String? releaseAt;
+  dynamic releaseAt;
   @JSONField(name: 'shelf_at')
-  String? shelfAt;
-  int? end;
-  String? unit;
-  String? watch;
-  @JSONField(name: 'collection_id')
-  String? collectionId;
+  dynamic shelfAt;
+  dynamic end;
+  dynamic unit;
+  dynamic watch;
   @JSONField(name: 'use_local_image')
   dynamic useLocalImage;
   @JSONField(name: 'titles_time')
   int? titlesTime;
   @JSONField(name: 'trailer_time')
   int? trailerTime;
-  @JSONField(name: 'site_id')
-  int? siteId;
-  @JSONField(name: 'category_pid_status')
-  int? categoryPidStatus;
-  @JSONField(name: 'category_child_id_status')
-  int? categoryChildIdStatus;
   @JSONField(name: 'play_url')
   String? playUrl;
   @JSONField(name: 'play_url_put_in')

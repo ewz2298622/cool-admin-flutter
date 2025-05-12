@@ -3,8 +3,8 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../../api/api.dart';
 import '../../../components/loading.dart';
+import '../../../components/video_one_small.dart';
 import '../../../entity/video_page_entity.dart';
-import '../../video_detail/detail.dart';
 
 class SearchResult extends StatefulWidget {
   //接受路由传递过来的props id
@@ -151,7 +151,9 @@ class SearchResultState extends State<SearchResult>
                   width: double.infinity,
                   //设置白色背景
                   decoration: BoxDecoration(color: Colors.white),
-                  child: Column(children: [_buildAlbumItems()]),
+                  child: Column(
+                    children: [VideoOneSmall(videoPageData: videoPageData)],
+                  ),
                 ),
               ],
             ),
@@ -160,151 +162,6 @@ class SearchResultState extends State<SearchResult>
           return Text('No data available');
         }
       },
-    );
-  }
-
-  void _buildvideo_onClick(int id) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => Video_Detail(id: id)),
-    );
-  }
-
-  Widget _buildAlbumItems() {
-    return Column(
-      children: List<Widget>.generate(videoPageData.length, (i) {
-        return GestureDetector(
-          onTap: () => {_buildvideo_onClick(videoPageData[i].id ?? 0)},
-          child: Container(
-            height: 140,
-            padding: const EdgeInsets.only(left: 4, right: 4, bottom: 15),
-            child: Row(
-              children: [
-                Stack(
-                  children: [
-                    TDImage(
-                      fit: BoxFit.cover,
-                      width: 100,
-                      height: 140,
-                      imgUrl: videoPageData[i].surfacePlot ?? "",
-                      errorWidget: const TDImage(
-                        width: 150,
-                        assetUrl: 'assets/images/loading.gif',
-                      ),
-                    ),
-                    _buildVideoItemOverlay(videoPageData[i]),
-                  ],
-                ),
-                Expanded(
-                  // 使用 Expanded 替代 SizedBox
-                  child: Container(
-                    height: 140,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text(
-                          videoPageData[i].title ?? "",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black54,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          "${videoPageData[i].year ?? ''} / ${videoPageData[i].actors}",
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Color.fromRGBO(153, 153, 153, 1),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          videoPageData[i].introduce ?? "",
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            color: Color.fromRGBO(153, 153, 153, 1),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }),
-    );
-  }
-
-  Widget _buildVideoItemOverlay(dynamic item) {
-    return Container(
-      width: 110,
-      height: 175,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [_buildVideoItemHDTag(), _buildVideoItemNote(item)],
-      ),
-    );
-  }
-
-  Widget _buildVideoItemNote(dynamic item) {
-    if (item?.note == null) {
-      return Container();
-    }
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(right: 15, top: 2),
-          padding: const EdgeInsets.only(top: 2, bottom: 2, left: 4, right: 4),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            color: const Color.fromRGBO(0, 0, 0, 0.302),
-          ),
-          child: Text(
-            item?.note ?? '',
-            maxLines: 1, // 限制最大显示一行
-            overflow: TextOverflow.ellipsis, // 溢出时显示省略号
-            style: _videoNoteTextStyle,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildVideoItemHDTag() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(right: 12, top: 5),
-          padding: const EdgeInsets.only(top: 2, bottom: 2, left: 4, right: 4),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color.fromRGBO(59, 101, 244, 1),
-                Color.fromRGBO(64, 177, 254, 1),
-              ],
-            ),
-          ),
-          child: const Text("高清", style: _hdTagTextStyle),
-        ),
-      ],
     );
   }
 

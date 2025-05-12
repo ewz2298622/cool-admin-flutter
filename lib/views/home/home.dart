@@ -305,7 +305,7 @@ class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
         toolbarHeight: 20,
         backgroundColor: const Color.fromRGBO(255, 218, 112, 1),
       ),
-      resizeToAvoidBottomInset: false, //添加这一行
+      resizeToAvoidBottomInset: true, //添加这一行
       body: RefreshIndicator(
         key: refreshKey,
         onRefresh: onRefresh,
@@ -502,60 +502,6 @@ class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
           color: Colors.black,
           fontWeight: FontWeight.w400,
         ),
-      ),
-    );
-  }
-}
-
-// import 'package:flutter/material.dart';
-
-// class Home extends StatelessWidget {
-//   const Home({super.key});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text('Demo')),
-//       body: const DefaultTabController(
-//         length: 4,
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.stretch,
-//           children: [
-//             TabBar(
-//               //移除下划线
-//               indicator: const BoxDecoration(),
-//               tabs: [
-//                 Tab(text: '日韩'),
-//                 Tab(text: '欧美'),
-//                 Tab(text: '国产'),
-//                 Tab(text: '毛豆'),
-//               ],
-//             ),
-//             Expanded(
-//               child: TabBarView(
-//                 children: [DemoBody(), DemoBody(), DemoBody(), DemoBody()],
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-//
-class DemoBody extends StatelessWidget {
-  const DemoBody({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(height: 200),
-          Text('这里是你的内容'),
-          SizedBox(height: 1000),
-        ],
       ),
     );
   }

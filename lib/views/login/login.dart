@@ -5,6 +5,7 @@ import 'package:flutter_app/api/api.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
+import '../../components/loading.dart';
 import '../../db/entity/TokenEntity.dart';
 import '../../db/entity/UserEntity.dart';
 import '../../db/manager/TokenDatabaseHelper.dart';
@@ -185,7 +186,7 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
       future: _futureBuilderFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: PageLoading());
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else if (snapshot.hasData) {

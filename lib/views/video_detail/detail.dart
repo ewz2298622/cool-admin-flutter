@@ -9,12 +9,15 @@ import 'package:video_player/video_player.dart';
 import '../../api/api.dart';
 import '../../components/loading.dart';
 import '../../components/sectionWithMore.dart';
+import '../../components/video_one_small.dart';
 import '../../components/video_scroll.dart';
+import '../../entity/dict_data_entity.dart';
 import '../../entity/play_line_entity.dart';
 import '../../entity/video_detail_entity.dart';
 import '../../entity/video_line_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../style/layout.dart';
+import '../../utils/dict.dart';
 
 String TAG = 'Video_Detail';
 
@@ -38,10 +41,13 @@ class _Video_DetailState extends State<Video_Detail>
   var _futureBuilderFuture;
   VideoDetailData? videoData;
   List<VideoPageDataList> videoPageData = [];
+  List<VideoPageDataList> selectVideoPageData = [];
   List<VideoLineDataList>? videoLineData = [];
   List<PlayLineDataList>? playerLineData = [];
   List<VideoItem> videoList = [];
-  BuildContext? _context;
+  List<DictDataDataArea>? area = [];
+  List<DictDataDataVideoCategory>? videoCategory = [];
+  List<DictDataDataLanguage>? language = [];
   TabController? _tabController;
   late VideoPlayerController _videoPlayerController;
   late ChewieController chewieController;
@@ -69,17 +75,74 @@ class _Video_DetailState extends State<Video_Detail>
     }
   }
 
+  Future<void> getDictAreaData() async {
+    try {
+      area =
+          ((await Api.getDictData({
+                    "types": ["area"],
+                  })).data
+                  as DictDataData)
+              .area;
+    } catch (e) {
+      // 捕获并处理异常
+      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+    }
+  }
+
+  Future<void> getDictVideoCategoryData() async {
+    try {
+      videoCategory =
+          ((await Api.getDictData({
+                    "types": ["video_category"],
+                  })).data
+                  as DictDataData)
+              .videoCategory;
+    } catch (e) {
+      // 捕获并处理异常
+      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+    }
+  }
+
+  Future<void> getDictLanguageData() async {
+    try {
+      language =
+          ((await Api.getDictData({
+                    "types": ["language"],
+                  })).data
+                  as DictDataData)
+              .language;
+    } catch (e) {
+      // 捕获并处理异常
+      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+    }
+  }
+
   Future<void> getVideoPages() async {
     try {
       List<VideoPageDataList> list =
           (await Api.getVideoPages({
-            "category_id": videoData?.categoryChildId,
+            "category_id": videoData?.categoryId ?? 0,
           })).data?.list ??
           [] as List<VideoPageDataList>;
       videoPageData = list;
     } catch (e) {
       // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+    }
+  }
+
+  Future<String> getSelectVideoPages(Map<String, dynamic> params) async {
+    try {
+      List<VideoPageDataList> list =
+          (await Api.getVideoPages(params)).data?.list ??
+          [] as List<VideoPageDataList>;
+      selectVideoPageData = list;
+      setState(() {
+        selectVideoPageData = list;
+      });
+      return "init success";
+    } catch (e) {
+      return "init error";
     }
   }
 
@@ -144,6 +207,9 @@ class _Video_DetailState extends State<Video_Detail>
   Future<String> init() async {
     try {
       _initTabController();
+      await getDictVideoCategoryData();
+      await getDictLanguageData();
+      await getDictAreaData();
       await getVideoById();
       await getVideoLinePages();
       await getPlayLinePages();
@@ -184,9 +250,18 @@ class _Video_DetailState extends State<Video_Detail>
   /// 返回一个Widget自动填充剩余高度 且可以滑动
   Widget _buildContent() {
     return FutureBuilder<String>(
-      future: _futureBuilderFuture,
+      future: _futureBuilderFuture, // 异步操作
       builder: (context, snapshot) {
-        return _handleFutureBuilder(snapshot);
+        debugPrint('snapshot: ${snapshot.hasData}');
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return PageLoading();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}'); // 显示错误信息
+        } else if (snapshot.hasData) {
+          return _handleFutureBuilder(snapshot);
+        } else {
+          return Text('No data available');
+        }
       },
     );
   }
@@ -288,28 +363,6 @@ class _Video_DetailState extends State<Video_Detail>
     );
   }
 
-  Widget _buildTabsContent() {
-    var tabs = [const TDTab(text: '详情'), const TDTab(text: '简介')];
-    return Stack(
-      children: [
-        TDTabBar(
-          tabs: tabs,
-          controller: _tabController,
-          showIndicator: false,
-          dividerHeight: 0,
-          height: 40,
-          isScrollable: true,
-          labelColor: const Color.fromRGBO(252, 119, 66, 1),
-          unselectedLabelColor: const Color.fromRGBO(102, 102, 102, 1),
-          labelPadding: const EdgeInsets.only(left: 16, right: 16),
-          onTap: (index) {
-            pageController.jumpToPage(index);
-          },
-        ),
-      ],
-    );
-  }
-
   Widget _buildVideoInfo() {
     return Padding(
       padding: const EdgeInsets.only(
@@ -328,11 +381,24 @@ class _Video_DetailState extends State<Video_Detail>
                 [
                       Text(videoData?.year ?? ""),
                       Text(
-                        videoData?.region ?? "",
+                        Dict.getDictName(
+                          videoData?.region ?? 0,
+                          area as List<DictDataDataArea>,
+                        ),
                         style: TextStyle(color: Colors.grey),
                       ),
                       Text(
-                        videoData?.note ?? "",
+                        Dict.getDictName(
+                          videoData?.categoryId ?? 0,
+                          videoCategory as List<DictDataDataVideoCategory>,
+                        ),
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      Text(
+                        Dict.getDictName(
+                          videoData?.language ?? 0,
+                          language as List<DictDataDataLanguage>,
+                        ),
                         style: TextStyle(color: Colors.grey),
                       ),
                     ]
@@ -378,11 +444,6 @@ class _Video_DetailState extends State<Video_Detail>
                     child: _buildPopFromBottomWithCloseAndLeftTitle(context),
                   ),
                 ],
-              ),
-              Text(
-                videoData?.note ?? "",
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -539,6 +600,8 @@ class _Video_DetailState extends State<Video_Detail>
                                           ),
                                           child: TDButton(
                                             text: item.name.toString(),
+                                            width: 80,
+                                            height: 48,
                                             size: TDButtonSize.small,
                                             style: TDButtonStyle(
                                               backgroundColor:
@@ -669,9 +732,24 @@ class _Video_DetailState extends State<Video_Detail>
                     spacing: 5,
                     children: [
                       TDTag(videoData?.year ?? "2021"),
-                      TDTag(videoData?.region ?? ""),
-                      TDTag(videoData?.language ?? ""),
-                      TDTag(videoData?.note ?? ""),
+                      TDTag(
+                        Dict.getDictName(
+                          videoData?.region ?? 0,
+                          area as List<DictDataDataArea>,
+                        ),
+                      ),
+                      TDTag(
+                        Dict.getDictName(
+                          videoData?.categoryId ?? 0,
+                          videoCategory as List<DictDataDataVideoCategory>,
+                        ),
+                      ),
+                      TDTag(
+                        Dict.getDictName(
+                          videoData?.language ?? 0,
+                          language as List<DictDataDataLanguage>,
+                        ),
+                      ),
                     ],
                   ),
                   TDRate(value: (videoData?.doubanScore ?? 0).toDouble()),
@@ -680,9 +758,13 @@ class _Video_DetailState extends State<Video_Detail>
             ],
           ),
           // 导演
-          _buildSection('导演', formatString(videoData?.directors ?? "")),
+          _buildSection(
+            '导演',
+            "directors",
+            formatString(videoData?.directors ?? ""),
+          ),
           // 演员分组
-          _buildSection('演员', formatString(videoData!.actors ?? "")),
+          _buildSection('演员', "actors", formatString(videoData!.actors ?? "")),
           // 剧情
           _buildPlotSection(),
         ],
@@ -701,7 +783,7 @@ class _Video_DetailState extends State<Video_Detail>
     return [str];
   }
 
-  Widget _buildSection(String title, List<String> items) {
+  Widget _buildSection(String title, String paramsKey, List<String> items) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -722,11 +804,161 @@ class _Video_DetailState extends State<Video_Detail>
             child: Wrap(
               spacing: 12,
               runSpacing: 8,
-              children: items.map((item) => TDTag(item)).toList(),
+              // children: items.map((item) => TDTag(item)).toList(),
+              children:
+                  items
+                      .map((item) => _buildPopFromCenter(item, paramsKey))
+                      .toList(),
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildPopFromCenter(String name, String paramsKey) {
+    //定义一个Map<String, dynamic> paramsKey是key name是value
+    Map<String, dynamic> params = {paramsKey: name};
+    return GestureDetector(
+      child: TDTag(name),
+      onTap: () {
+        showModalBottomSheet(
+          backgroundColor: Colors.transparent,
+          context: context,
+          //设置标题
+          isScrollControlled: true,
+          //设置高度
+          builder: (builder) {
+            return FutureBuilder<String>(
+              future: getSelectVideoPages(params), // 异步操作
+              builder: (context, snapshot) {
+                debugPrint('snapshot: ${snapshot.hasData}');
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container(
+                    width: MediaQuery.of(context).size.width,
+                    padding: const EdgeInsets.only(top: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(20.0),
+                        topRight: const Radius.circular(20.0),
+                      ),
+                    ),
+                    height: 650,
+                    child: Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          left: 20,
+                          right: 20,
+                          bottom: 10,
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      name,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      "已为您关联$name的相关影片",
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                  ],
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Icon(Icons.close),
+                                ),
+                              ],
+                            ),
+
+                            Expanded(child: Center(child: PageLoading())),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}'); // 显示错误信息
+                } else if (snapshot.hasData) {
+                  return Container(
+                    width: MediaQuery.of(context).size.width,
+                    padding: const EdgeInsets.only(top: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(20.0),
+                        topRight: const Radius.circular(20.0),
+                      ),
+                    ),
+                    height: 650,
+                    child: Expanded(
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            left: 20,
+                            right: 20,
+                            bottom: 10,
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            name,
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Text(
+                                            "已为您关联$name的相关影片",
+                                            style: TextStyle(fontSize: 14),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: Icon(Icons.close),
+                                  ),
+                                ],
+                              ),
+                              VideoOneSmall(videoPageData: selectVideoPageData),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                } else {
+                  return Text('No data available');
+                }
+              },
+            );
+          },
+        );
+      },
     );
   }
 
@@ -749,7 +981,6 @@ class _Video_DetailState extends State<Video_Detail>
 
   @override
   Widget build(BuildContext context) {
-    _context = context;
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 20,
@@ -757,17 +988,6 @@ class _Video_DetailState extends State<Video_Detail>
         automaticallyImplyLeading: false,
       ),
       resizeToAvoidBottomInset: false,
-      //  Container(
-      //   decoration: const BoxDecoration(
-      //     gradient: LinearGradient(
-      //       begin: Alignment.topCenter,
-      //       end: Alignment.bottomCenter,
-      //       stops: [0.2, 0.8],
-      //       colors: [primaryColor, backgroundColor],
-      //     ),
-      //   ),
-      //   child: _buildVideo(),
-      // ),// 错误
       body: Stack(
         children: [
           // 背景
