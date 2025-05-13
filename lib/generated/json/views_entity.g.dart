@@ -1,5 +1,5 @@
-import 'package:flutter_app/entity/views_entity.dart';
 import 'package:flutter_app/generated/json/base/json_convert_content.dart';
+import 'package:flutter_app/entity/views_entity.dart';
 
 ViewsEntity $ViewsEntityFromJson(Map<String, dynamic> json) {
   final ViewsEntity viewsEntity = ViewsEntity();
@@ -27,7 +27,11 @@ Map<String, dynamic> $ViewsEntityToJson(ViewsEntity entity) {
 }
 
 extension ViewsEntityExtension on ViewsEntity {
-  ViewsEntity copyWith({int? code, String? message, ViewsData? data}) {
+  ViewsEntity copyWith({
+    int? code,
+    String? message,
+    ViewsData? data,
+  }) {
     return ViewsEntity()
       ..code = code ?? this.code
       ..message = message ?? this.message
@@ -37,15 +41,15 @@ extension ViewsEntityExtension on ViewsEntity {
 
 ViewsData $ViewsDataFromJson(Map<String, dynamic> json) {
   final ViewsData viewsData = ViewsData();
-  final List<ViewsDataList>? list =
-      (json['list'] as List<dynamic>?)
-          ?.map((e) => jsonConvert.convert<ViewsDataList>(e) as ViewsDataList)
-          .toList();
+  final List<ViewsDataList>? list = (json['list'] as List<dynamic>?)
+      ?.map(
+          (e) => jsonConvert.convert<ViewsDataList>(e) as ViewsDataList)
+      .toList();
   if (list != null) {
     viewsData.list = list;
   }
-  final ViewsDataPagination? pagination = jsonConvert
-      .convert<ViewsDataPagination>(json['pagination']);
+  final ViewsDataPagination? pagination = jsonConvert.convert<
+      ViewsDataPagination>(json['pagination']);
   if (pagination != null) {
     viewsData.pagination = pagination;
   }
@@ -84,6 +88,10 @@ ViewsDataList $ViewsDataListFromJson(Map<String, dynamic> json) {
   if (updateTime != null) {
     viewsDataList.updateTime = updateTime;
   }
+  final dynamic tenantId = json['tenantId'];
+  if (tenantId != null) {
+    viewsDataList.tenantId = tenantId;
+  }
   final int? createUserId = jsonConvert.convert<int>(json['createUserId']);
   if (createUserId != null) {
     viewsDataList.createUserId = createUserId;
@@ -96,17 +104,26 @@ ViewsDataList $ViewsDataListFromJson(Map<String, dynamic> json) {
   if (title != null) {
     viewsDataList.title = title;
   }
+  final int? type = jsonConvert.convert<int>(json['type']);
+  if (type != null) {
+    viewsDataList.type = type;
+  }
   final int? associationId = jsonConvert.convert<int>(json['associationId']);
   if (associationId != null) {
     viewsDataList.associationId = associationId;
   }
-  final dynamic cover = json['cover'];
+  final String? cover = jsonConvert.convert<String>(json['cover']);
   if (cover != null) {
     viewsDataList.cover = cover;
   }
-  final dynamic type = json['type'];
-  if (type != null) {
-    viewsDataList.type = type;
+  final int? duration = jsonConvert.convert<int>(json['duration']);
+  if (duration != null) {
+    viewsDataList.duration = duration;
+  }
+  final int? viewingDuration = jsonConvert.convert<int>(
+      json['viewingDuration']);
+  if (viewingDuration != null) {
+    viewsDataList.viewingDuration = viewingDuration;
   }
   return viewsDataList;
 }
@@ -116,12 +133,15 @@ Map<String, dynamic> $ViewsDataListToJson(ViewsDataList entity) {
   data['id'] = entity.id;
   data['createTime'] = entity.createTime;
   data['updateTime'] = entity.updateTime;
+  data['tenantId'] = entity.tenantId;
   data['createUserId'] = entity.createUserId;
   data['updateUserId'] = entity.updateUserId;
   data['title'] = entity.title;
+  data['type'] = entity.type;
   data['associationId'] = entity.associationId;
   data['cover'] = entity.cover;
-  data['type'] = entity.type;
+  data['duration'] = entity.duration;
+  data['viewingDuration'] = entity.viewingDuration;
   return data;
 }
 
@@ -130,23 +150,29 @@ extension ViewsDataListExtension on ViewsDataList {
     int? id,
     String? createTime,
     String? updateTime,
+    dynamic tenantId,
     int? createUserId,
     dynamic updateUserId,
     String? title,
+    int? type,
     int? associationId,
-    dynamic cover,
-    dynamic type,
+    String? cover,
+    int? duration,
+    int? viewingDuration,
   }) {
     return ViewsDataList()
       ..id = id ?? this.id
       ..createTime = createTime ?? this.createTime
       ..updateTime = updateTime ?? this.updateTime
+      ..tenantId = tenantId ?? this.tenantId
       ..createUserId = createUserId ?? this.createUserId
       ..updateUserId = updateUserId ?? this.updateUserId
       ..title = title ?? this.title
+      ..type = type ?? this.type
       ..associationId = associationId ?? this.associationId
       ..cover = cover ?? this.cover
-      ..type = type ?? this.type;
+      ..duration = duration ?? this.duration
+      ..viewingDuration = viewingDuration ?? this.viewingDuration;
   }
 }
 
@@ -176,7 +202,11 @@ Map<String, dynamic> $ViewsDataPaginationToJson(ViewsDataPagination entity) {
 }
 
 extension ViewsDataPaginationExtension on ViewsDataPagination {
-  ViewsDataPagination copyWith({int? page, int? size, int? total}) {
+  ViewsDataPagination copyWith({
+    int? page,
+    int? size,
+    int? total,
+  }) {
     return ViewsDataPagination()
       ..page = page ?? this.page
       ..size = size ?? this.size

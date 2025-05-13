@@ -443,9 +443,10 @@ class VideoFilterState extends State<VideoFilter>
                 right: Layout.paddingR,
               ),
               child: Column(
+                spacing: 10,
                 children: [
                   _buildDefaultSearchBar(),
-                  _buildCategoryRow('全部影视', categoryDictList),
+                  _buildCategoryRow('全部分类', categoryDictList),
                   _buildAreaRow('全部地区', areaDictList),
                   _buildYearRow("全部年份", years),
                   Padding(

@@ -1,5 +1,5 @@
-import 'package:flutter_app/entity/dict_data_entity.dart';
 import 'package:flutter_app/generated/json/base/json_convert_content.dart';
+import 'package:flutter_app/entity/dict_data_entity.dart';
 
 DictDataEntity $DictDataEntityFromJson(Map<String, dynamic> json) {
   final DictDataEntity dictDataEntity = DictDataEntity();
@@ -27,7 +27,11 @@ Map<String, dynamic> $DictDataEntityToJson(DictDataEntity entity) {
 }
 
 extension DictDataEntityExtension on DictDataEntity {
-  DictDataEntity copyWith({int? code, String? message, DictDataData? data}) {
+  DictDataEntity copyWith({
+    int? code,
+    String? message,
+    DictDataData? data,
+  }) {
     return DictDataEntity()
       ..code = code ?? this.code
       ..message = message ?? this.message
@@ -37,415 +41,337 @@ extension DictDataEntityExtension on DictDataEntity {
 
 DictDataData $DictDataDataFromJson(Map<String, dynamic> json) {
   final DictDataData dictDataData = DictDataData();
-  final List<DictDataDataWallpaperTags>? wallpaperTags =
-      (json['wallpaperTags'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataWallpaperTags>(e)
-                    as DictDataDataWallpaperTags,
-          )
-          .toList();
+  final List<
+      DictDataDataWallpaperTags>? wallpaperTags = (json['wallpaperTags'] as List<
+      dynamic>?)?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataWallpaperTags>(
+          e) as DictDataDataWallpaperTags).toList();
   if (wallpaperTags != null) {
     dictDataData.wallpaperTags = wallpaperTags;
   }
-  final List<DictDataDataWallpaperType>? wallpaperType =
-      (json['wallpaperType'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataWallpaperType>(e)
-                    as DictDataDataWallpaperType,
-          )
-          .toList();
+  final List<
+      DictDataDataWallpaperType>? wallpaperType = (json['wallpaperType'] as List<
+      dynamic>?)?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataWallpaperType>(
+          e) as DictDataDataWallpaperType).toList();
   if (wallpaperType != null) {
     dictDataData.wallpaperType = wallpaperType;
   }
-  final List<DictDataDataSongTags>? songTags =
-      (json['songTags'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataSongTags>(e)
-                    as DictDataDataSongTags,
-          )
-          .toList();
+  final List<DictDataDataSongTags>? songTags = (json['songTags'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataSongTags>(e) as DictDataDataSongTags)
+      .toList();
   if (songTags != null) {
     dictDataData.songTags = songTags;
   }
-  final List<DictDataDataSongAlbumType>? songAlbumType =
-      (json['songAlbumType'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataSongAlbumType>(e)
-                    as DictDataDataSongAlbumType,
-          )
-          .toList();
+  final List<
+      DictDataDataSongAlbumType>? songAlbumType = (json['songAlbumType'] as List<
+      dynamic>?)?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataSongAlbumType>(
+          e) as DictDataDataSongAlbumType).toList();
   if (songAlbumType != null) {
     dictDataData.songAlbumType = songAlbumType;
   }
-  final List<DictDataDataGoodsTags>? goodsTags =
-      (json['goodsTags'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataGoodsTags>(e)
-                    as DictDataDataGoodsTags,
-          )
-          .toList();
+  final List<DictDataDataGoodsTags>? goodsTags = (json['goodsTags'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataGoodsTags>(e) as DictDataDataGoodsTags)
+      .toList();
   if (goodsTags != null) {
     dictDataData.goodsTags = goodsTags;
   }
-  final List<DictDataDataGoodsType>? goodsType =
-      (json['goodsType'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataGoodsType>(e)
-                    as DictDataDataGoodsType,
-          )
-          .toList();
+  final List<DictDataDataGoodsType>? goodsType = (json['goodsType'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataGoodsType>(e) as DictDataDataGoodsType)
+      .toList();
   if (goodsType != null) {
     dictDataData.goodsType = goodsType;
   }
-  final List<DictDataDataAppType>? appType =
-      (json['appType'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataAppType>(e)
-                    as DictDataDataAppType,
-          )
-          .toList();
+  final List<DictDataDataAppType>? appType = (json['appType'] as List<dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataAppType>(e) as DictDataDataAppType)
+      .toList();
   if (appType != null) {
     dictDataData.appType = appType;
   }
-  final List<DictDataDataAppTags>? appTags =
-      (json['appTags'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataAppTags>(e)
-                    as DictDataDataAppTags,
-          )
-          .toList();
+  final List<DictDataDataAppTags>? appTags = (json['appTags'] as List<dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataAppTags>(e) as DictDataDataAppTags)
+      .toList();
   if (appTags != null) {
     dictDataData.appTags = appTags;
   }
-  final List<DictDataDataAgreementType>? agreementType =
-      (json['agreementType'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataAgreementType>(e)
-                    as DictDataDataAgreementType,
-          )
-          .toList();
+  final List<
+      DictDataDataAgreementType>? agreementType = (json['agreementType'] as List<
+      dynamic>?)?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataAgreementType>(
+          e) as DictDataDataAgreementType).toList();
   if (agreementType != null) {
     dictDataData.agreementType = agreementType;
   }
-  final List<DictDataDataOrderStatus>? orderStatus =
-      (json['orderStatus'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataOrderStatus>(e)
-                    as DictDataDataOrderStatus,
-          )
-          .toList();
+  final List<
+      DictDataDataOrderStatus>? orderStatus = (json['orderStatus'] as List<
+      dynamic>?)?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataOrderStatus>(
+          e) as DictDataDataOrderStatus).toList();
   if (orderStatus != null) {
     dictDataData.orderStatus = orderStatus;
   }
-  final List<DictDataDataIntegralType>? integralType =
-      (json['integralType'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataIntegralType>(e)
-                    as DictDataDataIntegralType,
-          )
-          .toList();
+  final List<
+      DictDataDataIntegralType>? integralType = (json['integralType'] as List<
+      dynamic>?)?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataIntegralType>(
+          e) as DictDataDataIntegralType).toList();
   if (integralType != null) {
     dictDataData.integralType = integralType;
   }
-  final List<DictDataDataAppModule>? appModule =
-      (json['appModule'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataAppModule>(e)
-                    as DictDataDataAppModule,
-          )
-          .toList();
+  final List<DictDataDataAppModule>? appModule = (json['appModule'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataAppModule>(e) as DictDataDataAppModule)
+      .toList();
   if (appModule != null) {
     dictDataData.appModule = appModule;
   }
-  final List<DictDataDataEmailType>? emailType =
-      (json['emailType'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataEmailType>(e)
-                    as DictDataDataEmailType,
-          )
-          .toList();
+  final List<DictDataDataEmailType>? emailType = (json['emailType'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataEmailType>(e) as DictDataDataEmailType)
+      .toList();
   if (emailType != null) {
     dictDataData.emailType = emailType;
   }
-  final List<DictDataDataSpecialType>? specialType =
-      (json['specialType'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataSpecialType>(e)
-                    as DictDataDataSpecialType,
-          )
-          .toList();
+  final List<
+      DictDataDataSpecialType>? specialType = (json['specialType'] as List<
+      dynamic>?)?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataSpecialType>(
+          e) as DictDataDataSpecialType).toList();
   if (specialType != null) {
     dictDataData.specialType = specialType;
   }
-  final List<DictDataDataFlix>? flix =
-      (json['flix'] as List<dynamic>?)
-          ?.map(
-            (e) => jsonConvert.convert<DictDataDataFlix>(e) as DictDataDataFlix,
-          )
-          .toList();
+  final List<DictDataDataFlix>? flix = (json['flix'] as List<dynamic>?)
+      ?.map(
+          (e) => jsonConvert.convert<DictDataDataFlix>(e) as DictDataDataFlix)
+      .toList();
   if (flix != null) {
     dictDataData.flix = flix;
   }
-  final List<DictDataDataDocumentType>? documentType =
-      (json['documentType'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataDocumentType>(e)
-                    as DictDataDataDocumentType,
-          )
-          .toList();
+  final List<
+      DictDataDataDocumentType>? documentType = (json['documentType'] as List<
+      dynamic>?)?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataDocumentType>(
+          e) as DictDataDataDocumentType).toList();
   if (documentType != null) {
     dictDataData.documentType = documentType;
   }
-  final List<DictDataDataDocumentTags>? documentTags =
-      (json['documentTags'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataDocumentTags>(e)
-                    as DictDataDataDocumentTags,
-          )
-          .toList();
+  final List<
+      DictDataDataDocumentTags>? documentTags = (json['documentTags'] as List<
+      dynamic>?)?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataDocumentTags>(
+          e) as DictDataDataDocumentTags).toList();
   if (documentTags != null) {
     dictDataData.documentTags = documentTags;
   }
-  final List<DictDataDataUpdateType>? updateType =
-      (json['updateType'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataUpdateType>(e)
-                    as DictDataDataUpdateType,
-          )
-          .toList();
+  final List<DictDataDataUpdateType>? updateType = (json['updateType'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataUpdateType>(e) as DictDataDataUpdateType)
+      .toList();
   if (updateType != null) {
     dictDataData.updateType = updateType;
   }
-  final List<DictDataDataCommonType>? commonType =
-      (json['commonType'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataCommonType>(e)
-                    as DictDataDataCommonType,
-          )
-          .toList();
+  final List<DictDataDataCommonType>? commonType = (json['commonType'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataCommonType>(e) as DictDataDataCommonType)
+      .toList();
   if (commonType != null) {
     dictDataData.commonType = commonType;
   }
-  final List<DictDataDataMessageType>? messageType =
-      (json['messageType'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataMessageType>(e)
-                    as DictDataDataMessageType,
-          )
-          .toList();
+  final List<
+      DictDataDataMessageType>? messageType = (json['messageType'] as List<
+      dynamic>?)?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataMessageType>(
+          e) as DictDataDataMessageType).toList();
   if (messageType != null) {
     dictDataData.messageType = messageType;
   }
-  final List<DictDataDataFriendApplyStatus>? friendApplyStatus =
-      (json['friendApplyStatus'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataFriendApplyStatus>(e)
-                    as DictDataDataFriendApplyStatus,
-          )
-          .toList();
+  final List<
+      DictDataDataFriendApplyStatus>? friendApplyStatus = (json['friendApplyStatus'] as List<
+      dynamic>?)?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataFriendApplyStatus>(
+          e) as DictDataDataFriendApplyStatus).toList();
   if (friendApplyStatus != null) {
     dictDataData.friendApplyStatus = friendApplyStatus;
   }
-  final List<DictDataDataLiveStatus>? liveStatus =
-      (json['liveStatus'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataLiveStatus>(e)
-                    as DictDataDataLiveStatus,
-          )
-          .toList();
+  final List<DictDataDataLiveStatus>? liveStatus = (json['liveStatus'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataLiveStatus>(e) as DictDataDataLiveStatus)
+      .toList();
   if (liveStatus != null) {
     dictDataData.liveStatus = liveStatus;
   }
-  final List<DictDataDataLiveType>? liveType =
-      (json['liveType'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataLiveType>(e)
-                    as DictDataDataLiveType,
-          )
-          .toList();
+  final List<DictDataDataLiveType>? liveType = (json['liveType'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataLiveType>(e) as DictDataDataLiveType)
+      .toList();
   if (liveType != null) {
     dictDataData.liveType = liveType;
   }
-  final List<DictDataDataLiveTags>? liveTags =
-      (json['liveTags'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataLiveTags>(e)
-                    as DictDataDataLiveTags,
-          )
-          .toList();
+  final List<DictDataDataLiveTags>? liveTags = (json['liveTags'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataLiveTags>(e) as DictDataDataLiveTags)
+      .toList();
   if (liveTags != null) {
     dictDataData.liveTags = liveTags;
   }
-  final List<DictDataDataWeek>? week =
-      (json['week'] as List<dynamic>?)
-          ?.map(
-            (e) => jsonConvert.convert<DictDataDataWeek>(e) as DictDataDataWeek,
-          )
-          .toList();
+  final List<DictDataDataWeek>? week = (json['week'] as List<dynamic>?)
+      ?.map(
+          (e) => jsonConvert.convert<DictDataDataWeek>(e) as DictDataDataWeek)
+      .toList();
   if (week != null) {
     dictDataData.week = week;
   }
-  final List<DictDataDataIndexTabs>? indexTabs =
-      (json['index-tabs'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataIndexTabs>(e)
-                    as DictDataDataIndexTabs,
-          )
-          .toList();
+  final List<DictDataDataIndexTabs>? indexTabs = (json['index-tabs'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataIndexTabs>(e) as DictDataDataIndexTabs)
+      .toList();
   if (indexTabs != null) {
     dictDataData.indexTabs = indexTabs;
   }
-  final List<DictDataDataComicTags>? comicTags =
-      (json['comicTags'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataComicTags>(e)
-                    as DictDataDataComicTags,
-          )
-          .toList();
+  final List<DictDataDataComicTags>? comicTags = (json['comicTags'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataComicTags>(e) as DictDataDataComicTags)
+      .toList();
   if (comicTags != null) {
     dictDataData.comicTags = comicTags;
   }
-  final List<DictDataDataArea>? area =
-      (json['area'] as List<dynamic>?)
-          ?.map(
-            (e) => jsonConvert.convert<DictDataDataArea>(e) as DictDataDataArea,
-          )
-          .toList();
+  final List<DictDataDataArea>? area = (json['area'] as List<dynamic>?)
+      ?.map(
+          (e) => jsonConvert.convert<DictDataDataArea>(e) as DictDataDataArea)
+      .toList();
   if (area != null) {
     dictDataData.area = area;
   }
-  final List<DictDataDataLanguage>? language =
-      (json['language'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataLanguage>(e)
-                    as DictDataDataLanguage,
-          )
-          .toList();
+  final List<DictDataDataLanguage>? language = (json['language'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataLanguage>(e) as DictDataDataLanguage)
+      .toList();
   if (language != null) {
     dictDataData.language = language;
   }
-  final List<DictDataDataCloudDiskType>? cloudDiskType =
-      (json['cloudDiskType'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataCloudDiskType>(e)
-                    as DictDataDataCloudDiskType,
-          )
-          .toList();
+  final List<
+      DictDataDataCloudDiskType>? cloudDiskType = (json['cloudDiskType'] as List<
+      dynamic>?)?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataCloudDiskType>(
+          e) as DictDataDataCloudDiskType).toList();
   if (cloudDiskType != null) {
     dictDataData.cloudDiskType = cloudDiskType;
   }
-  final List<DictDataDataPageType>? pageType =
-      (json['pageType'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataPageType>(e)
-                    as DictDataDataPageType,
-          )
-          .toList();
+  final List<DictDataDataPageType>? pageType = (json['pageType'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataPageType>(e) as DictDataDataPageType)
+      .toList();
   if (pageType != null) {
     dictDataData.pageType = pageType;
   }
-  final List<DictDataDataComicUpdateStatus>? comicUpdateStatus =
-      (json['comicUpdateStatus'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataComicUpdateStatus>(e)
-                    as DictDataDataComicUpdateStatus,
-          )
-          .toList();
+  final List<
+      DictDataDataComicUpdateStatus>? comicUpdateStatus = (json['comicUpdateStatus'] as List<
+      dynamic>?)?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataComicUpdateStatus>(
+          e) as DictDataDataComicUpdateStatus).toList();
   if (comicUpdateStatus != null) {
     dictDataData.comicUpdateStatus = comicUpdateStatus;
   }
-  final List<DictDataDataComicType>? comicType =
-      (json['comicType'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataComicType>(e)
-                    as DictDataDataComicType,
-          )
-          .toList();
+  final List<DictDataDataComicType>? comicType = (json['comicType'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataComicType>(e) as DictDataDataComicType)
+      .toList();
   if (comicType != null) {
     dictDataData.comicType = comicType;
   }
-  final List<DictDataDataVideoM3u8SliceStatus>? videoM3u8SliceStatus =
-      (json['videoM3u8SliceStatus'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataVideoM3u8SliceStatus>(e)
-                    as DictDataDataVideoM3u8SliceStatus,
-          )
-          .toList();
+  final List<
+      DictDataDataVideoM3u8SliceStatus>? videoM3u8SliceStatus = (json['videoM3u8SliceStatus'] as List<
+      dynamic>?)?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataVideoM3u8SliceStatus>(
+          e) as DictDataDataVideoM3u8SliceStatus).toList();
   if (videoM3u8SliceStatus != null) {
     dictDataData.videoM3u8SliceStatus = videoM3u8SliceStatus;
   }
-  final List<DictDataDataCloudDiskTags>? cloudDiskTags =
-      (json['cloudDiskTags'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataCloudDiskTags>(e)
-                    as DictDataDataCloudDiskTags,
-          )
-          .toList();
+  final List<
+      DictDataDataCloudDiskTags>? cloudDiskTags = (json['cloudDiskTags'] as List<
+      dynamic>?)?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataCloudDiskTags>(
+          e) as DictDataDataCloudDiskTags).toList();
   if (cloudDiskTags != null) {
     dictDataData.cloudDiskTags = cloudDiskTags;
   }
-  final List<DictDataDataSongType>? songType =
-      (json['songType'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataSongType>(e)
-                    as DictDataDataSongType,
-          )
-          .toList();
+  final List<DictDataDataSongType>? songType = (json['songType'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataSongType>(e) as DictDataDataSongType)
+      .toList();
   if (songType != null) {
     dictDataData.songType = songType;
   }
-  final List<DictDataDataVideoCategory>? videoCategory =
-      (json['video_category'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataVideoCategory>(e)
-                    as DictDataDataVideoCategory,
-          )
-          .toList();
+  final List<
+      DictDataDataVideoCategory>? videoCategory = (json['video_category'] as List<
+      dynamic>?)?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataVideoCategory>(
+          e) as DictDataDataVideoCategory).toList();
   if (videoCategory != null) {
     dictDataData.videoCategory = videoCategory;
   }
-  final List<DictDataDataNoticeType>? noticeType =
-      (json['notice_type'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataNoticeType>(e)
-                    as DictDataDataNoticeType,
-          )
-          .toList();
+  final List<DictDataDataNoticeType>? noticeType = (json['notice_type'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataNoticeType>(e) as DictDataDataNoticeType)
+      .toList();
   if (noticeType != null) {
     dictDataData.noticeType = noticeType;
   }
@@ -583,10 +509,8 @@ extension DictDataDataExtension on DictDataData {
 }
 
 DictDataDataWallpaperTags $DictDataDataWallpaperTagsFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataWallpaperTags dictDataDataWallpaperTags =
-      DictDataDataWallpaperTags();
+    Map<String, dynamic> json) {
+  final DictDataDataWallpaperTags dictDataDataWallpaperTags = DictDataDataWallpaperTags();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataWallpaperTags.id = id;
@@ -615,8 +539,7 @@ DictDataDataWallpaperTags $DictDataDataWallpaperTagsFromJson(
 }
 
 Map<String, dynamic> $DictDataDataWallpaperTagsToJson(
-  DictDataDataWallpaperTags entity,
-) {
+    DictDataDataWallpaperTags entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -647,10 +570,8 @@ extension DictDataDataWallpaperTagsExtension on DictDataDataWallpaperTags {
 }
 
 DictDataDataWallpaperType $DictDataDataWallpaperTypeFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataWallpaperType dictDataDataWallpaperType =
-      DictDataDataWallpaperType();
+    Map<String, dynamic> json) {
+  final DictDataDataWallpaperType dictDataDataWallpaperType = DictDataDataWallpaperType();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataWallpaperType.id = id;
@@ -679,8 +600,7 @@ DictDataDataWallpaperType $DictDataDataWallpaperTypeFromJson(
 }
 
 Map<String, dynamic> $DictDataDataWallpaperTypeToJson(
-  DictDataDataWallpaperType entity,
-) {
+    DictDataDataWallpaperType entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -770,10 +690,8 @@ extension DictDataDataSongTagsExtension on DictDataDataSongTags {
 }
 
 DictDataDataSongAlbumType $DictDataDataSongAlbumTypeFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataSongAlbumType dictDataDataSongAlbumType =
-      DictDataDataSongAlbumType();
+    Map<String, dynamic> json) {
+  final DictDataDataSongAlbumType dictDataDataSongAlbumType = DictDataDataSongAlbumType();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataSongAlbumType.id = id;
@@ -802,8 +720,7 @@ DictDataDataSongAlbumType $DictDataDataSongAlbumTypeFromJson(
 }
 
 Map<String, dynamic> $DictDataDataSongAlbumTypeToJson(
-  DictDataDataSongAlbumType entity,
-) {
+    DictDataDataSongAlbumType entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -834,8 +751,7 @@ extension DictDataDataSongAlbumTypeExtension on DictDataDataSongAlbumType {
 }
 
 DictDataDataGoodsTags $DictDataDataGoodsTagsFromJson(
-  Map<String, dynamic> json,
-) {
+    Map<String, dynamic> json) {
   final DictDataDataGoodsTags dictDataDataGoodsTags = DictDataDataGoodsTags();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
@@ -865,8 +781,7 @@ DictDataDataGoodsTags $DictDataDataGoodsTagsFromJson(
 }
 
 Map<String, dynamic> $DictDataDataGoodsTagsToJson(
-  DictDataDataGoodsTags entity,
-) {
+    DictDataDataGoodsTags entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -897,8 +812,7 @@ extension DictDataDataGoodsTagsExtension on DictDataDataGoodsTags {
 }
 
 DictDataDataGoodsType $DictDataDataGoodsTypeFromJson(
-  Map<String, dynamic> json,
-) {
+    Map<String, dynamic> json) {
   final DictDataDataGoodsType dictDataDataGoodsType = DictDataDataGoodsType();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
@@ -928,8 +842,7 @@ DictDataDataGoodsType $DictDataDataGoodsTypeFromJson(
 }
 
 Map<String, dynamic> $DictDataDataGoodsTypeToJson(
-  DictDataDataGoodsType entity,
-) {
+    DictDataDataGoodsType entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -1078,10 +991,8 @@ extension DictDataDataAppTagsExtension on DictDataDataAppTags {
 }
 
 DictDataDataAgreementType $DictDataDataAgreementTypeFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataAgreementType dictDataDataAgreementType =
-      DictDataDataAgreementType();
+    Map<String, dynamic> json) {
+  final DictDataDataAgreementType dictDataDataAgreementType = DictDataDataAgreementType();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataAgreementType.id = id;
@@ -1110,8 +1021,7 @@ DictDataDataAgreementType $DictDataDataAgreementTypeFromJson(
 }
 
 Map<String, dynamic> $DictDataDataAgreementTypeToJson(
-  DictDataDataAgreementType entity,
-) {
+    DictDataDataAgreementType entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -1142,10 +1052,8 @@ extension DictDataDataAgreementTypeExtension on DictDataDataAgreementType {
 }
 
 DictDataDataOrderStatus $DictDataDataOrderStatusFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataOrderStatus dictDataDataOrderStatus =
-      DictDataDataOrderStatus();
+    Map<String, dynamic> json) {
+  final DictDataDataOrderStatus dictDataDataOrderStatus = DictDataDataOrderStatus();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataOrderStatus.id = id;
@@ -1174,8 +1082,7 @@ DictDataDataOrderStatus $DictDataDataOrderStatusFromJson(
 }
 
 Map<String, dynamic> $DictDataDataOrderStatusToJson(
-  DictDataDataOrderStatus entity,
-) {
+    DictDataDataOrderStatus entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -1206,10 +1113,8 @@ extension DictDataDataOrderStatusExtension on DictDataDataOrderStatus {
 }
 
 DictDataDataIntegralType $DictDataDataIntegralTypeFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataIntegralType dictDataDataIntegralType =
-      DictDataDataIntegralType();
+    Map<String, dynamic> json) {
+  final DictDataDataIntegralType dictDataDataIntegralType = DictDataDataIntegralType();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataIntegralType.id = id;
@@ -1238,8 +1143,7 @@ DictDataDataIntegralType $DictDataDataIntegralTypeFromJson(
 }
 
 Map<String, dynamic> $DictDataDataIntegralTypeToJson(
-  DictDataDataIntegralType entity,
-) {
+    DictDataDataIntegralType entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -1270,8 +1174,7 @@ extension DictDataDataIntegralTypeExtension on DictDataDataIntegralType {
 }
 
 DictDataDataAppModule $DictDataDataAppModuleFromJson(
-  Map<String, dynamic> json,
-) {
+    Map<String, dynamic> json) {
   final DictDataDataAppModule dictDataDataAppModule = DictDataDataAppModule();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
@@ -1301,8 +1204,7 @@ DictDataDataAppModule $DictDataDataAppModuleFromJson(
 }
 
 Map<String, dynamic> $DictDataDataAppModuleToJson(
-  DictDataDataAppModule entity,
-) {
+    DictDataDataAppModule entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -1333,8 +1235,7 @@ extension DictDataDataAppModuleExtension on DictDataDataAppModule {
 }
 
 DictDataDataEmailType $DictDataDataEmailTypeFromJson(
-  Map<String, dynamic> json,
-) {
+    Map<String, dynamic> json) {
   final DictDataDataEmailType dictDataDataEmailType = DictDataDataEmailType();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
@@ -1364,8 +1265,7 @@ DictDataDataEmailType $DictDataDataEmailTypeFromJson(
 }
 
 Map<String, dynamic> $DictDataDataEmailTypeToJson(
-  DictDataDataEmailType entity,
-) {
+    DictDataDataEmailType entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -1396,10 +1296,8 @@ extension DictDataDataEmailTypeExtension on DictDataDataEmailType {
 }
 
 DictDataDataSpecialType $DictDataDataSpecialTypeFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataSpecialType dictDataDataSpecialType =
-      DictDataDataSpecialType();
+    Map<String, dynamic> json) {
+  final DictDataDataSpecialType dictDataDataSpecialType = DictDataDataSpecialType();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataSpecialType.id = id;
@@ -1428,8 +1326,7 @@ DictDataDataSpecialType $DictDataDataSpecialTypeFromJson(
 }
 
 Map<String, dynamic> $DictDataDataSpecialTypeToJson(
-  DictDataDataSpecialType entity,
-) {
+    DictDataDataSpecialType entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -1519,10 +1416,8 @@ extension DictDataDataFlixExtension on DictDataDataFlix {
 }
 
 DictDataDataDocumentType $DictDataDataDocumentTypeFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataDocumentType dictDataDataDocumentType =
-      DictDataDataDocumentType();
+    Map<String, dynamic> json) {
+  final DictDataDataDocumentType dictDataDataDocumentType = DictDataDataDocumentType();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataDocumentType.id = id;
@@ -1551,8 +1446,7 @@ DictDataDataDocumentType $DictDataDataDocumentTypeFromJson(
 }
 
 Map<String, dynamic> $DictDataDataDocumentTypeToJson(
-  DictDataDataDocumentType entity,
-) {
+    DictDataDataDocumentType entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -1583,10 +1477,8 @@ extension DictDataDataDocumentTypeExtension on DictDataDataDocumentType {
 }
 
 DictDataDataDocumentTags $DictDataDataDocumentTagsFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataDocumentTags dictDataDataDocumentTags =
-      DictDataDataDocumentTags();
+    Map<String, dynamic> json) {
+  final DictDataDataDocumentTags dictDataDataDocumentTags = DictDataDataDocumentTags();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataDocumentTags.id = id;
@@ -1615,8 +1507,7 @@ DictDataDataDocumentTags $DictDataDataDocumentTagsFromJson(
 }
 
 Map<String, dynamic> $DictDataDataDocumentTagsToJson(
-  DictDataDataDocumentTags entity,
-) {
+    DictDataDataDocumentTags entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -1647,10 +1538,8 @@ extension DictDataDataDocumentTagsExtension on DictDataDataDocumentTags {
 }
 
 DictDataDataUpdateType $DictDataDataUpdateTypeFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataUpdateType dictDataDataUpdateType =
-      DictDataDataUpdateType();
+    Map<String, dynamic> json) {
+  final DictDataDataUpdateType dictDataDataUpdateType = DictDataDataUpdateType();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataUpdateType.id = id;
@@ -1679,8 +1568,7 @@ DictDataDataUpdateType $DictDataDataUpdateTypeFromJson(
 }
 
 Map<String, dynamic> $DictDataDataUpdateTypeToJson(
-  DictDataDataUpdateType entity,
-) {
+    DictDataDataUpdateType entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -1711,10 +1599,8 @@ extension DictDataDataUpdateTypeExtension on DictDataDataUpdateType {
 }
 
 DictDataDataCommonType $DictDataDataCommonTypeFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataCommonType dictDataDataCommonType =
-      DictDataDataCommonType();
+    Map<String, dynamic> json) {
+  final DictDataDataCommonType dictDataDataCommonType = DictDataDataCommonType();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataCommonType.id = id;
@@ -1743,8 +1629,7 @@ DictDataDataCommonType $DictDataDataCommonTypeFromJson(
 }
 
 Map<String, dynamic> $DictDataDataCommonTypeToJson(
-  DictDataDataCommonType entity,
-) {
+    DictDataDataCommonType entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -1775,10 +1660,8 @@ extension DictDataDataCommonTypeExtension on DictDataDataCommonType {
 }
 
 DictDataDataMessageType $DictDataDataMessageTypeFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataMessageType dictDataDataMessageType =
-      DictDataDataMessageType();
+    Map<String, dynamic> json) {
+  final DictDataDataMessageType dictDataDataMessageType = DictDataDataMessageType();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataMessageType.id = id;
@@ -1807,8 +1690,7 @@ DictDataDataMessageType $DictDataDataMessageTypeFromJson(
 }
 
 Map<String, dynamic> $DictDataDataMessageTypeToJson(
-  DictDataDataMessageType entity,
-) {
+    DictDataDataMessageType entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -1839,10 +1721,8 @@ extension DictDataDataMessageTypeExtension on DictDataDataMessageType {
 }
 
 DictDataDataFriendApplyStatus $DictDataDataFriendApplyStatusFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataFriendApplyStatus dictDataDataFriendApplyStatus =
-      DictDataDataFriendApplyStatus();
+    Map<String, dynamic> json) {
+  final DictDataDataFriendApplyStatus dictDataDataFriendApplyStatus = DictDataDataFriendApplyStatus();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataFriendApplyStatus.id = id;
@@ -1871,8 +1751,7 @@ DictDataDataFriendApplyStatus $DictDataDataFriendApplyStatusFromJson(
 }
 
 Map<String, dynamic> $DictDataDataFriendApplyStatusToJson(
-  DictDataDataFriendApplyStatus entity,
-) {
+    DictDataDataFriendApplyStatus entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -1883,8 +1762,7 @@ Map<String, dynamic> $DictDataDataFriendApplyStatusToJson(
   return data;
 }
 
-extension DictDataDataFriendApplyStatusExtension
-    on DictDataDataFriendApplyStatus {
+extension DictDataDataFriendApplyStatusExtension on DictDataDataFriendApplyStatus {
   DictDataDataFriendApplyStatus copyWith({
     int? id,
     int? typeId,
@@ -1904,10 +1782,8 @@ extension DictDataDataFriendApplyStatusExtension
 }
 
 DictDataDataLiveStatus $DictDataDataLiveStatusFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataLiveStatus dictDataDataLiveStatus =
-      DictDataDataLiveStatus();
+    Map<String, dynamic> json) {
+  final DictDataDataLiveStatus dictDataDataLiveStatus = DictDataDataLiveStatus();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataLiveStatus.id = id;
@@ -1936,8 +1812,7 @@ DictDataDataLiveStatus $DictDataDataLiveStatusFromJson(
 }
 
 Map<String, dynamic> $DictDataDataLiveStatusToJson(
-  DictDataDataLiveStatus entity,
-) {
+    DictDataDataLiveStatus entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -2145,8 +2020,7 @@ extension DictDataDataWeekExtension on DictDataDataWeek {
 }
 
 DictDataDataIndexTabs $DictDataDataIndexTabsFromJson(
-  Map<String, dynamic> json,
-) {
+    Map<String, dynamic> json) {
   final DictDataDataIndexTabs dictDataDataIndexTabs = DictDataDataIndexTabs();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
@@ -2176,8 +2050,7 @@ DictDataDataIndexTabs $DictDataDataIndexTabsFromJson(
 }
 
 Map<String, dynamic> $DictDataDataIndexTabsToJson(
-  DictDataDataIndexTabs entity,
-) {
+    DictDataDataIndexTabs entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -2208,8 +2081,7 @@ extension DictDataDataIndexTabsExtension on DictDataDataIndexTabs {
 }
 
 DictDataDataComicTags $DictDataDataComicTagsFromJson(
-  Map<String, dynamic> json,
-) {
+    Map<String, dynamic> json) {
   final DictDataDataComicTags dictDataDataComicTags = DictDataDataComicTags();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
@@ -2239,8 +2111,7 @@ DictDataDataComicTags $DictDataDataComicTagsFromJson(
 }
 
 Map<String, dynamic> $DictDataDataComicTagsToJson(
-  DictDataDataComicTags entity,
-) {
+    DictDataDataComicTags entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -2389,10 +2260,8 @@ extension DictDataDataLanguageExtension on DictDataDataLanguage {
 }
 
 DictDataDataCloudDiskType $DictDataDataCloudDiskTypeFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataCloudDiskType dictDataDataCloudDiskType =
-      DictDataDataCloudDiskType();
+    Map<String, dynamic> json) {
+  final DictDataDataCloudDiskType dictDataDataCloudDiskType = DictDataDataCloudDiskType();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataCloudDiskType.id = id;
@@ -2421,8 +2290,7 @@ DictDataDataCloudDiskType $DictDataDataCloudDiskTypeFromJson(
 }
 
 Map<String, dynamic> $DictDataDataCloudDiskTypeToJson(
-  DictDataDataCloudDiskType entity,
-) {
+    DictDataDataCloudDiskType entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -2512,10 +2380,8 @@ extension DictDataDataPageTypeExtension on DictDataDataPageType {
 }
 
 DictDataDataComicUpdateStatus $DictDataDataComicUpdateStatusFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataComicUpdateStatus dictDataDataComicUpdateStatus =
-      DictDataDataComicUpdateStatus();
+    Map<String, dynamic> json) {
+  final DictDataDataComicUpdateStatus dictDataDataComicUpdateStatus = DictDataDataComicUpdateStatus();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataComicUpdateStatus.id = id;
@@ -2544,8 +2410,7 @@ DictDataDataComicUpdateStatus $DictDataDataComicUpdateStatusFromJson(
 }
 
 Map<String, dynamic> $DictDataDataComicUpdateStatusToJson(
-  DictDataDataComicUpdateStatus entity,
-) {
+    DictDataDataComicUpdateStatus entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -2556,8 +2421,7 @@ Map<String, dynamic> $DictDataDataComicUpdateStatusToJson(
   return data;
 }
 
-extension DictDataDataComicUpdateStatusExtension
-    on DictDataDataComicUpdateStatus {
+extension DictDataDataComicUpdateStatusExtension on DictDataDataComicUpdateStatus {
   DictDataDataComicUpdateStatus copyWith({
     int? id,
     int? typeId,
@@ -2577,8 +2441,7 @@ extension DictDataDataComicUpdateStatusExtension
 }
 
 DictDataDataComicType $DictDataDataComicTypeFromJson(
-  Map<String, dynamic> json,
-) {
+    Map<String, dynamic> json) {
   final DictDataDataComicType dictDataDataComicType = DictDataDataComicType();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
@@ -2608,8 +2471,7 @@ DictDataDataComicType $DictDataDataComicTypeFromJson(
 }
 
 Map<String, dynamic> $DictDataDataComicTypeToJson(
-  DictDataDataComicType entity,
-) {
+    DictDataDataComicType entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -2640,10 +2502,8 @@ extension DictDataDataComicTypeExtension on DictDataDataComicType {
 }
 
 DictDataDataVideoM3u8SliceStatus $DictDataDataVideoM3u8SliceStatusFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataVideoM3u8SliceStatus dictDataDataVideoM3u8SliceStatus =
-      DictDataDataVideoM3u8SliceStatus();
+    Map<String, dynamic> json) {
+  final DictDataDataVideoM3u8SliceStatus dictDataDataVideoM3u8SliceStatus = DictDataDataVideoM3u8SliceStatus();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataVideoM3u8SliceStatus.id = id;
@@ -2672,8 +2532,7 @@ DictDataDataVideoM3u8SliceStatus $DictDataDataVideoM3u8SliceStatusFromJson(
 }
 
 Map<String, dynamic> $DictDataDataVideoM3u8SliceStatusToJson(
-  DictDataDataVideoM3u8SliceStatus entity,
-) {
+    DictDataDataVideoM3u8SliceStatus entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -2684,8 +2543,7 @@ Map<String, dynamic> $DictDataDataVideoM3u8SliceStatusToJson(
   return data;
 }
 
-extension DictDataDataVideoM3u8SliceStatusExtension
-    on DictDataDataVideoM3u8SliceStatus {
+extension DictDataDataVideoM3u8SliceStatusExtension on DictDataDataVideoM3u8SliceStatus {
   DictDataDataVideoM3u8SliceStatus copyWith({
     int? id,
     int? typeId,
@@ -2705,10 +2563,8 @@ extension DictDataDataVideoM3u8SliceStatusExtension
 }
 
 DictDataDataCloudDiskTags $DictDataDataCloudDiskTagsFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataCloudDiskTags dictDataDataCloudDiskTags =
-      DictDataDataCloudDiskTags();
+    Map<String, dynamic> json) {
+  final DictDataDataCloudDiskTags dictDataDataCloudDiskTags = DictDataDataCloudDiskTags();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataCloudDiskTags.id = id;
@@ -2737,8 +2593,7 @@ DictDataDataCloudDiskTags $DictDataDataCloudDiskTagsFromJson(
 }
 
 Map<String, dynamic> $DictDataDataCloudDiskTagsToJson(
-  DictDataDataCloudDiskTags entity,
-) {
+    DictDataDataCloudDiskTags entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -2828,10 +2683,8 @@ extension DictDataDataSongTypeExtension on DictDataDataSongType {
 }
 
 DictDataDataVideoCategory $DictDataDataVideoCategoryFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataVideoCategory dictDataDataVideoCategory =
-      DictDataDataVideoCategory();
+    Map<String, dynamic> json) {
+  final DictDataDataVideoCategory dictDataDataVideoCategory = DictDataDataVideoCategory();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataVideoCategory.id = id;
@@ -2860,8 +2713,7 @@ DictDataDataVideoCategory $DictDataDataVideoCategoryFromJson(
 }
 
 Map<String, dynamic> $DictDataDataVideoCategoryToJson(
-  DictDataDataVideoCategory entity,
-) {
+    DictDataDataVideoCategory entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -2892,10 +2744,8 @@ extension DictDataDataVideoCategoryExtension on DictDataDataVideoCategory {
 }
 
 DictDataDataNoticeType $DictDataDataNoticeTypeFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataNoticeType dictDataDataNoticeType =
-      DictDataDataNoticeType();
+    Map<String, dynamic> json) {
+  final DictDataDataNoticeType dictDataDataNoticeType = DictDataDataNoticeType();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataNoticeType.id = id;
@@ -2924,8 +2774,7 @@ DictDataDataNoticeType $DictDataDataNoticeTypeFromJson(
 }
 
 Map<String, dynamic> $DictDataDataNoticeTypeToJson(
-  DictDataDataNoticeType entity,
-) {
+    DictDataDataNoticeType entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;

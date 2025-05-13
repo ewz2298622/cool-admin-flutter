@@ -1,5 +1,5 @@
-import 'package:flutter_app/entity/video_page_entity.dart';
 import 'package:flutter_app/generated/json/base/json_convert_content.dart';
+import 'package:flutter_app/entity/video_page_entity.dart';
 
 VideoPageEntity $VideoPageEntityFromJson(Map<String, dynamic> json) {
   final VideoPageEntity videoPageEntity = VideoPageEntity();
@@ -27,7 +27,11 @@ Map<String, dynamic> $VideoPageEntityToJson(VideoPageEntity entity) {
 }
 
 extension VideoPageEntityExtension on VideoPageEntity {
-  VideoPageEntity copyWith({int? code, String? message, VideoPageData? data}) {
+  VideoPageEntity copyWith({
+    int? code,
+    String? message,
+    VideoPageData? data,
+  }) {
     return VideoPageEntity()
       ..code = code ?? this.code
       ..message = message ?? this.message
@@ -37,18 +41,15 @@ extension VideoPageEntityExtension on VideoPageEntity {
 
 VideoPageData $VideoPageDataFromJson(Map<String, dynamic> json) {
   final VideoPageData videoPageData = VideoPageData();
-  final List<VideoPageDataList>? list =
-      (json['list'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<VideoPageDataList>(e) as VideoPageDataList,
-          )
-          .toList();
+  final List<VideoPageDataList>? list = (json['list'] as List<dynamic>?)
+      ?.map(
+          (e) => jsonConvert.convert<VideoPageDataList>(e) as VideoPageDataList)
+      .toList();
   if (list != null) {
     videoPageData.list = list;
   }
-  final VideoPageDataPagination? pagination = jsonConvert
-      .convert<VideoPageDataPagination>(json['pagination']);
+  final VideoPageDataPagination? pagination = jsonConvert.convert<
+      VideoPageDataPagination>(json['pagination']);
   if (pagination != null) {
     videoPageData.pagination = pagination;
   }
@@ -120,8 +121,7 @@ VideoPageDataList $VideoPageDataListFromJson(Map<String, dynamic> json) {
     videoPageDataList.cycleImg = cycleImg;
   }
   final String? chargingMode = jsonConvert.convert<String>(
-    json['charging_mode'],
-  );
+      json['charging_mode']);
   if (chargingMode != null) {
     videoPageDataList.chargingMode = chargingMode;
   }
@@ -146,8 +146,7 @@ VideoPageDataList $VideoPageDataListFromJson(Map<String, dynamic> json) {
     videoPageDataList.imdbScore = imdbScore;
   }
   final String? imdbScoreId = jsonConvert.convert<String>(
-    json['imdb_score_id'],
-  );
+      json['imdb_score_id']);
   if (imdbScoreId != null) {
     videoPageDataList.imdbScoreId = imdbScoreId;
   }
@@ -156,8 +155,7 @@ VideoPageDataList $VideoPageDataListFromJson(Map<String, dynamic> json) {
     videoPageDataList.doubanScore = doubanScore;
   }
   final String? doubanScoreId = jsonConvert.convert<String>(
-    json['douban_score_id'],
-  );
+      json['douban_score_id']);
   if (doubanScoreId != null) {
     videoPageDataList.doubanScoreId = doubanScoreId;
   }
@@ -166,26 +164,22 @@ VideoPageDataList $VideoPageDataListFromJson(Map<String, dynamic> json) {
     videoPageDataList.introduce = introduce;
   }
   final String? popularityDay = jsonConvert.convert<String>(
-    json['popularity_day'],
-  );
+      json['popularity_day']);
   if (popularityDay != null) {
     videoPageDataList.popularityDay = popularityDay;
   }
   final String? popularityWeek = jsonConvert.convert<String>(
-    json['popularity_week'],
-  );
+      json['popularity_week']);
   if (popularityWeek != null) {
     videoPageDataList.popularityWeek = popularityWeek;
   }
   final String? popularityMonth = jsonConvert.convert<String>(
-    json['popularity_month'],
-  );
+      json['popularity_month']);
   if (popularityMonth != null) {
     videoPageDataList.popularityMonth = popularityMonth;
   }
   final String? popularitySum = jsonConvert.convert<String>(
-    json['popularity_sum'],
-  );
+      json['popularity_sum']);
   if (popularitySum != null) {
     videoPageDataList.popularitySum = popularitySum;
   }
@@ -222,8 +216,7 @@ VideoPageDataList $VideoPageDataListFromJson(Map<String, dynamic> json) {
     videoPageDataList.total = total;
   }
   final String? horizontalPoster = jsonConvert.convert<String>(
-    json['horizontal_poster'],
-  );
+      json['horizontal_poster']);
   if (horizontalPoster != null) {
     videoPageDataList.horizontalPoster = horizontalPoster;
   }
@@ -478,10 +471,8 @@ extension VideoPageDataListExtension on VideoPageDataList {
 }
 
 VideoPageDataPagination $VideoPageDataPaginationFromJson(
-  Map<String, dynamic> json,
-) {
-  final VideoPageDataPagination videoPageDataPagination =
-      VideoPageDataPagination();
+    Map<String, dynamic> json) {
+  final VideoPageDataPagination videoPageDataPagination = VideoPageDataPagination();
   final int? page = jsonConvert.convert<int>(json['page']);
   if (page != null) {
     videoPageDataPagination.page = page;
@@ -498,8 +489,7 @@ VideoPageDataPagination $VideoPageDataPaginationFromJson(
 }
 
 Map<String, dynamic> $VideoPageDataPaginationToJson(
-  VideoPageDataPagination entity,
-) {
+    VideoPageDataPagination entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['page'] = entity.page;
   data['size'] = entity.size;
@@ -508,7 +498,11 @@ Map<String, dynamic> $VideoPageDataPaginationToJson(
 }
 
 extension VideoPageDataPaginationExtension on VideoPageDataPagination {
-  VideoPageDataPagination copyWith({int? page, int? size, int? total}) {
+  VideoPageDataPagination copyWith({
+    int? page,
+    int? size,
+    int? total,
+  }) {
     return VideoPageDataPagination()
       ..page = page ?? this.page
       ..size = size ?? this.size

@@ -1,87 +1,84 @@
-import 'dart:convert';
-
 import 'package:flutter_app/generated/json/base/json_field.dart';
 import 'package:flutter_app/generated/json/views_entity.g.dart';
-
+import 'dart:convert';
 export 'package:flutter_app/generated/json/views_entity.g.dart';
 
 @JsonSerializable()
 class ViewsEntity {
-  int? code;
-  String? message;
-  ViewsData? data;
+	int? code;
+	String? message;
+	ViewsData? data;
 
-  ViewsEntity();
+	ViewsEntity();
 
-  factory ViewsEntity.fromJson(Map<String, dynamic> json) =>
-      $ViewsEntityFromJson(json);
+	factory ViewsEntity.fromJson(Map<String, dynamic> json) => $ViewsEntityFromJson(json);
 
-  Map<String, dynamic> toJson() => $ViewsEntityToJson(this);
+	Map<String, dynamic> toJson() => $ViewsEntityToJson(this);
 
-  @override
-  String toString() {
-    return jsonEncode(this);
-  }
+	@override
+	String toString() {
+		return jsonEncode(this);
+	}
 }
 
 @JsonSerializable()
 class ViewsData {
-  List<ViewsDataList>? list;
-  ViewsDataPagination? pagination;
+	List<ViewsDataList>? list;
+	ViewsDataPagination? pagination;
 
-  ViewsData();
+	ViewsData();
 
-  factory ViewsData.fromJson(Map<String, dynamic> json) =>
-      $ViewsDataFromJson(json);
+	factory ViewsData.fromJson(Map<String, dynamic> json) => $ViewsDataFromJson(json);
 
-  Map<String, dynamic> toJson() => $ViewsDataToJson(this);
+	Map<String, dynamic> toJson() => $ViewsDataToJson(this);
 
-  @override
-  String toString() {
-    return jsonEncode(this);
-  }
+	@override
+	String toString() {
+		return jsonEncode(this);
+	}
 }
 
 @JsonSerializable()
 class ViewsDataList {
-  int? id;
-  String? createTime;
-  String? updateTime;
-  int? createUserId;
-  dynamic updateUserId;
-  String? title;
-  int? associationId;
-  dynamic cover;
-  dynamic type;
+	int? id;
+	String? createTime;
+	String? updateTime;
+	dynamic tenantId;
+	int? createUserId;
+	dynamic updateUserId;
+	String? title;
+	int? type;
+	int? associationId;
+	String? cover;
+	int? duration;
+	int? viewingDuration;
 
-  ViewsDataList();
+	ViewsDataList();
 
-  factory ViewsDataList.fromJson(Map<String, dynamic> json) =>
-      $ViewsDataListFromJson(json);
+	factory ViewsDataList.fromJson(Map<String, dynamic> json) => $ViewsDataListFromJson(json);
 
-  Map<String, dynamic> toJson() => $ViewsDataListToJson(this);
+	Map<String, dynamic> toJson() => $ViewsDataListToJson(this);
 
-  @override
-  String toString() {
-    return jsonEncode(this);
-  }
+	@override
+	String toString() {
+		return jsonEncode(this);
+	}
 }
 
 @JsonSerializable()
 class ViewsDataPagination {
-  int? page;
-  int? size;
-  int? total;
+	int? page;
+	int? size;
+	int? total;
 
-  ViewsDataPagination();
+	ViewsDataPagination();
 
-  factory ViewsDataPagination.fromJson(Map<String, dynamic> json) =>
-      $ViewsDataPaginationFromJson(json);
+	factory ViewsDataPagination.fromJson(Map<String, dynamic> json) => $ViewsDataPaginationFromJson(json);
 
-  Map<String, dynamic> toJson() => $ViewsDataPaginationToJson(this);
+	Map<String, dynamic> toJson() => $ViewsDataPaginationToJson(this);
 
-  @override
-  String toString() {
-    return jsonEncode(this);
-  }
+	@override
+	String toString() {
+		return jsonEncode(this);
+	}
 }

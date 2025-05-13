@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../entity/video_page_entity.dart';
@@ -36,7 +37,7 @@ class VideoOneSmall extends StatelessWidget {
                   ],
                 ),
                 Expanded(
-                  child: Container(
+                  child: SizedBox(
                     height: 140,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,15 +63,25 @@ class VideoOneSmall extends StatelessWidget {
                             fontWeight: FontWeight.w400,
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        Text(
-                          videoPageData[i].introduce ?? "",
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            color: Color.fromRGBO(153, 153, 153, 1),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 55,
+                          child: Html(
+                            data: videoPageData[i].introduce ?? "",
+                            style: {
+                              "body": Style(
+                                maxLines: 2, // 限制最大行数
+                                textOverflow: TextOverflow.ellipsis, // 溢出显示省略号
+                                color: Color.fromRGBO(153, 153, 153, 1),
+                              ),
+                              "p": Style(
+                                color: Color.fromRGBO(153, 153, 153, 1),
+                              ),
+                              //设置所有html元素字体的颜色
+                              "span": Style(
+                                color: Color.fromRGBO(153, 153, 153, 1),
+                              ),
+                            },
                           ),
                         ),
                       ],

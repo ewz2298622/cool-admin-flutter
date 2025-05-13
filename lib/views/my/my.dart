@@ -12,6 +12,7 @@ import '../../entity/views_entity.dart';
 import '../../style/layout.dart';
 import '../../utils/user.dart';
 import '../about/about.dart';
+import '../history/history.dart';
 import '../notice/notice.dart';
 
 class My extends StatefulWidget {
@@ -102,55 +103,16 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
           //设置圆角
           borderRadius: BorderRadius.circular(10.0),
         ),
-        // child: Column(
-        //   crossAxisAlignment: CrossAxisAlignment.start,
-        //   spacing: 10,
-        //   children: [
-        //     Row(
-        //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        //       crossAxisAlignment: CrossAxisAlignment.center,
-        //       children: [
-        //         Text(
-        //           "浏览记录",
-        //           style: const TextStyle(
-        //             fontSize: 16,
-        //             color: Color.fromRGBO(1, 1, 1, 1),
-        //             fontWeight: FontWeight.w600,
-        //           ),
-        //         ),
-        //         GestureDetector(
-        //           onTap: () {
-        //             Navigator.pushNamed(context, "/views");
-        //           },
-        //           child: Row(
-        //             children: [
-        //               Text(
-        //                 "更多",
-        //                 style: TextStyle(
-        //                   fontSize: 12,
-        //                   color: Color.fromRGBO(162, 162, 162, 1),
-        //                 ),
-        //               ),
-        //               Icon(
-        //                 Icons.arrow_forward_ios,
-        //                 size: 14,
-        //                 color: Color.fromRGBO(203, 203, 203, 1),
-        //               ),
-        //             ],
-        //           ),
-        //         ),
-        //       ],
-        //     ),
-        //     VideoViews(videoPageData: viewsData),
-        //   ],
-        // ),
         child: Column(
           spacing: 10,
           children: [
             SectionWithMore(
               title: "浏览记录", // 传入标题
               onMorePressed: () {
-                Navigator.pushNamed(context, "/views"); // 传入更多点击事件
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => History()),
+                );
               },
             ),
             VideoViews(videoPageData: viewsData),

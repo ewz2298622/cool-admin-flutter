@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:chewie/chewie.dart';
 import 'package:flustars/flustars.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +11,7 @@ import 'package:video_player/video_player.dart';
 import '../../api/api.dart';
 import '../../components/loading.dart';
 import '../../components/sectionWithMore.dart';
-import '../../components/video_one_small.dart';
+import '../../components/select_option_detail.dart';
 import '../../components/video_scroll.dart';
 import '../../entity/dict_data_entity.dart';
 import '../../entity/play_line_entity.dart';
@@ -37,6 +39,8 @@ class _Video_DetailState extends State<Video_Detail>
   static const Color backgroundColor = Color.fromRGBO(255, 255, 255, 1);
   final ValueNotifier<int> currentLine = ValueNotifier<int>(0);
   final ValueNotifier<int> currentPlay = ValueNotifier<int>(0);
+  //获取当前时间戳
+  final int currentTimeStamp = DateTime.now().millisecondsSinceEpoch;
 
   var _futureBuilderFuture;
   VideoDetailData? videoData;
@@ -53,6 +57,8 @@ class _Video_DetailState extends State<Video_Detail>
   late ChewieController chewieController;
   final PageController pageController = PageController(initialPage: 0);
   final FPlayer player = FPlayer();
+  late StreamSubscription _currentPosSubs;
+  Duration _currentPos = Duration();
 
   // 倍速列表
   final Map<String, double> speedList = {
@@ -151,6 +157,8 @@ class _Video_DetailState extends State<Video_Detail>
       await Api.addViews({
         "title": videoData?.title,
         "associationId": videoData?.id,
+        "viewingDuration": seekTime,
+        "duration": videoData?.duration,
         "type": 19,
         "cover": videoData?.surfacePlot,
       });
@@ -214,9 +222,15 @@ class _Video_DetailState extends State<Video_Detail>
       await getVideoLinePages();
       await getPlayLinePages();
       await getVideoPages();
-      await addViews();
       setVideoUrl(playerLineData?[currentPlay.value].file ?? "");
       currentPlay.value = playerLineData?[currentPlay.value].id ?? 0;
+      _currentPosSubs = player.onCurrentPosUpdate.listen((v) {
+        setState(() {
+          _currentPos = v;
+          videoData?.duration = player.value.duration.inMilliseconds;
+          seekTime = _currentPos.inMilliseconds;
+        });
+      });
       return "init success";
     } catch (e) {
       // 捕获并处理异常
@@ -245,6 +259,7 @@ class _Video_DetailState extends State<Video_Detail>
   void dispose() {
     super.dispose();
     player.release();
+    addViews();
   }
 
   /// 返回一个Widget自动填充剩余高度 且可以滑动
@@ -758,13 +773,28 @@ class _Video_DetailState extends State<Video_Detail>
             ],
           ),
           // 导演
-          _buildSection(
-            '导演',
-            "directors",
-            formatString(videoData?.directors ?? ""),
+          DynamicSelectOption(
+            title: '导演',
+            items: formatString(videoData?.directors ?? ""),
+            paramsKey: 'directors',
+            loadData: (params) async {
+              List<VideoPageDataList> list =
+                  (await Api.getVideoPages(params)).data?.list ??
+                  [] as List<VideoPageDataList>;
+              return list;
+            },
           ),
-          // 演员分组
-          _buildSection('演员', "actors", formatString(videoData!.actors ?? "")),
+          DynamicSelectOption(
+            title: '演员',
+            items: formatString(videoData?.actors ?? ""),
+            paramsKey: 'actors',
+            loadData: (params) async {
+              List<VideoPageDataList> list =
+                  (await Api.getVideoPages(params)).data?.list ??
+                  [] as List<VideoPageDataList>;
+              return list;
+            },
+          ),
           // 剧情
           _buildPlotSection(),
         ],
@@ -781,185 +811,6 @@ class _Video_DetailState extends State<Video_Detail>
       return str.split('/');
     }
     return [str];
-  }
-
-  Widget _buildSection(String title, String paramsKey, List<String> items) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (title.isNotEmpty)
-          Padding(
-            padding: EdgeInsets.only(bottom: 8),
-            child: Text(
-              title,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-        SizedBox(
-          // 使用 SizedBox 限制高度
-          height: 40, // 设置最大高度为 40（可根据需要调整）
-          child: SingleChildScrollView(
-            // 添加滚动支持
-            scrollDirection: Axis.horizontal, // 水平滚动
-            child: Wrap(
-              spacing: 12,
-              runSpacing: 8,
-              // children: items.map((item) => TDTag(item)).toList(),
-              children:
-                  items
-                      .map((item) => _buildPopFromCenter(item, paramsKey))
-                      .toList(),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPopFromCenter(String name, String paramsKey) {
-    //定义一个Map<String, dynamic> paramsKey是key name是value
-    Map<String, dynamic> params = {paramsKey: name};
-    return GestureDetector(
-      child: TDTag(name),
-      onTap: () {
-        showModalBottomSheet(
-          backgroundColor: Colors.transparent,
-          context: context,
-          //设置标题
-          isScrollControlled: true,
-          //设置高度
-          builder: (builder) {
-            return FutureBuilder<String>(
-              future: getSelectVideoPages(params), // 异步操作
-              builder: (context, snapshot) {
-                debugPrint('snapshot: ${snapshot.hasData}');
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(
-                    width: MediaQuery.of(context).size.width,
-                    padding: const EdgeInsets.only(top: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: const Radius.circular(20.0),
-                        topRight: const Radius.circular(20.0),
-                      ),
-                    ),
-                    height: 650,
-                    child: Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          left: 20,
-                          right: 20,
-                          bottom: 10,
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      name,
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      "已为您关联$name的相关影片",
-                                      style: TextStyle(fontSize: 14),
-                                    ),
-                                  ],
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                  },
-                                  child: Icon(Icons.close),
-                                ),
-                              ],
-                            ),
-
-                            Expanded(child: Center(child: PageLoading())),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}'); // 显示错误信息
-                } else if (snapshot.hasData) {
-                  return Container(
-                    width: MediaQuery.of(context).size.width,
-                    padding: const EdgeInsets.only(top: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: const Radius.circular(20.0),
-                        topRight: const Radius.circular(20.0),
-                      ),
-                    ),
-                    height: 650,
-                    child: Expanded(
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            left: 20,
-                            right: 20,
-                            bottom: 10,
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Text(
-                                            name,
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          Text(
-                                            "已为您关联$name的相关影片",
-                                            style: TextStyle(fontSize: 14),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                    },
-                                    child: Icon(Icons.close),
-                                  ),
-                                ],
-                              ),
-                              VideoOneSmall(videoPageData: selectVideoPageData),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                } else {
-                  return Text('No data available');
-                }
-              },
-            );
-          },
-        );
-      },
-    );
   }
 
   Widget _buildPlotSection() {
