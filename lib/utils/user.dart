@@ -22,16 +22,7 @@ class User {
   }
 
   static void _modalBottomSheetMenu(BuildContext context) {
-    showModalBottomSheet(
-      backgroundColor: Colors.transparent,
-      context: context,
-      //设置标题
-      isScrollControlled: true,
-      //设置高度
-      builder: (builder) {
-        return Login(parentContext: context);
-      },
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
   }
 
   static bool isUserLoginView(BuildContext context) {

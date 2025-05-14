@@ -15,21 +15,21 @@ class UserDatabaseHelper {
   // 创建搜索历史表
   void _createTable() {
     _database.execute('''
-      CREATE TABLE IF NOT EXISTS user (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        createTime TEXT NOT NULL,
-        updateTime TEXT NOT NULL,
-        unionid TEXT NOT NULL,
-        avatarUrl TEXT NOT NULL,
-        nickName TEXT NOT NULL,
-        phone TEXT NOT NULL,
-        gender INTEGER NOT NULL,
-        status INTEGER NOT NULL,
-        loginType INTEGER NOT NULL,
-        password TEXT NOT NULL,
-        userId INTEGER NOT NULL
-      );
-    ''');
+    CREATE TABLE IF NOT EXISTS user (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      createTime TEXT,          -- 允许为空
+      updateTime TEXT,          -- 允许为空
+      unionid TEXT NOT NULL,             -- 允许为空
+      avatarUrl TEXT,           -- 仍不允许为空（示例）
+      nickName TEXT NOT NULL,   -- 仍不允许为空（示例）
+      phone TEXT NOT NULL,      -- 仍不允许为空（示例）
+      gender INTEGER,           -- 允许为空
+      status INTEGER,           -- 允许为空
+      loginType INTEGER,        -- 允许为空
+      password TEXT,            -- 允许为空
+      userId INTEGER            -- 允许为空
+    );
+  ''');
   }
 
   // 插入记录

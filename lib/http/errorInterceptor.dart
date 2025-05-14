@@ -14,15 +14,16 @@ class ErrorInterceptor extends InterceptorsWrapper {
 
   //根据状态码做不同的处理业务
   void _handleError(DioException err, ErrorInterceptorHandler handler) {
+    Fluttertoast.showToast(
+      msg: err.response?.data['message'],
+      toastLength: Toast.LENGTH_SHORT,
+    );
     switch (err.response?.statusCode) {
       case 401:
         _handle401(err, handler);
         break;
       case 403:
-        Fluttertoast.showToast(
-          msg: err.response?.data['message'],
-          toastLength: Toast.LENGTH_SHORT,
-        );
+      //处理逻辑
     }
   }
 

@@ -161,6 +161,7 @@ class _Video_DetailState extends State<Video_Detail>
         "duration": videoData?.duration,
         "type": 19,
         "cover": videoData?.surfacePlot,
+        "videoIndex": currentPlay.value + 1,
       });
     } catch (e) {
       // 捕获并处理异常
@@ -223,7 +224,6 @@ class _Video_DetailState extends State<Video_Detail>
       await getPlayLinePages();
       await getVideoPages();
       setVideoUrl(playerLineData?[currentPlay.value].file ?? "");
-      currentPlay.value = playerLineData?[currentPlay.value].id ?? 0;
       _currentPosSubs = player.onCurrentPosUpdate.listen((v) {
         setState(() {
           _currentPos = v;

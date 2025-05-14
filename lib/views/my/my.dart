@@ -10,10 +10,11 @@ import '../../db/manager/UserDatabaseHelper.dart';
 import '../../entity/video_page_entity.dart';
 import '../../entity/views_entity.dart';
 import '../../style/layout.dart';
-import '../../utils/user.dart';
 import '../about/about.dart';
 import '../history/history.dart';
+import '../login/login.dart';
 import '../notice/notice.dart';
+import '../setting/setting.dart';
 
 class My extends StatefulWidget {
   const My({super.key});
@@ -57,15 +58,17 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
 
   Future<void> getViews() async {
     try {
-      viewsData =
-          (await Api.getViews({
-                "createUserId": user?.userId,
-                "type": 19,
-              })).data?.list
-              as List<ViewsDataList>;
-      //重构数据将associationId赋值给id
-      for (var element in viewsData) {
-        element.id = element.associationId;
+      if (user != null) {
+        viewsData =
+            (await Api.getViews({
+                  "createUserId": user?.userId,
+                  "type": 19,
+                })).data?.list
+                as List<ViewsDataList>;
+        //重构数据将associationId赋值给id
+        for (var element in viewsData) {
+          element.id = element.associationId;
+        }
       }
     } catch (e) {
       // 捕获并处理异常
@@ -89,6 +92,15 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
   void initState() {
     _futureBuilderFuture = init();
     super.initState();
+  }
+
+  //页面显示的回调
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    debugPrint('Dependencies changed');
+    // 在依赖发生变化时执行一些操作
+    // 例如，获取当前路由的参数，或者更新状态
   }
 
   Widget _buildRecommendations() {
@@ -122,11 +134,14 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
     }
   }
 
-  Widget _buildLogin() {
+  Widget _buildLogin(BuildContext context) {
     if (user == null) {
       return GestureDetector(
         onTap: () {
-          User.isUserLoginView(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => Login()),
+          );
         },
         child: Text(
           "点击登录",
@@ -167,9 +182,10 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
     }
   }
 
-  Widget _buildHead() {
+  Widget _buildHead(BuildContext context) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         TDAvatar(
           size: TDAvatarSize.large,
@@ -177,7 +193,10 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
           avatarUrl: user?.avatarUrl ?? "",
         ),
         SizedBox(height: 16.0),
-        Padding(padding: EdgeInsets.only(left: 15), child: _buildLogin()),
+        Padding(
+          padding: EdgeInsets.only(left: 15),
+          child: _buildLogin(context),
+        ),
 
         // 用户姓名
         SizedBox(height: 8.0),
@@ -373,6 +392,10 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
         break;
       case "设置":
         // 处理设置点击事件
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Setting()),
+        );
         break;
       case "关于":
         // 跳转About页面
@@ -384,7 +407,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
     }
   }
 
-  Widget _buildContent() {
+  Widget _buildContent(BuildContext context) {
     return FutureBuilder<String>(
       future: _futureBuilderFuture,
       builder: (context, snapshot) {
@@ -398,7 +421,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
             child: Column(
               spacing: Layout.paddingT,
               children: [
-                _buildHead(),
+                _buildHead(context),
                 buildPricingLayout(),
                 _buildRecommendations(),
                 _buildModelList(),
@@ -411,7 +434,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
             physics: BouncingScrollPhysics(),
             child: Column(
               children: [
-                _buildHead(),
+                _buildHead(context),
                 _buildRecommendations(),
                 _buildModelList(),
               ],
@@ -422,10 +445,6 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
     );
   }
 
-  //页面显示的回调
-  void _handleContentLoaded() {
-    // 在这里执行页面显示的回调逻辑
-  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -453,7 +472,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
                 ],
               ),
             ),
-            child: _buildContent(),
+            child: _buildContent(context),
           ),
         ],
       ),

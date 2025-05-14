@@ -402,7 +402,7 @@ class Api {
   static Future<LoginEntity> getLogin(Map<String, dynamic>? data) async {
     try {
       final response = await server.post(
-        "/app/user/login/password",
+        "/app/user/login/app_login",
         data: data,
       ); // 添加注释说明 ONE 的含义});
       // 将服务器返回的JSON数据解析为[VideoCategoryEntity]对象并返回
