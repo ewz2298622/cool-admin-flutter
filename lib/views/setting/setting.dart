@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
+import '../../db/manager/helper.dart';
+import '../../main.dart';
 import '../../utils/user.dart';
 
 // 定义一个名为 Setting 的有状态组件，用于展示一个包含 WebView 的页面
@@ -37,6 +39,9 @@ class _SettingState extends State<Setting> {
           arrow: true,
           title: '清空缓存',
           style: TDCellStyle.cellStyle(context),
+          onClick: (cell) {
+            deleteAll();
+          },
         ),
         TDCell(
           arrow: true,
@@ -52,6 +57,18 @@ class _SettingState extends State<Setting> {
   //退出登录
   Future<void> logout() async {
     User.deleteUser();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => MyApp(key: UniqueKey())),
+    );
+  }
+
+  Future<void> deleteAll() async {
+    Helper.deleteAll();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => MyApp(key: UniqueKey())),
+    );
   }
 
   @override

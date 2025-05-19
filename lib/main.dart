@@ -14,7 +14,6 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(home: Scaffold(body: MainPage()));
@@ -34,14 +33,16 @@ class _MainPageState extends State<MainPage> {
     const VideoFilter(),
     const VideoRanking(),
     // const VideoService(),
-    const My(),
+    My(key: UniqueKey()),
   ];
   int _selectedIndex = 0;
 
   void onTap(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index == (pages.length - 1)) {
+      // 如果是非缓存页面，每次切换时重新创建
+      pages[pages.length - 1] = My(key: UniqueKey());
+    }
+    setState(() => _selectedIndex = index);
     TDToast.dismissLoading();
   }
 

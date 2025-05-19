@@ -5,8 +5,9 @@ import 'package:webview_flutter/webview_flutter.dart';
 // 定义一个名为 HtmlPage 的有状态组件，用于展示一个包含 WebView 的页面
 class HtmlPage extends StatefulWidget {
   // 构造函数，Key? key 是可选参数，用于在组件树中唯一标识该组件
-  final String content; // 标题
-  const HtmlPage({Key? key, required this.content});
+  final String content; // 内容
+  final String title;
+  const HtmlPage({Key? key, required this.content, required this.title});
 
   // 创建该组件对应的状态类实例
   @override
@@ -74,7 +75,17 @@ class _HtmlPageState extends State<HtmlPage> {
     return Scaffold(
       // 设置页面的顶部导航栏，显示标题为 'Flutter Simple Example'
       appBar: AppBar(
-        toolbarHeight: 20,
+        title: Text(widget.title, style: TextStyle(fontSize: 16)),
+        //返回
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, size: 20),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        //标题居中
+        centerTitle: true,
+        toolbarHeight: 40,
         automaticallyImplyLeading: false, //设置为false
         backgroundColor: const Color.fromRGBO(255, 218, 112, 1),
       ),

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/api/api.dart';
@@ -13,6 +11,7 @@ import '../../db/manager/UserDatabaseHelper.dart';
 import '../../entity/captcha_entity.dart';
 import '../../entity/login_entity.dart';
 import '../../entity/user_info_entity.dart';
+import '../../main.dart';
 import '../../style/layout.dart';
 
 class Login extends StatefulWidget {
@@ -311,14 +310,18 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
 
     await getUserInfo();
     //返回上一个页面
-    Navigator.pop(context);
+    //跳转到My
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => MyApp(key: UniqueKey())),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        //返回
+        //设置背景色
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, size: 20),
           onPressed: () {
@@ -329,7 +332,7 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
         centerTitle: true,
         toolbarHeight: 40,
         automaticallyImplyLeading: false, //设置为false
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
       ),
       resizeToAvoidBottomInset: false,
       body: Stack(
@@ -343,12 +346,12 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
           ),
           BouncingBallsScreen(),
           // // 毛玻璃效果层
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-              child: Container(color: Colors.transparent),
-            ),
-          ),
+          // Positioned.fill(
+          //   child: BackdropFilter(
+          //     filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+          //     child: Container(color: Colors.transparent),
+          //   ),
+          // ),
           _buildContent(),
         ],
       ),

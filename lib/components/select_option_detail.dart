@@ -116,15 +116,35 @@ class _DynamicSelectOptionState extends State<DynamicSelectOption> {
                           bottom: 10,
                         ),
                         child: Column(
+                          spacing: 20,
                           children: [
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text(
-                                  "已为您关联 $name 的相关影片",
+                                Text.rich(
+                                  TextSpan(
+                                    children: [
+                                      const TextSpan(
+                                        text: "已为您关联 ",
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                      TextSpan(
+                                        text: name,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold, // 示例：加粗
+                                          color: Colors.blue, // 示例：蓝色
+                                        ),
+                                      ),
+                                      const TextSpan(
+                                        text: " 的相关影片",
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                    ],
+                                  ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 14),
                                 ),
                                 GestureDetector(
                                   onTap: Navigator.of(context).pop,

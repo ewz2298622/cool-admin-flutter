@@ -21,7 +21,7 @@ class VideoFilter extends StatefulWidget {
 }
 
 class VideoFilterState extends State<VideoFilter>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   // 提取常量
   static const _gradientColors = [
     Color.fromRGBO(255, 218, 112, 1),
@@ -466,6 +466,7 @@ class VideoFilterState extends State<VideoFilter>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // 必须调用 super.build
     return Scaffold(
       appBar: AppBar(toolbarHeight: 20, backgroundColor: _gradientColors[0]),
       resizeToAvoidBottomInset: false,
@@ -492,4 +493,8 @@ class VideoFilterState extends State<VideoFilter>
       ),
     );
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }

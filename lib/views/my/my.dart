@@ -7,11 +7,12 @@ import '../../components/sectionWithMore.dart';
 import '../../components/video_view.dart';
 import '../../db/entity/UserEntity.dart';
 import '../../db/manager/UserDatabaseHelper.dart';
+import '../../entity/notice_Info_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../entity/views_entity.dart';
 import '../../style/layout.dart';
-import '../about/about.dart';
 import '../history/history.dart';
+import '../htmlPage/html.dart';
 import '../login/login.dart';
 import '../notice/notice.dart';
 import '../setting/setting.dart';
@@ -32,11 +33,27 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
 
   List<ViewsDataList> viewsData = [];
 
+  List<NoticeInfoDataList>? noticeInfoData = [];
+
+  Future<void> noticeInfo() async {
+    try {
+      List<NoticeInfoDataList> list =
+          (await Api.noticeInfo({"page": 1, "size": 1, "type": 640})).data?.list
+              as List<NoticeInfoDataList> ??
+          [];
+      noticeInfoData = list;
+    } catch (e) {
+      // 捕获并处理异常
+      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+    }
+  }
+
   Future<String> init() async {
     try {
       await getVideoPages();
       await getUserInfo();
       await getViews();
+      await noticeInfo();
       return "init success";
     } catch (e) {
       print('Initialization failed: $e');
@@ -94,13 +111,10 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
     super.initState();
   }
 
-  //页面显示的回调
   @override
-  void didChangeDependencies() {
+  Future<void> didChangeDependencies() async {
     super.didChangeDependencies();
-    debugPrint('Dependencies changed');
-    // 在依赖发生变化时执行一些操作
-    // 例如，获取当前路由的参数，或者更新状态
+    debugPrint("didChangeDependencies");
   }
 
   Widget _buildRecommendations() {
@@ -187,10 +201,17 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        TDAvatar(
-          size: TDAvatarSize.large,
-          type: TDAvatarType.normal,
-          avatarUrl: user?.avatarUrl ?? "",
+        TDImage(
+          imgUrl: user?.avatarUrl ?? "",
+          width: 50,
+          height: 50,
+          type: TDImageType.circle,
+          errorWidget: TDImage(
+            width: 80,
+            height: 80,
+            type: TDImageType.circle,
+            assetUrl: 'assets/images/Lawyer.png',
+          ),
         ),
         SizedBox(height: 16.0),
         Padding(
@@ -401,7 +422,13 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
         // 跳转About页面
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => About()),
+          MaterialPageRoute(
+            builder:
+                (context) => HtmlPage(
+                  content: noticeInfoData?[0].content ?? "",
+                  title: noticeInfoData?[0].title ?? "",
+                ),
+          ),
         );
         break;
     }
@@ -448,33 +475,25 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 20,
-        backgroundColor: Color.fromRGBO(255, 218, 112, 1),
-      ),
       resizeToAvoidBottomInset: false,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Container(
-            padding: const EdgeInsets.only(
-              left: Layout.paddingL,
-              right: Layout.paddingR,
-            ),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: [0.2, 0.8],
-                colors: [
-                  Color.fromRGBO(255, 218, 112, 1),
-                  Color.fromRGBO(255, 255, 255, 1),
-                ],
-              ),
-            ),
-            child: _buildContent(context),
+      body: Container(
+        padding: const EdgeInsets.only(
+          left: Layout.paddingL,
+          right: Layout.paddingR,
+          top: 40,
+        ),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            stops: [0.2, 0.8],
+            colors: [
+              Color.fromRGBO(255, 218, 112, 1),
+              Color.fromRGBO(255, 255, 255, 1),
+            ],
           ),
-        ],
+        ),
+        child: _buildContent(context),
       ),
     );
   }

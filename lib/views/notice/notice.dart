@@ -202,6 +202,10 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
                                                             noticeInfoData?[index]
                                                                 .content ??
                                                             "",
+                                                        title:
+                                                            noticeInfoData?[index]
+                                                                .title ??
+                                                            "",
                                                       ),
                                                 ),
                                               );
@@ -233,7 +237,17 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 20,
+        title: Text("公告", style: TextStyle(fontSize: 16)),
+        //返回
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, size: 20),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        //标题居中
+        centerTitle: true,
+        toolbarHeight: 40,
         automaticallyImplyLeading: false, //设置为false
         backgroundColor: const Color.fromRGBO(255, 218, 112, 1),
       ),

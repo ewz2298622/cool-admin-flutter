@@ -74,4 +74,10 @@ class SearchHistoryDatabaseHelper {
   void close() {
     _database.dispose();
   }
+
+  //删除所有记录
+  void deleteAll() {
+    final query = 'DELETE FROM search_history;';
+    _database.execute(query);
+  }
 }

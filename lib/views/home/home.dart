@@ -25,7 +25,8 @@ class Home extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
+class _HomePageState extends State<Home>
+    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   //定义swiperData
   SwiperData? swiperData;
   TabController? _tabController;
@@ -126,6 +127,7 @@ class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
 
   /// 轮播图视图
   Widget _buildDotsSwiper(int id) {
+    super.build(context); // 必须调用 super.build
     return Swiper(
       autoplay: true,
       itemCount: 3,
@@ -505,4 +507,7 @@ class _HomePageState extends State<Home> with SingleTickerProviderStateMixin {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

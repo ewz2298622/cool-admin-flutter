@@ -154,6 +154,9 @@ class _Video_DetailState extends State<Video_Detail>
 
   Future<void> addViews() async {
     try {
+      if (videoData?.duration == null) {
+        return;
+      }
       await Api.addViews({
         "title": videoData?.title,
         "associationId": videoData?.id,
@@ -430,12 +433,12 @@ class _Video_DetailState extends State<Video_Detail>
     );
   }
 
-  _play_change(PlayLineDataList item) async {
-    currentPlay.value = item.id!;
-    _videoPlayerController.dispose();
+  Future<void> _play_change(int index) async {
     await player.reset();
-    setVideoUrl(item.file ?? "");
-    setState(() {});
+    setState(() {
+      currentPlay.value = index;
+    });
+    setVideoUrl(videoList[index].url);
   }
 
   Widget _buildEpisodeList() {
@@ -465,7 +468,7 @@ class _Video_DetailState extends State<Video_Detail>
           // 自定义小屏列表
           SizedBox(
             width: double.infinity,
-            height: 30,
+            height: 50,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: EdgeInsets.zero,
@@ -478,26 +481,41 @@ class _Video_DetailState extends State<Video_Detail>
                   textColor = Colors.black;
                   bgColor = Color.fromRGBO(232, 220, 99, 1);
                 }
-                return GestureDetector(
-                  onTap: () async {
-                    await player.reset();
-                    setState(() {
-                      currentPlay.value = index;
-                    });
-                    setVideoUrl(videoList[index].url);
-                  },
-                  child: Container(
-                    margin: EdgeInsets.only(left: index == 0 ? 0 : 10),
-                    padding: const EdgeInsets.symmetric(horizontal: 5),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      color: bgColor,
+                // return GestureDetector(
+                //   onTap: () => _play_change(index),
+                //   child: Container(
+                //     margin: EdgeInsets.only(left: index == 0 ? 0 : 10),
+                //     padding: const EdgeInsets.symmetric(horizontal: 5),
+                //     width: 90,
+                //     height: 50,
+                //     decoration: BoxDecoration(
+                //       borderRadius: BorderRadius.circular(5),
+                //       color: bgColor,
+                //     ),
+                //     alignment: Alignment.center,
+                //     child: Text(
+                //       videoList[index].title,
+                //       style: TextStyle(fontSize: 15, color: textColor),
+                //     ),
+                //   ),
+                // );
+                return Padding(
+                  padding: EdgeInsets.only(left: 10),
+                  child: TDButton(
+                    text: videoList[index].title,
+                    size: TDButtonSize.small,
+                    style: TDButtonStyle(
+                      backgroundColor:
+                          index == currentPlay.value
+                              ? const Color.fromRGBO(255, 218, 112, 1)
+                              : const Color.fromRGBO(255, 236, 180, 1),
+                      textColor:
+                          index == currentPlay.value
+                              ? Colors.white
+                              : Colors.black,
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      videoList[index].title,
-                      style: TextStyle(fontSize: 15, color: textColor),
-                    ),
+
+                    onTap: () => _play_change(index),
                   ),
                 );
               },
@@ -551,110 +569,121 @@ class _Video_DetailState extends State<Video_Detail>
   }
 
   Widget _buildPopFromBottomWithCloseAndLeftTitle(BuildContext context) {
-    return TDButton(
-      text: '切换线路',
-      size: TDButtonSize.small,
-      type: TDButtonType.fill,
-      shape: TDButtonShape.round,
-      theme: TDButtonTheme.primary,
-      style: TDButtonStyle(backgroundColor: Colors.transparent),
-      onTap: () {
-        Navigator.of(context).push(
-          TDSlidePopupRoute(
-            modalBarrierColor: TDTheme.of(context).fontGyColor2,
-            slideTransitionFrom: SlideTransitionFrom.bottom,
-            builder: (context) {
-              return TDPopupBottomDisplayPanel(
-                title: '选集',
-                titleLeft: true,
-                closeClick: () {
-                  Navigator.maybePop(context);
-                },
-                child: Container(
-                  padding: const EdgeInsets.only(left: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      _buildItemWithLogo(context),
-                      //设置一个500滚动视图
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: Text(
-                              '更新${playerLineData!.length}集',
+    return ValueListenableBuilder<int>(
+      valueListenable: currentPlay,
+      builder: (context, key, child) {
+        return TDButton(
+          text: '切换线路',
+          size: TDButtonSize.small,
+          type: TDButtonType.fill,
+          shape: TDButtonShape.round,
+          theme: TDButtonTheme.primary,
+          style: TDButtonStyle(
+            backgroundColor: Colors.transparent,
+            textColor: const Color.fromRGBO(252, 119, 66, 1),
+          ),
+          onTap: () {
+            showModalBottomSheet(
+              backgroundColor: Colors.transparent,
+              context: context,
+              isScrollControlled: true,
+              builder: (builder) {
+                return Container(
+                  width: MediaQuery.of(context).size.width,
+                  padding: const EdgeInsets.only(top: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20.0),
+                      topRight: Radius.circular(20.0),
+                    ),
+                  ),
+                  height: 650,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      bottom: 10,
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "切换线路",
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 12,
-                              ),
+                              style: const TextStyle(fontSize: 14),
                             ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        height: 500,
-                        //宽度占满
-                        width: double.infinity,
-                        child: ValueListenableBuilder<int>(
-                          valueListenable: currentPlay,
-                          builder: (context, key, child) {
-                            return SingleChildScrollView(
-                              child: Wrap(
-                                direction: Axis.horizontal,
-                                spacing: 8.0, // gap between adjacent chips
-                                runSpacing: 4.0, // gap between lines
-                                children: [
-                                  ...(playerLineData ?? [])
-                                      .map(
-                                        (item) => Padding(
-                                          padding: const EdgeInsets.only(
-                                            left: 8,
-                                          ),
-                                          child: TDButton(
-                                            text: item.name.toString(),
-                                            width: 80,
-                                            height: 48,
-                                            size: TDButtonSize.small,
-                                            style: TDButtonStyle(
-                                              backgroundColor:
-                                                  key == item.id
-                                                      ? Color.fromRGBO(
-                                                        255,
-                                                        218,
-                                                        112,
-                                                        1,
-                                                      )
-                                                      : Color.fromRGBO(
-                                                        255,
-                                                        236,
-                                                        180,
-                                                        1,
-                                                      ),
-                                              textColor:
-                                                  key == item.id
-                                                      ? Colors.white
-                                                      : Colors.black,
-                                            ),
-                                            onTap: () => _play_change(item),
-                                          ),
-                                        ),
-                                      )
-                                      .toList(),
-                                ],
-                              ),
-                            );
-                          },
+                            GestureDetector(
+                              onTap: Navigator.of(context).pop,
+                              child: const Icon(Icons.close),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
+                        _buildItemWithLogo(context),
+                        Expanded(
+                          child: StatefulBuilder(
+                            builder: (
+                              BuildContext context,
+                              void Function(void Function())
+                              setBottomSheetState,
+                            ) {
+                              return GridView.builder(
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 3,
+                                      childAspectRatio: 60 / 30, //宽高比
+                                      crossAxisSpacing: 10,
+                                      mainAxisSpacing: 10,
+                                    ),
+                                itemCount: videoList.length,
+                                itemBuilder: (BuildContext ctx, index) {
+                                  return SizedBox(
+                                    child: TDButton(
+                                      text: videoList[index].title,
+                                      size: TDButtonSize.small,
+                                      style: TDButtonStyle(
+                                        backgroundColor:
+                                            index == currentPlay.value
+                                                ? const Color.fromRGBO(
+                                                  255,
+                                                  218,
+                                                  112,
+                                                  1,
+                                                )
+                                                : const Color.fromRGBO(
+                                                  255,
+                                                  236,
+                                                  180,
+                                                  1,
+                                                ),
+                                        textColor:
+                                            index == currentPlay.value
+                                                ? Colors.white
+                                                : Colors.black,
+                                      ),
+                                      onTap:
+                                          () => {
+                                            setBottomSheetState(() {
+                                              _play_change(index);
+                                            }),
+                                          },
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
+                );
+              },
+            );
+          },
         );
       },
     );

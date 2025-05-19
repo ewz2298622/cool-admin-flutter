@@ -262,4 +262,11 @@ class VideoSearchState extends State<VideoSearch>
       ),
     );
   }
+
+  @override
+  Future<void> didChangeDependencies() async {
+    super.didChangeDependencies();
+    await getSearchHistoryEntity();
+    setState(() {});
+  }
 }

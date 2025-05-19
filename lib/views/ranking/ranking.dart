@@ -16,7 +16,7 @@ class VideoRanking extends StatefulWidget {
 }
 
 class VideoRankingState extends State<VideoRanking>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   var _futureBuilderFuture;
   List<VideoSortDataList> videoPageData = [];
   List<VideoSortDataList> popularity_day = [];
@@ -274,6 +274,7 @@ class VideoRankingState extends State<VideoRanking>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // 必须调用 super.build
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
@@ -296,4 +297,8 @@ class VideoRankingState extends State<VideoRanking>
       ),
     );
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }
