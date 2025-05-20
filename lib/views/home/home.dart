@@ -156,6 +156,7 @@ class _HomePageState extends State<Home>
       placeHolder: '',
       backgroundColor: Colors.transparent,
       style: TDSearchStyle.round,
+      readOnly: true,
       onInputClick: () {
         Navigator.push(
           context,
@@ -253,55 +254,15 @@ class _HomePageState extends State<Home>
     );
   }
 
-  /// tabs 视图
-  Widget _buildTabsContent() {
-    // 返回一个Widget自动填充剩余高度
-    return Container(
-      height: 50, // 设置固定高度
-      child: TDTabBar(
-        tabs: tabs,
-        controller: _tabController,
-        showIndicator: false,
-        dividerHeight: 0,
-        isScrollable: true,
-        labelColor: const Color.fromRGBO(252, 119, 66, 1),
-        unselectedLabelColor: const Color.fromRGBO(102, 102, 102, 1),
-        labelPadding: const EdgeInsets.only(left: 16, right: 16),
-        onTap: (index) {
-          pageController.jumpToPage(index);
-        },
-      ),
-    );
-  }
-
-  List<Widget> _getTabViews() {
-    if (dictInfoListData.isEmpty) {
-      return [];
-    } else {
-      List<Widget> tabViews;
-      tabViews = List.generate(tabs.length, (index) {
-        return SizedBox(
-          child: Column(
-            children: [
-              SizedBox(
-                height: 200,
-                child: _buildDotsSwiper(dictInfoListData[index].id ?? 0),
-              ),
-              Column(
-                children: _buildAlbumContentList(
-                  albumMap[dictInfoListData[index].id] ?? [],
-                ),
-              ),
-            ],
-          ),
-        );
-      });
-      return tabViews;
-    }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    FocusScope.of(context).unfocus(); // 移除焦点
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 20,

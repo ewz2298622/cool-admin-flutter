@@ -2,7 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter_app/http/requestConfig.dart';
 
 import '../db/manager/TokenDatabaseHelper.dart';
+import '../utils/device_info.dart';
 
+String TAG = "TokenDatabaseHelper";
 TokenDatabaseHelper tokenDatabaseHelper = TokenDatabaseHelper();
 
 /// Token拦截器
@@ -14,6 +16,10 @@ class TokenInterceptors extends InterceptorsWrapper {
       String authorization = tokenDatabaseHelper.getLatest()?.token ?? "";
       options.headers["Authorization"] = authorization;
     }
+    Map<String, dynamic>? deviceInfo = DeviceInfoUtils().getDeviceInfo();
+    deviceInfo?.forEach((key, value) {
+      options.headers[key] = value;
+    });
     handler.next(options);
   }
 }

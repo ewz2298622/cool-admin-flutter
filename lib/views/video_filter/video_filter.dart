@@ -167,6 +167,7 @@ class VideoFilterState extends State<VideoFilter>
     return TDSearchBar(
       placeHolder: '',
       backgroundColor: Colors.transparent,
+      readOnly: true,
       style: TDSearchStyle.round,
       onInputClick: () {
         Navigator.push(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/style/color_styles.dart';
+import 'package:flutter_app/utils/context_manager.dart';
+import 'package:flutter_app/utils/device_info.dart';
 import 'package:flutter_app/views/home/home.dart';
 import 'package:flutter_app/views/my/my.dart';
 import 'package:flutter_app/views/ranking/ranking.dart';
@@ -16,7 +18,14 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(home: Scaffold(body: MainPage()));
+    ContextManager.setContext(context);
+    return MaterialApp(
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      home: const Scaffold(body: MainPage()),
+    );
   }
 }
 
@@ -146,6 +155,7 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> init() async {
     await DBManager.init();
+    await DeviceInfoUtils().requestDeviceInfo();
     debugPrint('main dart dbHelper init success');
   }
 

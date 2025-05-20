@@ -78,6 +78,7 @@ class VideoSearchState extends State<VideoSearch>
   }
 
   goToSearchResult() {
+    FocusScope.of(context).unfocus(); // 移除焦点
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => SearchResult(keyWord: inputText)),

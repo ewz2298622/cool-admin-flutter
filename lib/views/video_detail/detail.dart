@@ -292,7 +292,6 @@ class _Video_DetailState extends State<Video_Detail>
     } else if (snapshot.hasData) {
       return Stack(
         children: [
-          _buildSponsorBar(),
           Padding(
             padding: const EdgeInsets.only(
               left: Layout.paddingL,
@@ -301,7 +300,7 @@ class _Video_DetailState extends State<Video_Detail>
             ),
             // child: _buildNavigationTabs(),
             child: Padding(
-              padding: const EdgeInsets.only(top: 50),
+              padding: const EdgeInsets.only(top: 0),
               child: DefaultTabController(
                 length: 2,
                 child: Column(
@@ -330,23 +329,27 @@ class _Video_DetailState extends State<Video_Detail>
                       tabs: [Tab(text: '详情'), Tab(text: '简介')],
                     ),
                     Expanded(
-                      child: TabBarView(
-                        children: [
-                          ListView(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            children: [
-                              // 视频信息
-                              _buildVideoInfo(),
-                              _buildEpisodeList(),
-                              // 广告横幅
-                              _buildBanner(),
-                              // 猜你喜欢
-                              _buildRecommendations(),
-                            ],
-                          ),
-                          SingleChildScrollView(child: _buildTabsVideoInfo()),
-                        ],
+                      child: Container(
+                        //设置背景色
+                        decoration: BoxDecoration(color: Colors.white),
+                        child: TabBarView(
+                          children: [
+                            ListView(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              children: [
+                                // 视频信息
+                                _buildVideoInfo(),
+                                _buildEpisodeList(),
+                                // 广告横幅
+                                _buildBanner(),
+                                // 猜你喜欢
+                                _buildRecommendations(),
+                              ],
+                            ),
+                            SingleChildScrollView(child: _buildTabsVideoInfo()),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -362,11 +365,11 @@ class _Video_DetailState extends State<Video_Detail>
   }
 
   Widget _buildSponsorBar() {
-    return Container(
+    return Padding(
       padding: const EdgeInsets.only(
-        left: Layout.paddingL,
-        right: Layout.paddingR,
-        top: Layout.paddingT,
+        // left: Layout.paddingL,
+        // right: Layout.paddingR,
+        top: 5,
       ),
       child: TDNoticeBar(
         context: '本片仅供学习参考，请勿用于商业用途。切勿传播违法信息。视频中的广告不参与本片制作，仅供学习参考。谨防上当受骗',
@@ -374,7 +377,7 @@ class _Video_DetailState extends State<Video_Detail>
         height: 15,
         prefixIcon: TDIcons.sound,
         style: TDNoticeBarStyle(
-          backgroundColor: const Color.fromRGBO(255, 233, 172, 1),
+          backgroundColor: Color.fromRGBO(247, 247, 247, 1),
         ),
         marquee: true,
       ),
@@ -447,6 +450,7 @@ class _Video_DetailState extends State<Video_Detail>
       child: Column(
         spacing: 5,
         children: [
+          _buildSponsorBar(),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -481,37 +485,16 @@ class _Video_DetailState extends State<Video_Detail>
                   textColor = Colors.black;
                   bgColor = Color.fromRGBO(232, 220, 99, 1);
                 }
-                // return GestureDetector(
-                //   onTap: () => _play_change(index),
-                //   child: Container(
-                //     margin: EdgeInsets.only(left: index == 0 ? 0 : 10),
-                //     padding: const EdgeInsets.symmetric(horizontal: 5),
-                //     width: 90,
-                //     height: 50,
-                //     decoration: BoxDecoration(
-                //       borderRadius: BorderRadius.circular(5),
-                //       color: bgColor,
-                //     ),
-                //     alignment: Alignment.center,
-                //     child: Text(
-                //       videoList[index].title,
-                //       style: TextStyle(fontSize: 15, color: textColor),
-                //     ),
-                //   ),
-                // );
                 return Padding(
                   padding: EdgeInsets.only(left: 10),
                   child: TDButton(
                     text: videoList[index].title,
                     size: TDButtonSize.small,
                     style: TDButtonStyle(
-                      backgroundColor:
-                          index == currentPlay.value
-                              ? const Color.fromRGBO(255, 218, 112, 1)
-                              : const Color.fromRGBO(255, 236, 180, 1),
+                      backgroundColor: Color.fromRGBO(247, 247, 247, 1),
                       textColor:
                           index == currentPlay.value
-                              ? Colors.white
+                              ? Color.fromRGBO(241, 98, 16, 1)
                               : Colors.black,
                     ),
 
@@ -645,23 +628,15 @@ class _Video_DetailState extends State<Video_Detail>
                                       text: videoList[index].title,
                                       size: TDButtonSize.small,
                                       style: TDButtonStyle(
-                                        backgroundColor:
-                                            index == currentPlay.value
-                                                ? const Color.fromRGBO(
-                                                  255,
-                                                  218,
-                                                  112,
-                                                  1,
-                                                )
-                                                : const Color.fromRGBO(
-                                                  255,
-                                                  236,
-                                                  180,
-                                                  1,
-                                                ),
+                                        backgroundColor: Color.fromRGBO(
+                                          247,
+                                          247,
+                                          247,
+                                          1,
+                                        ),
                                         textColor:
                                             index == currentPlay.value
-                                                ? Colors.white
+                                                ? Color.fromRGBO(241, 98, 16, 1)
                                                 : Colors.black,
                                       ),
                                       onTap:
@@ -864,7 +839,7 @@ class _Video_DetailState extends State<Video_Detail>
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 20,
-        backgroundColor: primaryColor,
+        backgroundColor: Colors.black,
         automaticallyImplyLeading: false,
       ),
       resizeToAvoidBottomInset: false,
@@ -873,15 +848,9 @@ class _Video_DetailState extends State<Video_Detail>
           // 背景
           _buildVideo(),
           Container(
+            //设置背景色
+            color: Colors.white,
             margin: EdgeInsets.only(top: 200),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: [0.2, 0.8],
-                colors: [primaryColor, backgroundColor],
-              ),
-            ),
             child: _buildContent(),
           ), // 错误
         ],

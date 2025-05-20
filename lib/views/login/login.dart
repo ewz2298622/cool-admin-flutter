@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/api/api.dart';
@@ -346,12 +348,12 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
           ),
           BouncingBallsScreen(),
           // // 毛玻璃效果层
-          // Positioned.fill(
-          //   child: BackdropFilter(
-          //     filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-          //     child: Container(color: Colors.transparent),
-          //   ),
-          // ),
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+              child: Container(color: Colors.transparent),
+            ),
+          ),
           _buildContent(),
         ],
       ),

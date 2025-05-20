@@ -52,6 +52,9 @@ dependencies:
   flutter_html: ^3.0.0
   webview_flutter: ^4.11.0
   fluttertoast: ^8.2.12
+  device_info_plus: ^11.4.0
+  awesome_snackbar_content: ^0.1.6
+  top_snackbar_flutter: ^3.2.0
 
 dev_dependencies:
   flutter_test:

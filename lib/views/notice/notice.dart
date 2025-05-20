@@ -7,6 +7,15 @@ import '../../../entity/video_page_entity.dart';
 import '../../entity/notice_Info_entity.dart';
 import '../htmlPage/html.dart';
 
+// 提取渐变配置为独立类
+class GradientConfig {
+  static const List<Color> colors = [
+    Color.fromRGBO(255, 218, 112, 1),
+    Color.fromRGBO(255, 255, 255, 1),
+  ];
+  static const List<double> stops = [0.2, 0.8];
+}
+
 class Notice extends StatefulWidget {
   const Notice({super.key});
 
@@ -15,13 +24,6 @@ class Notice extends StatefulWidget {
 }
 
 class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
-  // 提取常量
-  static const _gradientColors = [
-    Color.fromRGBO(255, 218, 112, 1),
-    Color.fromRGBO(255, 255, 255, 1),
-  ];
-  static const _gradientStops = [0.2, 0.8];
-
   var _futureBuilderFuture;
   String inputText = "";
   List<VideoPageDataList> videoPageData = [];
@@ -30,15 +32,18 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
   bool disposed = false;
   final ScrollController _scrollController = ScrollController();
   List<NoticeInfoDataList>? noticeInfoData = [];
+
+  // 数据加载逻辑分离
   Future<void> noticeInfo() async {
     try {
       List<NoticeInfoDataList> list =
           (await Api.noticeInfo({"page": currentPage})).data?.list
               as List<NoticeInfoDataList> ??
           [];
-      noticeInfoData = list;
+      setState(() {
+        noticeInfoData = list;
+      });
     } catch (e) {
-      // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
     }
   }
@@ -49,7 +54,6 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
       await noticeInfo();
       return "init success";
     } catch (e) {
-      // 捕获并处理异常
       print('Initialization failed: $e');
       return "init success";
     }
@@ -68,7 +72,6 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
   void listenLoadMoreCallback() {
     if (_scrollController.position.pixels ==
         _scrollController.position.maxScrollExtent) {
-      // 滚动到底部时触发
       loadMore();
     }
   }
@@ -85,16 +88,29 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
     setState(() {});
   }
 
+  // 页面跳转逻辑分离
+  void _handleTap(int index) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => HtmlPage(
+              content: noticeInfoData?[index].content ?? "",
+              title: noticeInfoData?[index].title ?? "",
+            ),
+      ),
+    );
+  }
+
   /// 返回一个Widget自动填充剩余高度 且可以滑动
   Widget _buildContent() {
     return FutureBuilder<String>(
-      future: _futureBuilderFuture, // 异步操作
+      future: _futureBuilderFuture,
       builder: (context, snapshot) {
-        debugPrint('snapshot: ${snapshot.hasData}');
         if (snapshot.connectionState == ConnectionState.waiting) {
           return PageLoading();
         } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}'); // 显示错误信息
+          return Text('Error: ${snapshot.error}');
         } else if (snapshot.hasData) {
           return SingleChildScrollView(
             physics: BouncingScrollPhysics(),
@@ -102,12 +118,10 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
             child: SingleChildScrollView(
               child: Expanded(
                 child: Container(
-                  //设置背景色
                   height: MediaQuery.of(context).size.height,
                   padding: EdgeInsets.only(left: 10, right: 10),
                   color: Color.fromRGBO(247, 250, 252, 1),
                   child: Column(
-                    spacing: 10,
                     children: [
                       noticeInfoData!.isEmpty
                           ? Container()
@@ -116,107 +130,58 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
                             physics: NeverScrollableScrollPhysics(),
                             itemCount: noticeInfoData?.length ?? 0,
                             itemBuilder: (context, index) {
-                              return Container(
-                                margin: const EdgeInsets.only(top: 10),
-                                padding: const EdgeInsets.only(
-                                  left: 10,
-                                  right: 10,
-                                ),
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(10),
+                              return GestureDetector(
+                                child: Container(
+                                  margin: const EdgeInsets.only(top: 10),
+                                  padding: const EdgeInsets.only(
+                                    left: 10,
+                                    right: 10,
+                                  ),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(10),
+                                    ),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(10),
+                                    child: Column(
+                                      spacing: 10,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            _buildTitle(
+                                              noticeInfoData?[index].title ??
+                                                  "",
+                                            ),
+                                          ],
+                                        ),
+                                        Text(
+                                          noticeInfoData?[index].summary ?? "",
+                                          maxLines: 3,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(color: Colors.black),
+                                        ),
+                                        Divider(
+                                          height: 0.5,
+                                          color: Colors.grey[200],
+                                        ),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [Text("查看详情")],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                                child: Padding(
-                                  padding: EdgeInsets.all(10),
-                                  child: Column(
-                                    spacing: 10,
-                                    children: [
-                                      Row(
-                                        //两端对齐
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        //垂直居中
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        spacing: 10,
-                                        children: [
-                                          TDTag(
-                                            "公告",
-                                            isOutline: true,
-                                            textColor: Color.fromRGBO(
-                                              249,
-                                              99,
-                                              7,
-                                              1,
-                                            ),
-                                            style: TDTagStyle(
-                                              backgroundColor:
-                                                  Colors.transparent,
-                                              borderColor: Color.fromRGBO(
-                                                249,
-                                                99,
-                                                7,
-                                                1,
-                                              ),
-                                            ),
-                                          ),
-                                          Text(
-                                            noticeInfoData?[index].title ?? "",
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-
-                                      //修改Html最大两行
-                                      Text(
-                                        noticeInfoData?[index].summary ?? "",
-                                        maxLines: 3,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(color: Colors.black),
-                                      ),
-                                      //分割线
-                                      Divider(
-                                        height: 0.5,
-                                        color: Colors.grey[200],
-                                      ),
-                                      //
-                                      Row(
-                                        //两端对齐
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        //垂直居中
-                                        children: [
-                                          //点击时事件
-                                          GestureDetector(
-                                            onTap: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder:
-                                                      (context) => HtmlPage(
-                                                        content:
-                                                            noticeInfoData?[index]
-                                                                .content ??
-                                                            "",
-                                                        title:
-                                                            noticeInfoData?[index]
-                                                                .title ??
-                                                            "",
-                                                      ),
-                                                ),
-                                              );
-                                            },
-                                            child: Text("查看详情"),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                onTap: () {
+                                  _handleTap(index);
+                                },
                               );
                             },
                           ),
@@ -233,31 +198,42 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
     );
   }
 
+  //标题title
+  Widget _buildTitle(String title) {
+    return TDTag(
+      title ?? "",
+      isOutline: true,
+      textColor: Color.fromRGBO(249, 99, 7, 1),
+      style: TDTagStyle(
+        backgroundColor: Colors.transparent,
+        borderColor: Color.fromRGBO(249, 99, 7, 1),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("公告", style: TextStyle(fontSize: 16)),
-        //返回
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, size: 20),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        //标题居中
         centerTitle: true,
         toolbarHeight: 40,
-        automaticallyImplyLeading: false, //设置为false
-        backgroundColor: const Color.fromRGBO(255, 218, 112, 1),
+        automaticallyImplyLeading: false,
+        backgroundColor: GradientConfig.colors[0],
       ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            stops: _gradientStops,
-            colors: _gradientColors,
+            stops: GradientConfig.stops,
+            colors: GradientConfig.colors,
           ),
         ),
         child: _buildContent(),
