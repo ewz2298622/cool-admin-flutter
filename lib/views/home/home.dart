@@ -186,8 +186,10 @@ class _HomePageState extends State<Home>
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}'); // 显示错误信息
         } else if (snapshot.hasData) {
-          return Stack(
-            children: <Widget>[_buildTabs(), _buildDefaultSearchBar()],
+          return Center(
+            child: Stack(
+              children: <Widget>[_buildTabs(), _buildDefaultSearchBar()],
+            ),
           );
         } else {
           return Text('No data available');
@@ -386,7 +388,7 @@ class _HomePageState extends State<Home>
     return SizedBox(
       width: 180,
       height: 140,
-      child: Expanded(
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,

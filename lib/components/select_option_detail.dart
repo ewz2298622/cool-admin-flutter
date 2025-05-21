@@ -165,7 +165,7 @@ class _DynamicSelectOptionState extends State<DynamicSelectOption> {
           },
         );
       },
-      child: TDTag(name),
+      child: TDTag(name, isLight: true, theme: TDTagTheme.danger),
     );
   }
 }

@@ -36,7 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   dio: ^5.8.0+1
   tdesign_flutter: ^0.1.8
-  chewie: ^1.11.0
+  chewie: ^1.11.3
   video_player: ^2.9.3
   flutter_native_splash: ^2.4.5
   sqlite3: ^2.7.5
@@ -53,8 +53,6 @@ dependencies:
   webview_flutter: ^4.11.0
   fluttertoast: ^8.2.12
   device_info_plus: ^11.4.0
-  awesome_snackbar_content: ^0.1.6
-  top_snackbar_flutter: ^3.2.0
 
 dev_dependencies:
   flutter_test:

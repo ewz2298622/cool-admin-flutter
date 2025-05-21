@@ -340,7 +340,6 @@ class _Video_DetailState extends State<Video_Detail>
                               children: [
                                 // 视频信息
                                 _buildVideoInfo(),
-                                _buildEpisodeList(),
                                 // 广告横幅
                                 _buildBanner(),
                                 // 猜你喜欢
@@ -392,6 +391,7 @@ class _Video_DetailState extends State<Video_Detail>
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 10,
         children: [
           Text(
             videoData?.title ?? "",
@@ -431,6 +431,8 @@ class _Video_DetailState extends State<Video_Detail>
                     )
                     .toList(),
           ),
+          _buildSponsorBar(),
+          _buildEpisodeList(),
         ],
       ),
     );
@@ -450,15 +452,14 @@ class _Video_DetailState extends State<Video_Detail>
       child: Column(
         spacing: 5,
         children: [
-          _buildSponsorBar(),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
                   Text(
-                    '剧集',
+                    '选集',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   Padding(
@@ -467,6 +468,31 @@ class _Video_DetailState extends State<Video_Detail>
                   ),
                 ],
               ),
+
+              ///Todo 更多按钮
+              // Row(
+              //   children: [
+              //     GestureDetector(
+              //       onTap: () {},
+              //       child: Row(
+              //         children: [
+              //           Text(
+              //             "更多",
+              //             style: TextStyle(
+              //               fontSize: 12,
+              //               color: Color.fromRGBO(162, 162, 162, 1),
+              //             ),
+              //           ),
+              //           Icon(
+              //             Icons.arrow_forward_ios,
+              //             size: 14,
+              //             color: Color.fromRGBO(203, 203, 203, 1),
+              //           ),
+              //         ],
+              //       ),
+              //     ),
+              //   ],
+              // ),
             ],
           ),
           // 自定义小屏列表
@@ -488,6 +514,8 @@ class _Video_DetailState extends State<Video_Detail>
                 return Padding(
                   padding: EdgeInsets.only(left: 10),
                   child: TDButton(
+                    width: 150,
+                    height: 78,
                     text: videoList[index].title,
                     size: TDButtonSize.small,
                     style: TDButtonStyle(
@@ -617,16 +645,18 @@ class _Video_DetailState extends State<Video_Detail>
                                 gridDelegate:
                                     SliverGridDelegateWithFixedCrossAxisCount(
                                       crossAxisCount: 3,
-                                      childAspectRatio: 60 / 30, //宽高比
+                                      childAspectRatio: 150 / 78, //宽高比
                                       crossAxisSpacing: 10,
                                       mainAxisSpacing: 10,
                                     ),
                                 itemCount: videoList.length,
                                 itemBuilder: (BuildContext ctx, index) {
-                                  return SizedBox(
+                                  return Expanded(
                                     child: TDButton(
                                       text: videoList[index].title,
                                       size: TDButtonSize.small,
+                                      width: 150,
+                                      height: 78,
                                       style: TDButtonStyle(
                                         backgroundColor: Color.fromRGBO(
                                           247,
@@ -718,6 +748,7 @@ class _Video_DetailState extends State<Video_Detail>
       child: Column(
         // 使用 Column 替代 ListView
         crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 12,
         children: [
           // 标题部分
           Row(
@@ -733,46 +764,57 @@ class _Video_DetailState extends State<Video_Detail>
                   assetUrl: 'assets/images/loading.gif',
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                spacing: 5,
-                children: [
-                  Text(
-                    videoData?.title ?? "",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      height: 1.5,
+              Expanded(
+                child: Column(
+                  //从上到下排列
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  spacing: 14,
+                  children: [
+                    Text(
+                      videoData?.title ?? "",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  Row(
-                    spacing: 5,
-                    children: [
-                      TDTag(videoData?.year ?? "2021"),
-                      TDTag(
-                        Dict.getDictName(
-                          videoData?.region ?? 0,
-                          area as List<DictDataDataArea>,
+                    Row(
+                      spacing: 5,
+                      children: [
+                        TDTag(
+                          videoData?.year ?? "2021",
+                          isLight: true,
+                          theme: TDTagTheme.success,
                         ),
-                      ),
-                      TDTag(
-                        Dict.getDictName(
-                          videoData?.categoryId ?? 0,
-                          videoCategory as List<DictDataDataVideoCategory>,
+                        TDTag(
+                          Dict.getDictName(
+                            videoData?.region ?? 0,
+                            area as List<DictDataDataArea>,
+                          ),
+                          isLight: true,
+                          theme: TDTagTheme.success,
                         ),
-                      ),
-                      TDTag(
-                        Dict.getDictName(
-                          videoData?.language ?? 0,
-                          language as List<DictDataDataLanguage>,
+                        TDTag(
+                          Dict.getDictName(
+                            videoData?.categoryId ?? 0,
+                            videoCategory as List<DictDataDataVideoCategory>,
+                          ),
+                          isLight: true,
+                          theme: TDTagTheme.success,
                         ),
-                      ),
-                    ],
-                  ),
-                  TDRate(value: (videoData?.doubanScore ?? 0).toDouble()),
-                ],
+                        TDTag(
+                          Dict.getDictName(
+                            videoData?.language ?? 0,
+                            language as List<DictDataDataLanguage>,
+                          ),
+                          isLight: true,
+                          theme: TDTagTheme.success,
+                        ),
+                      ],
+                    ),
+                    TDRate(value: (videoData?.doubanScore ?? 0).toDouble()),
+                  ],
+                ),
               ),
             ],
           ),
