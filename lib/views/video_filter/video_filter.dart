@@ -230,12 +230,12 @@ class VideoFilterState extends State<VideoFilter>
                           text: item.name ?? "",
                           size: TDButtonSize.small,
                           style: TDButtonStyle(
+                            textColor:
+                                Theme.of(context).textTheme.bodyLarge!.color!,
                             backgroundColor:
                                 key == item.id
                                     ? const Color.fromRGBO(249, 174, 61, 1)
                                     : Colors.transparent,
-                            textColor:
-                                key == item.id ? Colors.white : Colors.black,
                           ),
                           onTap: () => _category_change(item),
                         ),
@@ -277,7 +277,7 @@ class VideoFilterState extends State<VideoFilter>
                                     ? const Color.fromRGBO(249, 174, 61, 1)
                                     : Colors.transparent,
                             textColor:
-                                key == item.id ? Colors.white : Colors.black,
+                                Theme.of(context).textTheme.bodyLarge!.color!,
                           ),
                           onTap: () => _area_change(item),
                         ),
@@ -319,7 +319,7 @@ class VideoFilterState extends State<VideoFilter>
                                     ? const Color.fromRGBO(249, 174, 61, 1)
                                     : Colors.transparent,
                             textColor:
-                                key == item ? Colors.white : Colors.black,
+                                Theme.of(context).textTheme.bodyLarge!.color!,
                           ),
                           onTap: () => _year_change(item),
                         ),
@@ -469,27 +469,14 @@ class VideoFilterState extends State<VideoFilter>
   Widget build(BuildContext context) {
     super.build(context); // 必须调用 super.build
     return Scaffold(
-      appBar: AppBar(toolbarHeight: 20, backgroundColor: _gradientColors[0]),
+      appBar: AppBar(toolbarHeight: 20),
       resizeToAvoidBottomInset: false,
       body: RefreshIndicator(
         key: refreshKey,
         onRefresh: onRefresh,
         child: Stack(
           fit: StackFit.expand,
-          children: [
-            Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  stops: _gradientStops,
-                  colors: _gradientColors,
-                ),
-              ),
-              child: _buildContent(),
-            ),
-            _buildCircleBackTop(),
-          ],
+          children: [Container(child: _buildContent()), _buildCircleBackTop()],
         ),
       ),
     );

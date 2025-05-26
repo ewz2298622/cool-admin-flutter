@@ -87,7 +87,6 @@ class _HtmlPageState extends State<HtmlPage> {
         centerTitle: true,
         toolbarHeight: 40,
         automaticallyImplyLeading: false, //设置为false
-        backgroundColor: const Color.fromRGBO(255, 218, 112, 1),
       ),
       // 设置页面的主体内容，使用 WebViewWidget 组件来显示 WebView
       // 将之前初始化好的 controller 传递给 WebViewWidget，用于控制 WebView 的行为

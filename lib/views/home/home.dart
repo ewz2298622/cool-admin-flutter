@@ -266,10 +266,7 @@ class _HomePageState extends State<Home>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 20,
-        backgroundColor: const Color.fromRGBO(255, 218, 112, 1),
-      ),
+      appBar: AppBar(toolbarHeight: 20),
       resizeToAvoidBottomInset: true, //添加这一行
       body: RefreshIndicator(
         key: refreshKey,
@@ -280,18 +277,6 @@ class _HomePageState extends State<Home>
             right: Layout.paddingR,
           ),
           //设置一个下到上以此是白色向黄色渐变的背景色
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              //设置颜色占比
-              stops: [0.2, 0.8],
-              colors: [
-                Color.fromRGBO(255, 218, 112, 1),
-                Color.fromRGBO(255, 255, 255, 1),
-              ],
-            ),
-          ),
           child: _buildContent(),
         ),
       ),
@@ -312,7 +297,7 @@ class _HomePageState extends State<Home>
 
   Widget _buildAlbumHeader(AlbumDataList album) {
     return Container(
-      margin: const EdgeInsets.only(top: 16, bottom: 16),
+      margin: const EdgeInsets.only(top: 16),
       child: SectionWithMore(
         title: album.title ?? "", // 传入标题
         onMorePressed: () {
@@ -328,13 +313,15 @@ class _HomePageState extends State<Home>
   }
 
   Widget _buildAlbumItems(AlbumDataList album) {
-    return Wrap(
-      // spacing 屏幕尺寸减掉 380
-      spacing: (MediaQuery.of(context).size.width - 380),
-      runSpacing: 16,
-      children: List<Widget>.generate(
-        album.list?.length ?? 0,
-        (index) => _buildAlbumItem(album.list?[index] ?? AlbumDataListList()),
+    return Padding(
+      padding: EdgeInsets.only(top: 10),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: List<Widget>.generate(
+          album.list?.length ?? 0,
+          (index) => _buildAlbumItem(album.list?[index] ?? AlbumDataListList()),
+        ),
       ),
     );
   }
@@ -368,14 +355,12 @@ class _HomePageState extends State<Home>
   Widget _buildAlbumItemImage(dynamic item) {
     return SizedBox(
       width: 180,
-      height: 140,
+      height: 100,
       child: TDImage(
-        height: 20,
         fit: BoxFit.cover,
         width: 200,
         imgUrl: item?.surfacePlot ?? '',
         errorWidget: const TDImage(
-          height: 140,
           fit: BoxFit.cover,
           width: 180,
           assetUrl: 'assets/images/loading.gif',
@@ -387,7 +372,7 @@ class _HomePageState extends State<Home>
   Widget _buildAlbumItemOverlay(dynamic item) {
     return SizedBox(
       width: 180,
-      height: 140,
+      height: 100,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -464,7 +449,6 @@ class _HomePageState extends State<Home>
         style: const TextStyle(
           overflow: TextOverflow.ellipsis,
           fontSize: 14,
-          color: Colors.black,
           fontWeight: FontWeight.w400,
         ),
       ),

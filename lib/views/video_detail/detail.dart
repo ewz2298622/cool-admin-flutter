@@ -292,46 +292,43 @@ class _Video_DetailState extends State<Video_Detail>
     } else if (snapshot.hasData) {
       return Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.only(
-              left: Layout.paddingL,
-              right: Layout.paddingR,
-              top: 0,
-            ),
-            // child: _buildNavigationTabs(),
+          Card(
             child: Padding(
-              padding: const EdgeInsets.only(top: 0),
-              child: DefaultTabController(
-                length: 2,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    TabBar(
-                      dividerHeight: 0,
-                      isScrollable: true,
-                      tabAlignment: TabAlignment.start,
-                      indicatorPadding: const EdgeInsets.all(0),
-                      indicator: UnderlineTabIndicator(
-                        borderSide: BorderSide(
-                          width: 0.0,
-                          color: Colors.transparent,
-                        ), // 将宽度设置为0来隐藏下划线
+              padding: const EdgeInsets.only(
+                left: Layout.paddingL,
+                right: Layout.paddingR,
+              ),
+              // child: _buildNavigationTabs(),
+              child: Padding(
+                padding: const EdgeInsets.only(top: 0),
+                child: DefaultTabController(
+                  length: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      TabBar(
+                        dividerHeight: 0,
+                        isScrollable: true,
+                        tabAlignment: TabAlignment.start,
+                        indicatorPadding: const EdgeInsets.all(0),
+                        indicator: UnderlineTabIndicator(
+                          borderSide: BorderSide(
+                            width: 0.0,
+                            color: Colors.transparent,
+                          ), // 将宽度设置为0来隐藏下划线
+                        ),
+                        //设置未选中的字体颜色
+                        unselectedLabelColor: const Color.fromRGBO(
+                          153,
+                          153,
+                          153,
+                          1,
+                        ),
+                        //选中的字体颜色
+                        labelColor: const Color.fromRGBO(252, 119, 66, 1),
+                        tabs: [Tab(text: '详情'), Tab(text: '简介')],
                       ),
-                      //设置未选中的字体颜色
-                      unselectedLabelColor: const Color.fromRGBO(
-                        153,
-                        153,
-                        153,
-                        1,
-                      ),
-                      //选中的字体颜色
-                      labelColor: const Color.fromRGBO(252, 119, 66, 1),
-                      tabs: [Tab(text: '详情'), Tab(text: '简介')],
-                    ),
-                    Expanded(
-                      child: Container(
-                        //设置背景色
-                        decoration: BoxDecoration(color: Colors.white),
+                      Expanded(
                         child: TabBarView(
                           children: [
                             ListView(
@@ -350,8 +347,8 @@ class _Video_DetailState extends State<Video_Detail>
                           ],
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -599,90 +596,96 @@ class _Video_DetailState extends State<Video_Detail>
               context: context,
               isScrollControlled: true,
               builder: (builder) {
-                return Container(
-                  width: MediaQuery.of(context).size.width,
-                  padding: const EdgeInsets.only(top: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20.0),
-                      topRight: Radius.circular(20.0),
+                return Card(
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    padding: const EdgeInsets.only(top: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(20.0),
+                        topRight: Radius.circular(20.0),
+                      ),
                     ),
-                  ),
-                  height: 650,
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      left: 20,
-                      right: 20,
-                      bottom: 10,
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "切换线路",
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            GestureDetector(
-                              onTap: Navigator.of(context).pop,
-                              child: const Icon(Icons.close),
-                            ),
-                          ],
-                        ),
-                        _buildItemWithLogo(context),
-                        Expanded(
-                          child: StatefulBuilder(
-                            builder: (
-                              BuildContext context,
-                              void Function(void Function())
-                              setBottomSheetState,
-                            ) {
-                              return GridView.builder(
-                                gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 3,
-                                      childAspectRatio: 150 / 78, //宽高比
-                                      crossAxisSpacing: 10,
-                                      mainAxisSpacing: 10,
-                                    ),
-                                itemCount: videoList.length,
-                                itemBuilder: (BuildContext ctx, index) {
-                                  return Expanded(
-                                    child: TDButton(
-                                      text: videoList[index].title,
-                                      size: TDButtonSize.small,
-                                      width: 150,
-                                      height: 78,
-                                      style: TDButtonStyle(
-                                        backgroundColor: Color.fromRGBO(
-                                          247,
-                                          247,
-                                          247,
-                                          1,
-                                        ),
-                                        textColor:
-                                            index == currentPlay.value
-                                                ? Color.fromRGBO(241, 98, 16, 1)
-                                                : Colors.black,
-                                      ),
-                                      onTap:
-                                          () => {
-                                            setBottomSheetState(() {
-                                              _play_change(index);
-                                            }),
-                                          },
-                                    ),
-                                  );
-                                },
-                              );
-                            },
+                    height: 650,
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: 20,
+                        right: 20,
+                        bottom: 10,
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "切换线路",
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                              GestureDetector(
+                                onTap: Navigator.of(context).pop,
+                                child: const Icon(Icons.close),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
+                          _buildItemWithLogo(context),
+                          Expanded(
+                            child: StatefulBuilder(
+                              builder: (
+                                BuildContext context,
+                                void Function(void Function())
+                                setBottomSheetState,
+                              ) {
+                                return GridView.builder(
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 3,
+                                        childAspectRatio: 150 / 78, //宽高比
+                                        crossAxisSpacing: 10,
+                                        mainAxisSpacing: 10,
+                                      ),
+                                  itemCount: videoList.length,
+                                  itemBuilder: (BuildContext ctx, index) {
+                                    return Expanded(
+                                      child: TDButton(
+                                        text: videoList[index].title,
+                                        size: TDButtonSize.small,
+                                        width: 150,
+                                        height: 78,
+                                        style: TDButtonStyle(
+                                          backgroundColor: Color.fromRGBO(
+                                            247,
+                                            247,
+                                            247,
+                                            1,
+                                          ),
+                                          textColor:
+                                              index == currentPlay.value
+                                                  ? Color.fromRGBO(
+                                                    241,
+                                                    98,
+                                                    16,
+                                                    1,
+                                                  )
+                                                  : Colors.black,
+                                        ),
+                                        onTap:
+                                            () => {
+                                              setBottomSheetState(() {
+                                                _play_change(index);
+                                              }),
+                                            },
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -890,8 +893,6 @@ class _Video_DetailState extends State<Video_Detail>
           // 背景
           _buildVideo(),
           Container(
-            //设置背景色
-            color: Colors.white,
             margin: EdgeInsets.only(top: 200),
             child: _buildContent(),
           ), // 错误

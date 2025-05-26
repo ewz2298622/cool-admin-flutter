@@ -25,16 +25,6 @@ class VideoAlbumState extends State<VideoAlbum>
     Color.fromRGBO(255, 255, 255, 1),
   ];
   static const _gradientStops = [0.2, 0.8];
-  static const _hdTagTextStyle = TextStyle(
-    fontSize: 11,
-    color: Colors.white,
-    fontWeight: FontWeight.w400,
-  );
-  static const _videoNoteTextStyle = TextStyle(
-    fontSize: 10,
-    color: Colors.white,
-    fontWeight: FontWeight.w400,
-  );
 
   var _futureBuilderFuture;
   VideoAlbumData? albumInfoData;
@@ -109,7 +99,6 @@ class VideoAlbumState extends State<VideoAlbum>
                       child: Text(
                         albumInfoData?.title ?? "",
                         style: const TextStyle(
-                          color: Colors.white,
                           fontSize: 20,
                           fontWeight: FontWeight.w500,
                         ),
@@ -141,7 +130,7 @@ class VideoAlbumState extends State<VideoAlbum>
       //动态计算高度
       height: MediaQuery.of(context).size.height - 150,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
       ),
       child: SingleChildScrollView(
@@ -169,19 +158,7 @@ class VideoAlbumState extends State<VideoAlbum>
       resizeToAvoidBottomInset: false,
       body: Stack(
         fit: StackFit.expand,
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: _gradientStops,
-                colors: _gradientColors,
-              ),
-            ),
-            child: _buildContent(),
-          ),
-        ],
+        children: [Container(child: _buildContent())],
       ),
     );
   }

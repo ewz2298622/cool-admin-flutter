@@ -6,7 +6,6 @@ import '../../components/auto_height_page_view/auto_height_page_view.dart';
 import '../../components/loading.dart';
 import '../../components/video_one.dart';
 import '../../entity/video_sort_entity.dart';
-import '../../style/layout.dart';
 
 class VideoRanking extends StatefulWidget {
   const VideoRanking({super.key});
@@ -175,10 +174,11 @@ class VideoRankingState extends State<VideoRanking>
                         ),
                       ),
                     ),
-                    _buildList(),
+
                     Container(
-                      margin: const EdgeInsets.only(top: 160, left: 20),
-                      child: _buildTabsContent(),
+                      margin: const EdgeInsets.only(top: 160),
+                      width: MediaQuery.of(context).size.width,
+                      child: Card(child: _buildTabsContent()),
                     ),
                   ],
                 ),
@@ -221,6 +221,7 @@ class VideoRankingState extends State<VideoRanking>
             pageController.jumpToPage(index);
           },
         ),
+        _buildList(),
       ],
     );
   }
@@ -251,20 +252,10 @@ class VideoRankingState extends State<VideoRanking>
 
   Widget _buildList() {
     return Container(
-      margin: const EdgeInsets.only(top: 160),
-      padding: const EdgeInsets.only(
-        left: Layout.paddingL,
-        right: Layout.paddingR,
-        top: Layout.paddingT + 20,
-        bottom: Layout.paddingB,
-      ),
-      width: double.infinity,
       //动态计算高度
+      margin: const EdgeInsets.only(top: 40),
       height: MediaQuery.of(context).size.height - 150,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-      ),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
       child: SingleChildScrollView(
         physics: BouncingScrollPhysics(),
         child: Column(children: [_buildTabs()]),
@@ -275,27 +266,7 @@ class VideoRankingState extends State<VideoRanking>
   @override
   Widget build(BuildContext context) {
     super.build(context); // 必须调用 super.build
-    return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: [0.2, 0.8],
-                colors: [
-                  Color.fromRGBO(255, 218, 112, 1),
-                  Color.fromRGBO(255, 255, 255, 1),
-                ],
-              ),
-            ),
-            child: _buildContent(),
-          ),
-        ],
-      ),
-    );
+    return Scaffold(body: _buildContent());
   }
 
   @override

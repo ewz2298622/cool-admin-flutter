@@ -8,7 +8,7 @@ import '../../utils/user.dart';
 // 定义一个名为 Setting 的有状态组件，用于展示一个包含 WebView 的页面
 class Setting extends StatefulWidget {
   // 构造函数，Key? key 是可选参数，用于在组件树中唯一标识该组件
-  const Setting({Key? key}) : super(key: key);
+  const Setting({super.key});
 
   // 创建该组件对应的状态类实例
   @override
@@ -17,13 +17,6 @@ class Setting extends StatefulWidget {
 
 // 定义 Setting 组件对应的状态类
 class _SettingState extends State<Setting> {
-  // 提取常量
-  static const _gradientColors = [
-    Color.fromRGBO(255, 218, 112, 1),
-    Color.fromRGBO(255, 255, 255, 1),
-  ];
-  static const _gradientStops = [0.2, 0.8];
-
   // 组件状态初始化方法，在组件创建时调用
   @override
   void initState() {
@@ -32,25 +25,57 @@ class _SettingState extends State<Setting> {
   }
 
   Widget _buildTDCellGroup(BuildContext context) {
-    return TDCellGroup(
-      cells: [
-        // 可单独修改样式
-        TDCell(
-          arrow: true,
-          title: '清空缓存',
-          style: TDCellStyle.cellStyle(context),
-          onClick: (cell) {
-            deleteAll();
-          },
-        ),
-        TDCell(
-          arrow: true,
-          title: '退出登录',
-          onClick: (cell) {
-            logout();
-          },
-        ),
-      ],
+    return Card(
+      child: TDCellGroup(
+        theme: TDCellGroupTheme.cardTheme,
+        cells: [
+          TDCell(
+            style: TDCellStyle(
+              padding: EdgeInsets.only(top: 10, bottom: 10),
+              titleStyle: TextStyle(
+                color: Theme.of(context).textTheme.titleLarge!.color,
+              ),
+            ),
+            arrow: true,
+            title: '切换主题',
+            rightIconWidget: TDSwitch(
+              isOn: true,
+              openText: "日",
+              closeText: "夜",
+            ),
+            onClick: (cell) {},
+          ),
+          // 可单独修改样式
+          TDCell(
+            style: TDCellStyle(
+              padding: EdgeInsets.only(top: 10, bottom: 10),
+              titleStyle: TextStyle(
+                color: Theme.of(context).textTheme.titleLarge!.color,
+              ),
+              // backgroundColor: Theme.of(context).cardColor,
+            ),
+            arrow: true,
+            title: '清空缓存',
+            onClick: (cell) {
+              deleteAll();
+            },
+          ),
+          TDCell(
+            style: TDCellStyle(
+              padding: EdgeInsets.only(top: 10, bottom: 10),
+              titleStyle: TextStyle(
+                color: Theme.of(context).textTheme.titleLarge!.color,
+              ),
+              // backgroundColor: Theme.of(context).cardColor,
+            ),
+            arrow: true,
+            title: '退出登录',
+            onClick: (cell) {
+              logout();
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -87,19 +112,8 @@ class _SettingState extends State<Setting> {
         centerTitle: true,
         toolbarHeight: 40,
         automaticallyImplyLeading: false, //设置为false
-        backgroundColor: const Color.fromRGBO(255, 218, 112, 1),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            stops: _gradientStops,
-            colors: _gradientColors,
-          ),
-        ),
-        child: _buildTDCellGroup(context),
-      ),
+      body: Container(child: _buildTDCellGroup(context)),
     );
   }
 }

@@ -231,98 +231,90 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Container(
-          padding: EdgeInsets.only(right: 25, left: 25, top: 15, bottom: 15),
-          decoration: BoxDecoration(
-            color: Colors.white, // 背景颜色
-            border: Border.all(
-              color: Color.fromRGBO(224, 209, 178, 1), // 边框颜色
-              width: 1.5, // 边框宽度
+        Card(
+          child: Container(
+            padding: EdgeInsets.only(right: 25, left: 25, top: 15, bottom: 15),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(3.0), // 圆角边框
             ),
-            borderRadius: BorderRadius.circular(3.0), // 圆角边框
-          ),
-          child: Row(
-            children: [
-              Row(
-                children: [
-                  Column(
-                    children: [
-                      Text(
-                        '首3月每月6元',
-                        style: TextStyle(
-                          color: Colors.brown,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+            child: Row(
+              children: [
+                Row(
+                  children: [
+                    Column(
+                      children: [
+                        Text(
+                          '首3月每月6元',
+                          style: TextStyle(
+                            color: Colors.brown,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      Text(
-                        '限时专享',
-                        style: TextStyle(color: Colors.brown, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                  Container(
-                    height: 30,
-                    width: 1,
-                    margin: EdgeInsets.only(right: 12, left: 12),
-                    //设置背景色
-                    decoration: BoxDecoration(
-                      color: Color.fromRGBO(225, 225, 225, 1.0),
+                        Text(
+                          '限时专享',
+                          style: TextStyle(color: Colors.brown, fontSize: 12),
+                        ),
+                      ],
                     ),
-                  ),
-                  Column(
-                    children: [
-                      Text(
-                        '年卡6折',
-                        style: TextStyle(
-                          color: Colors.brown,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+                    Container(
+                      height: 30,
+                      width: 1,
+                      margin: EdgeInsets.only(right: 12, left: 12),
+                      //设置背景色
+                      decoration: BoxDecoration(
+                        color: Color.fromRGBO(225, 225, 225, 1.0),
+                      ),
+                    ),
+                    Column(
+                      children: [
+                        Text(
+                          '年卡6折',
+                          style: TextStyle(
+                            color: Colors.brown,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      Text(
-                        '限时专享',
-                        style: TextStyle(color: Colors.brown, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
+                        Text(
+                          '限时专享',
+                          style: TextStyle(color: Colors.brown, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
-        Container(
-          padding: EdgeInsets.only(right: 25, left: 25, top: 15, bottom: 15),
-          decoration: BoxDecoration(
-            color: Colors.white, // 背景颜色
-            border: Border.all(
-              color: Color.fromRGBO(224, 209, 178, 1), // 边框颜色
-              width: 1.5, // 边框宽度
-            ),
-          ),
-          child: Row(
-            children: [
-              Row(
-                children: [
-                  Column(
-                    children: [
-                      Text(
-                        '首月五元',
-                        style: TextStyle(
-                          color: Colors.brown,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+        Card(
+          child: Container(
+            padding: EdgeInsets.only(right: 25, left: 25, top: 15, bottom: 15),
+            child: Row(
+              children: [
+                Row(
+                  children: [
+                    Column(
+                      children: [
+                        Text(
+                          '首月五元',
+                          style: TextStyle(
+                            color: Colors.brown,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      Text(
-                        '月月省',
-                        style: TextStyle(color: Colors.brown, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
+                        Text(
+                          '月月省',
+                          style: TextStyle(color: Colors.brown, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -330,39 +322,35 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
   }
 
   Widget _buildModelList() {
-    return Container(
-      //设置背景色
-      padding: EdgeInsets.only(right: 5, left: 5, top: 5),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        //设置圆角
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "常用功能",
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
-          ),
-          GridView(
-            padding: EdgeInsets.zero,
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              crossAxisSpacing: 10,
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.only(right: 5, left: 5, top: 5),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "常用功能",
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
             ),
-            children: [
-              _buildModelItem("assets/images/opinion.png", "系统公告"),
-              _buildModelItem("assets/images/share.png", "分享好友"),
-              // _buildModelItem("assets/images/collect.png", "我的收藏"),
-              // _buildModelItem("assets/images/customersService.png", "在线客服"),
-              _buildModelItem("assets/images/install.png", "设置"),
-              _buildModelItem("assets/images/about.png", "关于"),
-            ],
-          ),
-        ],
+            GridView(
+              padding: EdgeInsets.zero,
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                crossAxisSpacing: 10,
+              ),
+              children: [
+                _buildModelItem("assets/images/opinion.png", "系统公告"),
+                _buildModelItem("assets/images/share.png", "分享好友"),
+                // _buildModelItem("assets/images/collect.png", "我的收藏"),
+                // _buildModelItem("assets/images/customersService.png", "在线客服"),
+                _buildModelItem("assets/images/install.png", "设置"),
+                _buildModelItem("assets/images/about.png", "关于"),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -377,11 +365,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
           TDImage(assetUrl: assetUrl, width: 20, height: 20),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: Color.fromRGBO(102, 102, 102, 1),
-            ),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
           ),
         ],
       ),
@@ -481,17 +465,6 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
           left: Layout.paddingL,
           right: Layout.paddingR,
           top: 40,
-        ),
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            stops: [0.2, 0.8],
-            colors: [
-              Color.fromRGBO(255, 218, 112, 1),
-              Color.fromRGBO(255, 255, 255, 1),
-            ],
-          ),
         ),
         child: _buildContent(context),
       ),

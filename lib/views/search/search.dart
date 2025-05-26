@@ -242,24 +242,11 @@ class VideoSearchState extends State<VideoSearch>
       appBar: AppBar(
         toolbarHeight: 20,
         automaticallyImplyLeading: false, //设置为false
-        backgroundColor: const Color.fromRGBO(255, 218, 112, 1),
       ),
       resizeToAvoidBottomInset: false,
       body: Stack(
         fit: StackFit.expand,
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: _gradientStops,
-                colors: _gradientColors,
-              ),
-            ),
-            child: _buildContent(),
-          ),
-        ],
+        children: [Container(child: _buildContent())],
       ),
     );
   }

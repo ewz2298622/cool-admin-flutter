@@ -17,11 +17,7 @@ class SectionWithMore extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Color.fromRGBO(1, 1, 1, 1),
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             if (onMorePressed != null) // 判断是否传入更多点击事件
               GestureDetector(

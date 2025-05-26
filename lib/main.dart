@@ -20,10 +20,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     ContextManager.setContext(context);
     return MaterialApp(
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+      theme: ThemeData.dark(),
+      darkTheme: ThemeData.dark(),
       home: const Scaffold(body: MainPage()),
     );
   }
@@ -141,7 +139,8 @@ class _MainPageState extends State<MainPage> {
         currentIndex: _selectedIndex,
         onTap: onTap,
         type: BottomNavigationBarType.fixed,
-        backgroundColor: ColorStyles.color_FFFFFF,
+        backgroundColor:
+            Theme.of(context).bottomNavigationBarTheme.backgroundColor,
         unselectedItemColor: ColorStyles.color_1E88E5,
         // 未选中状态下的颜色
         unselectedFontSize: 14,

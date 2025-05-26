@@ -119,7 +119,6 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
               child: Container(
                 height: MediaQuery.of(context).size.height,
                 padding: EdgeInsets.only(left: 10, right: 10),
-                color: Color.fromRGBO(247, 250, 252, 1),
                 child: Column(
                   children: [
                     noticeInfoData!.isEmpty
@@ -130,50 +129,48 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
                           itemCount: noticeInfoData?.length ?? 0,
                           itemBuilder: (context, index) {
                             return GestureDetector(
-                              child: Container(
-                                margin: const EdgeInsets.only(top: 10),
-                                padding: const EdgeInsets.only(
-                                  left: 10,
-                                  right: 10,
-                                ),
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(10),
+                              child: Card(
+                                child: Container(
+                                  margin: const EdgeInsets.only(top: 10),
+                                  padding: const EdgeInsets.only(
+                                    left: 10,
+                                    right: 10,
                                   ),
-                                ),
-                                child: Padding(
-                                  padding: EdgeInsets.all(10),
-                                  child: Column(
-                                    spacing: 10,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          _buildTitle(
-                                            noticeInfoData?[index].title ?? "",
-                                          ),
-                                        ],
-                                      ),
-                                      Text(
-                                        noticeInfoData?[index].summary ?? "",
-                                        maxLines: 3,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(color: Colors.black),
-                                      ),
-                                      Divider(
-                                        height: 0.5,
-                                        color: Colors.grey[200],
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [Text("查看详情")],
-                                      ),
-                                    ],
+                                  decoration: const BoxDecoration(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(10),
+                                    ),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(10),
+                                    child: Column(
+                                      spacing: 10,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            _buildTitle(
+                                              noticeInfoData?[index].title ??
+                                                  "",
+                                            ),
+                                          ],
+                                        ),
+                                        Text(
+                                          noticeInfoData?[index].summary ?? "",
+                                          maxLines: 3,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        Divider(height: 0.5),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [Text("查看详情")],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
@@ -222,19 +219,8 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
         centerTitle: true,
         toolbarHeight: 40,
         automaticallyImplyLeading: false,
-        backgroundColor: GradientConfig.colors[0],
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            stops: GradientConfig.stops,
-            colors: GradientConfig.colors,
-          ),
-        ),
-        child: _buildContent(),
-      ),
+      body: Container(child: _buildContent()),
     );
   }
 }
