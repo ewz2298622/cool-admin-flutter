@@ -81,80 +81,84 @@ class _DynamicSelectOptionState extends State<DynamicSelectOption> {
               future: _loadData(params), // 加载数据
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(
-                    width: MediaQuery.of(context).size.width,
-                    padding: const EdgeInsets.only(top: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(20.0),
-                        topRight: Radius.circular(20.0),
+                  return Card(
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      padding: const EdgeInsets.only(top: 10),
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(20.0),
+                          topRight: Radius.circular(20.0),
+                        ),
                       ),
+                      height: 650,
+                      child: const Center(child: PageLoading()),
                     ),
-                    height: 650,
-                    child: const Center(child: PageLoading()),
                   );
                 } else if (snapshot.hasError) {
                   return Text('Error: ${snapshot.error}');
                 } else {
-                  return Container(
-                    width: MediaQuery.of(context).size.width,
-                    padding: const EdgeInsets.only(top: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(20.0),
-                        topRight: Radius.circular(20.0),
-                      ),
-                    ),
-                    height: 650,
-                    child: SingleChildScrollView(
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          left: 20,
-                          right: 20,
-                          bottom: 10,
+                  return Card(
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      padding: const EdgeInsets.only(top: 10),
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(20.0),
+                          topRight: Radius.circular(20.0),
                         ),
-                        child: Column(
-                          spacing: 20,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text.rich(
-                                  TextSpan(
-                                    children: [
-                                      const TextSpan(
-                                        text: "已为您关联 ",
-                                        style: TextStyle(fontSize: 14),
-                                      ),
-                                      TextSpan(
-                                        text: name,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold, // 示例：加粗
-                                          color: Colors.blue, // 示例：蓝色
+                      ),
+                      height: 650,
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            left: 20,
+                            right: 20,
+                            bottom: 10,
+                          ),
+                          child: Column(
+                            spacing: 20,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text.rich(
+                                    TextSpan(
+                                      children: [
+                                        const TextSpan(
+                                          text: "已为您关联 ",
+                                          style: TextStyle(fontSize: 14),
                                         ),
-                                      ),
-                                      const TextSpan(
-                                        text: " 的相关影片",
-                                        style: TextStyle(fontSize: 14),
-                                      ),
-                                    ],
+                                        TextSpan(
+                                          text: name,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight:
+                                                FontWeight.bold, // 示例：加粗
+                                            color: Colors.blue, // 示例：蓝色
+                                          ),
+                                        ),
+                                        const TextSpan(
+                                          text: " 的相关影片",
+                                          style: TextStyle(fontSize: 14),
+                                        ),
+                                      ],
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                GestureDetector(
-                                  onTap: Navigator.of(context).pop,
-                                  child: const Icon(Icons.close),
-                                ),
-                              ],
-                            ),
-                            // 示例组件，可以替换成实际组件如 VideoOneSmall
-                            VideoOneSmall(videoPageData: selectData),
-                          ],
+                                  GestureDetector(
+                                    onTap: Navigator.of(context).pop,
+                                    child: const Icon(Icons.close),
+                                  ),
+                                ],
+                              ),
+                              // 示例组件，可以替换成实际组件如 VideoOneSmall
+                              VideoOneSmall(videoPageData: selectData),
+                            ],
+                          ),
                         ),
                       ),
                     ),

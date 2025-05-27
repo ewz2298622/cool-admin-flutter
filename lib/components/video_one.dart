@@ -68,13 +68,16 @@ class VideoItem extends StatelessWidget {
                                 maxLines: 3, // 限制最大行数
                                 textOverflow: TextOverflow.ellipsis, // 溢出显示省略号
                                 color: Color.fromRGBO(153, 153, 153, 1),
+                                backgroundColor: Colors.transparent,
                               ),
                               "p": Style(
                                 color: Color.fromRGBO(153, 153, 153, 1),
+                                backgroundColor: Colors.transparent,
                               ),
                               //设置所有html元素字体的颜色
                               "span": Style(
                                 color: Color.fromRGBO(153, 153, 153, 1),
+                                backgroundColor: Colors.transparent,
                               ),
                             },
                           ),

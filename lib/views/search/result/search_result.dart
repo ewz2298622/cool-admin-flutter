@@ -149,8 +149,6 @@ class SearchResultState extends State<SearchResult>
                 Container(
                   padding: const EdgeInsets.only(top: 10),
                   width: double.infinity,
-                  //设置白色背景
-                  decoration: BoxDecoration(color: Colors.white),
                   child: Column(
                     children: [VideoOneSmall(videoPageData: videoPageData)],
                   ),
@@ -171,19 +169,8 @@ class SearchResultState extends State<SearchResult>
       appBar: AppBar(
         toolbarHeight: 20,
         automaticallyImplyLeading: false, //设置为false
-        backgroundColor: const Color.fromRGBO(255, 218, 112, 1),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            stops: _gradientStops,
-            colors: _gradientColors,
-          ),
-        ),
-        child: _buildContent(),
-      ),
+      body: Container(child: _buildContent()),
     );
   }
 }

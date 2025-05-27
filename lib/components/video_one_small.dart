@@ -47,10 +47,7 @@ class VideoOneSmall extends StatelessWidget {
                           videoPageData[i].title ?? "",
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black54,
-                          ),
+                          style: const TextStyle(fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(height: 10),
                         Text(
@@ -73,13 +70,16 @@ class VideoOneSmall extends StatelessWidget {
                                 maxLines: 2, // 限制最大行数
                                 textOverflow: TextOverflow.ellipsis, // 溢出显示省略号
                                 color: Color.fromRGBO(153, 153, 153, 1),
+                                backgroundColor: Colors.transparent,
                               ),
                               "p": Style(
                                 color: Color.fromRGBO(153, 153, 153, 1),
+                                backgroundColor: Colors.transparent,
                               ),
                               //设置所有html元素字体的颜色
                               "span": Style(
                                 color: Color.fromRGBO(153, 153, 153, 1),
+                                backgroundColor: Colors.transparent,
                               ),
                             },
                           ),
@@ -134,11 +134,7 @@ class VideoOneSmall extends StatelessWidget {
             item?.note ?? '',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 10,
-              color: Colors.white,
-              fontWeight: FontWeight.w400,
-            ),
+            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w400),
           ),
         ),
       ],

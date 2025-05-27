@@ -101,6 +101,7 @@ class VideoAlbumState extends State<VideoAlbum>
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w500,
+                          color: Colors.white,
                         ),
                       ),
                     ),
@@ -118,34 +119,33 @@ class VideoAlbumState extends State<VideoAlbum>
   }
 
   Widget _buildList() {
-    return Container(
+    return Card(
       margin: const EdgeInsets.only(top: 150),
-      padding: const EdgeInsets.only(
-        left: Layout.paddingL,
-        right: Layout.paddingR,
-        top: Layout.paddingT,
-        bottom: Layout.paddingB,
-      ),
-      width: double.infinity,
-      //动态计算高度
-      height: MediaQuery.of(context).size.height - 150,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: SingleChildScrollView(
-        physics: BouncingScrollPhysics(),
-        // child: Container(child: VideoThree(videoPageData: videoPageData)),
-        //重构videoPageData数据将videos_id设置成id
-        child: Container(
-          child: VideoThree(
-            videoPageData:
-                videoPageData?.map((e) {
-                  String videosId = e.videosId ?? "";
-                  //将videos_id 转成int并设置成id
-                  e.id = int.parse(videosId);
-                  return e;
-                }).toList(),
+      child: Container(
+        padding: const EdgeInsets.only(
+          left: Layout.paddingL,
+          right: Layout.paddingR,
+          top: Layout.paddingT,
+          bottom: Layout.paddingB,
+        ),
+        width: double.infinity,
+        //动态计算高度
+        height: MediaQuery.of(context).size.height - 150,
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
+        child: SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
+          // child: Container(child: VideoThree(videoPageData: videoPageData)),
+          //重构videoPageData数据将videos_id设置成id
+          child: Container(
+            child: VideoThree(
+              videoPageData:
+                  videoPageData?.map((e) {
+                    String videosId = e.videosId ?? "";
+                    //将videos_id 转成int并设置成id
+                    e.id = int.parse(videosId);
+                    return e;
+                  }).toList(),
+            ),
           ),
         ),
       ),

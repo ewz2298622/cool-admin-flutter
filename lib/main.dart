@@ -1,28 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/style/color_styles.dart';
+import 'package:flutter_app/utils/bus/%20theme/themeManager.dart';
 import 'package:flutter_app/utils/context_manager.dart';
 import 'package:flutter_app/utils/device_info.dart';
 import 'package:flutter_app/views/home/home.dart';
 import 'package:flutter_app/views/my/my.dart';
 import 'package:flutter_app/views/ranking/ranking.dart';
 import 'package:flutter_app/views/video_filter/video_filter.dart';
+import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import 'db/manager/DBManager.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => ThemeManager())],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     ContextManager.setContext(context);
-    return MaterialApp(
-      theme: ThemeData.dark(),
-      darkTheme: ThemeData.dark(),
-      home: const Scaffold(body: MainPage()),
+    return Consumer<ThemeManager>(
+      builder: (context, themeManager, child) {
+        return MaterialApp(
+          darkTheme: ThemeData.dark(),
+          themeMode: themeManager.themeMode,
+          home: MainPage(),
+        );
+      },
     );
   }
 }

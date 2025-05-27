@@ -3,6 +3,7 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../db/manager/helper.dart';
 import '../../main.dart';
+import '../../utils/bus/ theme/themeManager.dart';
 import '../../utils/user.dart';
 
 // 定义一个名为 Setting 的有状态组件，用于展示一个包含 WebView 的页面
@@ -17,6 +18,9 @@ class Setting extends StatefulWidget {
 
 // 定义 Setting 组件对应的状态类
 class _SettingState extends State<Setting> {
+  // bool flag = ThemeManager.themeMode == ThemeMode.dark;
+  //判断当前主题如何是黑夜模式就是true 否则就是false
+  bool flag = ThemeManager().themeMode == ThemeMode.dark;
   // 组件状态初始化方法，在组件创建时调用
   @override
   void initState() {
@@ -37,18 +41,23 @@ class _SettingState extends State<Setting> {
               ),
             ),
             arrow: true,
-            title: '切换主题',
-            rightIconWidget: TDSwitch(
-              isOn: true,
-              openText: "日",
-              closeText: "夜",
+            title: '深色模式',
+            rightIconWidget: Switch(
+              value: flag,
+              onChanged: (bool value) {
+                setState(() {
+                  flag = value;
+                });
+                ThemeManager.changeTheme(
+                  value ? ThemeMode.dark : ThemeMode.light,
+                );
+              },
             ),
-            onClick: (cell) {},
           ),
           // 可单独修改样式
           TDCell(
             style: TDCellStyle(
-              padding: EdgeInsets.only(top: 10, bottom: 10),
+              padding: EdgeInsets.only(top: 10, bottom: 25),
               titleStyle: TextStyle(
                 color: Theme.of(context).textTheme.titleLarge!.color,
               ),
@@ -62,7 +71,7 @@ class _SettingState extends State<Setting> {
           ),
           TDCell(
             style: TDCellStyle(
-              padding: EdgeInsets.only(top: 10, bottom: 10),
+              padding: EdgeInsets.only(top: 10, bottom: 25),
               titleStyle: TextStyle(
                 color: Theme.of(context).textTheme.titleLarge!.color,
               ),
