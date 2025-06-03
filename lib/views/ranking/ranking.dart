@@ -209,10 +209,10 @@ class VideoRankingState extends State<VideoRanking>
         TDTabBar(
           tabs: tabs,
           controller: _tabController,
+          tabAlignment: TabAlignment.fill,
           showIndicator: false,
           dividerHeight: 0,
           height: 40,
-          isScrollable: true,
           labelColor: const Color.fromRGBO(252, 119, 66, 1),
           unselectedLabelColor: const Color.fromRGBO(102, 102, 102, 1),
           labelPadding: const EdgeInsets.only(left: 16, right: 16),

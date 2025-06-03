@@ -15,6 +15,8 @@ import '../../entity/login_entity.dart';
 import '../../entity/user_info_entity.dart';
 import '../../main.dart';
 import '../../style/layout.dart';
+import '../../utils/bus/bus.dart';
+import '../../utils/bus/constant.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -311,7 +313,7 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
     );
 
     await getUserInfo();
-    //返回上一个页面
+    EventBus().emit(Constant.UserBusId, null);
     //跳转到My
     Navigator.pushReplacement(
       context,

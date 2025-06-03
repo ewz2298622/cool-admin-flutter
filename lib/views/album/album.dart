@@ -105,6 +105,13 @@ class VideoAlbumState extends State<VideoAlbum>
                         ),
                       ),
                     ),
+                    TDNavBar(
+                      height: 48,
+                      titleFontWeight: FontWeight.w600,
+                      backgroundColor: Colors.transparent,
+                      screenAdaptation: false,
+                      useDefaultBack: true,
+                    ),
                     _buildList(),
                   ],
                 ),

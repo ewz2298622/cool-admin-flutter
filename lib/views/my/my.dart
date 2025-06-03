@@ -11,6 +11,8 @@ import '../../entity/notice_Info_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../entity/views_entity.dart';
 import '../../style/layout.dart';
+import '../../utils/bus/bus.dart';
+import '../../utils/bus/constant.dart';
 import '../history/history.dart';
 import '../htmlPage/html.dart';
 import '../login/login.dart';
@@ -54,9 +56,11 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
       await getUserInfo();
       await getViews();
       await noticeInfo();
+      EventBus().on(Constant.UserBusId, () {
+        init();
+      });
       return "init success";
     } catch (e) {
-      print('Initialization failed: $e');
       return "init success";
     }
   }

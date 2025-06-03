@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/style/color_styles.dart';
-import 'package:flutter_app/utils/bus/%20theme/themeManager.dart';
 import 'package:flutter_app/utils/context_manager.dart';
 import 'package:flutter_app/utils/device_info.dart';
+import 'package:flutter_app/utils/store/theme/theme.dart';
 import 'package:flutter_app/views/home/home.dart';
 import 'package:flutter_app/views/my/my.dart';
 import 'package:flutter_app/views/ranking/ranking.dart';
@@ -15,19 +15,19 @@ import 'db/manager/DBManager.dart';
 void main() {
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => ThemeManager())],
+      providers: [ChangeNotifierProvider(create: (_) => ThemeChangeEvent())],
       child: MyApp(),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatelessWidget with WidgetsBindingObserver {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     ContextManager.setContext(context);
-    return Consumer<ThemeManager>(
+    return Consumer<ThemeChangeEvent>(
       builder: (context, themeManager, child) {
         return MaterialApp(
           darkTheme: ThemeData.dark(),
@@ -57,10 +57,10 @@ class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
 
   void onTap(int index) {
-    if (index == (pages.length - 1)) {
-      // 如果是非缓存页面，每次切换时重新创建
-      pages[pages.length - 1] = My(key: UniqueKey());
-    }
+    // if (index == (pages.length - 1)) {
+    //   // 如果是非缓存页面，每次切换时重新创建
+    //   pages[pages.length - 1] = My(key: UniqueKey());
+    // }
     setState(() => _selectedIndex = index);
     TDToast.dismissLoading();
   }

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../db/manager/helper.dart';
 import '../../main.dart';
-import '../../utils/bus/ theme/themeManager.dart';
+import '../../utils/store/theme/theme.dart';
 import '../../utils/user.dart';
 
 // 定义一个名为 Setting 的有状态组件，用于展示一个包含 WebView 的页面
@@ -20,7 +21,7 @@ class Setting extends StatefulWidget {
 class _SettingState extends State<Setting> {
   // bool flag = ThemeManager.themeMode == ThemeMode.dark;
   //判断当前主题如何是黑夜模式就是true 否则就是false
-  bool flag = ThemeManager().themeMode == ThemeMode.dark;
+
   // 组件状态初始化方法，在组件创建时调用
   @override
   void initState() {
@@ -29,6 +30,8 @@ class _SettingState extends State<Setting> {
   }
 
   Widget _buildTDCellGroup(BuildContext context) {
+    bool flag =
+        Provider.of<ThemeChangeEvent>(context).themeMode == ThemeMode.dark;
     return Card(
       child: TDCellGroup(
         theme: TDCellGroupTheme.cardTheme,
@@ -48,7 +51,7 @@ class _SettingState extends State<Setting> {
                 setState(() {
                   flag = value;
                 });
-                ThemeManager.changeTheme(
+                context.read<ThemeChangeEvent>().changeTheme(
                   value ? ThemeMode.dark : ThemeMode.light,
                 );
               },

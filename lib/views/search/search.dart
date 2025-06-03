@@ -86,22 +86,31 @@ class VideoSearchState extends State<VideoSearch>
   }
 
   Widget _buildDefaultSearchBar() {
-    return TDSearchBar(
-      placeHolder: '',
-      action: "搜索",
+    return TDNavBar(
+      useDefaultBack: true,
+      screenAdaptation: false,
       backgroundColor: Colors.transparent,
-      style: TDSearchStyle.round,
-      onTextChanged: (String text) {
-        setState(() {
-          inputText = text;
-        });
-        searchHistory.insertSearchHistory(
-          SearchHistoryEntity(query: inputText, timestamp: DateTime.now()),
-        );
-      },
-      onActionClick: (contexts) {
-        goToSearchResult();
-      },
+      titleMargin: 5,
+      centerTitle: false,
+      padding: EdgeInsets.only(left: 0, right: 0),
+      titleWidget: TDSearchBar(
+        backgroundColor: Colors.transparent,
+        placeHolder: '',
+        action: "搜索",
+        style: TDSearchStyle.round,
+        padding: EdgeInsets.only(left: 0, right: 0, bottom: 2, top: 2),
+        onTextChanged: (String text) {
+          setState(() {
+            inputText = text;
+          });
+          searchHistory.insertSearchHistory(
+            SearchHistoryEntity(query: inputText, timestamp: DateTime.now()),
+          );
+        },
+        onActionClick: (contexts) {
+          goToSearchResult();
+        },
+      ),
     );
   }
 
