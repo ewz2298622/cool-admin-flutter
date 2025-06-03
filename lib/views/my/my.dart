@@ -345,12 +345,15 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
                 crossAxisSpacing: 10,
               ),
               children: [
-                _buildModelItem("assets/images/opinion.png", "系统公告"),
-                _buildModelItem("assets/images/share.png", "分享好友"),
+                _buildModelItem(Icon(Icons.message_outlined, size: 20), "系统公告"),
+                _buildModelItem(Icon(Icons.share_outlined, size: 20), "分享好友"),
                 // _buildModelItem("assets/images/collect.png", "我的收藏"),
                 // _buildModelItem("assets/images/customersService.png", "在线客服"),
-                _buildModelItem("assets/images/install.png", "设置"),
-                _buildModelItem("assets/images/about.png", "关于"),
+                _buildModelItem(Icon(Icons.settings_outlined, size: 20), "设置"),
+                _buildModelItem(
+                  Icon(Icons.warning_amber_outlined, size: 20),
+                  "关于",
+                ),
               ],
             ),
           ],
@@ -359,14 +362,15 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
     );
   }
 
-  Widget _buildModelItem(String assetUrl, String label) {
+  Widget _buildModelItem(Widget icon, String label) {
     return GestureDetector(
       onTap: () => _handleModelItemClick(label),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          TDImage(assetUrl: assetUrl, width: 20, height: 20),
+          // TDImage(assetUrl: assetUrl, width: 20, height: 20),
+          icon,
           Text(
             label,
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
