@@ -342,12 +342,6 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          TDImage(
-            assetUrl: "assets/images/background.jpg",
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
-            fit: BoxFit.cover,
-          ),
           BouncingBallsScreen(),
           // // 毛玻璃效果层
           Positioned.fill(
