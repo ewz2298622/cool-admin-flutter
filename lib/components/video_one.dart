@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
+import '../entity/video_page_entity.dart';
+import '../utils/video.dart';
 import '../views/video_detail/detail.dart';
 
 class VideoItem extends StatelessWidget {
-  final dynamic videoData;
+  final List<VideoPageDataList> videoData;
   const VideoItem({super.key, required this.videoData});
 
   Widget _buildAlbumItems(BuildContext context) {
@@ -24,14 +26,14 @@ class VideoItem extends StatelessWidget {
                       fit: BoxFit.cover,
                       width: 120,
                       height: 180,
-                      imgUrl: videoData?[i].surfacePlot ?? "",
+                      imgUrl: videoData[i].surfacePlot ?? "",
                       errorWidget: const TDImage(
                         width: 120,
                         height: 180,
                         assetUrl: 'assets/images/loading.gif',
                       ),
                     ),
-                    _buildVideoItemOverlay(videoData?[i]),
+                    _buildVideoItemOverlay(videoData[i]),
                   ],
                 ),
                 Expanded(
@@ -43,14 +45,14 @@ class VideoItem extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Text(
-                          videoData?[i].title ?? "",
+                          videoData[i].title ?? "",
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          "${videoData?[i].year ?? ''} / ${videoData?[i].actors}",
+                          "${videoData[i].year ?? ''} / ${videoData[i].actors}",
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -94,7 +96,7 @@ class VideoItem extends StatelessWidget {
     );
   }
 
-  Widget _buildVideoItemOverlay(dynamic item) {
+  Widget _buildVideoItemOverlay(VideoPageDataList item) {
     return Container(
       width: 130,
       height: 175,
@@ -102,13 +104,13 @@ class VideoItem extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: [_buildVideoItemHDTag(), _buildVideoItemNote(item)],
+        children: [_buildVideoItemHDTag(item), _buildVideoItemNote(item)],
       ),
     );
   }
 
-  Widget _buildVideoItemNote(dynamic item) {
-    if (item.note == null) {
+  Widget _buildVideoItemNote(VideoPageDataList item) {
+    if (item.remarks == null) {
       return Container();
     }
     return Row(
@@ -122,7 +124,7 @@ class VideoItem extends StatelessWidget {
             color: const Color.fromRGBO(0, 0, 0, 0.302),
           ),
           child: Text(
-            item?.note ?? '',
+            item.remarks ?? '',
             maxLines: 1, // 限制最大显示一行
             overflow: TextOverflow.ellipsis, // 溢出时显示省略号
             style: TextStyle(
@@ -136,7 +138,7 @@ class VideoItem extends StatelessWidget {
     );
   }
 
-  Widget _buildVideoItemHDTag() {
+  Widget _buildVideoItemHDTag(VideoPageDataList item) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -154,8 +156,8 @@ class VideoItem extends StatelessWidget {
               ],
             ),
           ),
-          child: const Text(
-            "高清",
+          child: Text(
+            VideoUtil.formatTag(item.pubdate ?? ""),
             style: TextStyle(
               fontSize: 11,
               color: Colors.white,

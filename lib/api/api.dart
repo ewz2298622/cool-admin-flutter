@@ -16,7 +16,6 @@ import '../entity/video_detail_entity.dart';
 import '../entity/video_line_entity.dart';
 import '../entity/video_live_entity.dart';
 import '../entity/video_page_entity.dart';
-import '../entity/video_sort_entity.dart';
 import '../entity/views_entity.dart';
 import '../http/request.dart';
 
@@ -314,7 +313,7 @@ class Api {
     }
   }
 
-  static Future<VideoSortEntity> getVideoSortPage(
+  static Future<VideoPageEntity> getVideoSortPage(
     Map<String, dynamic>? data,
   ) async {
     try {
@@ -323,7 +322,7 @@ class Api {
         data: data,
       ); // 添加注释说明 ONE 的含义});
       // 将服务器返回的JSON数据解析为[VideoCategoryEntity]对象并返回
-      return VideoSortEntity.fromJson(response.data);
+      return VideoPageEntity.fromJson(response.data);
     } catch (error) {
       // 重新抛出异常以便上层处理
       rethrow;

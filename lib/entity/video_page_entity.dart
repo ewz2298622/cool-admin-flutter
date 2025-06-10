@@ -53,15 +53,9 @@ class VideoPageDataList {
   String? title;
   @JSONField(name: 'surface_plot')
   String? surfacePlot;
-  dynamic recommend;
   String? cycle;
   @JSONField(name: 'cycle_img')
   dynamic cycleImg;
-  @JSONField(name: 'charging_mode')
-  String? chargingMode;
-  @JSONField(name: 'buy_mode')
-  dynamic buyMode;
-  dynamic gold;
   String? directors;
   String? actors;
   @JSONField(name: 'imdb_score')
@@ -82,12 +76,8 @@ class VideoPageDataList {
   @JSONField(name: 'popularity_sum')
   String? popularitySum;
   dynamic note;
-  String? year;
-  @JSONField(name: 'album_id')
-  dynamic albumId;
   String? status;
   dynamic duration;
-  dynamic label;
   String? number;
   String? total;
   @JSONField(name: 'horizontal_poster')
@@ -98,21 +88,8 @@ class VideoPageDataList {
   @JSONField(name: 'serial_number')
   dynamic serialNumber;
   dynamic screenshot;
-  dynamic gif;
-  dynamic alias;
-  @JSONField(name: 'release_at')
-  dynamic releaseAt;
-  @JSONField(name: 'shelf_at')
-  dynamic shelfAt;
-  dynamic end;
+  int? end;
   dynamic unit;
-  dynamic watch;
-  @JSONField(name: 'use_local_image')
-  dynamic useLocalImage;
-  @JSONField(name: 'titles_time')
-  int? titlesTime;
-  @JSONField(name: 'trailer_time')
-  int? trailerTime;
   @JSONField(name: 'play_url')
   String? playUrl;
   @JSONField(name: 'play_url_put_in')
@@ -121,6 +98,18 @@ class VideoPageDataList {
   int? categoryId;
   int? region;
   int? language;
+  @JSONField(name: 'collection_id')
+  int? collectionId;
+  @JSONField(name: 'collection_name')
+  String? collectionName;
+  String? remarks;
+  int? year;
+  @JSONField(name: 'category_pid')
+  int? categoryPid;
+  int? up;
+  int? down;
+  String? popularity;
+  String? pubdate;
 
   VideoPageDataList();
 

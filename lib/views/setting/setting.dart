@@ -45,8 +45,12 @@ class _SettingState extends State<Setting> {
             ),
             arrow: true,
             title: '深色模式',
-            rightIconWidget: Switch(
-              value: flag,
+            rightIconWidget: TDSwitch(
+              isOn: flag,
+              trackOnColor: Colors.green,
+              openText: "夜",
+              type: TDSwitchType.text,
+              closeText: "日",
               onChanged: (bool value) {
                 setState(() {
                   flag = value;
@@ -54,6 +58,7 @@ class _SettingState extends State<Setting> {
                 context.read<ThemeChangeEvent>().changeTheme(
                   value ? ThemeMode.dark : ThemeMode.light,
                 );
+                return flag;
               },
             ),
           ),

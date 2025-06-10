@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
+import '../utils/video.dart';
 import '../views/video_detail/detail.dart';
 
 class VideoThree extends StatelessWidget {
@@ -67,14 +68,14 @@ class VideoThree extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
-          children: [_buildVideoItemHDTag(), _buildVideoItemNote(item)],
+          children: [_buildVideoItemHDTag(item), _buildVideoItemNote(item)],
         ),
       ),
     );
   }
 
   Widget _buildVideoItemNote(dynamic item) {
-    if (item.note == null) {
+    if (item?.remarks == null) {
       return Container();
     }
     return Row(
@@ -87,13 +88,13 @@ class VideoThree extends StatelessWidget {
             borderRadius: BorderRadius.circular(5),
             color: const Color.fromRGBO(0, 0, 0, 0.302),
           ),
-          child: Text(item?.note ?? '', style: _videoNoteTextStyle),
+          child: Text(item?.remarks ?? '', style: _videoNoteTextStyle),
         ),
       ],
     );
   }
 
-  Widget _buildVideoItemHDTag() {
+  Widget _buildVideoItemHDTag(dynamic item) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -111,7 +112,10 @@ class VideoThree extends StatelessWidget {
               ],
             ),
           ),
-          child: const Text("高清", style: _hdTagTextStyle),
+          child: Text(
+            VideoUtil.formatTag(item?.pubdate ?? ""),
+            style: _hdTagTextStyle,
+          ),
         ),
       ],
     );

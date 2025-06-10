@@ -3,6 +3,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../entity/video_page_entity.dart';
+import '../utils/video.dart';
 import '../views/video_detail/detail.dart';
 
 class VideoOneSmall extends StatelessWidget {
@@ -103,7 +104,7 @@ class VideoOneSmall extends StatelessWidget {
     );
   }
 
-  Widget _buildVideoItemOverlay(dynamic item) {
+  Widget _buildVideoItemOverlay(VideoPageDataList item) {
     return Container(
       width: 110,
       height: 175,
@@ -111,13 +112,13 @@ class VideoOneSmall extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: [_buildVideoItemHDTag(), _buildVideoItemNote(item)],
+        children: [_buildVideoItemHDTag(item), _buildVideoItemNote(item)],
       ),
     );
   }
 
-  Widget _buildVideoItemNote(dynamic item) {
-    if (item?.note == null) {
+  Widget _buildVideoItemNote(VideoPageDataList item) {
+    if (item.remarks == null) {
       return Container();
     }
     return Row(
@@ -130,18 +131,23 @@ class VideoOneSmall extends StatelessWidget {
             borderRadius: BorderRadius.circular(5),
             color: const Color.fromRGBO(0, 0, 0, 0.302),
           ),
+
           child: Text(
-            item?.note ?? '',
+            item.remarks ?? '',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w400),
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w400,
+              color: Colors.white,
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildVideoItemHDTag() {
+  Widget _buildVideoItemHDTag(VideoPageDataList item) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -159,8 +165,8 @@ class VideoOneSmall extends StatelessWidget {
               ],
             ),
           ),
-          child: const Text(
-            "高清",
+          child: Text(
+            VideoUtil.formatTag(item.pubdate ?? ""),
             style: TextStyle(
               fontSize: 11,
               color: Colors.white,

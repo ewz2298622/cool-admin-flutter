@@ -5,7 +5,7 @@ import '../../api/api.dart';
 import '../../components/auto_height_page_view/auto_height_page_view.dart';
 import '../../components/loading.dart';
 import '../../components/video_one.dart';
-import '../../entity/video_sort_entity.dart';
+import '../../entity/video_page_entity.dart';
 
 class VideoRanking extends StatefulWidget {
   const VideoRanking({super.key});
@@ -17,11 +17,11 @@ class VideoRanking extends StatefulWidget {
 class VideoRankingState extends State<VideoRanking>
     with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   var _futureBuilderFuture;
-  List<VideoSortDataList> videoPageData = [];
-  List<VideoSortDataList> popularity_day = [];
-  List<VideoSortDataList> popularity_week = [];
-  List<VideoSortDataList> popularity_month = [];
-  List<VideoSortDataList> popularity_sum = [];
+  List<VideoPageDataList> videoPageData = [];
+  List<VideoPageDataList> popularity_day = [];
+  List<VideoPageDataList> popularity_week = [];
+  List<VideoPageDataList> popularity_month = [];
+  List<VideoPageDataList> popularity_sum = [];
   final PageController pageController = PageController(initialPage: 0);
   TabController? _tabController;
   int currentPage = 1;
@@ -42,9 +42,9 @@ class VideoRankingState extends State<VideoRanking>
         "sort": sort[0],
         "category_pid": currentIndex,
       };
-      List<VideoSortDataList> list =
+      List<VideoPageDataList> list =
           (await Api.getVideoSortPage(data)).data?.list ??
-          [] as List<VideoSortDataList>;
+          [] as List<VideoPageDataList>;
       data = {
         "page": currentPage,
         "sort": sort[1],
@@ -52,27 +52,27 @@ class VideoRankingState extends State<VideoRanking>
       };
       videoPageData = [...videoPageData, ...list];
       if (currentIndex == 0) {
-        List<VideoSortDataList> list =
+        List<VideoPageDataList> list =
             (await Api.getVideoSortPage(data)).data?.list ??
-            [] as List<VideoSortDataList>;
+            [] as List<VideoPageDataList>;
         data = {"page": currentPage, "sort": sort[2], "category_pid": 0};
         popularity_day = [...popularity_day, ...list];
       } else if (currentIndex == 1) {
-        List<VideoSortDataList> list =
+        List<VideoPageDataList> list =
             (await Api.getVideoSortPage(data)).data?.list ??
-            [] as List<VideoSortDataList>;
+            [] as List<VideoPageDataList>;
         data = {"page": currentPage, "sort": sort[0], "category_pid": 1};
         popularity_week = [...popularity_week, ...list];
       } else if (currentIndex == 2) {
-        List<VideoSortDataList> list =
+        List<VideoPageDataList> list =
             (await Api.getVideoSortPage(data)).data?.list ??
-            [] as List<VideoSortDataList>;
+            [] as List<VideoPageDataList>;
         data = {"page": currentPage, "sort": sort[3], "category_pid": 2};
         popularity_month = [...popularity_month, ...list];
       } else if (currentIndex == 3) {
-        List<VideoSortDataList> list =
+        List<VideoPageDataList> list =
             (await Api.getVideoSortPage(data)).data?.list ??
-            [] as List<VideoSortDataList>;
+            [] as List<VideoPageDataList>;
         data = {
           "page": currentPage,
           "sort": sort[currentIndex],
@@ -86,37 +86,37 @@ class VideoRankingState extends State<VideoRanking>
   }
 
   Future<void> initRequest() async {
-    List<VideoSortDataList> popularity_day_list =
+    List<VideoPageDataList> popularity_day_list =
         (await Api.getVideoSortPage({
           "page": currentPage,
           "sort": "popularity_day",
         })).data?.list ??
-        [] as List<VideoSortDataList>;
+        [] as List<VideoPageDataList>;
 
     popularity_day = [...popularity_day, ...popularity_day_list];
 
-    List<VideoSortDataList> popularity_week_list =
+    List<VideoPageDataList> popularity_week_list =
         (await Api.getVideoSortPage({
           "page": currentPage,
           "sort": "popularity_week",
         })).data?.list ??
-        [] as List<VideoSortDataList>;
+        [] as List<VideoPageDataList>;
     popularity_week = [...popularity_week, ...popularity_week_list];
 
-    List<VideoSortDataList> popularity_month_list =
+    List<VideoPageDataList> popularity_month_list =
         (await Api.getVideoSortPage({
           "page": currentPage,
           "sort": "popularity_month",
         })).data?.list ??
-        [] as List<VideoSortDataList>;
+        [] as List<VideoPageDataList>;
     popularity_month = [...popularity_month, ...popularity_month_list];
 
-    List<VideoSortDataList> popularity_sum_list =
+    List<VideoPageDataList> popularity_sum_list =
         (await Api.getVideoSortPage({
           "page": currentPage,
           "sort": "popularity_sum",
         })).data?.list ??
-        [] as List<VideoSortDataList>;
+        [] as List<VideoPageDataList>;
     popularity_sum = [...popularity_sum, ...popularity_sum_list];
   }
 
@@ -238,8 +238,6 @@ class VideoRankingState extends State<VideoRanking>
 
   List<Widget> _getTabViews() {
     List<Widget> tabViews;
-    debugPrint("popularity_day: $popularity_day");
-    debugPrint("popularity_week: $popularity_week");
     tabViews = [
       VideoOne(videoData: popularity_day),
       VideoOne(videoData: popularity_week),

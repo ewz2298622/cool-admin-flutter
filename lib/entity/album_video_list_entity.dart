@@ -44,35 +44,26 @@ class AlbumVideoListData {
 
 @JsonSerializable()
 class AlbumVideoListDataList {
+  int? id;
+  String? createTime;
+  String? updateTime;
+  dynamic tenantId;
+  dynamic createUserId;
+  dynamic updateUserId;
   @JSONField(name: 'album_id')
   String? albumId;
   @JSONField(name: 'videos_id')
   String? videosId;
-  @JSONField(name: 'create_at')
-  dynamic createAt;
-  @JSONField(name: 'update_at')
-  dynamic updateAt;
-  String? createTime;
-  String? updateTime;
-  dynamic createUserId;
-  dynamic updateUserId;
-  int? id;
   String? title;
+  @JSONField(name: 'category_id')
+  int? categoryId;
   @JSONField(name: 'category_pid')
-  String? categoryPid;
-  @JSONField(name: 'category_child_id')
-  String? categoryChildId;
+  int? categoryPid;
   @JSONField(name: 'surface_plot')
   String? surfacePlot;
-  String? recommend;
   String? cycle;
   @JSONField(name: 'cycle_img')
-  String? cycleImg;
-  @JSONField(name: 'charging_mode')
-  String? chargingMode;
-  @JSONField(name: 'buy_mode')
-  String? buyMode;
-  String? gold;
+  dynamic cycleImg;
   String? directors;
   String? actors;
   @JSONField(name: 'imdb_score')
@@ -84,43 +75,45 @@ class AlbumVideoListDataList {
   @JSONField(name: 'douban_score_id')
   String? doubanScoreId;
   String? introduce;
-  String? label;
-  String? language;
-  String? region;
-  String? note;
-  String? duration;
-  @JSONField(name: 'serial_number')
-  String? serialNumber;
-  String? year;
-  String? alias;
-  String? status;
-  @JSONField(name: 'popularity_sum')
-  String? popularitySum;
+  String? popularity;
   @JSONField(name: 'popularity_day')
   String? popularityDay;
-  @JSONField(name: 'popularity_month')
-  String? popularityMonth;
   @JSONField(name: 'popularity_week')
   String? popularityWeek;
-  @JSONField(name: 'release_at')
-  String? releaseAt;
-  @JSONField(name: 'shelf_at')
-  String? shelfAt;
-  String? screenshot;
-  @JSONField(name: 'play_url')
-  String? playUrl;
-  @JSONField(name: 'play_url_put_in')
-  int? playUrlPutIn;
-  @JSONField(name: 'trailer_time')
-  int? trailerTime;
-  String? unit;
+  @JSONField(name: 'popularity_month')
+  String? popularityMonth;
+  @JSONField(name: 'popularity_sum')
+  String? popularitySum;
+  dynamic note;
+  int? year;
+  String? status;
+  String? duration;
+  int? region;
+  int? language;
   String? number;
   String? total;
   @JSONField(name: 'horizontal_poster')
   String? horizontalPoster;
+  String? remarks;
   @JSONField(name: 'vertical_poster')
-  String? verticalPoster;
-  String? gif;
+  dynamic verticalPoster;
+  dynamic publish;
+  String? pubdate;
+  @JSONField(name: 'serial_number')
+  dynamic serialNumber;
+  dynamic screenshot;
+  int? end;
+  dynamic unit;
+  @JSONField(name: 'play_url')
+  String? playUrl;
+  @JSONField(name: 'play_url_put_in')
+  int? playUrlPutIn;
+  @JSONField(name: 'collection_id')
+  int? collectionId;
+  int? up;
+  int? down;
+  @JSONField(name: 'collection_name')
+  String? collectionName;
 
   AlbumVideoListDataList();
 

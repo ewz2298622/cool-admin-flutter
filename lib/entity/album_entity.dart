@@ -46,6 +46,7 @@ class AlbumDataList {
   int? id;
   String? createTime;
   String? updateTime;
+  dynamic tenantId;
   dynamic createUserId;
   dynamic updateUserId;
   String? title;
@@ -65,13 +66,8 @@ class AlbumDataList {
   String? popularitySum;
   dynamic note;
   int? sort;
-  int? type;
-  @JSONField(name: 'create_at')
-  dynamic createAt;
-  @JSONField(name: 'update_at')
-  dynamic updateAt;
-  @JSONField(name: 'site_id')
-  dynamic siteId;
+  @JSONField(name: 'category_id')
+  int? categoryId;
   List<AlbumDataListList>? list;
 
   AlbumDataList();
@@ -92,24 +88,19 @@ class AlbumDataListList {
   int? id;
   String? createTime;
   String? updateTime;
+  dynamic tenantId;
   dynamic createUserId;
   dynamic updateUserId;
   String? title;
+  @JSONField(name: 'category_id')
+  int? categoryId;
   @JSONField(name: 'category_pid')
-  String? categoryPid;
-  @JSONField(name: 'category_child_id')
-  String? categoryChildId;
+  int? categoryPid;
   @JSONField(name: 'surface_plot')
   String? surfacePlot;
-  String? recommend;
   String? cycle;
   @JSONField(name: 'cycle_img')
-  String? cycleImg;
-  @JSONField(name: 'charging_mode')
-  String? chargingMode;
-  @JSONField(name: 'buy_mode')
-  String? buyMode;
-  String? gold;
+  dynamic cycleImg;
   String? directors;
   String? actors;
   @JSONField(name: 'imdb_score')
@@ -121,6 +112,7 @@ class AlbumDataListList {
   @JSONField(name: 'douban_score_id')
   String? doubanScoreId;
   String? introduce;
+  String? popularity;
   @JSONField(name: 'popularity_day')
   String? popularityDay;
   @JSONField(name: 'popularity_week')
@@ -129,56 +121,36 @@ class AlbumDataListList {
   String? popularityMonth;
   @JSONField(name: 'popularity_sum')
   String? popularitySum;
-  String? note;
-  String? year;
-  @JSONField(name: 'album_id')
-  int? albumId;
+  dynamic note;
+  int? year;
   String? status;
-  @JSONField(name: 'create_at')
-  String? createAt;
-  @JSONField(name: 'update_at')
-  String? updateAt;
-  String? duration;
-  String? region;
-  String? language;
-  String? label;
+  dynamic duration;
+  int? region;
+  int? language;
   String? number;
   String? total;
   @JSONField(name: 'horizontal_poster')
   String? horizontalPoster;
+  String? remarks;
   @JSONField(name: 'vertical_poster')
-  String? verticalPoster;
-  String? publish;
+  dynamic verticalPoster;
+  dynamic publish;
+  String? pubdate;
   @JSONField(name: 'serial_number')
-  String? serialNumber;
-  String? screenshot;
-  String? gif;
-  String? alias;
-  @JSONField(name: 'release_at')
-  String? releaseAt;
-  @JSONField(name: 'shelf_at')
-  String? shelfAt;
+  dynamic serialNumber;
+  dynamic screenshot;
   int? end;
-  String? unit;
-  String? watch;
-  @JSONField(name: 'collection_id')
-  String? collectionId;
-  @JSONField(name: 'use_local_image')
-  int? useLocalImage;
-  @JSONField(name: 'titles_time')
-  int? titlesTime;
-  @JSONField(name: 'trailer_time')
-  int? trailerTime;
-  @JSONField(name: 'site_id')
-  int? siteId;
-  @JSONField(name: 'category_pid_status')
-  int? categoryPidStatus;
-  @JSONField(name: 'category_child_id_status')
-  int? categoryChildIdStatus;
+  dynamic unit;
   @JSONField(name: 'play_url')
   String? playUrl;
   @JSONField(name: 'play_url_put_in')
   int? playUrlPutIn;
+  @JSONField(name: 'collection_id')
+  int? collectionId;
+  int? up;
+  int? down;
+  @JSONField(name: 'collection_name')
+  String? collectionName;
 
   AlbumDataListList();
 

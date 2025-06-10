@@ -67,6 +67,13 @@ class _DynamicSelectOptionState extends State<DynamicSelectOption> {
     );
   }
 
+  Widget listView(List<VideoPageDataList> listData) {
+    if (listData.isNotEmpty) {
+      return VideoOneSmall(videoPageData: selectData);
+    }
+    return Center();
+  }
+
   Widget _buildPopFromCenter(BuildContext context, String name) {
     Map<String, dynamic> params = {widget.paramsKey: name};
 
@@ -156,7 +163,7 @@ class _DynamicSelectOptionState extends State<DynamicSelectOption> {
                                 ],
                               ),
                               // 示例组件，可以替换成实际组件如 VideoOneSmall
-                              VideoOneSmall(videoPageData: selectData),
+                              listView(selectData),
                             ],
                           ),
                         ),

@@ -14,6 +14,7 @@ import '../../entity/dict_info_list_entity.dart';
 import '../../entity/swiper_entity.dart';
 import '../../style/layout.dart';
 import '../../utils/user.dart';
+import '../../utils/video.dart';
 import '../album/album.dart';
 import '../search/search.dart';
 import '../video_detail/detail.dart';
@@ -352,14 +353,14 @@ class _HomePageState extends State<Home>
     );
   }
 
-  Widget _buildAlbumItemImage(dynamic item) {
+  Widget _buildAlbumItemImage(AlbumDataListList item) {
     return SizedBox(
       width: 180,
       height: 100,
       child: TDImage(
         fit: BoxFit.cover,
         width: 200,
-        imgUrl: item?.surfacePlot ?? '',
+        imgUrl: item.surfacePlot ?? '',
         errorWidget: const TDImage(
           fit: BoxFit.cover,
           width: 180,
@@ -369,7 +370,7 @@ class _HomePageState extends State<Home>
     );
   }
 
-  Widget _buildAlbumItemOverlay(dynamic item) {
+  Widget _buildAlbumItemOverlay(AlbumDataListList item) {
     return SizedBox(
       width: 180,
       height: 100,
@@ -377,13 +378,13 @@ class _HomePageState extends State<Home>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
-          children: [_buildAlbumItemHDTag(), _buildAlbumItemNote(item)],
+          children: [_buildAlbumItemHDTag(item), _buildAlbumItemNote(item)],
         ),
       ),
     );
   }
 
-  Widget _buildAlbumItemHDTag() {
+  Widget _buildAlbumItemHDTag(AlbumDataListList item) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -401,8 +402,8 @@ class _HomePageState extends State<Home>
               ],
             ),
           ),
-          child: const Text(
-            "高清",
+          child: Text(
+            VideoUtil.formatTag(item.pubdate ?? ""),
             style: TextStyle(
               fontSize: 11,
               color: Colors.white,
@@ -414,10 +415,7 @@ class _HomePageState extends State<Home>
     );
   }
 
-  Widget _buildAlbumItemNote(dynamic item) {
-    if (item?.note == null) {
-      return Container();
-    }
+  Widget _buildAlbumItemNote(AlbumDataListList item) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -429,7 +427,7 @@ class _HomePageState extends State<Home>
             color: const Color.fromRGBO(0, 0, 0, 0.302),
           ),
           child: Text(
-            item?.note ?? '',
+            item.remarks ?? "",
             style: const TextStyle(
               fontSize: 10,
               color: Colors.white,

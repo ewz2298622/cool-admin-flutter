@@ -52,14 +52,10 @@ class VideoFilterState extends State<VideoFilter>
   Future<void> getVideoPages() async {
     try {
       Map<String, dynamic>? data = {"page": currentPage};
-      //使用查找categoryOriginalDictList中parentId等于category_id的数据并返回
-      late List<DictInfoListData> category =
-          categoryOriginalDictList
-              .where((element) => element.parentId == categoryCurrent.value)
-              .toList();
       data = {
         "page": currentPage,
-        "category_id": category.isEmpty ? null : category[0].id,
+        "category_pid":
+            categoryCurrent.value == 0 ? null : categoryCurrent.value,
         "year": yearCurrent.value == 0 ? null : yearCurrent.value,
         "region": regionCurrent.value == 0 ? null : regionCurrent.value,
       };
