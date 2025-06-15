@@ -7,6 +7,8 @@ class ResponseInterceptor extends InterceptorsWrapper {
       return handler.next(response);
     } else {
       //抛出错误
+      handler.next(response);
+
       return handler.reject(
         DioException(
           requestOptions: response.requestOptions,

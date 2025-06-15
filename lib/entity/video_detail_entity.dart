@@ -35,19 +35,15 @@ class VideoDetailData {
   String? title;
   @JSONField(name: 'category_id')
   int? categoryId;
+  @JSONField(name: 'category_pid')
+  int? categoryPid;
   @JSONField(name: 'surface_plot')
   String? surfacePlot;
-  dynamic recommend;
   String? cycle;
   @JSONField(name: 'cycle_img')
   dynamic cycleImg;
-  @JSONField(name: 'charging_mode')
-  String? chargingMode;
-  @JSONField(name: 'buy_mode')
-  dynamic buyMode;
-  dynamic gold;
-  String? directors;
-  String? actors;
+  dynamic directors;
+  dynamic actors;
   @JSONField(name: 'imdb_score')
   String? imdbScore;
   @JSONField(name: 'imdb_score_id')
@@ -57,6 +53,7 @@ class VideoDetailData {
   @JSONField(name: 'douban_score_id')
   String? doubanScoreId;
   String? introduce;
+  String? popularity;
   @JSONField(name: 'popularity_day')
   String? popularityDay;
   @JSONField(name: 'popularity_week')
@@ -66,43 +63,35 @@ class VideoDetailData {
   @JSONField(name: 'popularity_sum')
   String? popularitySum;
   dynamic note;
-  String? year;
-  @JSONField(name: 'album_id')
-  dynamic albumId;
+  int? year;
   String? status;
   dynamic duration;
   int? region;
   int? language;
-  dynamic label;
   String? number;
   String? total;
   @JSONField(name: 'horizontal_poster')
   String? horizontalPoster;
+  String? remarks;
   @JSONField(name: 'vertical_poster')
   dynamic verticalPoster;
   dynamic publish;
+  String? pubdate;
   @JSONField(name: 'serial_number')
   dynamic serialNumber;
   dynamic screenshot;
-  dynamic gif;
-  dynamic alias;
-  @JSONField(name: 'release_at')
-  dynamic releaseAt;
-  @JSONField(name: 'shelf_at')
-  dynamic shelfAt;
-  dynamic end;
+  int? end;
   dynamic unit;
-  dynamic watch;
-  @JSONField(name: 'use_local_image')
-  dynamic useLocalImage;
-  @JSONField(name: 'titles_time')
-  int? titlesTime;
-  @JSONField(name: 'trailer_time')
-  int? trailerTime;
   @JSONField(name: 'play_url')
   String? playUrl;
   @JSONField(name: 'play_url_put_in')
   int? playUrlPutIn;
+  @JSONField(name: 'collection_id')
+  int? collectionId;
+  dynamic up;
+  dynamic down;
+  @JSONField(name: 'collection_name')
+  String? collectionName;
 
   VideoDetailData();
 

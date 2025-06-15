@@ -345,7 +345,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
                 crossAxisSpacing: 10,
               ),
               children: [
-                _buildModelItem(Icon(Icons.message_outlined, size: 20), "系统公告"),
+                _buildModelItem(Icon(Icons.message_outlined, size: 20), "系统通知"),
                 _buildModelItem(Icon(Icons.share_outlined, size: 20), "分享好友"),
                 // _buildModelItem("assets/images/collect.png", "我的收藏"),
                 // _buildModelItem("assets/images/customersService.png", "在线客服"),
@@ -382,7 +382,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
 
   void _handleModelItemClick(String label) {
     switch (label) {
-      case "系统公告":
+      case "系统通知":
         //跳转Notice
         Navigator.push(
           context,

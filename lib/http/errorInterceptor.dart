@@ -1,7 +1,12 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import '../utils/context_manager.dart';
 import '../utils/user.dart';
+import '../views/connection_error/connectionError.dart';
+
+String TAG = "ErrorInterceptor";
 
 class ErrorInterceptor extends InterceptorsWrapper {
   @override
@@ -9,6 +14,15 @@ class ErrorInterceptor extends InterceptorsWrapper {
     if (err.response?.data != null) {
       _handleError(err, handler);
     }
+    if (err.type == DioExceptionType.connectionError) {
+      Navigator.pushReplacement(
+        ContextManager.getNavigatorKey()?.currentState!.context as BuildContext,
+        MaterialPageRoute(builder: (context) => ConnectionError()),
+      );
+    } else if (err.type == DioExceptionType.connectionTimeout) {
+      Fluttertoast.showToast(msg: "网络连接超时", toastLength: Toast.LENGTH_SHORT);
+    }
+    handler.next(err);
     return super.onError(err, handler);
   }
 

@@ -26,13 +26,13 @@ class MyApp extends StatelessWidget with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    ContextManager.setContext(context);
     return Consumer<ThemeChangeEvent>(
       builder: (context, themeManager, child) {
         return MaterialApp(
           darkTheme: ThemeData.dark(),
           themeMode: themeManager.themeMode,
           home: MainPage(),
+          navigatorKey: ContextManager.navigatorKey,
         );
       },
     );
@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget with WidgetsBindingObserver {
 }
 
 class MainPage extends StatefulWidget {
-  const MainPage({Key? key}) : super(key: key);
+  const MainPage({super.key});
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -67,6 +67,7 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+    ContextManager.setContext(context);
     return Scaffold(
       // body: pages[_selectedIndex],
       body: IndexedStack(index: _selectedIndex, children: pages),

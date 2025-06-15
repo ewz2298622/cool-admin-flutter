@@ -306,27 +306,37 @@ class _Video_DetailState extends State<Video_Detail>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      TabBar(
-                        dividerHeight: 0,
-                        isScrollable: true,
-                        tabAlignment: TabAlignment.start,
-                        indicatorPadding: const EdgeInsets.all(0),
-                        indicator: UnderlineTabIndicator(
-                          borderSide: BorderSide(
-                            width: 0.0,
-                            color: Colors.transparent,
-                          ), // 将宽度设置为0来隐藏下划线
-                        ),
-                        //设置未选中的字体颜色
-                        unselectedLabelColor: const Color.fromRGBO(
-                          153,
-                          153,
-                          153,
-                          1,
-                        ),
-                        //选中的字体颜色
-                        labelColor: const Color.fromRGBO(252, 119, 66, 1),
-                        tabs: [Tab(text: '详情'), Tab(text: '简介')],
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 150,
+                            child: TabBar(
+                              dividerHeight: 0,
+                              isScrollable: true,
+                              tabAlignment: TabAlignment.start,
+                              indicatorPadding: const EdgeInsets.all(0),
+                              indicator: UnderlineTabIndicator(
+                                borderSide: BorderSide(
+                                  width: 0.0,
+                                  color: Colors.transparent,
+                                ), // 将宽度设置为0来隐藏下划线
+                              ),
+                              //设置未选中的字体颜色
+                              unselectedLabelColor: const Color.fromRGBO(
+                                153,
+                                153,
+                                153,
+                                1,
+                              ),
+                              //选中的字体颜色
+                              labelColor: const Color.fromRGBO(252, 119, 66, 1),
+                              tabs: [Tab(text: '详情'), Tab(text: '简介')],
+                            ),
+                          ),
+                          _buildPopFromBottomWithCloseAndLeftTitle(context),
+                        ],
                       ),
                       Expanded(
                         child: TabBarView(
@@ -397,7 +407,7 @@ class _Video_DetailState extends State<Video_Detail>
           Row(
             children:
                 [
-                      Text(videoData?.year ?? ""),
+                      Text(videoData?.year.toString() ?? ""),
                       Text(
                         Dict.getDictName(
                           videoData?.region ?? 0,
@@ -445,7 +455,7 @@ class _Video_DetailState extends State<Video_Detail>
 
   Widget _buildEpisodeList() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(Layout.paddingL, 0, 16, 20),
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
       child: Column(
         spacing: 5,
         children: [
@@ -459,71 +469,80 @@ class _Video_DetailState extends State<Video_Detail>
                     '选集',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  Padding(
-                    padding: EdgeInsets.only(left: 20),
-                    child: _buildPopFromBottomWithCloseAndLeftTitle(context),
-                  ),
                 ],
               ),
 
               ///Todo 更多按钮
-              // Row(
-              //   children: [
-              //     GestureDetector(
-              //       onTap: () {},
-              //       child: Row(
-              //         children: [
-              //           Text(
-              //             "更多",
-              //             style: TextStyle(
-              //               fontSize: 12,
-              //               color: Color.fromRGBO(162, 162, 162, 1),
-              //             ),
-              //           ),
-              //           Icon(
-              //             Icons.arrow_forward_ios,
-              //             size: 14,
-              //             color: Color.fromRGBO(203, 203, 203, 1),
-              //           ),
-              //         ],
-              //       ),
-              //     ),
-              //   ],
-              // ),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      showModalBottomSheetList();
+                    },
+                    child: Row(
+                      children: [
+                        Text(
+                          "${videoData?.remarks}",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color.fromRGBO(162, 162, 162, 1),
+                          ),
+                        ),
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          size: 14,
+                          color: Color.fromRGBO(203, 203, 203, 1),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
           // 自定义小屏列表
           SizedBox(
             width: double.infinity,
-            height: 50,
+            height: 38,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: EdgeInsets.zero,
               itemCount: videoList.length,
               itemBuilder: (context, index) {
-                bool isCurrent = currentPlay.value == index;
-                Color textColor = Colors.white;
-                Color bgColor = Color.fromRGBO(232, 192, 44, 1);
-                if (isCurrent) {
-                  textColor = Colors.black;
-                  bgColor = Color.fromRGBO(232, 220, 99, 1);
-                }
                 return Padding(
                   padding: EdgeInsets.only(left: 10),
-                  child: TDButton(
-                    width: 150,
-                    height: 78,
-                    text: videoList[index].title,
-                    size: TDButtonSize.small,
-                    style: TDButtonStyle(
-                      backgroundColor: Color.fromRGBO(247, 247, 247, 1),
-                      textColor:
-                          index == currentPlay.value
-                              ? Color.fromRGBO(241, 98, 16, 1)
-                              : Colors.black,
-                    ),
+                  child: Container(
+                    width: 100,
+                    height: 38,
+                    alignment: Alignment.center,
+                    //设置border
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color:
+                            index == currentPlay.value
+                                ? Color.fromRGBO(241, 98, 16, 1)
+                                : Colors.transparent,
+                        width: index == currentPlay.value ? 1 : 0,
+                      ),
+                      //设置圆角
+                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
 
-                    onTap: () => _play_change(index),
+                      color: Color.fromRGBO(247, 247, 247, 1),
+
+                      //水平居中
+                    ),
+                    child: GestureDetector(
+                      child: Text(
+                        videoList[index].title,
+                        style: TextStyle(
+                          color:
+                              index == currentPlay.value
+                                  ? Color.fromRGBO(241, 98, 16, 1)
+                                  : Colors.black,
+                        ),
+                      ),
+                      onTap: () => _play_change(index),
+                    ),
                   ),
                 );
               },
@@ -591,107 +610,104 @@ class _Video_DetailState extends State<Video_Detail>
             textColor: const Color.fromRGBO(252, 119, 66, 1),
           ),
           onTap: () {
-            showModalBottomSheet(
-              backgroundColor: Colors.transparent,
-              context: context,
-              isScrollControlled: true,
-              builder: (builder) {
-                return Card(
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    padding: const EdgeInsets.only(top: 10),
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(20.0),
-                        topRight: Radius.circular(20.0),
+            showModalBottomSheetList();
+          },
+        );
+      },
+    );
+  }
+
+  showModalBottomSheetList() {
+    showModalBottomSheet(
+      backgroundColor: Colors.transparent,
+      context: context,
+      isScrollControlled: true,
+      builder: (builder) {
+        return Card(
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            padding: const EdgeInsets.only(top: 10),
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20.0),
+                topRight: Radius.circular(20.0),
+              ),
+            ),
+            height: 650,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "切换线路",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 14),
                       ),
-                    ),
-                    height: 650,
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                        left: 20,
-                        right: 20,
-                        bottom: 10,
+                      GestureDetector(
+                        onTap: Navigator.of(context).pop,
+                        child: const Icon(Icons.close),
                       ),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "切换线路",
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 14),
+                    ],
+                  ),
+                  _buildItemWithLogo(context),
+                  Expanded(
+                    child: StatefulBuilder(
+                      builder: (
+                        BuildContext context,
+                        void Function(void Function()) setBottomSheetState,
+                      ) {
+                        return GridView.builder(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                childAspectRatio: 150 / 78, //宽高比
+                                crossAxisSpacing: 10,
+                                mainAxisSpacing: 10,
                               ),
-                              GestureDetector(
-                                onTap: Navigator.of(context).pop,
-                                child: const Icon(Icons.close),
+                          itemCount: videoList.length,
+                          itemBuilder: (BuildContext ctx, index) {
+                            return Expanded(
+                              child: TDButton(
+                                text: videoList[index].title,
+                                size: TDButtonSize.small,
+                                width: 150,
+                                height: 78,
+                                type: TDButtonType.outline,
+                                style: TDButtonStyle(
+                                  backgroundColor: Color.fromRGBO(
+                                    247,
+                                    247,
+                                    247,
+                                    1,
+                                  ),
+
+                                  //添加边框
+                                  textColor:
+                                      index == currentPlay.value
+                                          ? Color.fromRGBO(241, 98, 16, 1)
+                                          : Colors.black,
+                                ),
+                                onTap:
+                                    () => {
+                                      setBottomSheetState(() {
+                                        _play_change(index);
+                                      }),
+                                    },
                               ),
-                            ],
-                          ),
-                          _buildItemWithLogo(context),
-                          Expanded(
-                            child: StatefulBuilder(
-                              builder: (
-                                BuildContext context,
-                                void Function(void Function())
-                                setBottomSheetState,
-                              ) {
-                                return GridView.builder(
-                                  gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 3,
-                                        childAspectRatio: 150 / 78, //宽高比
-                                        crossAxisSpacing: 10,
-                                        mainAxisSpacing: 10,
-                                      ),
-                                  itemCount: videoList.length,
-                                  itemBuilder: (BuildContext ctx, index) {
-                                    return Expanded(
-                                      child: TDButton(
-                                        text: videoList[index].title,
-                                        size: TDButtonSize.small,
-                                        width: 150,
-                                        height: 78,
-                                        style: TDButtonStyle(
-                                          backgroundColor: Color.fromRGBO(
-                                            247,
-                                            247,
-                                            247,
-                                            1,
-                                          ),
-                                          textColor:
-                                              index == currentPlay.value
-                                                  ? Color.fromRGBO(
-                                                    241,
-                                                    98,
-                                                    16,
-                                                    1,
-                                                  )
-                                                  : Colors.black,
-                                        ),
-                                        onTap:
-                                            () => {
-                                              setBottomSheetState(() {
-                                                _play_change(index);
-                                              }),
-                                            },
-                                      ),
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
+                            );
+                          },
+                        );
+                      },
                     ),
                   ),
-                );
-              },
-            );
-          },
+                ],
+              ),
+            ),
+          ),
         );
       },
     );
@@ -785,7 +801,7 @@ class _Video_DetailState extends State<Video_Detail>
                       spacing: 5,
                       children: [
                         TDTag(
-                          videoData?.year ?? "2021",
+                          videoData?.year.toString() ?? "",
                           isLight: true,
                           theme: TDTagTheme.success,
                         ),

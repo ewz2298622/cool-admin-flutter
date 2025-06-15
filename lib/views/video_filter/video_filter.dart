@@ -149,8 +149,8 @@ class VideoFilterState extends State<VideoFilter>
 
   @override
   void initState() {
-    _futureBuilderFuture = init();
     super.initState();
+    _futureBuilderFuture = init();
   }
 
   @override

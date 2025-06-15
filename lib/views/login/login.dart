@@ -12,11 +12,13 @@ import '../../db/manager/TokenDatabaseHelper.dart';
 import '../../db/manager/UserDatabaseHelper.dart';
 import '../../entity/captcha_entity.dart';
 import '../../entity/login_entity.dart';
+import '../../entity/notice_Info_entity.dart';
 import '../../entity/user_info_entity.dart';
 import '../../main.dart';
 import '../../style/layout.dart';
 import '../../utils/bus/bus.dart';
 import '../../utils/bus/constant.dart';
+import '../htmlPage/html.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -33,13 +35,33 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
   ];
   var browseOn = false;
   CaptchaData? captchaData;
-
+  List<NoticeInfoDataList>? privacyData = [];
+  List<NoticeInfoDataList>? serviceData = [];
   Future<String> init() async {
     try {
       ///Todo: 获取验证码
+      ///
+      noticeInfo();
       return "init success";
     } catch (e) {
       return "init success";
+    }
+  }
+
+  // 数据加载逻辑分离
+  Future<void> noticeInfo() async {
+    try {
+      privacyData =
+          (await Api.noticeInfo({"page": 1, "size": 1, "type": 642})).data?.list
+              as List<NoticeInfoDataList> ??
+          [];
+      serviceData =
+          (await Api.noticeInfo({"page": 1, "size": 1, "type": 641})).data?.list
+              as List<NoticeInfoDataList> ??
+          [];
+      setState(() {});
+    } catch (e) {
+      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
     }
   }
 
@@ -57,6 +79,7 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    init();
   }
 
   //获取用户信息
@@ -376,7 +399,18 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
             ),
             recognizer:
                 TapGestureRecognizer()
-                  ..onTap = () => _launchUrl('https://example.com/terms'),
+                  ..onTap = () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => HtmlPage(
+                              content: serviceData?[0].content ?? "",
+                              title: serviceData?[0].title ?? "",
+                            ),
+                      ),
+                    );
+                  },
           ),
           const TextSpan(
             text: " 和 ",
@@ -390,7 +424,18 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
             ),
             recognizer:
                 TapGestureRecognizer()
-                  ..onTap = () => _launchUrl('https://example.com/privacy'),
+                  ..onTap = () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => HtmlPage(
+                              content: privacyData?[0].content ?? "",
+                              title: privacyData?[0].title ?? "",
+                            ),
+                      ),
+                    );
+                  },
           ),
         ],
       ),

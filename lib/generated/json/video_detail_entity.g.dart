@@ -1,5 +1,5 @@
-import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 import 'package:flutter_app/entity/video_detail_entity.dart';
+import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 
 VideoDetailEntity $VideoDetailEntityFromJson(Map<String, dynamic> json) {
   final VideoDetailEntity videoDetailEntity = VideoDetailEntity();
@@ -12,7 +12,8 @@ VideoDetailEntity $VideoDetailEntityFromJson(Map<String, dynamic> json) {
     videoDetailEntity.message = message;
   }
   final VideoDetailData? data = jsonConvert.convert<VideoDetailData>(
-      json['data']);
+    json['data'],
+  );
   if (data != null) {
     videoDetailEntity.data = data;
   }
@@ -74,13 +75,13 @@ VideoDetailData $VideoDetailDataFromJson(Map<String, dynamic> json) {
   if (categoryId != null) {
     videoDetailData.categoryId = categoryId;
   }
+  final int? categoryPid = jsonConvert.convert<int>(json['category_pid']);
+  if (categoryPid != null) {
+    videoDetailData.categoryPid = categoryPid;
+  }
   final String? surfacePlot = jsonConvert.convert<String>(json['surface_plot']);
   if (surfacePlot != null) {
     videoDetailData.surfacePlot = surfacePlot;
-  }
-  final dynamic recommend = json['recommend'];
-  if (recommend != null) {
-    videoDetailData.recommend = recommend;
   }
   final String? cycle = jsonConvert.convert<String>(json['cycle']);
   if (cycle != null) {
@@ -90,24 +91,11 @@ VideoDetailData $VideoDetailDataFromJson(Map<String, dynamic> json) {
   if (cycleImg != null) {
     videoDetailData.cycleImg = cycleImg;
   }
-  final String? chargingMode = jsonConvert.convert<String>(
-      json['charging_mode']);
-  if (chargingMode != null) {
-    videoDetailData.chargingMode = chargingMode;
-  }
-  final dynamic buyMode = json['buy_mode'];
-  if (buyMode != null) {
-    videoDetailData.buyMode = buyMode;
-  }
-  final dynamic gold = json['gold'];
-  if (gold != null) {
-    videoDetailData.gold = gold;
-  }
-  final String? directors = jsonConvert.convert<String>(json['directors']);
+  final dynamic directors = json['directors'];
   if (directors != null) {
     videoDetailData.directors = directors;
   }
-  final String? actors = jsonConvert.convert<String>(json['actors']);
+  final dynamic actors = json['actors'];
   if (actors != null) {
     videoDetailData.actors = actors;
   }
@@ -116,7 +104,8 @@ VideoDetailData $VideoDetailDataFromJson(Map<String, dynamic> json) {
     videoDetailData.imdbScore = imdbScore;
   }
   final String? imdbScoreId = jsonConvert.convert<String>(
-      json['imdb_score_id']);
+    json['imdb_score_id'],
+  );
   if (imdbScoreId != null) {
     videoDetailData.imdbScoreId = imdbScoreId;
   }
@@ -125,7 +114,8 @@ VideoDetailData $VideoDetailDataFromJson(Map<String, dynamic> json) {
     videoDetailData.doubanScore = doubanScore;
   }
   final String? doubanScoreId = jsonConvert.convert<String>(
-      json['douban_score_id']);
+    json['douban_score_id'],
+  );
   if (doubanScoreId != null) {
     videoDetailData.doubanScoreId = doubanScoreId;
   }
@@ -133,23 +123,31 @@ VideoDetailData $VideoDetailDataFromJson(Map<String, dynamic> json) {
   if (introduce != null) {
     videoDetailData.introduce = introduce;
   }
+  final String? popularity = jsonConvert.convert<String>(json['popularity']);
+  if (popularity != null) {
+    videoDetailData.popularity = popularity;
+  }
   final String? popularityDay = jsonConvert.convert<String>(
-      json['popularity_day']);
+    json['popularity_day'],
+  );
   if (popularityDay != null) {
     videoDetailData.popularityDay = popularityDay;
   }
   final String? popularityWeek = jsonConvert.convert<String>(
-      json['popularity_week']);
+    json['popularity_week'],
+  );
   if (popularityWeek != null) {
     videoDetailData.popularityWeek = popularityWeek;
   }
   final String? popularityMonth = jsonConvert.convert<String>(
-      json['popularity_month']);
+    json['popularity_month'],
+  );
   if (popularityMonth != null) {
     videoDetailData.popularityMonth = popularityMonth;
   }
   final String? popularitySum = jsonConvert.convert<String>(
-      json['popularity_sum']);
+    json['popularity_sum'],
+  );
   if (popularitySum != null) {
     videoDetailData.popularitySum = popularitySum;
   }
@@ -157,13 +155,9 @@ VideoDetailData $VideoDetailDataFromJson(Map<String, dynamic> json) {
   if (note != null) {
     videoDetailData.note = note;
   }
-  final String? year = jsonConvert.convert<String>(json['year']);
+  final int? year = jsonConvert.convert<int>(json['year']);
   if (year != null) {
     videoDetailData.year = year;
-  }
-  final dynamic albumId = json['album_id'];
-  if (albumId != null) {
-    videoDetailData.albumId = albumId;
   }
   final String? status = jsonConvert.convert<String>(json['status']);
   if (status != null) {
@@ -181,10 +175,6 @@ VideoDetailData $VideoDetailDataFromJson(Map<String, dynamic> json) {
   if (language != null) {
     videoDetailData.language = language;
   }
-  final dynamic label = json['label'];
-  if (label != null) {
-    videoDetailData.label = label;
-  }
   final String? number = jsonConvert.convert<String>(json['number']);
   if (number != null) {
     videoDetailData.number = number;
@@ -194,9 +184,14 @@ VideoDetailData $VideoDetailDataFromJson(Map<String, dynamic> json) {
     videoDetailData.total = total;
   }
   final String? horizontalPoster = jsonConvert.convert<String>(
-      json['horizontal_poster']);
+    json['horizontal_poster'],
+  );
   if (horizontalPoster != null) {
     videoDetailData.horizontalPoster = horizontalPoster;
+  }
+  final String? remarks = jsonConvert.convert<String>(json['remarks']);
+  if (remarks != null) {
+    videoDetailData.remarks = remarks;
   }
   final dynamic verticalPoster = json['vertical_poster'];
   if (verticalPoster != null) {
@@ -206,6 +201,10 @@ VideoDetailData $VideoDetailDataFromJson(Map<String, dynamic> json) {
   if (publish != null) {
     videoDetailData.publish = publish;
   }
+  final String? pubdate = jsonConvert.convert<String>(json['pubdate']);
+  if (pubdate != null) {
+    videoDetailData.pubdate = pubdate;
+  }
   final dynamic serialNumber = json['serial_number'];
   if (serialNumber != null) {
     videoDetailData.serialNumber = serialNumber;
@@ -214,45 +213,13 @@ VideoDetailData $VideoDetailDataFromJson(Map<String, dynamic> json) {
   if (screenshot != null) {
     videoDetailData.screenshot = screenshot;
   }
-  final dynamic gif = json['gif'];
-  if (gif != null) {
-    videoDetailData.gif = gif;
-  }
-  final dynamic alias = json['alias'];
-  if (alias != null) {
-    videoDetailData.alias = alias;
-  }
-  final dynamic releaseAt = json['release_at'];
-  if (releaseAt != null) {
-    videoDetailData.releaseAt = releaseAt;
-  }
-  final dynamic shelfAt = json['shelf_at'];
-  if (shelfAt != null) {
-    videoDetailData.shelfAt = shelfAt;
-  }
-  final dynamic end = json['end'];
+  final int? end = jsonConvert.convert<int>(json['end']);
   if (end != null) {
     videoDetailData.end = end;
   }
   final dynamic unit = json['unit'];
   if (unit != null) {
     videoDetailData.unit = unit;
-  }
-  final dynamic watch = json['watch'];
-  if (watch != null) {
-    videoDetailData.watch = watch;
-  }
-  final dynamic useLocalImage = json['use_local_image'];
-  if (useLocalImage != null) {
-    videoDetailData.useLocalImage = useLocalImage;
-  }
-  final int? titlesTime = jsonConvert.convert<int>(json['titles_time']);
-  if (titlesTime != null) {
-    videoDetailData.titlesTime = titlesTime;
-  }
-  final int? trailerTime = jsonConvert.convert<int>(json['trailer_time']);
-  if (trailerTime != null) {
-    videoDetailData.trailerTime = trailerTime;
   }
   final String? playUrl = jsonConvert.convert<String>(json['play_url']);
   if (playUrl != null) {
@@ -261,6 +228,24 @@ VideoDetailData $VideoDetailDataFromJson(Map<String, dynamic> json) {
   final int? playUrlPutIn = jsonConvert.convert<int>(json['play_url_put_in']);
   if (playUrlPutIn != null) {
     videoDetailData.playUrlPutIn = playUrlPutIn;
+  }
+  final int? collectionId = jsonConvert.convert<int>(json['collection_id']);
+  if (collectionId != null) {
+    videoDetailData.collectionId = collectionId;
+  }
+  final dynamic up = json['up'];
+  if (up != null) {
+    videoDetailData.up = up;
+  }
+  final dynamic down = json['down'];
+  if (down != null) {
+    videoDetailData.down = down;
+  }
+  final String? collectionName = jsonConvert.convert<String>(
+    json['collection_name'],
+  );
+  if (collectionName != null) {
+    videoDetailData.collectionName = collectionName;
   }
   return videoDetailData;
 }
@@ -275,13 +260,10 @@ Map<String, dynamic> $VideoDetailDataToJson(VideoDetailData entity) {
   data['updateUserId'] = entity.updateUserId;
   data['title'] = entity.title;
   data['category_id'] = entity.categoryId;
+  data['category_pid'] = entity.categoryPid;
   data['surface_plot'] = entity.surfacePlot;
-  data['recommend'] = entity.recommend;
   data['cycle'] = entity.cycle;
   data['cycle_img'] = entity.cycleImg;
-  data['charging_mode'] = entity.chargingMode;
-  data['buy_mode'] = entity.buyMode;
-  data['gold'] = entity.gold;
   data['directors'] = entity.directors;
   data['actors'] = entity.actors;
   data['imdb_score'] = entity.imdbScore;
@@ -289,37 +271,34 @@ Map<String, dynamic> $VideoDetailDataToJson(VideoDetailData entity) {
   data['douban_score'] = entity.doubanScore;
   data['douban_score_id'] = entity.doubanScoreId;
   data['introduce'] = entity.introduce;
+  data['popularity'] = entity.popularity;
   data['popularity_day'] = entity.popularityDay;
   data['popularity_week'] = entity.popularityWeek;
   data['popularity_month'] = entity.popularityMonth;
   data['popularity_sum'] = entity.popularitySum;
   data['note'] = entity.note;
   data['year'] = entity.year;
-  data['album_id'] = entity.albumId;
   data['status'] = entity.status;
   data['duration'] = entity.duration;
   data['region'] = entity.region;
   data['language'] = entity.language;
-  data['label'] = entity.label;
   data['number'] = entity.number;
   data['total'] = entity.total;
   data['horizontal_poster'] = entity.horizontalPoster;
+  data['remarks'] = entity.remarks;
   data['vertical_poster'] = entity.verticalPoster;
   data['publish'] = entity.publish;
+  data['pubdate'] = entity.pubdate;
   data['serial_number'] = entity.serialNumber;
   data['screenshot'] = entity.screenshot;
-  data['gif'] = entity.gif;
-  data['alias'] = entity.alias;
-  data['release_at'] = entity.releaseAt;
-  data['shelf_at'] = entity.shelfAt;
   data['end'] = entity.end;
   data['unit'] = entity.unit;
-  data['watch'] = entity.watch;
-  data['use_local_image'] = entity.useLocalImage;
-  data['titles_time'] = entity.titlesTime;
-  data['trailer_time'] = entity.trailerTime;
   data['play_url'] = entity.playUrl;
   data['play_url_put_in'] = entity.playUrlPutIn;
+  data['collection_id'] = entity.collectionId;
+  data['up'] = entity.up;
+  data['down'] = entity.down;
+  data['collection_name'] = entity.collectionName;
   return data;
 }
 
@@ -333,51 +312,45 @@ extension VideoDetailDataExtension on VideoDetailData {
     dynamic updateUserId,
     String? title,
     int? categoryId,
+    int? categoryPid,
     String? surfacePlot,
-    dynamic recommend,
     String? cycle,
     dynamic cycleImg,
-    String? chargingMode,
-    dynamic buyMode,
-    dynamic gold,
-    String? directors,
-    String? actors,
+    dynamic directors,
+    dynamic actors,
     String? imdbScore,
     String? imdbScoreId,
     int? doubanScore,
     String? doubanScoreId,
     String? introduce,
+    String? popularity,
     String? popularityDay,
     String? popularityWeek,
     String? popularityMonth,
     String? popularitySum,
     dynamic note,
-    String? year,
-    dynamic albumId,
+    int? year,
     String? status,
     dynamic duration,
     int? region,
     int? language,
-    dynamic label,
     String? number,
     String? total,
     String? horizontalPoster,
+    String? remarks,
     dynamic verticalPoster,
     dynamic publish,
+    String? pubdate,
     dynamic serialNumber,
     dynamic screenshot,
-    dynamic gif,
-    dynamic alias,
-    dynamic releaseAt,
-    dynamic shelfAt,
-    dynamic end,
+    int? end,
     dynamic unit,
-    dynamic watch,
-    dynamic useLocalImage,
-    int? titlesTime,
-    int? trailerTime,
     String? playUrl,
     int? playUrlPutIn,
+    int? collectionId,
+    dynamic up,
+    dynamic down,
+    String? collectionName,
   }) {
     return VideoDetailData()
       ..id = id ?? this.id
@@ -388,13 +361,10 @@ extension VideoDetailDataExtension on VideoDetailData {
       ..updateUserId = updateUserId ?? this.updateUserId
       ..title = title ?? this.title
       ..categoryId = categoryId ?? this.categoryId
+      ..categoryPid = categoryPid ?? this.categoryPid
       ..surfacePlot = surfacePlot ?? this.surfacePlot
-      ..recommend = recommend ?? this.recommend
       ..cycle = cycle ?? this.cycle
       ..cycleImg = cycleImg ?? this.cycleImg
-      ..chargingMode = chargingMode ?? this.chargingMode
-      ..buyMode = buyMode ?? this.buyMode
-      ..gold = gold ?? this.gold
       ..directors = directors ?? this.directors
       ..actors = actors ?? this.actors
       ..imdbScore = imdbScore ?? this.imdbScore
@@ -402,36 +372,33 @@ extension VideoDetailDataExtension on VideoDetailData {
       ..doubanScore = doubanScore ?? this.doubanScore
       ..doubanScoreId = doubanScoreId ?? this.doubanScoreId
       ..introduce = introduce ?? this.introduce
+      ..popularity = popularity ?? this.popularity
       ..popularityDay = popularityDay ?? this.popularityDay
       ..popularityWeek = popularityWeek ?? this.popularityWeek
       ..popularityMonth = popularityMonth ?? this.popularityMonth
       ..popularitySum = popularitySum ?? this.popularitySum
       ..note = note ?? this.note
       ..year = year ?? this.year
-      ..albumId = albumId ?? this.albumId
       ..status = status ?? this.status
       ..duration = duration ?? this.duration
       ..region = region ?? this.region
       ..language = language ?? this.language
-      ..label = label ?? this.label
       ..number = number ?? this.number
       ..total = total ?? this.total
       ..horizontalPoster = horizontalPoster ?? this.horizontalPoster
+      ..remarks = remarks ?? this.remarks
       ..verticalPoster = verticalPoster ?? this.verticalPoster
       ..publish = publish ?? this.publish
+      ..pubdate = pubdate ?? this.pubdate
       ..serialNumber = serialNumber ?? this.serialNumber
       ..screenshot = screenshot ?? this.screenshot
-      ..gif = gif ?? this.gif
-      ..alias = alias ?? this.alias
-      ..releaseAt = releaseAt ?? this.releaseAt
-      ..shelfAt = shelfAt ?? this.shelfAt
       ..end = end ?? this.end
       ..unit = unit ?? this.unit
-      ..watch = watch ?? this.watch
-      ..useLocalImage = useLocalImage ?? this.useLocalImage
-      ..titlesTime = titlesTime ?? this.titlesTime
-      ..trailerTime = trailerTime ?? this.trailerTime
       ..playUrl = playUrl ?? this.playUrl
-      ..playUrlPutIn = playUrlPutIn ?? this.playUrlPutIn;
+      ..playUrlPutIn = playUrlPutIn ?? this.playUrlPutIn
+      ..collectionId = collectionId ?? this.collectionId
+      ..up = up ?? this.up
+      ..down = down ?? this.down
+      ..collectionName = collectionName ?? this.collectionName;
   }
 }

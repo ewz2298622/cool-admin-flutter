@@ -209,7 +209,7 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("公告", style: TextStyle(fontSize: 16)),
+        title: Text("通知", style: TextStyle(fontSize: 16)),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, size: 20),
           onPressed: () {
