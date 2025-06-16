@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/style/color_styles.dart';
 import 'package:flutter_app/utils/context_manager.dart';
-import 'package:flutter_app/utils/device_info.dart';
+import 'package:flutter_app/utils/store/app/appState.dart';
 import 'package:flutter_app/utils/store/theme/theme.dart';
+import 'package:flutter_app/utils/store/user/user.dart';
 import 'package:flutter_app/views/home/home.dart';
 import 'package:flutter_app/views/my/my.dart';
 import 'package:flutter_app/views/ranking/ranking.dart';
@@ -15,13 +16,17 @@ import 'db/manager/DBManager.dart';
 void main() {
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => ThemeChangeEvent())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeChangeEvent()),
+        ChangeNotifierProvider(create: (_) => UserState()),
+        ChangeNotifierProvider(create: (_) => AppState()),
+      ],
       child: MyApp(),
     ),
   );
 }
 
-class MyApp extends StatelessWidget with WidgetsBindingObserver {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
@@ -51,8 +56,7 @@ class _MainPageState extends State<MainPage> {
     const Home(),
     const VideoFilter(),
     const VideoRanking(),
-    // const VideoService(),
-    My(key: UniqueKey()),
+    const My(), // 确保每次切换时重新创建My页面
   ];
   int _selectedIndex = 0;
 
@@ -69,7 +73,6 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     ContextManager.setContext(context);
     return Scaffold(
-      // body: pages[_selectedIndex],
       body: IndexedStack(index: _selectedIndex, children: pages),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
@@ -118,21 +121,6 @@ class _MainPageState extends State<MainPage> {
             ),
             label: '排行',
           ),
-          // BottomNavigationBarItem(
-          //   activeIcon: TDImage(
-          //     width: 25,
-          //     height: 25,
-          //     fit: BoxFit.cover,
-          //     assetUrl: 'assets/images/8.png',
-          //   ),
-          //   icon: TDImage(
-          //     width: 25,
-          //     height: 25,
-          //     fit: BoxFit.cover,
-          //     assetUrl: 'assets/images/7.png',
-          //   ),
-          //   label: '服务',
-          // ),
           BottomNavigationBarItem(
             activeIcon: TDImage(
               width: 25,
@@ -155,19 +143,15 @@ class _MainPageState extends State<MainPage> {
         backgroundColor:
             Theme.of(context).bottomNavigationBarTheme.backgroundColor,
         unselectedItemColor: ColorStyles.color_1E88E5,
-        // 未选中状态下的颜色
         unselectedFontSize: 14,
-        // 未选中状态下的字体大小
         selectedItemColor: ColorStyles.color_EA5034,
-        // 选中状态下的颜色
-        selectedFontSize: 14, // 选中状态下的字体大小
+        selectedFontSize: 14,
       ),
     );
   }
 
   Future<void> init() async {
     await DBManager.init();
-    await DeviceInfoUtils().requestDeviceInfo();
     debugPrint('main dart dbHelper init success');
   }
 

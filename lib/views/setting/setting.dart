@@ -3,8 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../db/manager/helper.dart';
-import '../../main.dart';
+import '../../utils/store/app/appState.dart';
 import '../../utils/store/theme/theme.dart';
+import '../../utils/store/user/user.dart';
 import '../../utils/user.dart';
 
 // 定义一个名为 Setting 的有状态组件，用于展示一个包含 WebView 的页面
@@ -74,7 +75,7 @@ class _SettingState extends State<Setting> {
             arrow: true,
             title: '清空缓存',
             onClick: (cell) {
-              deleteAll();
+              deleteAll(context);
             },
           ),
           TDCell(
@@ -88,7 +89,7 @@ class _SettingState extends State<Setting> {
             arrow: true,
             title: '退出登录',
             onClick: (cell) {
-              logout();
+              logout(context);
             },
           ),
         ],
@@ -97,20 +98,18 @@ class _SettingState extends State<Setting> {
   }
 
   //退出登录
-  Future<void> logout() async {
+  Future<void> logout(BuildContext context) async {
     User.deleteUser();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => MyApp(key: UniqueKey())),
-    );
+    context.read<UserState>().deleteUserInfoData();
+    Navigator.of(context, rootNavigator: true).pop(context);
   }
 
-  Future<void> deleteAll() async {
+  Future<void> deleteAll(BuildContext context) async {
     Helper.deleteAll();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => MyApp(key: UniqueKey())),
-    );
+    Navigator.of(context, rootNavigator: true).pop(context);
+    context.read<UserState>().deleteUserInfoData();
+    final appState = Provider.of<AppState>(context, listen: false);
+    appState.reset();
   }
 
   @override

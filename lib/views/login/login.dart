@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/api/api.dart';
+import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../components/bouncingBallsScreen.dart';
@@ -14,10 +15,8 @@ import '../../entity/captcha_entity.dart';
 import '../../entity/login_entity.dart';
 import '../../entity/notice_Info_entity.dart';
 import '../../entity/user_info_entity.dart';
-import '../../main.dart';
 import '../../style/layout.dart';
-import '../../utils/bus/bus.dart';
-import '../../utils/bus/constant.dart';
+import '../../utils/store/user/user.dart';
 import '../htmlPage/html.dart';
 
 class Login extends StatefulWidget {
@@ -37,6 +36,7 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
   CaptchaData? captchaData;
   List<NoticeInfoDataList>? privacyData = [];
   List<NoticeInfoDataList>? serviceData = [];
+  BuildContext? _context;
   Future<String> init() async {
     try {
       ///Todo: 获取验证码
@@ -307,6 +307,20 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
         ),
       );
       TDToast.showText('登录成功', context: context);
+      Navigator.of(context, rootNavigator: true).pop(context);
+      _context?.read<UserState>().updateUserInfoData(
+        UserEntity(
+          unionid: userInfoData.unionid,
+          avatarUrl: userInfoData.avatarUrl,
+          nickName: userInfoData.nickName,
+          phone: userInfoData.phone,
+          gender: userInfoData.gender,
+          status: userInfoData.status,
+          loginType: userInfoData.loginType,
+          password: userInfoData.password,
+          userId: userInfoData.id,
+        ),
+      );
     }
   }
 
@@ -336,16 +350,12 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
     );
 
     await getUserInfo();
-    EventBus().emit(Constant.UserBusId, null);
-    //跳转到My
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => MyApp(key: UniqueKey())),
-    );
+    // EventBus().emit(Constant.UserBusId, null);
   }
 
   @override
   Widget build(BuildContext context) {
+    _context = context;
     return Scaffold(
       appBar: AppBar(
         //设置背景色

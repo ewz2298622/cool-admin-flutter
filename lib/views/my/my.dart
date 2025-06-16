@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/utils/store/user/user.dart';
+import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
@@ -11,8 +13,6 @@ import '../../entity/notice_Info_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../entity/views_entity.dart';
 import '../../style/layout.dart';
-import '../../utils/bus/bus.dart';
-import '../../utils/bus/constant.dart';
 import '../history/history.dart';
 import '../htmlPage/html.dart';
 import '../login/login.dart';
@@ -26,7 +26,8 @@ class My extends StatefulWidget {
   MyState createState() => MyState();
 }
 
-class MyState extends State<My> with SingleTickerProviderStateMixin {
+class MyState extends State<My>
+    with SingleTickerProviderStateMixin, RouteAware {
   var _futureBuilderFuture;
   static final UserDatabaseHelper userDatabaseHelper = UserDatabaseHelper();
   UserEntity? user;
@@ -36,6 +37,26 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
   List<ViewsDataList> viewsData = [];
 
   List<NoticeInfoDataList>? noticeInfoData = [];
+
+  @override
+  void didPopNext() {
+    // 从目标页面返回时调用
+    debugPrint('main dart didPopNext');
+    setState(() {});
+  }
+
+  @override
+  deactivate() {
+    super.deactivate();
+    RouteObserver().unsubscribe(this);
+    debugPrint('main dart deactivate');
+  }
+
+  @override
+  void dispose() {
+    RouteObserver().unsubscribe(this);
+    super.dispose();
+  }
 
   Future<void> noticeInfo() async {
     try {
@@ -56,9 +77,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
       await getUserInfo();
       await getViews();
       await noticeInfo();
-      EventBus().on(Constant.UserBusId, () {
-        init();
-      });
+      debugPrint("init success");
       return "init success";
     } catch (e) {
       return "init success";
@@ -69,6 +88,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
     try {
       Iterable<UserEntity> list = userDatabaseHelper.list();
       if (list.isNotEmpty) {
+        // 修改：取第一个用户，或者根据业务逻辑选择合适的用户
         user = list.first;
       }
     } catch (e) {
@@ -111,8 +131,8 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
 
   @override
   void initState() {
-    _futureBuilderFuture = init();
     super.initState();
+    _futureBuilderFuture = init();
   }
 
   @override
@@ -152,8 +172,8 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
     }
   }
 
-  Widget _buildLogin(BuildContext context) {
-    if (user == null) {
+  Widget _buildLogin(BuildContext context, UserEntity? userInfoData) {
+    if (userInfoData == null) {
       return GestureDetector(
         onTap: () {
           Navigator.push(
@@ -177,7 +197,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
             spacing: 10,
             children: [
               Text(
-                user?.phone ?? "",
+                userInfoData.phone ?? "",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               TDImage(
@@ -200,13 +220,13 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
     }
   }
 
-  Widget _buildHead(BuildContext context) {
+  Widget _buildHead(BuildContext context, UserEntity? userInfoData) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         TDImage(
-          imgUrl: user?.avatarUrl ?? "",
+          imgUrl: userInfoData?.avatarUrl ?? "",
           width: 50,
           height: 50,
           type: TDImageType.circle,
@@ -220,7 +240,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
         SizedBox(height: 16.0),
         Padding(
           padding: EdgeInsets.only(left: 15),
-          child: _buildLogin(context),
+          child: _buildLogin(context, userInfoData),
         ),
 
         // 用户姓名
@@ -440,7 +460,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
             child: Column(
               spacing: Layout.paddingT,
               children: [
-                _buildHead(context),
+                // _buildHead(context),
                 buildPricingLayout(),
                 _buildRecommendations(),
                 _buildModelList(),
@@ -453,7 +473,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
             physics: BouncingScrollPhysics(),
             child: Column(
               children: [
-                _buildHead(context),
+                // _buildHead(context),
                 _buildRecommendations(),
                 _buildModelList(),
               ],
@@ -468,13 +488,53 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: Container(
-        padding: const EdgeInsets.only(
-          left: Layout.paddingL,
-          right: Layout.paddingR,
-          top: 40,
-        ),
-        child: _buildContent(context),
+      body: Selector<UserState, UserEntity?>(
+        selector:
+            (context, value) => value.userInfoData, // 假设 UserState 中有 user 属性
+        builder: (context, UserEntity? data, child) {
+          return Container(
+            padding: const EdgeInsets.only(
+              left: Layout.paddingL,
+              right: Layout.paddingR,
+              top: 40,
+            ),
+            child: FutureBuilder<String>(
+              future: _futureBuilderFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return PageLoading(); // 显示加载动画
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (snapshot.hasData) {
+                  return SingleChildScrollView(
+                    physics: BouncingScrollPhysics(),
+                    child: Column(
+                      spacing: Layout.paddingT,
+                      children: [
+                        _buildHead(context, data),
+                        buildPricingLayout(),
+                        _buildRecommendations(),
+                        _buildModelList(),
+                      ],
+                    ),
+                  );
+                } else {
+                  // 修改：在snapshot.hasData为false时，仍然显示页面内容
+                  return SingleChildScrollView(
+                    physics: BouncingScrollPhysics(),
+                    child: Column(
+                      children: [
+                        _buildHead(context, data),
+                        _buildRecommendations(),
+                        _buildModelList(),
+                      ],
+                    ),
+                  );
+                }
+              },
+            ),
+          );
+        },
       ),
     );
   }
