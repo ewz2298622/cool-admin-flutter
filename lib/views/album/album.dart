@@ -19,13 +19,6 @@ class VideoAlbum extends StatefulWidget {
 
 class VideoAlbumState extends State<VideoAlbum>
     with SingleTickerProviderStateMixin {
-  // 提取常量
-  static const _gradientColors = [
-    Color.fromRGBO(255, 218, 112, 1),
-    Color.fromRGBO(255, 255, 255, 1),
-  ];
-  static const _gradientStops = [0.2, 0.8];
-
   var _futureBuilderFuture;
   VideoAlbumData? albumInfoData;
   List<AlbumVideoListDataList>? videoPageData;
@@ -87,7 +80,7 @@ class VideoAlbumState extends State<VideoAlbum>
                     TDImage(
                       fit: BoxFit.cover,
                       width: double.infinity,
-                      height: 200,
+                      height: 300,
                       imgUrl: albumInfoData?.surfacePlot ?? "",
                       errorWidget: const TDImage(
                         width: 150,
@@ -95,22 +88,29 @@ class VideoAlbumState extends State<VideoAlbum>
                       ),
                     ),
                     Container(
-                      margin: const EdgeInsets.only(top: 50, left: 20),
-                      child: Text(
-                        albumInfoData?.title ?? "",
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                        ),
+                      margin: const EdgeInsets.only(top: 70, left: 20),
+                      child: Column(
+                        //左對齊
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            albumInfoData?.title ?? "",
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            albumInfoData?.introduce ?? "",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    TDNavBar(
-                      height: 48,
-                      titleFontWeight: FontWeight.w600,
-                      backgroundColor: Colors.transparent,
-                      screenAdaptation: false,
-                      useDefaultBack: true,
                     ),
                     _buildList(),
                   ],
@@ -127,7 +127,7 @@ class VideoAlbumState extends State<VideoAlbum>
 
   Widget _buildList() {
     return Card(
-      margin: const EdgeInsets.only(top: 150),
+      margin: const EdgeInsets.only(top: 200),
       child: Container(
         padding: const EdgeInsets.only(
           left: Layout.paddingL,
@@ -143,16 +143,14 @@ class VideoAlbumState extends State<VideoAlbum>
           physics: BouncingScrollPhysics(),
           // child: Container(child: VideoThree(videoPageData: videoPageData)),
           //重构videoPageData数据将videos_id设置成id
-          child: Container(
-            child: VideoThree(
-              videoPageData:
-                  videoPageData?.map((e) {
-                    String videosId = e.videosId ?? "";
-                    //将videos_id 转成int并设置成id
-                    e.id = int.parse(videosId);
-                    return e;
-                  }).toList(),
-            ),
+          child: VideoThree(
+            videoPageData:
+                videoPageData?.map((e) {
+                  String videosId = e.videosId ?? "";
+                  //将videos_id 转成int并设置成id
+                  e.id = int.parse(videosId);
+                  return e;
+                }).toList(),
           ),
         ),
       ),
@@ -162,7 +160,21 @@ class VideoAlbumState extends State<VideoAlbum>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, size: 20),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        //透明
+        backgroundColor: Colors.transparent,
+        centerTitle: true,
+        toolbarHeight: 40,
+        automaticallyImplyLeading: false,
+      ),
       body: Stack(
         fit: StackFit.expand,
         children: [Container(child: _buildContent())],

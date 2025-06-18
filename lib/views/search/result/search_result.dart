@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/components/no_data.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../../api/api.dart';
@@ -125,6 +126,22 @@ class SearchResultState extends State<SearchResult>
     );
   }
 
+  Widget isShowContent() {
+    if (videoPageData.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.only(top: 10),
+        width: double.infinity,
+        child: NoData(),
+      );
+    } else {
+      return Container(
+        padding: const EdgeInsets.only(top: 10),
+        width: double.infinity,
+        child: Column(children: [VideoOneSmall(videoPageData: videoPageData)]),
+      );
+    }
+  }
+
   Future<void> search() async {
     currentPage = 1;
     videoPageData.clear();
@@ -152,16 +169,7 @@ class SearchResultState extends State<SearchResult>
             physics: BouncingScrollPhysics(),
             controller: _scrollController,
             child: Column(
-              children: [
-                _buildDefaultSearchBar(),
-                Container(
-                  padding: const EdgeInsets.only(top: 10),
-                  width: double.infinity,
-                  child: Column(
-                    children: [VideoOneSmall(videoPageData: videoPageData)],
-                  ),
-                ),
-              ],
+              children: [_buildDefaultSearchBar(), isShowContent()],
             ),
           );
         } else {

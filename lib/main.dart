@@ -56,15 +56,15 @@ class _MainPageState extends State<MainPage> {
     const Home(),
     const VideoFilter(),
     const VideoRanking(),
-    const My(), // 确保每次切换时重新创建My页面
+    My(key: UniqueKey()), // 确保每次切换时重新创建My页面
   ];
   int _selectedIndex = 0;
 
   void onTap(int index) {
-    // if (index == (pages.length - 1)) {
-    //   // 如果是非缓存页面，每次切换时重新创建
-    //   pages[pages.length - 1] = My(key: UniqueKey());
-    // }
+    if (index == (pages.length - 1)) {
+      // 如果是非缓存页面，每次切换时重新创建
+      pages[pages.length - 1] = My(key: UniqueKey());
+    }
     setState(() => _selectedIndex = index);
     TDToast.dismissLoading();
   }

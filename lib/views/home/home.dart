@@ -11,11 +11,13 @@ import '../../components/loading.dart';
 import '../../components/sectionWithMore.dart';
 import '../../entity/album_entity.dart';
 import '../../entity/dict_info_list_entity.dart';
+import '../../entity/notice_Info_entity.dart';
 import '../../entity/swiper_entity.dart';
 import '../../style/layout.dart';
 import '../../utils/user.dart';
 import '../../utils/video.dart';
 import '../album/album.dart';
+import '../notice/notice.dart';
 import '../search/search.dart';
 import '../video_detail/detail.dart';
 
@@ -43,6 +45,7 @@ class _HomePageState extends State<Home>
 
   Map<int, List<SwiperDataList>> swiperMap = {};
   Map<int, List<AlbumDataList>> albumMap = {};
+  List<NoticeInfoDataList>? noticeInfoData = [];
 
   Future<void> getDictInfoPages() async {
     try {
@@ -105,11 +108,97 @@ class _HomePageState extends State<Home>
       _initTabController(0);
       await getSwiperListByCategoryIds();
       await getAlbumListByCategoryIds();
+      await noticeInfo();
       User.isUserLoginView(context);
+      //判斷noticeInfoData是否有數據
+      if (noticeInfoData?.isNotEmpty ?? false) {
+        message();
+      }
       return "init success";
     } catch (e) {
       return "init err";
     }
+  }
+
+  // 数据加载逻辑分离
+  Future<void> noticeInfo() async {
+    try {
+      List<NoticeInfoDataList> list =
+          (await Api.noticeInfo({
+                "page": 1,
+                "size": 1,
+                "type": 637,
+                "status": 1,
+              })).data?.list
+              as List<NoticeInfoDataList> ??
+          [];
+      noticeInfoData = list;
+    } catch (e) {
+      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+    }
+  }
+
+  message() {
+    showDialog<Null>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8, // 动态宽度
+            height: 250, // 固定高度
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  spacing: 10,
+                  children: [
+                    Text(noticeInfoData?[0].title ?? ""),
+                    Text(
+                      noticeInfoData?[0].summary ?? "",
+                      maxLines: 5,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: TDTheme.of(context).fontGyColor2,
+                      ),
+                    ),
+                  ],
+                ),
+                GestureDetector(
+                  child: Container(
+                    width: 260,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Color.fromRGBO(255, 95, 1, 1), // 颜色移到这里
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    height: 40,
+                    child: Text('我知道了', style: TextStyle(color: Colors.white)),
+                  ),
+                  onTap: () {
+                    Navigator.of(context).pop(); //退出弹出框
+                  },
+                ),
+                GestureDetector(
+                  child: Text(
+                    '查看更多',
+                    style: TextStyle(color: TDTheme.of(context).fontGyColor4),
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Notice()),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> onRefresh() async {

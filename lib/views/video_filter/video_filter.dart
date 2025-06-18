@@ -3,6 +3,7 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
 import '../../components/loading.dart';
+import '../../components/no_data.dart';
 import '../../components/video_three.dart';
 import '../../entity/dict_info_list_entity.dart';
 import '../../entity/video_category_entity.dart';
@@ -48,9 +49,11 @@ class VideoFilterState extends State<VideoFilter>
   List<DictInfoListData> areaDictList = [];
   List<DictInfoListData> categoryOriginalDictList = [];
   final GlobalKey<RefreshIndicatorState> refreshKey = GlobalKey();
+  bool isLoading = true;
 
   Future<void> getVideoPages() async {
     try {
+      isLoading = true;
       Map<String, dynamic>? data = {"page": currentPage};
       data = {
         "page": currentPage,
@@ -64,13 +67,11 @@ class VideoFilterState extends State<VideoFilter>
           (await Api.getVideoPages(data)).data?.list ??
           [] as List<VideoPageDataList>;
       videoPageData = [...videoPageData, ...list];
-      debugPrint(
-        'getVideoPages success data ${categoryData!.list?[categoryCurrent.value]}',
-      );
+      isLoading = false;
     } catch (e) {
-      // 捕获并处理异常
-      debugPrint('Initialization getVideoListByCategoryIds failed: $e');
+      isLoading = false;
     }
+    setState(() {});
   }
 
   Future<void> getVideoCategoryPages() async {
@@ -178,9 +179,7 @@ class VideoFilterState extends State<VideoFilter>
     categoryCurrent.value = item.id ?? 0;
     videoPageData.clear();
     currentPage = 1;
-    TDToast.showLoading(context: context, text: "加载中");
     await getVideoPages();
-    TDToast.dismissLoading();
     setState(() {});
   }
 
@@ -188,9 +187,8 @@ class VideoFilterState extends State<VideoFilter>
     yearCurrent.value = item;
     videoPageData.clear();
     currentPage = 1;
-    TDToast.showLoading(context: context, text: "加载中");
+
     await getVideoPages();
-    TDToast.dismissLoading();
     setState(() {});
   }
 
@@ -198,9 +196,7 @@ class VideoFilterState extends State<VideoFilter>
     regionCurrent.value = item.id ?? 0;
     videoPageData.clear();
     currentPage = 1;
-    TDToast.showLoading(context: context, text: "加载中");
     await getVideoPages();
-    TDToast.dismissLoading();
     setState(() {});
   }
 
@@ -446,10 +442,7 @@ class VideoFilterState extends State<VideoFilter>
                   _buildCategoryRow('全部分类', categoryDictList),
                   _buildAreaRow('全部地区', areaDictList),
                   _buildYearRow("全部年份", years),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 20),
-                    child: VideoThree(videoPageData: videoPageData),
-                  ),
+                  isShowContent(),
                 ],
               ),
             ),
@@ -459,6 +452,34 @@ class VideoFilterState extends State<VideoFilter>
         }
       },
     );
+  }
+
+  Widget isShowContent() {
+    if (videoPageData.isEmpty && isLoading == false) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: NoData(),
+      );
+    } else if (isLoading == false && videoPageData.isEmpty == false) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: VideoThree(videoPageData: videoPageData),
+      );
+    } else if (videoPageData.isEmpty && isLoading == true) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: TDLoading(
+          size: TDLoadingSize.small,
+          icon: TDLoadingIcon.point,
+          iconColor: const Color.fromRGBO(255, 162, 16, 1),
+        ),
+      );
+    } else {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: NoData(),
+      );
+    }
   }
 
   @override
