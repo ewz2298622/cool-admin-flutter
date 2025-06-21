@@ -37,49 +37,33 @@ class VideoRankingState extends State<VideoRanking>
     try {
       Map<String, dynamic>? data = {"page": currentPage, "category_pid": "1"};
 
-      data = {
-        "page": currentPage,
-        "sort": sort[0],
-        "category_pid": currentIndex,
-      };
-      List<VideoPageDataList> list =
-          (await Api.getVideoSortPage(data)).data?.list ??
-          [] as List<VideoPageDataList>;
-      data = {
-        "page": currentPage,
-        "sort": sort[1],
-        "category_pid": currentIndex,
-      };
-      videoPageData = [...videoPageData, ...list];
+      data = {"page": currentPage, "sort": sort[0]};
       if (currentIndex == 0) {
         List<VideoPageDataList> list =
             (await Api.getVideoSortPage(data)).data?.list ??
             [] as List<VideoPageDataList>;
-        data = {"page": currentPage, "sort": sort[2], "category_pid": 0};
+        data = {"page": currentPage, "sort": sort[2]};
         popularity_day = [...popularity_day, ...list];
       } else if (currentIndex == 1) {
         List<VideoPageDataList> list =
             (await Api.getVideoSortPage(data)).data?.list ??
             [] as List<VideoPageDataList>;
-        data = {"page": currentPage, "sort": sort[0], "category_pid": 1};
+        data = {"page": currentPage, "sort": sort[0]};
         popularity_week = [...popularity_week, ...list];
       } else if (currentIndex == 2) {
         List<VideoPageDataList> list =
             (await Api.getVideoSortPage(data)).data?.list ??
             [] as List<VideoPageDataList>;
-        data = {"page": currentPage, "sort": sort[3], "category_pid": 2};
+        data = {"page": currentPage, "sort": sort[3]};
         popularity_month = [...popularity_month, ...list];
       } else if (currentIndex == 3) {
         List<VideoPageDataList> list =
             (await Api.getVideoSortPage(data)).data?.list ??
             [] as List<VideoPageDataList>;
-        data = {
-          "page": currentPage,
-          "sort": sort[currentIndex],
-          "category_pid": 3,
-        };
+        data = {"page": currentPage, "sort": sort[currentIndex]};
         popularity_sum = [...popularity_sum, ...list];
       }
+      setState(() {});
     } catch (e) {
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
     }
@@ -90,6 +74,7 @@ class VideoRankingState extends State<VideoRanking>
         (await Api.getVideoSortPage({
           "page": currentPage,
           "sort": "popularity_day",
+          "size": 100,
         })).data?.list ??
         [] as List<VideoPageDataList>;
 
@@ -99,6 +84,7 @@ class VideoRankingState extends State<VideoRanking>
         (await Api.getVideoSortPage({
           "page": currentPage,
           "sort": "popularity_week",
+          "size": 100,
         })).data?.list ??
         [] as List<VideoPageDataList>;
     popularity_week = [...popularity_week, ...popularity_week_list];
@@ -107,6 +93,7 @@ class VideoRankingState extends State<VideoRanking>
         (await Api.getVideoSortPage({
           "page": currentPage,
           "sort": "popularity_month",
+          "size": 100,
         })).data?.list ??
         [] as List<VideoPageDataList>;
     popularity_month = [...popularity_month, ...popularity_month_list];
@@ -115,6 +102,7 @@ class VideoRankingState extends State<VideoRanking>
         (await Api.getVideoSortPage({
           "page": currentPage,
           "sort": "popularity_sum",
+          "size": 100,
         })).data?.list ??
         [] as List<VideoPageDataList>;
     popularity_sum = [...popularity_sum, ...popularity_sum_list];

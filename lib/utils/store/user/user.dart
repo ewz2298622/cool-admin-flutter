@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../db/entity/UserEntity.dart';
+import '../../bus/bus.dart';
+import '../../bus/constant.dart';
 
 class UserState extends ChangeNotifier {
   UserEntity? _userInfoData;
@@ -10,6 +12,7 @@ class UserState extends ChangeNotifier {
   updateUserInfoData(UserEntity userInfoData) {
     _userInfoData = userInfoData;
     notifyListeners();
+    eventBus.fire(RefreshViewEvent());
   }
 
   //刪除

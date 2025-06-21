@@ -19,6 +19,8 @@ import '../../entity/video_detail_entity.dart';
 import '../../entity/video_line_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../style/layout.dart';
+import '../../utils/bus/bus.dart';
+import '../../utils/bus/constant.dart';
 import '../../utils/dict.dart';
 
 String TAG = 'Video_Detail';
@@ -166,6 +168,7 @@ class _Video_DetailState extends State<Video_Detail>
         "cover": videoData?.surfacePlot,
         "videoIndex": currentPlay.value + 1,
       });
+      eventBus.fire(RefreshViewEvent());
     } catch (e) {
       // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
@@ -447,10 +450,10 @@ class _Video_DetailState extends State<Video_Detail>
 
   Future<void> _play_change(int index) async {
     await player.reset();
-    setState(() {
-      currentPlay.value = index;
-    });
     setVideoUrl(videoList[index].url);
+    setState(() {
+      currentPlay.value = index; // 确保这里触发了 notifyListeners()
+    });
   }
 
   Widget _buildEpisodeList() {
@@ -463,15 +466,10 @@ class _Video_DetailState extends State<Video_Detail>
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Text(
-                    '选集',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ],
+              Text(
+                '选集',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-
               ///Todo 更多按钮
               Row(
                 children: [
@@ -526,20 +524,30 @@ class _Video_DetailState extends State<Video_Detail>
                       ),
                       //设置圆角
                       borderRadius: BorderRadius.all(Radius.circular(6.0)),
-
                       color: Color.fromRGBO(247, 247, 247, 1),
-
                       //水平居中
                     ),
                     child: GestureDetector(
-                      child: Text(
-                        videoList[index].title,
-                        style: TextStyle(
-                          color:
-                              index == currentPlay.value
-                                  ? Color.fromRGBO(241, 98, 16, 1)
-                                  : Colors.black,
-                        ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            videoList[index].title,
+                            style: TextStyle(
+                              color:
+                                  index == currentPlay.value
+                                      ? Color.fromRGBO(241, 98, 16, 1)
+                                      : Colors.black,
+                            ),
+                          ),
+                          Text(
+                            '第${index + 1}集', // 添加索引显示
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
                       ),
                       onTap: () => _play_change(index),
                     ),
@@ -597,7 +605,7 @@ class _Video_DetailState extends State<Video_Detail>
 
   Widget _buildPopFromBottomWithCloseAndLeftTitle(BuildContext context) {
     return ValueListenableBuilder<int>(
-      valueListenable: currentPlay,
+      valueListenable: currentPlay, // 确保绑定到正确的 ValueNotifier
       builder: (context, key, child) {
         return TDButton(
           text: '切换线路',
@@ -655,53 +663,58 @@ class _Video_DetailState extends State<Video_Detail>
                   ),
                   _buildItemWithLogo(context),
                   Expanded(
-                    child: StatefulBuilder(
-                      builder: (
-                        BuildContext context,
-                        void Function(void Function()) setBottomSheetState,
-                      ) {
-                        return GridView.builder(
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3,
-                                childAspectRatio: 150 / 78, //宽高比
-                                crossAxisSpacing: 10,
-                                mainAxisSpacing: 10,
-                              ),
-                          itemCount: videoList.length,
-                          itemBuilder: (BuildContext ctx, index) {
-                            return Expanded(
-                              child: TDButton(
-                                text: videoList[index].title,
-                                size: TDButtonSize.small,
-                                width: 150,
-                                height: 78,
-                                type: TDButtonType.outline,
-                                style: TDButtonStyle(
-                                  backgroundColor: Color.fromRGBO(
-                                    247,
-                                    247,
-                                    247,
-                                    1,
-                                  ),
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Wrap(
+                        spacing: 20,
+                        runSpacing: 10,
+                        children: List<Widget>.generate(videoList.length, (
+                          index,
+                        ) {
+                          return Column(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(left: 10),
+                                child: Container(
+                                  width: 80,
+                                  height: 38,
+                                  alignment: Alignment.center,
+                                  //设置border
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color:
+                                          index == currentPlay.value
+                                              ? Color.fromRGBO(241, 98, 16, 1)
+                                              : Colors.transparent,
+                                      width: index == currentPlay.value ? 1 : 0,
+                                    ),
+                                    //设置圆角
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(6.0),
+                                    ),
 
-                                  //添加边框
-                                  textColor:
-                                      index == currentPlay.value
-                                          ? Color.fromRGBO(241, 98, 16, 1)
-                                          : Colors.black,
+                                    color: Color.fromRGBO(247, 247, 247, 1),
+
+                                    //水平居中
+                                  ),
+                                  child: GestureDetector(
+                                    child: Text(
+                                      videoList[index].title,
+                                      style: TextStyle(
+                                        color:
+                                            index == currentPlay.value
+                                                ? Color.fromRGBO(241, 98, 16, 1)
+                                                : Colors.black,
+                                      ),
+                                    ),
+                                    onTap: () => _play_change(index),
+                                  ),
                                 ),
-                                onTap:
-                                    () => {
-                                      setBottomSheetState(() {
-                                        _play_change(index);
-                                      }),
-                                    },
                               ),
-                            );
-                          },
-                        );
-                      },
+                            ],
+                          );
+                        }),
+                      ),
                     ),
                   ),
                 ],

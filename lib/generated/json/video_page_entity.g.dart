@@ -1,6 +1,5 @@
 import 'package:flutter_app/entity/video_page_entity.dart';
-
-import 'base/json_convert_content.dart';
+import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 
 VideoPageEntity $VideoPageEntityFromJson(Map<String, dynamic> json) {
   final VideoPageEntity videoPageEntity = VideoPageEntity();

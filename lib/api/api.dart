@@ -107,7 +107,7 @@ class Api {
     try {
       // 发送POST请求到服务器获取视频分类页面信息
       final response = await server.post(
-        "/app/video/videos/album",
+        "/app/video/album/album",
         data: data,
       ); // 添加注释说明 ONE 的含义});
 
@@ -148,7 +148,7 @@ class Api {
           videoCategoryIds.map((id) async {
             SwiperEntity swiperData = (await Api.getSwiperPage({
               "page": 1,
-              "category": id,
+              "category_id": id,
               "status": 1,
               "size": 5,
             }));
@@ -188,7 +188,8 @@ class Api {
               "page": 1,
               "category_id": id,
               "status": 1,
-              "size": 5,
+              "size": 1000,
+              "videoSize": 15,
             }));
             List<AlbumDataList> responseData = List.from(
               videoAlbumData.data?.list as List<AlbumDataList>,

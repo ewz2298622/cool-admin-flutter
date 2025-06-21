@@ -129,21 +129,15 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
           return SingleChildScrollView(
             physics: BouncingScrollPhysics(),
             controller: _scrollController,
-            child: SingleChildScrollView(
-              child: Expanded(
-                child: Container(
+            child: Column(
+              children: [
+                Container(
                   //设置背景色
                   height: MediaQuery.of(context).size.height,
                   padding: EdgeInsets.only(left: 10, right: 10, top: 10),
-                  color: Color.fromRGBO(247, 250, 252, 1),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      spacing: 10,
-                      children: [VideoHistory(videoPageData: viewsData)],
-                    ),
-                  ),
+                  child: VideoHistory(videoPageData: viewsData),
                 ),
-              ),
+              ],
             ),
           );
         } else {
@@ -169,19 +163,8 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
         centerTitle: true,
         toolbarHeight: 40,
         automaticallyImplyLeading: false, //设置为false
-        backgroundColor: const Color.fromRGBO(255, 218, 112, 1),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            stops: _gradientStops,
-            colors: _gradientColors,
-          ),
-        ),
-        child: _buildContent(),
-      ),
+      body: _buildContent(),
     );
   }
 }

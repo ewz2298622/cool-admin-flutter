@@ -175,6 +175,10 @@ class JsonConvert {
       return data.map<AlbumDataListList>((Map<String, dynamic> e) =>
           AlbumDataListList.fromJson(e)).toList() as M;
     }
+    if (<AlbumDataPagination>[] is M) {
+      return data.map<AlbumDataPagination>((Map<String, dynamic> e) =>
+          AlbumDataPagination.fromJson(e)).toList() as M;
+    }
     if (<AlbumVideoListEntity>[] is M) {
       return data.map<AlbumVideoListEntity>((Map<String, dynamic> e) =>
           AlbumVideoListEntity.fromJson(e)).toList() as M;
@@ -569,6 +573,7 @@ class JsonConvertClassCollection {
     (AlbumData).toString(): AlbumData.fromJson,
     (AlbumDataList).toString(): AlbumDataList.fromJson,
     (AlbumDataListList).toString(): AlbumDataListList.fromJson,
+    (AlbumDataPagination).toString(): AlbumDataPagination.fromJson,
     (AlbumVideoListEntity).toString(): AlbumVideoListEntity.fromJson,
     (AlbumVideoListData).toString(): AlbumVideoListData.fromJson,
     (AlbumVideoListDataList).toString(): AlbumVideoListDataList.fromJson,

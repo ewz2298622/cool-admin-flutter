@@ -44,18 +44,29 @@ AlbumData $AlbumDataFromJson(Map<String, dynamic> json) {
   if (list != null) {
     albumData.list = list;
   }
+  final AlbumDataPagination? pagination = jsonConvert
+      .convert<AlbumDataPagination>(json['pagination']);
+  if (pagination != null) {
+    albumData.pagination = pagination;
+  }
   return albumData;
 }
 
 Map<String, dynamic> $AlbumDataToJson(AlbumData entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['list'] = entity.list?.map((v) => v.toJson()).toList();
+  data['pagination'] = entity.pagination?.toJson();
   return data;
 }
 
 extension AlbumDataExtension on AlbumData {
-  AlbumData copyWith({List<AlbumDataList>? list}) {
-    return AlbumData()..list = list ?? this.list;
+  AlbumData copyWith({
+    List<AlbumDataList>? list,
+    AlbumDataPagination? pagination,
+  }) {
+    return AlbumData()
+      ..list = list ?? this.list
+      ..pagination = pagination ?? this.pagination;
   }
 }
 
@@ -589,5 +600,57 @@ extension AlbumDataListListExtension on AlbumDataListList {
       ..up = up ?? this.up
       ..down = down ?? this.down
       ..collectionName = collectionName ?? this.collectionName;
+  }
+}
+
+AlbumDataPagination $AlbumDataPaginationFromJson(Map<String, dynamic> json) {
+  final AlbumDataPagination albumDataPagination = AlbumDataPagination();
+  final int? page = jsonConvert.convert<int>(json['page']);
+  if (page != null) {
+    albumDataPagination.page = page;
+  }
+  final int? categoryId = jsonConvert.convert<int>(json['category_id']);
+  if (categoryId != null) {
+    albumDataPagination.categoryId = categoryId;
+  }
+  final int? size = jsonConvert.convert<int>(json['size']);
+  if (size != null) {
+    albumDataPagination.size = size;
+  }
+  final int? videoSize = jsonConvert.convert<int>(json['videoSize']);
+  if (videoSize != null) {
+    albumDataPagination.videoSize = videoSize;
+  }
+  final int? videoPage = jsonConvert.convert<int>(json['videoPage']);
+  if (videoPage != null) {
+    albumDataPagination.videoPage = videoPage;
+  }
+  return albumDataPagination;
+}
+
+Map<String, dynamic> $AlbumDataPaginationToJson(AlbumDataPagination entity) {
+  final Map<String, dynamic> data = <String, dynamic>{};
+  data['page'] = entity.page;
+  data['category_id'] = entity.categoryId;
+  data['size'] = entity.size;
+  data['videoSize'] = entity.videoSize;
+  data['videoPage'] = entity.videoPage;
+  return data;
+}
+
+extension AlbumDataPaginationExtension on AlbumDataPagination {
+  AlbumDataPagination copyWith({
+    int? page,
+    int? categoryId,
+    int? size,
+    int? videoSize,
+    int? videoPage,
+  }) {
+    return AlbumDataPagination()
+      ..page = page ?? this.page
+      ..categoryId = categoryId ?? this.categoryId
+      ..size = size ?? this.size
+      ..videoSize = videoSize ?? this.videoSize
+      ..videoPage = videoPage ?? this.videoPage;
   }
 }

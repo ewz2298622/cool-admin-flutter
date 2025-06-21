@@ -7,19 +7,18 @@ import 'package:flutter_swiper_null_safety/flutter_swiper_null_safety.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
+import '../../components/home_two_video.dart';
 import '../../components/loading.dart';
 import '../../components/sectionWithMore.dart';
+import '../../components/video_scroll.dart';
 import '../../entity/album_entity.dart';
 import '../../entity/dict_info_list_entity.dart';
 import '../../entity/notice_Info_entity.dart';
 import '../../entity/swiper_entity.dart';
 import '../../style/layout.dart';
-import '../../utils/user.dart';
-import '../../utils/video.dart';
 import '../album/album.dart';
 import '../notice/notice.dart';
 import '../search/search.dart';
-import '../video_detail/detail.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -109,7 +108,6 @@ class _HomePageState extends State<Home>
       await getSwiperListByCategoryIds();
       await getAlbumListByCategoryIds();
       await noticeInfo();
-      User.isUserLoginView(context);
       //判斷noticeInfoData是否有數據
       if (noticeInfoData?.isNotEmpty ?? false) {
         message();
@@ -379,10 +377,30 @@ class _HomePageState extends State<Home>
       (index) => Column(
         children: [
           _buildAlbumHeader(list[index]),
-          _buildAlbumItems(list[index]),
+          _buildAlbumItemWidgetType(list[index], index),
         ],
       ),
     );
+  }
+
+  Widget _buildAlbumItemWidgetType(AlbumDataList item, int index) {
+    if (index % 2 == 0) {
+      return HomeTwoVideo(videoPageData: _buildAlbumItem(item, index));
+    } else {
+      return HorizontalVideoList(
+        videoPageData: _buildAlbumItem(item, index).list as List<dynamic>,
+      );
+    }
+  }
+
+  //传入AlbumDataList 和index 如果是偶数 就去AlbumDataList.list四个元素 否则就取出所有元素
+  AlbumDataList _buildAlbumItem(AlbumDataList item, int index) {
+    if (index % 2 == 0) {
+      item.list = item.list?.sublist(0, 4);
+      return item;
+    } else {
+      return item;
+    }
   }
 
   Widget _buildAlbumHeader(AlbumDataList album) {
@@ -398,146 +416,6 @@ class _HomePageState extends State<Home>
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildAlbumItems(AlbumDataList album) {
-    return Padding(
-      padding: EdgeInsets.only(top: 10),
-      child: Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        children: List<Widget>.generate(
-          album.list?.length ?? 0,
-          (index) => _buildAlbumItem(album.list?[index] ?? AlbumDataListList()),
-        ),
-      ),
-    );
-  }
-
-  void _buildAlbumItem_onClick(int id) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => Video_Detail(id: id)),
-    );
-  }
-
-  Widget _buildAlbumItem(AlbumDataListList item) {
-    return GestureDetector(
-      onTap: () => _buildAlbumItem_onClick(item.id ?? 0), //写入方法名称就可以了，但是是无参的
-      child: Column(
-        //添加点击事件
-        children: [
-          Stack(
-            children: [
-              _buildAlbumItemImage(item),
-              _buildAlbumItemOverlay(item),
-            ],
-            //添加点击事件
-          ),
-          _buildAlbumItemTitle(item),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAlbumItemImage(AlbumDataListList item) {
-    return SizedBox(
-      width: 180,
-      height: 100,
-      child: TDImage(
-        fit: BoxFit.cover,
-        width: 200,
-        imgUrl: item.surfacePlot ?? '',
-        errorWidget: const TDImage(
-          fit: BoxFit.cover,
-          width: 180,
-          assetUrl: 'assets/images/loading.gif',
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAlbumItemOverlay(AlbumDataListList item) {
-    return SizedBox(
-      width: 180,
-      height: 100,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [_buildAlbumItemHDTag(item), _buildAlbumItemNote(item)],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAlbumItemHDTag(AlbumDataListList item) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(right: 4, top: 2),
-          padding: const EdgeInsets.only(top: 2, bottom: 2, left: 4, right: 4),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color.fromRGBO(59, 101, 244, 1),
-                Color.fromRGBO(64, 177, 254, 1),
-              ],
-            ),
-          ),
-          child: Text(
-            VideoUtil.formatTag(item.pubdate ?? ""),
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.white,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAlbumItemNote(AlbumDataListList item) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(right: 4, top: 2),
-          padding: const EdgeInsets.only(top: 2, bottom: 2, left: 4, right: 4),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            color: const Color.fromRGBO(0, 0, 0, 0.302),
-          ),
-          child: Text(
-            item.remarks ?? "",
-            style: const TextStyle(
-              fontSize: 10,
-              color: Colors.white,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAlbumItemTitle(dynamic item) {
-    return SizedBox(
-      width: 180,
-      child: Text(
-        item?.title ?? '',
-        style: const TextStyle(
-          overflow: TextOverflow.ellipsis,
-          fontSize: 14,
-          fontWeight: FontWeight.w400,
-        ),
       ),
     );
   }

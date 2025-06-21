@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/utils/store/user/user.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +15,8 @@ import '../../entity/notice_Info_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../entity/views_entity.dart';
 import '../../style/layout.dart';
+import '../../utils/bus/bus.dart';
+import '../../utils/bus/constant.dart';
 import '../history/history.dart';
 import '../htmlPage/html.dart';
 import '../login/login.dart';
@@ -26,8 +30,7 @@ class My extends StatefulWidget {
   MyState createState() => MyState();
 }
 
-class MyState extends State<My>
-    with SingleTickerProviderStateMixin, RouteAware {
+class MyState extends State<My> with SingleTickerProviderStateMixin {
   var _futureBuilderFuture;
   static final UserDatabaseHelper userDatabaseHelper = UserDatabaseHelper();
   UserEntity? user;
@@ -37,6 +40,7 @@ class MyState extends State<My>
   List<ViewsDataList> viewsData = [];
 
   List<NoticeInfoDataList>? noticeInfoData = [];
+  StreamSubscription? subscription;
 
   @override
   void didPopNext() {
@@ -46,15 +50,8 @@ class MyState extends State<My>
   }
 
   @override
-  deactivate() {
-    super.deactivate();
-    RouteObserver().unsubscribe(this);
-    debugPrint('main dart deactivate');
-  }
-
-  @override
   void dispose() {
-    RouteObserver().unsubscribe(this);
+    subscription?.cancel();
     super.dispose();
   }
 
@@ -77,11 +74,20 @@ class MyState extends State<My>
       await getUserInfo();
       await getViews();
       await noticeInfo();
+      didChangeAppLifecycleState();
       debugPrint("init success");
       return "init success";
     } catch (e) {
       return "init success";
     }
+  }
+
+  //事件监听
+  void didChangeAppLifecycleState() {
+    subscription = eventBus.on<RefreshViewEvent>().listen((data) {
+      getViews();
+      setState(() {});
+    });
   }
 
   Future<void> getUserInfo() async {
@@ -111,6 +117,7 @@ class MyState extends State<My>
           element.id = element.associationId;
         }
       }
+      setState(() {});
     } catch (e) {
       // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
@@ -141,32 +148,28 @@ class MyState extends State<My>
     debugPrint("didChangeDependencies");
   }
 
-  Widget _buildRecommendations() {
-    if (viewsData.isEmpty) {
+  Widget _buildRecommendations(UserEntity? userInfoData) {
+    if (viewsData.isEmpty || userInfoData == null) {
       return Container();
     } else {
-      return Container(
-        //设置背景色
-        padding: EdgeInsets.only(right: 5, left: 5, top: 5, bottom: 20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          //设置圆角
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        child: Column(
-          spacing: 10,
-          children: [
-            SectionWithMore(
-              title: "浏览记录", // 传入标题
-              onMorePressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => History()),
-                );
-              },
-            ),
-            VideoViews(videoPageData: viewsData),
-          ],
+      return Card(
+        child: Padding(
+          padding: EdgeInsets.only(right: 5, left: 5, top: 5, bottom: 5),
+          child: Column(
+            spacing: 10,
+            children: [
+              SectionWithMore(
+                title: "浏览记录", // 传入标题
+                onMorePressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => History()),
+                  );
+                },
+              ),
+              VideoViews(videoPageData: viewsData),
+            ],
+          ),
         ),
       );
     }
@@ -446,44 +449,6 @@ class MyState extends State<My>
     }
   }
 
-  Widget _buildContent(BuildContext context) {
-    return FutureBuilder<String>(
-      future: _futureBuilderFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return PageLoading();
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else if (snapshot.hasData) {
-          return SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
-            child: Column(
-              spacing: Layout.paddingT,
-              children: [
-                // _buildHead(context),
-                buildPricingLayout(),
-                _buildRecommendations(),
-                _buildModelList(),
-              ],
-            ),
-          );
-        } else {
-          // 修改：在snapshot.hasData为false时，仍然显示页面内容
-          return SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
-            child: Column(
-              children: [
-                // _buildHead(context),
-                _buildRecommendations(),
-                _buildModelList(),
-              ],
-            ),
-          );
-        }
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -513,7 +478,7 @@ class MyState extends State<My>
                       children: [
                         _buildHead(context, data),
                         buildPricingLayout(),
-                        _buildRecommendations(),
+                        _buildRecommendations(data),
                         _buildModelList(),
                       ],
                     ),
@@ -525,7 +490,7 @@ class MyState extends State<My>
                     child: Column(
                       children: [
                         _buildHead(context, data),
-                        _buildRecommendations(),
+                        _buildRecommendations(data),
                         _buildModelList(),
                       ],
                     ),

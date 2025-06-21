@@ -27,6 +27,7 @@ class AlbumEntity {
 @JsonSerializable()
 class AlbumData {
   List<AlbumDataList>? list;
+  AlbumDataPagination? pagination;
 
   AlbumData();
 
@@ -158,6 +159,28 @@ class AlbumDataListList {
       $AlbumDataListListFromJson(json);
 
   Map<String, dynamic> toJson() => $AlbumDataListListToJson(this);
+
+  @override
+  String toString() {
+    return jsonEncode(this);
+  }
+}
+
+@JsonSerializable()
+class AlbumDataPagination {
+  int? page;
+  @JSONField(name: 'category_id')
+  int? categoryId;
+  int? size;
+  int? videoSize;
+  int? videoPage;
+
+  AlbumDataPagination();
+
+  factory AlbumDataPagination.fromJson(Map<String, dynamic> json) =>
+      $AlbumDataPaginationFromJson(json);
+
+  Map<String, dynamic> toJson() => $AlbumDataPaginationToJson(this);
 
   @override
   String toString() {

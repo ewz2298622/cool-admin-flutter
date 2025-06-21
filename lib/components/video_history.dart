@@ -58,30 +58,22 @@ class VideoHistory extends StatelessWidget {
                     _buildVideoItemOverlay(videoPageData[i]),
                   ],
                 ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        videoPageData[i].title ?? "",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        "剩余${_formatDuration((videoPageData[i].duration ?? 0) - (videoPageData[i].viewingDuration ?? 0))}",
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ],
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      videoPageData[i].title ?? "",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      "剩余${_formatDuration((videoPageData[i].duration ?? 0) - (videoPageData[i].viewingDuration ?? 0))}",
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -103,7 +95,7 @@ class VideoHistory extends StatelessWidget {
       width: 150,
       height: 80,
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
-      child: Expanded(child: _buildVideoItemHDTag(item)),
+      child: _buildVideoItemHDTag(item),
     );
   }
 

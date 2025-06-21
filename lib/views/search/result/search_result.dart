@@ -18,23 +18,6 @@ class SearchResult extends StatefulWidget {
 
 class SearchResultState extends State<SearchResult>
     with SingleTickerProviderStateMixin {
-  // 提取常量
-  static const _gradientColors = [
-    Color.fromRGBO(255, 218, 112, 1),
-    Color.fromRGBO(255, 255, 255, 1),
-  ];
-  static const _gradientStops = [0.2, 0.8];
-  static const _hdTagTextStyle = TextStyle(
-    fontSize: 11,
-    color: Colors.white,
-    fontWeight: FontWeight.w400,
-  );
-  static const _videoNoteTextStyle = TextStyle(
-    fontSize: 10,
-    color: Colors.white,
-    fontWeight: FontWeight.w400,
-  );
-
   var _futureBuilderFuture;
   String inputText = "";
   List<VideoPageDataList> videoPageData = [];
@@ -60,8 +43,10 @@ class SearchResultState extends State<SearchResult>
 
   Future<String> init() async {
     try {
-      inputText = widget.keyWord;
-      searchController.text = widget.keyWord;
+      setState(() {
+        inputText = widget.keyWord;
+        searchController.text = widget.keyWord;
+      });
       _scrollControllerAdd();
       await getVideoPages();
       return "init success";
@@ -112,6 +97,7 @@ class SearchResultState extends State<SearchResult>
       padding: EdgeInsets.only(left: 0, right: 0),
       titleWidget: TDSearchBar(
         backgroundColor: Colors.transparent,
+        controller: searchController,
         placeHolder: '',
         action: "搜索",
         style: TDSearchStyle.round,
@@ -169,7 +155,22 @@ class SearchResultState extends State<SearchResult>
             physics: BouncingScrollPhysics(),
             controller: _scrollController,
             child: Column(
-              children: [_buildDefaultSearchBar(), isShowContent()],
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildDefaultSearchBar(),
+                Padding(
+                  padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
+                  child: Text(
+                    '搜索结果',
+                    textAlign: TextAlign.left,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                isShowContent(),
+              ],
             ),
           );
         } else {
