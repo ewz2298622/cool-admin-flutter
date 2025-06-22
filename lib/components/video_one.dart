@@ -19,16 +19,17 @@ class VideoItem extends StatelessWidget {
             height: 185,
             padding: const EdgeInsets.only(left: 4, right: 4, bottom: 15),
             child: Row(
+              spacing: 10,
               children: [
                 Stack(
                   children: [
                     TDImage(
                       fit: BoxFit.cover,
-                      width: 120,
+                      width: 130,
                       height: 180,
                       imgUrl: videoData[i].surfacePlot ?? "",
                       errorWidget: const TDImage(
-                        width: 120,
+                        width: 130,
                         height: 180,
                         assetUrl: 'assets/images/loading.gif',
                       ),
@@ -113,28 +114,15 @@ class VideoItem extends StatelessWidget {
     if (item.remarks == null) {
       return Container();
     }
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(right: 15, top: 2),
-          padding: const EdgeInsets.only(top: 2, bottom: 2, left: 4, right: 4),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            color: const Color.fromRGBO(0, 0, 0, 0.302),
-          ),
-          child: Text(
-            item.remarks ?? '',
-            maxLines: 1, // 限制最大显示一行
-            overflow: TextOverflow.ellipsis, // 溢出时显示省略号
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.white,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-        ),
-      ],
+    return Text(
+      item.remarks ?? '',
+      maxLines: 1, // 限制最大显示一行
+      overflow: TextOverflow.ellipsis, // 溢出时显示省略号
+      style: TextStyle(
+        fontSize: 10,
+        color: Colors.white,
+        fontWeight: FontWeight.w400,
+      ),
     );
   }
 
@@ -143,7 +131,7 @@ class VideoItem extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Container(
-          margin: const EdgeInsets.only(right: 15, top: 5),
+          margin: const EdgeInsets.only(right: 10, top: 5),
           padding: const EdgeInsets.only(top: 2, bottom: 2, left: 4, right: 4),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),

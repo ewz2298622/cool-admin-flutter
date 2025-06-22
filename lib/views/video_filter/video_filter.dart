@@ -379,43 +379,6 @@ class VideoFilterState extends State<VideoFilter>
     setState(() {});
   }
 
-  Widget _buildCircleBackTop() {
-    //定位到页面的右下角
-    return Positioned(
-      right: 20,
-      bottom: 20,
-      child: TDButton(
-        width: 70,
-        height: 70,
-        shape: TDButtonShape.circle,
-        style: TDButtonStyle(
-          //设置透明背景色
-          backgroundColor: Colors.transparent,
-        ),
-        // iconWidget: const Icon(Icons.arrow_upward),
-        //设置本地图片为icon
-        iconWidget: Image.asset(
-          'assets/images/backTop.png',
-          width: 50,
-          height: 50,
-        ),
-        onTap: () {
-          setState(() {
-            showBackTop = true;
-            if (_scrollController.hasClients) {
-              _scrollController.animateTo(
-                0,
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.linear,
-              );
-            }
-            style = TDBackTopStyle.circle;
-          });
-        },
-      ),
-    );
-  }
-
   /// 返回一个Widget自动填充剩余高度 且可以滑动
   Widget _buildContent() {
     return FutureBuilder<String>(
@@ -427,25 +390,43 @@ class VideoFilterState extends State<VideoFilter>
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}'); // 显示错误信息
         } else if (snapshot.hasData) {
-          return SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
+          return CustomScrollView(
             controller: _scrollController,
-            child: Container(
-              padding: EdgeInsets.only(
-                left: Layout.paddingL,
-                right: Layout.paddingR,
+            slivers: <Widget>[
+              SliverToBoxAdapter(child: _buildDefaultSearchBar()),
+              SliverStickyHeader(
+                header: Container(
+                  color: Theme.of(context).colorScheme.surface,
+                  padding: EdgeInsets.only(
+                    left: Layout.paddingL,
+                    right: Layout.paddingR,
+                  ),
+                  child: Column(
+                    spacing: 10,
+                    children: [
+                      _buildCategoryRow('全部分类', categoryDictList),
+                      _buildAreaRow('全部地区', areaDictList),
+                      _buildYearRow("全部年份", years),
+                    ],
+                  ),
+                ),
+                sliver: SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 4.0,
+                    mainAxisSpacing: 4.0,
+                    childAspectRatio: 0.7,
+                    mainAxisExtent: 205,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, i) => GridTile(
+                      child: Center(child: Video(videoData: videoPageData[i])),
+                    ),
+                    childCount: videoPageData.length,
+                  ),
+                ),
               ),
-              child: Column(
-                spacing: 10,
-                children: [
-                  _buildDefaultSearchBar(),
-                  _buildCategoryRow('全部分类', categoryDictList),
-                  _buildAreaRow('全部地区', areaDictList),
-                  _buildYearRow("全部年份", years),
-                  isShowContent(),
-                ],
-              ),
-            ),
+            ],
           );
         } else {
           return Text('No data available');
@@ -491,10 +472,7 @@ class VideoFilterState extends State<VideoFilter>
       body: RefreshIndicator(
         key: refreshKey,
         onRefresh: onRefresh,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [Container(child: _buildContent()), _buildCircleBackTop()],
-        ),
+        child: _buildContent(),
       ),
     );
   }

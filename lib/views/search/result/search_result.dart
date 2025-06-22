@@ -151,27 +151,16 @@ class SearchResultState extends State<SearchResult>
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}'); // 显示错误信息
         } else if (snapshot.hasData) {
-          return SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
-            controller: _scrollController,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildDefaultSearchBar(),
-                Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
-                  child: Text(
-                    '搜索结果',
-                    textAlign: TextAlign.left,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+          return Column(
+            children: [
+              _buildDefaultSearchBar(),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: BouncingScrollPhysics(),
+                  child: isShowContent(),
                 ),
-                isShowContent(),
-              ],
-            ),
+              ),
+            ],
           );
         } else {
           return Text('No data available');

@@ -220,20 +220,46 @@ class _HomePageState extends State<Home>
       autoplay: true,
       itemCount: 3,
       loop: true,
-      pagination: const TDSwiperPagination(
-        alignment: Alignment.bottomCenter,
-        builder: TDSwiperPagination.dotsBar,
-      ),
+      // pagination: const TDSwiperPagination(
+      //   alignment: Alignment.bottomRight,
+      //   builder: TDSwiperPagination.dotsBar,
+      // ),
       itemBuilder: (BuildContext context, int index) {
-        return TDImage(
-          fit: BoxFit.cover,
-          imgUrl: swiperMap[id]?[index].image ?? '',
-          errorWidget: const TDImage(
-            //宽度100%
-            width: double.infinity,
-            fit: BoxFit.cover,
-            assetUrl: 'assets/images/loading.gif',
-          ),
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            TDImage(
+              height: 200,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              imgUrl: swiperMap[id]?[index].image ?? '',
+              errorWidget: const TDImage(
+                //宽度100%
+                width: double.infinity,
+                fit: BoxFit.cover,
+                assetUrl: 'assets/images/loading.gif',
+              ),
+            ),
+            SizedBox(
+              height: 200,
+              width: double.infinity,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Text(
+                      swiperMap[id]![index].title ?? "",
+                      maxLines: 1,
+                      //溢出省略号
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         );
       },
     );
