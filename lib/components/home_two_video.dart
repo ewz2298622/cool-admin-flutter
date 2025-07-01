@@ -16,18 +16,13 @@ class HomeTwoVideo extends StatelessWidget {
   }
 
   Widget _buildAlbumItems(AlbumDataList album, BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(top: 10),
-      child: Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        children: List<Widget>.generate(
-          album.list?.length ?? 0,
-          (index) => _buildAlbumItem(
-            album.list?[index] ?? AlbumDataListList(),
-            context,
-          ),
-        ),
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: List<Widget>.generate(
+        album.list?.length ?? 0,
+        (index) =>
+            _buildAlbumItem(album.list?[index] ?? AlbumDataListList(), context),
       ),
     );
   }

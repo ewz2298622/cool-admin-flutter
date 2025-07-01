@@ -431,7 +431,7 @@ class _HomePageState extends State<Home>
 
   Widget _buildAlbumHeader(AlbumDataList album) {
     return Container(
-      margin: const EdgeInsets.only(top: 16),
+      margin: const EdgeInsets.only(top: 16, bottom: 16),
       child: SectionWithMore(
         title: album.title ?? "", // 传入标题
         onMorePressed: () {

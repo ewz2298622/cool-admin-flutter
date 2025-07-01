@@ -116,56 +116,52 @@ class _DynamicSelectOptionState extends State<DynamicSelectOption> {
                         ),
                       ),
                       height: 650,
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                            left: 20,
-                            right: 20,
-                            bottom: 10,
-                          ),
-                          child: Column(
-                            spacing: 20,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text.rich(
-                                    TextSpan(
-                                      children: [
-                                        const TextSpan(
-                                          text: "已为您关联 ",
-                                          style: TextStyle(fontSize: 14),
-                                        ),
-                                        TextSpan(
-                                          text: name,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight:
-                                                FontWeight.bold, // 示例：加粗
-                                            color: Colors.blue, // 示例：蓝色
-                                          ),
-                                        ),
-                                        const TextSpan(
-                                          text: " 的相关影片",
-                                          style: TextStyle(fontSize: 14),
-                                        ),
-                                      ],
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  GestureDetector(
-                                    onTap: Navigator.of(context).pop,
-                                    child: const Icon(Icons.close),
-                                  ),
-                                ],
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 10, right: 10),
+                        child: Stack(
+                          children: [
+                            //定位组件
+                            Container(
+                              margin: const EdgeInsets.only(top: 30),
+                              child: SingleChildScrollView(
+                                child: listView(selectData),
                               ),
-                              // 示例组件，可以替换成实际组件如 VideoOneSmall
-                              listView(selectData),
-                            ],
-                          ),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text.rich(
+                                  TextSpan(
+                                    children: [
+                                      const TextSpan(
+                                        text: "已为您关联 ",
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                      TextSpan(
+                                        text: name,
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold, // 示例：加粗
+                                          color: Colors.blue, // 示例：蓝色
+                                        ),
+                                      ),
+                                      const TextSpan(
+                                        text: " 的相关影片",
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                    ],
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                GestureDetector(
+                                  onTap: Navigator.of(context).pop,
+                                  child: const Icon(Icons.close),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ),

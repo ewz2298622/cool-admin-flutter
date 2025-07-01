@@ -148,7 +148,7 @@ class Api {
           videoCategoryIds.map((id) async {
             SwiperEntity swiperData = (await Api.getSwiperPage({
               "page": 1,
-              "category_id": id,
+              "category": id,
               "status": 1,
               "size": 5,
             }));

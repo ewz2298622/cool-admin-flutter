@@ -278,8 +278,12 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
                 if (phone.isEmpty || password.isEmpty) {
                   TDToast.showText('账号或密码不能为空', context: context);
                 } else {
-                  // 处理登录逻辑
-                  _login();
+                  if (isPhoneNumberValid(phone)) {
+                    // 处理登录逻辑
+                    _login();
+                  } else {
+                    TDToast.showText('请输入合法手机号', context: context);
+                  }
                 }
               },
             ),
@@ -287,6 +291,11 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
         ),
       ),
     );
+  }
+
+  //验证手机号是否合法
+  bool isPhoneNumberValid(String phoneNumber) {
+    return phoneNumber.length == 11 && phoneNumber.startsWith('1');
   }
 
   Future<void> getUserInfo() async {
@@ -388,8 +397,6 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
       ),
     );
   }
-
-  Future<void> _launchUrl(String url) async {}
 
   Widget _buildAgreementText() {
     return RichText(

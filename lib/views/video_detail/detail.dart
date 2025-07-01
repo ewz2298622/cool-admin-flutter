@@ -36,11 +36,9 @@ class Video_Detail extends StatefulWidget {
 
 class _Video_DetailState extends State<Video_Detail>
     with SingleTickerProviderStateMixin {
-  // 提取常量
-  static const Color primaryColor = Color.fromRGBO(255, 218, 112, 1);
-  static const Color backgroundColor = Color.fromRGBO(255, 255, 255, 1);
   final ValueNotifier<int> currentLine = ValueNotifier<int>(0);
   final ValueNotifier<int> currentPlay = ValueNotifier<int>(0);
+  StateSetter? showModalBottomSheetListSate;
   //获取当前时间戳
   final int currentTimeStamp = DateTime.now().millisecondsSinceEpoch;
 
@@ -454,6 +452,9 @@ class _Video_DetailState extends State<Video_Detail>
     setState(() {
       currentPlay.value = index; // 确保这里触发了 notifyListeners()
     });
+    showModalBottomSheetListSate!(() {
+      currentPlay.value = index;
+    });
   }
 
   Widget _buildEpisodeList() {
@@ -470,6 +471,7 @@ class _Video_DetailState extends State<Video_Detail>
                 '选集',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
+
               ///Todo 更多按钮
               Row(
                 children: [
@@ -538,13 +540,6 @@ class _Video_DetailState extends State<Video_Detail>
                                   index == currentPlay.value
                                       ? Color.fromRGBO(241, 98, 16, 1)
                                       : Colors.black,
-                            ),
-                          ),
-                          Text(
-                            '第${index + 1}集', // 添加索引显示
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Colors.grey,
                             ),
                           ),
                         ],
@@ -631,96 +626,118 @@ class _Video_DetailState extends State<Video_Detail>
       context: context,
       isScrollControlled: true,
       builder: (builder) {
-        return Card(
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            padding: const EdgeInsets.only(top: 10),
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20.0),
-                topRight: Radius.circular(20.0),
-              ),
-            ),
-            height: 650,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            showModalBottomSheetListSate = setState;
+            return Card(
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                padding: const EdgeInsets.only(top: 10),
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20.0),
+                    topRight: Radius.circular(20.0),
+                  ),
+                ),
+                height: 650,
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                    bottom: 10,
+                  ),
+                  child: Column(
                     children: [
-                      Text(
-                        "切换线路",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 14),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "切换线路",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          GestureDetector(
+                            onTap: Navigator.of(context).pop,
+                            child: const Icon(Icons.close),
+                          ),
+                        ],
                       ),
-                      GestureDetector(
-                        onTap: Navigator.of(context).pop,
-                        child: const Icon(Icons.close),
+                      _buildItemWithLogo(context),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          child: Wrap(
+                            spacing: 20,
+                            runSpacing: 10,
+                            children: List<Widget>.generate(videoList.length, (
+                              index,
+                            ) {
+                              return Column(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 10),
+                                    child: Container(
+                                      width: 80,
+                                      height: 38,
+                                      alignment: Alignment.center,
+                                      //设置border
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color:
+                                              index == currentPlay.value
+                                                  ? Color.fromRGBO(
+                                                    241,
+                                                    98,
+                                                    16,
+                                                    1,
+                                                  )
+                                                  : Colors.transparent,
+                                          width:
+                                              index == currentPlay.value
+                                                  ? 1
+                                                  : 0,
+                                        ),
+                                        //设置圆角
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(6.0),
+                                        ),
+
+                                        color: Color.fromRGBO(247, 247, 247, 1),
+
+                                        //水平居中
+                                      ),
+                                      child: GestureDetector(
+                                        child: Text(
+                                          videoList[index].title,
+                                          style: TextStyle(
+                                            color:
+                                                index == currentPlay.value
+                                                    ? Color.fromRGBO(
+                                                      241,
+                                                      98,
+                                                      16,
+                                                      1,
+                                                    )
+                                                    : Colors.black,
+                                          ),
+                                        ),
+                                        onTap: () => _play_change(index),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }),
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  _buildItemWithLogo(context),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      child: Wrap(
-                        spacing: 20,
-                        runSpacing: 10,
-                        children: List<Widget>.generate(videoList.length, (
-                          index,
-                        ) {
-                          return Column(
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(left: 10),
-                                child: Container(
-                                  width: 80,
-                                  height: 38,
-                                  alignment: Alignment.center,
-                                  //设置border
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color:
-                                          index == currentPlay.value
-                                              ? Color.fromRGBO(241, 98, 16, 1)
-                                              : Colors.transparent,
-                                      width: index == currentPlay.value ? 1 : 0,
-                                    ),
-                                    //设置圆角
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(6.0),
-                                    ),
-
-                                    color: Color.fromRGBO(247, 247, 247, 1),
-
-                                    //水平居中
-                                  ),
-                                  child: GestureDetector(
-                                    child: Text(
-                                      videoList[index].title,
-                                      style: TextStyle(
-                                        color:
-                                            index == currentPlay.value
-                                                ? Color.fromRGBO(241, 98, 16, 1)
-                                                : Colors.black,
-                                      ),
-                                    ),
-                                    onTap: () => _play_change(index),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        }),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );

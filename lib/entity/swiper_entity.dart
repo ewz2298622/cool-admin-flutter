@@ -47,16 +47,16 @@ class SwiperDataList {
   int? id;
   String? createTime;
   String? updateTime;
+  dynamic tenantId;
   int? createUserId;
   int? updateUserId;
-  String? title;
   String? image;
   dynamic path;
-  dynamic relatedId;
-  int? appid;
-  int? type;
+  int? relatedId;
   int? sort;
   int? status;
+  int? category;
+  dynamic title;
 
   SwiperDataList();
 

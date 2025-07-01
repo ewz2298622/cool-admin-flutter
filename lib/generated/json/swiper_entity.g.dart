@@ -1,5 +1,5 @@
-import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 import 'package:flutter_app/entity/swiper_entity.dart';
+import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 
 SwiperEntity $SwiperEntityFromJson(Map<String, dynamic> json) {
   final SwiperEntity swiperEntity = SwiperEntity();
@@ -27,11 +27,7 @@ Map<String, dynamic> $SwiperEntityToJson(SwiperEntity entity) {
 }
 
 extension SwiperEntityExtension on SwiperEntity {
-  SwiperEntity copyWith({
-    int? code,
-    String? message,
-    SwiperData? data,
-  }) {
+  SwiperEntity copyWith({int? code, String? message, SwiperData? data}) {
     return SwiperEntity()
       ..code = code ?? this.code
       ..message = message ?? this.message
@@ -41,15 +37,15 @@ extension SwiperEntityExtension on SwiperEntity {
 
 SwiperData $SwiperDataFromJson(Map<String, dynamic> json) {
   final SwiperData swiperData = SwiperData();
-  final List<SwiperDataList>? list = (json['list'] as List<dynamic>?)
-      ?.map(
-          (e) => jsonConvert.convert<SwiperDataList>(e) as SwiperDataList)
-      .toList();
+  final List<SwiperDataList>? list =
+      (json['list'] as List<dynamic>?)
+          ?.map((e) => jsonConvert.convert<SwiperDataList>(e) as SwiperDataList)
+          .toList();
   if (list != null) {
     swiperData.list = list;
   }
-  final SwiperDataPagination? pagination = jsonConvert.convert<
-      SwiperDataPagination>(json['pagination']);
+  final SwiperDataPagination? pagination = jsonConvert
+      .convert<SwiperDataPagination>(json['pagination']);
   if (pagination != null) {
     swiperData.pagination = pagination;
   }
@@ -88,6 +84,10 @@ SwiperDataList $SwiperDataListFromJson(Map<String, dynamic> json) {
   if (updateTime != null) {
     swiperDataList.updateTime = updateTime;
   }
+  final dynamic tenantId = json['tenantId'];
+  if (tenantId != null) {
+    swiperDataList.tenantId = tenantId;
+  }
   final int? createUserId = jsonConvert.convert<int>(json['createUserId']);
   if (createUserId != null) {
     swiperDataList.createUserId = createUserId;
@@ -95,10 +95,6 @@ SwiperDataList $SwiperDataListFromJson(Map<String, dynamic> json) {
   final int? updateUserId = jsonConvert.convert<int>(json['updateUserId']);
   if (updateUserId != null) {
     swiperDataList.updateUserId = updateUserId;
-  }
-  final String? title = jsonConvert.convert<String>(json['title']);
-  if (title != null) {
-    swiperDataList.title = title;
   }
   final String? image = jsonConvert.convert<String>(json['image']);
   if (image != null) {
@@ -108,17 +104,9 @@ SwiperDataList $SwiperDataListFromJson(Map<String, dynamic> json) {
   if (path != null) {
     swiperDataList.path = path;
   }
-  final dynamic relatedId = json['relatedId'];
+  final int? relatedId = jsonConvert.convert<int>(json['relatedId']);
   if (relatedId != null) {
     swiperDataList.relatedId = relatedId;
-  }
-  final int? appid = jsonConvert.convert<int>(json['appid']);
-  if (appid != null) {
-    swiperDataList.appid = appid;
-  }
-  final int? type = jsonConvert.convert<int>(json['type']);
-  if (type != null) {
-    swiperDataList.type = type;
   }
   final int? sort = jsonConvert.convert<int>(json['sort']);
   if (sort != null) {
@@ -128,6 +116,14 @@ SwiperDataList $SwiperDataListFromJson(Map<String, dynamic> json) {
   if (status != null) {
     swiperDataList.status = status;
   }
+  final int? category = jsonConvert.convert<int>(json['category']);
+  if (category != null) {
+    swiperDataList.category = category;
+  }
+  final dynamic title = json['title'];
+  if (title != null) {
+    swiperDataList.title = title;
+  }
   return swiperDataList;
 }
 
@@ -136,16 +132,16 @@ Map<String, dynamic> $SwiperDataListToJson(SwiperDataList entity) {
   data['id'] = entity.id;
   data['createTime'] = entity.createTime;
   data['updateTime'] = entity.updateTime;
+  data['tenantId'] = entity.tenantId;
   data['createUserId'] = entity.createUserId;
   data['updateUserId'] = entity.updateUserId;
-  data['title'] = entity.title;
   data['image'] = entity.image;
   data['path'] = entity.path;
   data['relatedId'] = entity.relatedId;
-  data['appid'] = entity.appid;
-  data['type'] = entity.type;
   data['sort'] = entity.sort;
   data['status'] = entity.status;
+  data['category'] = entity.category;
+  data['title'] = entity.title;
   return data;
 }
 
@@ -154,31 +150,31 @@ extension SwiperDataListExtension on SwiperDataList {
     int? id,
     String? createTime,
     String? updateTime,
+    dynamic tenantId,
     int? createUserId,
     int? updateUserId,
-    String? title,
     String? image,
     dynamic path,
-    dynamic relatedId,
-    int? appid,
-    int? type,
+    int? relatedId,
     int? sort,
     int? status,
+    int? category,
+    dynamic title,
   }) {
     return SwiperDataList()
       ..id = id ?? this.id
       ..createTime = createTime ?? this.createTime
       ..updateTime = updateTime ?? this.updateTime
+      ..tenantId = tenantId ?? this.tenantId
       ..createUserId = createUserId ?? this.createUserId
       ..updateUserId = updateUserId ?? this.updateUserId
-      ..title = title ?? this.title
       ..image = image ?? this.image
       ..path = path ?? this.path
       ..relatedId = relatedId ?? this.relatedId
-      ..appid = appid ?? this.appid
-      ..type = type ?? this.type
       ..sort = sort ?? this.sort
-      ..status = status ?? this.status;
+      ..status = status ?? this.status
+      ..category = category ?? this.category
+      ..title = title ?? this.title;
   }
 }
 
@@ -208,11 +204,7 @@ Map<String, dynamic> $SwiperDataPaginationToJson(SwiperDataPagination entity) {
 }
 
 extension SwiperDataPaginationExtension on SwiperDataPagination {
-  SwiperDataPagination copyWith({
-    int? page,
-    int? size,
-    int? total,
-  }) {
+  SwiperDataPagination copyWith({int? page, int? size, int? total}) {
     return SwiperDataPagination()
       ..page = page ?? this.page
       ..size = size ?? this.size
