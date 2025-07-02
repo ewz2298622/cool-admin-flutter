@@ -164,20 +164,37 @@ class _HomePageState extends State<Home>
                     ),
                   ],
                 ),
-                GestureDetector(
-                  child: Container(
-                    width: 260,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: Color.fromRGBO(255, 95, 1, 1), // 颜色移到这里
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    height: 40,
-                    child: Text('我知道了', style: TextStyle(color: Colors.white)),
-                  ),
+
+                // GestureDetector(
+                //   child: Container(
+                //     width: 260,
+                //     alignment: Alignment.center,
+                //     decoration: BoxDecoration(
+                //       color: Color.fromRGBO(255, 95, 1, 1), // 颜色移到这里
+                //       borderRadius: BorderRadius.circular(20),
+                //     ),
+                //     height: 40,
+                //     child: Text('我知道了', style: TextStyle(color: Colors.white)),
+                //   ),
+                //   onTap: () {
+                //     Navigator.of(context).pop(); //退出弹出框
+                //   },
+                // ),
+                TDButton(
+                  text: '我知道了',
+                  isBlock: true,
+                  size: TDButtonSize.large,
+                  type: TDButtonType.fill,
+                  shape: TDButtonShape.rectangle,
+                  theme: TDButtonTheme.defaultTheme,
                   onTap: () {
                     Navigator.of(context).pop(); //退出弹出框
                   },
+                  style: TDButtonStyle(
+                    backgroundColor: Color.fromRGBO(255, 95, 1, 1),
+                    textColor: Colors.white,
+                    radius: BorderRadius.circular(20),
+                  ),
                 ),
                 GestureDetector(
                   child: Text(

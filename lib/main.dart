@@ -36,6 +36,17 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           darkTheme: ThemeData.dark(),
           themeMode: themeManager.themeMode,
+          theme: ThemeData(
+            primaryColor: const Color(0xFFEA5034),
+            primaryColorDark: const Color(0xFFFFFFFF),
+            primaryColorLight: const Color(0x33000000),
+            textButtonTheme: TextButtonThemeData(
+              style: ButtonStyle(
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                overlayColor: MaterialStateProperty.all(Colors.transparent),
+              ),
+            ),
+          ),
           home: MainPage(),
           navigatorKey: ContextManager.navigatorKey,
         );

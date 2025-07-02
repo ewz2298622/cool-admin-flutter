@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:chewie/chewie.dart';
+import 'package:dlna_dart/dlna.dart';
 import 'package:flustars/flustars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -59,6 +60,8 @@ class _Video_DetailState extends State<Video_Detail>
   final FPlayer player = FPlayer();
   late StreamSubscription _currentPosSubs;
   Duration _currentPos = Duration();
+  List<dynamic> deviceList = [];
+  StateSetter? TVshowModalBottomSheetListSate;
 
   // 倍速列表
   final Map<String, double> speedList = {
@@ -966,6 +969,168 @@ class _Video_DetailState extends State<Video_Detail>
     );
   }
 
+  //搜索设备
+  Future<void> searchDevice() async {
+    final searcher = DLNAManager();
+    final m = await searcher.start();
+    m.devices.stream.listen((dataList) {
+      for (var entry in dataList.entries) {
+        final key = entry.key;
+        final value = entry.value;
+
+        TVshowModalBottomSheetListSate?.call(() {
+          if (deviceList.isEmpty) {
+            Map<String, dynamic> data = {'key': key, 'value': value};
+            deviceList.add(data);
+          } else {
+            bool isAlreadyAdded = false;
+            for (var element in deviceList) {
+              if (element['key'] == key) {
+                isAlreadyAdded = true;
+                break;
+              }
+            }
+            if (!isAlreadyAdded) {
+              Map<String, dynamic> data = {'key': key, 'value': value};
+              deviceList.add(data);
+            }
+          }
+        });
+      }
+    });
+  }
+
+  tvDevice() {
+    searchDevice();
+    showModalBottomSheet(
+      backgroundColor: Colors.transparent,
+      context: context,
+      isScrollControlled: true,
+      builder: (builder) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            TVshowModalBottomSheetListSate = setState;
+            return Card(
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                padding: const EdgeInsets.only(top: 10),
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20.0),
+                    topRight: Radius.circular(20.0),
+                  ),
+                ),
+                height: 650,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 10, right: 10),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Center(
+                              child: Text("投屏", style: TextStyle(fontSize: 14)),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: Navigator.of(context).pop,
+                            child: const Icon(Icons.close),
+                          ),
+                        ],
+                      ),
+                      //定位组件
+                      Container(
+                        margin: const EdgeInsets.only(top: 30),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            spacing: 10,
+                            children: [
+                              Text(
+                                "注意:",
+                                style: TextStyle(
+                                  color: Color.fromARGB(142, 142, 142, 0),
+                                ),
+                              ),
+                              Text(
+                                "1、电视投屏的广告与本APP无关",
+                                style: TextStyle(
+                                  color: Color.fromARGB(142, 142, 142, 0),
+                                ),
+                              ),
+                              Text(
+                                "2、投屏后无法再次投屏，请重置投屏或者退出投屏",
+                                style: TextStyle(
+                                  color: Color.fromARGB(142, 142, 142, 0),
+                                ),
+                              ),
+                              Text(
+                                "3、设备扫描过程是持续的请静心等待10秒左右",
+                                style: TextStyle(
+                                  color: Color.fromARGB(142, 142, 142, 0),
+                                ),
+                              ),
+                              ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: deviceList.length,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 15),
+                                    child: TDButton(
+                                      text:
+                                          deviceList[index]["value"]
+                                              .info
+                                              .friendlyName,
+                                      size: TDButtonSize.large,
+                                      onTap: () {
+                                        deviceList[index]["value"].setUrl(
+                                          playerLineData?[currentPlay.value]
+                                                  .file ??
+                                              "",
+                                        );
+                                      },
+                                      type: TDButtonType.outline,
+                                      shape: TDButtonShape.rectangle,
+                                      theme: TDButtonTheme.primary,
+                                    ),
+                                  );
+                                },
+                              ),
+                              tvDeviceLoading(),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget tvDeviceLoading() {
+    if (deviceList.isEmpty) {
+      return SizedBox(
+        height: 300,
+        child: Center(
+          child: TDLoading(
+            size: TDLoadingSize.large,
+            icon: TDLoadingIcon.circle,
+          ),
+        ),
+      );
+    } else {
+      return Center();
+    }
+  }
+
   Widget _buildVideo() {
     return Column(
       children: [
@@ -979,6 +1144,48 @@ class _Video_DetailState extends State<Video_Detail>
           panelBuilder: fPanelBuilder(
             // 视频列表开关
             isVideos: true,
+            // 右下方截屏按钮
+            isSnapShot: true,
+            // 右上方按钮组开关
+            isRightButton: true,
+            // 右上方按钮组
+            rightButtonList: [
+              InkWell(
+                onTap: () {},
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColorLight,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(5),
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.favorite,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: () {},
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColorLight,
+                    borderRadius: const BorderRadius.vertical(
+                      bottom: Radius.circular(5),
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.thumb_up,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+              ),
+            ],
+            settingFun: () {
+              tvDevice();
+            },
             // 视频列表列表
             videoList: videoList,
             // 当前视频索引
