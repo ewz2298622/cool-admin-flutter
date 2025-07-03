@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_app/utils/store/user/user.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
@@ -403,6 +407,50 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
     );
   }
 
+  Future<void> _shareImage() async {
+    try {
+      // 1. 复制文件到临时目录
+      final directory = await getTemporaryDirectory();
+      final targetDir = Directory('${directory.path}/images');
+      // 创建父目录（如果不存在）
+      if (!await targetDir.exists()) {
+        await targetDir.create(recursive: true); // recursive: true 确保多级目录创建
+      }
+      final fileName = 'share_banner.png'; // 或从 assetPath 提取
+      final targetPath = '${directory.path}/images/$fileName';
+      final byteData = await rootBundle.load('assets/images/share_banner.png');
+      final file = File(targetPath)
+        ..writeAsBytesSync(byteData.buffer.asUint8List());
+      final files = [
+        XFile(targetPath), // 单个文件
+        // 或多个文件
+        // XFile('${directory.path}/file1.pdf'),
+        // XFile('${directory.path}/file2.zip'),
+      ];
+      // 2. 分享文件
+      if (await file.exists()) {
+        SharePlus.instance.share(
+          ShareParams(
+            files: files,
+            text: '附带描述文本', // 可选
+            subject: '分享标题',
+            title: '分享', // 可选
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('图片准备失败')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('分享失败: $e')));
+    } finally {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    }
+  }
+
   void _handleModelItemClick(String label) {
     switch (label) {
       case "系统通知":
@@ -417,11 +465,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
         break;
       case "分享好友":
         // 处理分享好友点击事件
-        TDToast.showIconText(
-          '复制链接成功',
-          icon: TDIcons.check_circle,
-          context: context,
-        );
+        _shareImage();
         break;
       case "在线客服":
         // 处理在线客服点击事件
