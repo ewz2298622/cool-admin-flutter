@@ -204,38 +204,39 @@ class VideoFilterState extends State<VideoFilter>
     return ValueListenableBuilder<int>(
       valueListenable: categoryCurrent,
       builder: (context, key, child) {
-        return Padding(
-          padding: EdgeInsets.only(left: 8, right: 8, top: 0, bottom: 0),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: Center(child: Text(title ?? "")),
-                ),
-                ...(items ?? [])
-                    .map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: TDButton(
-                          text: item.name ?? "",
-                          size: TDButtonSize.small,
-                          style: TDButtonStyle(
-                            textColor:
-                                Theme.of(context).textTheme.bodyLarge!.color!,
-                            backgroundColor:
-                                key == item.id
-                                    ? const Color.fromRGBO(249, 174, 61, 1)
-                                    : Colors.transparent,
-                          ),
-                          onTap: () => _category_change(item),
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              Center(child: Text(title ?? "")),
+              ...(items ?? [])
+                  .map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: GestureDetector(
+                        child: TDTag(
+                          item.name ?? "",
+                          shape: TDTagShape.round,
+                          isLight: true,
+                          size: TDTagSize.large,
+                          textColor:
+                              key == item.id
+                                  ? const Color.fromRGBO(255, 122, 27, 1)
+                                  : Theme.of(
+                                    context,
+                                  ).textTheme.titleLarge?.color,
+                          backgroundColor:
+                              key == item.id
+                                  ? const Color.fromRGBO(244, 244, 244, 1)
+                                  : Colors.transparent,
+                          isOutline: false,
                         ),
+                        onTap: () => _category_change(item),
                       ),
-                    )
-                    .toList(),
-              ],
-            ),
+                    ),
+                  )
+                  .toList(),
+            ],
           ),
         );
       },
@@ -246,38 +247,39 @@ class VideoFilterState extends State<VideoFilter>
     return ValueListenableBuilder<int>(
       valueListenable: regionCurrent,
       builder: (context, key, child) {
-        return Padding(
-          padding: EdgeInsets.only(left: 8, right: 8, top: 0, bottom: 0),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: Center(child: Text(title ?? "")),
-                ),
-                ...(items ?? [])
-                    .map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: TDButton(
-                          text: item.name ?? "",
-                          size: TDButtonSize.small,
-                          style: TDButtonStyle(
-                            backgroundColor:
-                                key == item.id
-                                    ? const Color.fromRGBO(249, 174, 61, 1)
-                                    : Colors.transparent,
-                            textColor:
-                                Theme.of(context).textTheme.bodyLarge!.color!,
-                          ),
-                          onTap: () => _area_change(item),
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              Center(child: Text(title ?? "")),
+              ...(items ?? [])
+                  .map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: GestureDetector(
+                        child: TDTag(
+                          item.name ?? "",
+                          shape: TDTagShape.round,
+                          size: TDTagSize.large,
+                          isLight: true,
+                          textColor:
+                              key == item.id
+                                  ? const Color.fromRGBO(255, 122, 27, 1)
+                                  : Theme.of(
+                                    context,
+                                  ).textTheme.titleLarge?.color,
+                          backgroundColor:
+                              key == item.id
+                                  ? const Color.fromRGBO(244, 244, 244, 1)
+                                  : Colors.transparent,
+                          isOutline: false,
                         ),
+                        onTap: () => _area_change(item),
                       ),
-                    )
-                    .toList(),
-              ],
-            ),
+                    ),
+                  )
+                  .toList(),
+            ],
           ),
         );
       },
@@ -288,38 +290,35 @@ class VideoFilterState extends State<VideoFilter>
     return ValueListenableBuilder<int>(
       valueListenable: yearCurrent,
       builder: (context, key, child) {
-        return Padding(
-          padding: EdgeInsets.only(left: 8, right: 8, top: 0, bottom: 0),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                Padding(
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              Center(child: Text(title ?? "")),
+              ...(items ?? []).map(
+                (item) => Padding(
                   padding: const EdgeInsets.only(left: 8),
-                  child: Center(child: Text(title ?? "")),
+                  child: GestureDetector(
+                    child: TDTag(
+                      item.toString() ?? "",
+                      isLight: true,
+                      textColor:
+                          key == item
+                              ? const Color.fromRGBO(255, 122, 27, 1)
+                              : Theme.of(context).textTheme.titleLarge?.color,
+                      backgroundColor:
+                          key == item
+                              ? const Color.fromRGBO(244, 244, 244, 1)
+                              : Colors.transparent,
+                      shape: TDTagShape.round,
+                      size: TDTagSize.large,
+                      isOutline: false,
+                    ),
+                    onTap: () => _year_change(item),
+                  ),
                 ),
-                ...(items ?? [])
-                    .map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: TDButton(
-                          text: item.toString() ?? "",
-                          size: TDButtonSize.small,
-                          style: TDButtonStyle(
-                            backgroundColor:
-                                key == item
-                                    ? const Color.fromRGBO(249, 174, 61, 1)
-                                    : Colors.transparent,
-                            textColor:
-                                Theme.of(context).textTheme.bodyLarge!.color!,
-                          ),
-                          onTap: () => _year_change(item),
-                        ),
-                      ),
-                    )
-                    .toList(),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
@@ -400,6 +399,7 @@ class VideoFilterState extends State<VideoFilter>
                   padding: EdgeInsets.only(
                     left: Layout.paddingL,
                     right: Layout.paddingR,
+                    bottom: Layout.paddingB,
                   ),
                   child: Column(
                     spacing: 10,
@@ -472,7 +472,10 @@ class VideoFilterState extends State<VideoFilter>
       body: RefreshIndicator(
         key: refreshKey,
         onRefresh: onRefresh,
-        child: _buildContent(),
+        child: Padding(
+          padding: const EdgeInsets.only(left: 10, right: 10),
+          child: _buildContent(),
+        ),
       ),
     );
   }

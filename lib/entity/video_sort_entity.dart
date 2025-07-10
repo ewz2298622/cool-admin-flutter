@@ -47,24 +47,15 @@ class VideoSortDataList {
   int? id;
   String? createTime;
   String? updateTime;
+  dynamic tenantId;
   dynamic createUserId;
   dynamic updateUserId;
   String? title;
-  @JSONField(name: 'category_pid')
-  String? categoryPid;
-  @JSONField(name: 'category_child_id')
-  String? categoryChildId;
   @JSONField(name: 'surface_plot')
   String? surfacePlot;
-  String? recommend;
   String? cycle;
   @JSONField(name: 'cycle_img')
-  String? cycleImg;
-  @JSONField(name: 'charging_mode')
-  String? chargingMode;
-  @JSONField(name: 'buy_mode')
-  String? buyMode;
-  String? gold;
+  dynamic cycleImg;
   String? directors;
   String? actors;
   @JSONField(name: 'imdb_score')
@@ -84,56 +75,47 @@ class VideoSortDataList {
   String? popularityMonth;
   @JSONField(name: 'popularity_sum')
   String? popularitySum;
-  String? note;
-  String? year;
-  @JSONField(name: 'album_id')
-  int? albumId;
+  dynamic note;
   String? status;
-  @JSONField(name: 'create_at')
-  String? createAt;
-  @JSONField(name: 'update_at')
-  String? updateAt;
-  String? duration;
-  String? region;
-  String? language;
-  String? label;
+  dynamic duration;
   String? number;
   String? total;
   @JSONField(name: 'horizontal_poster')
   String? horizontalPoster;
   @JSONField(name: 'vertical_poster')
-  String? verticalPoster;
-  String? publish;
+  dynamic verticalPoster;
+  dynamic publish;
   @JSONField(name: 'serial_number')
-  String? serialNumber;
-  String? screenshot;
-  String? gif;
-  String? alias;
-  @JSONField(name: 'release_at')
-  String? releaseAt;
-  @JSONField(name: 'shelf_at')
-  String? shelfAt;
+  dynamic serialNumber;
+  dynamic screenshot;
   int? end;
-  String? unit;
-  String? watch;
-  @JSONField(name: 'collection_id')
-  String? collectionId;
-  @JSONField(name: 'use_local_image')
-  dynamic useLocalImage;
-  @JSONField(name: 'titles_time')
-  int? titlesTime;
-  @JSONField(name: 'trailer_time')
-  int? trailerTime;
-  @JSONField(name: 'site_id')
-  int? siteId;
-  @JSONField(name: 'category_pid_status')
-  int? categoryPidStatus;
-  @JSONField(name: 'category_child_id_status')
-  int? categoryChildIdStatus;
+  dynamic unit;
   @JSONField(name: 'play_url')
   String? playUrl;
   @JSONField(name: 'play_url_put_in')
   int? playUrlPutIn;
+  @JSONField(name: 'category_id')
+  int? categoryId;
+  int? region;
+  int? language;
+  @JSONField(name: 'collection_id')
+  int? collectionId;
+  @JSONField(name: 'collection_name')
+  String? collectionName;
+  String? remarks;
+  int? year;
+  @JSONField(name: 'category_pid')
+  int? categoryPid;
+  int? up;
+  int? down;
+  String? popularity;
+  String? pubdate;
+  @JSONField(name: 'sub_title')
+  String? subTitle;
+  @JSONField(name: 'video_tag')
+  dynamic videoTag;
+  @JSONField(name: 'video_class')
+  dynamic videoClass;
 
   VideoSortDataList();
 

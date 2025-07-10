@@ -164,22 +164,6 @@ class _HomePageState extends State<Home>
                     ),
                   ],
                 ),
-
-                // GestureDetector(
-                //   child: Container(
-                //     width: 260,
-                //     alignment: Alignment.center,
-                //     decoration: BoxDecoration(
-                //       color: Color.fromRGBO(255, 95, 1, 1), // 颜色移到这里
-                //       borderRadius: BorderRadius.circular(20),
-                //     ),
-                //     height: 40,
-                //     child: Text('我知道了', style: TextStyle(color: Colors.white)),
-                //   ),
-                //   onTap: () {
-                //     Navigator.of(context).pop(); //退出弹出框
-                //   },
-                // ),
                 TDButton(
                   text: '我知道了',
                   isBlock: true,
@@ -232,15 +216,11 @@ class _HomePageState extends State<Home>
 
   /// 轮播图视图
   Widget _buildDotsSwiper(int id) {
+    debugPrint('_buildDotsSwiper${swiperMap[id]}');
     super.build(context); // 必须调用 super.build
     return Swiper(
       autoplay: true,
-      itemCount: 3,
-      loop: true,
-      // pagination: const TDSwiperPagination(
-      //   alignment: Alignment.bottomRight,
-      //   builder: TDSwiperPagination.dotsBar,
-      // ),
+      itemCount: (swiperMap[id]?.length) ?? 0,
       itemBuilder: (BuildContext context, int index) {
         return Stack(
           fit: StackFit.expand,
@@ -262,6 +242,8 @@ class _HomePageState extends State<Home>
               width: double.infinity,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment:
+                    CrossAxisAlignment.start, // 关键：让 Column 子组件左对齐
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(10),
@@ -270,7 +252,12 @@ class _HomePageState extends State<Home>
                       maxLines: 1,
                       //溢出省略号
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      textAlign: TextAlign.left, // 改为左对齐
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
@@ -350,10 +337,17 @@ class _HomePageState extends State<Home>
                   color: Colors.transparent,
                 ), // 将宽度设置为0来隐藏下划线
               ),
-              //设置未选中的字体颜色
-              unselectedLabelColor: const Color.fromRGBO(102, 102, 102, 1),
               //选中的字体颜色
               labelColor: const Color.fromRGBO(252, 119, 66, 1),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+              unselectedLabelColor: const Color.fromRGBO(102, 102, 102, 1),
+              labelStyle: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+              ),
               tabs: tabs,
             ),
             Expanded(
@@ -418,6 +412,7 @@ class _HomePageState extends State<Home>
     return List<Widget>.generate(
       list.length,
       (index) => Column(
+        spacing: 16,
         children: [
           _buildAlbumHeader(list[index]),
           _buildAlbumItemWidgetType(list[index], index),
@@ -448,7 +443,7 @@ class _HomePageState extends State<Home>
 
   Widget _buildAlbumHeader(AlbumDataList album) {
     return Container(
-      margin: const EdgeInsets.only(top: 16, bottom: 16),
+      margin: const EdgeInsets.only(top: 16),
       child: SectionWithMore(
         title: album.title ?? "", // 传入标题
         onMorePressed: () {

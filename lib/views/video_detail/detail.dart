@@ -433,6 +433,10 @@ class _Video_DetailState extends State<Video_Detail>
                         ),
                         style: TextStyle(color: Colors.grey),
                       ),
+                      Text(
+                        videoData?.videoTag ?? "",
+                        style: TextStyle(color: Colors.grey),
+                      ),
                     ]
                     .map(
                       (e) => Padding(
@@ -512,43 +516,40 @@ class _Video_DetailState extends State<Video_Detail>
               padding: EdgeInsets.zero,
               itemCount: videoList.length,
               itemBuilder: (context, index) {
-                return Padding(
-                  padding: EdgeInsets.only(left: 10),
-                  child: Container(
-                    width: 100,
-                    height: 38,
-                    alignment: Alignment.center,
-                    //设置border
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color:
-                            index == currentPlay.value
-                                ? Color.fromRGBO(241, 98, 16, 1)
-                                : Colors.transparent,
-                        width: index == currentPlay.value ? 1 : 0,
-                      ),
-                      //设置圆角
-                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                      color: Color.fromRGBO(247, 247, 247, 1),
-                      //水平居中
+                return Container(
+                  width: 100,
+                  height: 38,
+                  alignment: Alignment.center,
+                  //设置border
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color:
+                          index == currentPlay.value
+                              ? Color.fromRGBO(241, 98, 16, 1)
+                              : Colors.transparent,
+                      width: index == currentPlay.value ? 1 : 0,
                     ),
-                    child: GestureDetector(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            videoList[index].title,
-                            style: TextStyle(
-                              color:
-                                  index == currentPlay.value
-                                      ? Color.fromRGBO(241, 98, 16, 1)
-                                      : Colors.black,
-                            ),
+                    //设置圆角
+                    borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                    color: Color.fromRGBO(247, 247, 247, 1),
+                    //水平居中
+                  ),
+                  child: GestureDetector(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          videoList[index].title,
+                          style: TextStyle(
+                            color:
+                                index == currentPlay.value
+                                    ? Color.fromRGBO(241, 98, 16, 1)
+                                    : Colors.black,
                           ),
-                        ],
-                      ),
-                      onTap: () => _play_change(index),
+                        ),
+                      ],
                     ),
+                    onTap: () => _play_change(index),
                   ),
                 );
               },
@@ -807,7 +808,7 @@ class _Video_DetailState extends State<Video_Detail>
             spacing: 6,
             children: [
               TDImage(
-                width: 80,
+                width: 150,
                 height: 100,
                 fit: BoxFit.cover,
                 imgUrl: videoData?.surfacePlot ?? "",
@@ -821,14 +822,30 @@ class _Video_DetailState extends State<Video_Detail>
                   //从上到下排列
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
-                  spacing: 14,
+                  spacing: 4,
                   children: [
                     Text(
                       videoData?.title ?? "",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.left,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
+                    ),
+                    Row(
+                      spacing: 5,
+                      children: [
+                        Text(
+                          videoData?.videoClass ?? "",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                        Text(
+                          videoData?.videoTag ?? "",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ],
                     ),
                     Row(
                       spacing: 5,
@@ -927,8 +944,8 @@ class _Video_DetailState extends State<Video_Detail>
           data: videoData?.introduce ?? "",
           style: {
             "body": Style(
-              maxLines: 2, // 限制最大行数
-              textOverflow: TextOverflow.ellipsis, // 溢出显示省略号
+              // maxLines: 4, // 限制最大行数
+              // textOverflow: TextOverflow.ellipsis, // 溢出显示省略号
               color: Color.fromRGBO(153, 153, 153, 1),
               backgroundColor: Colors.transparent,
             ),

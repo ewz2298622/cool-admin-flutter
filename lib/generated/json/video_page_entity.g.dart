@@ -279,6 +279,18 @@ VideoPageDataList $VideoPageDataListFromJson(Map<String, dynamic> json) {
   if (pubdate != null) {
     videoPageDataList.pubdate = pubdate;
   }
+  final String? subTitle = jsonConvert.convert<String>(json['sub_title']);
+  if (subTitle != null) {
+    videoPageDataList.subTitle = subTitle;
+  }
+  final dynamic videoTag = json['video_tag'];
+  if (videoTag != null) {
+    videoPageDataList.videoTag = videoTag;
+  }
+  final dynamic videoClass = json['video_class'];
+  if (videoClass != null) {
+    videoPageDataList.videoClass = videoClass;
+  }
   return videoPageDataList;
 }
 
@@ -331,6 +343,9 @@ Map<String, dynamic> $VideoPageDataListToJson(VideoPageDataList entity) {
   data['down'] = entity.down;
   data['popularity'] = entity.popularity;
   data['pubdate'] = entity.pubdate;
+  data['sub_title'] = entity.subTitle;
+  data['video_tag'] = entity.videoTag;
+  data['video_class'] = entity.videoClass;
   return data;
 }
 
@@ -383,6 +398,9 @@ extension VideoPageDataListExtension on VideoPageDataList {
     int? down,
     String? popularity,
     String? pubdate,
+    String? subTitle,
+    dynamic videoTag,
+    dynamic videoClass,
   }) {
     return VideoPageDataList()
       ..id = id ?? this.id
@@ -431,7 +449,10 @@ extension VideoPageDataListExtension on VideoPageDataList {
       ..up = up ?? this.up
       ..down = down ?? this.down
       ..popularity = popularity ?? this.popularity
-      ..pubdate = pubdate ?? this.pubdate;
+      ..pubdate = pubdate ?? this.pubdate
+      ..subTitle = subTitle ?? this.subTitle
+      ..videoTag = videoTag ?? this.videoTag
+      ..videoClass = videoClass ?? this.videoClass;
   }
 }
 

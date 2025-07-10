@@ -44,6 +44,7 @@ class VideoItem extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.start,
+                      spacing: 5,
                       children: [
                         Text(
                           videoData[i].title ?? "",
@@ -51,9 +52,15 @@ class VideoItem extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontWeight: FontWeight.w500),
                         ),
-                        const SizedBox(height: 10),
                         Text(
-                          "${videoData[i].year ?? ''} / ${videoData[i].actors}",
+                          "${videoData[i].videoClass ?? ''} / ${videoData[i].videoTag ?? ''}",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        Text(
+                          "${videoData[i].year ?? ''} / ${videoData[i].actors ?? ''}",
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -105,7 +112,23 @@ class VideoItem extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: [_buildVideoItemHDTag(item), _buildVideoItemNote(item)],
+        children: [
+          _buildVideoItemHDTag(item),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent, // 顶部透明
+                  Colors.black.withOpacity(0.7), // 底部黑色
+                ],
+              ),
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: _buildVideoItemNote(item),
+          ),
+        ],
       ),
     );
   }
@@ -114,14 +137,23 @@ class VideoItem extends StatelessWidget {
     if (item.remarks == null) {
       return Container();
     }
-    return Text(
-      item.remarks ?? '',
-      maxLines: 1, // 限制最大显示一行
-      overflow: TextOverflow.ellipsis, // 溢出时显示省略号
-      style: TextStyle(
-        fontSize: 10,
-        color: Colors.white,
-        fontWeight: FontWeight.w400,
+    return SizedBox(
+      width: double.infinity,
+      child: Padding(
+        padding: const EdgeInsets.only(right: 10, bottom: 5),
+        child: Text(
+          item.remarks ?? '',
+          textAlign: TextAlign.right,
+          //缩进
+          maxLines: 1, // 限制最大显示一行
+          overflow: TextOverflow.ellipsis, // 溢出时显示省略号
+          style: TextStyle(
+            fontSize: 10,
+            color: Colors.white,
+            fontWeight: FontWeight.w400,
+            //文字缩进
+          ),
+        ),
       ),
     );
   }

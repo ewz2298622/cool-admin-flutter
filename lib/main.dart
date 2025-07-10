@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
           darkTheme: ThemeData.dark(),
           themeMode: themeManager.themeMode,
           theme: ThemeData(
-            primaryColor: const Color(0xFFEA5034),
+            primaryColor: const Color(0xFFFFFFFF),
             primaryColorDark: const Color(0xFFFFFFFF),
             primaryColorLight: const Color(0x33000000),
             textButtonTheme: TextButtonThemeData(

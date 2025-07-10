@@ -21,12 +21,13 @@ class VideoOneSmall extends StatelessWidget {
             height: 140,
             padding: const EdgeInsets.only(left: 4, right: 4, bottom: 15),
             child: Row(
+              spacing: 5,
               children: [
                 Stack(
                   children: [
                     TDImage(
                       fit: BoxFit.cover,
-                      width: 100,
+                      width: 110,
                       height: 140,
                       imgUrl: videoPageData[i].surfacePlot ?? "",
                       errorWidget: const TDImage(
@@ -112,7 +113,23 @@ class VideoOneSmall extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: [_buildVideoItemHDTag(item), _buildVideoItemNote(item)],
+        children: [
+          _buildVideoItemHDTag(item),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent, // 顶部透明
+                  Colors.black.withOpacity(0.7), // 底部黑色
+                ],
+              ),
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: _buildVideoItemNote(item),
+          ),
+        ],
       ),
     );
   }
@@ -124,19 +141,15 @@ class VideoOneSmall extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Container(
-          margin: const EdgeInsets.only(right: 15, top: 2),
-          padding: const EdgeInsets.only(top: 2, bottom: 2, left: 4, right: 4),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            color: const Color.fromRGBO(0, 0, 0, 0.302),
-          ),
-
+        SizedBox(
+          width: 110,
           child: Text(
             item.remarks ?? '',
             maxLines: 1,
+            //缩进2px
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
+              textBaseline: TextBaseline.alphabetic,
               fontSize: 10,
               fontWeight: FontWeight.w400,
               color: Colors.white,
@@ -152,7 +165,7 @@ class VideoOneSmall extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Container(
-          margin: const EdgeInsets.only(right: 12, top: 5),
+          margin: const EdgeInsets.only(right: 5, top: 5),
           padding: const EdgeInsets.only(top: 2, bottom: 2, left: 4, right: 4),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),

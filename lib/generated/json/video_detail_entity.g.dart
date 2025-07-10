@@ -71,6 +71,18 @@ VideoDetailData $VideoDetailDataFromJson(Map<String, dynamic> json) {
   if (title != null) {
     videoDetailData.title = title;
   }
+  final String? subTitle = jsonConvert.convert<String>(json['sub_title']);
+  if (subTitle != null) {
+    videoDetailData.subTitle = subTitle;
+  }
+  final dynamic videoTag = json['video_tag'];
+  if (videoTag != null) {
+    videoDetailData.videoTag = videoTag;
+  }
+  final dynamic videoClass = json['video_class'];
+  if (videoClass != null) {
+    videoDetailData.videoClass = videoClass;
+  }
   final int? categoryId = jsonConvert.convert<int>(json['category_id']);
   if (categoryId != null) {
     videoDetailData.categoryId = categoryId;
@@ -91,11 +103,11 @@ VideoDetailData $VideoDetailDataFromJson(Map<String, dynamic> json) {
   if (cycleImg != null) {
     videoDetailData.cycleImg = cycleImg;
   }
-  final dynamic directors = json['directors'];
+  final String? directors = jsonConvert.convert<String>(json['directors']);
   if (directors != null) {
     videoDetailData.directors = directors;
   }
-  final dynamic actors = json['actors'];
+  final String? actors = jsonConvert.convert<String>(json['actors']);
   if (actors != null) {
     videoDetailData.actors = actors;
   }
@@ -233,11 +245,11 @@ VideoDetailData $VideoDetailDataFromJson(Map<String, dynamic> json) {
   if (collectionId != null) {
     videoDetailData.collectionId = collectionId;
   }
-  final dynamic up = json['up'];
+  final int? up = jsonConvert.convert<int>(json['up']);
   if (up != null) {
     videoDetailData.up = up;
   }
-  final dynamic down = json['down'];
+  final int? down = jsonConvert.convert<int>(json['down']);
   if (down != null) {
     videoDetailData.down = down;
   }
@@ -259,6 +271,9 @@ Map<String, dynamic> $VideoDetailDataToJson(VideoDetailData entity) {
   data['createUserId'] = entity.createUserId;
   data['updateUserId'] = entity.updateUserId;
   data['title'] = entity.title;
+  data['sub_title'] = entity.subTitle;
+  data['video_tag'] = entity.videoTag;
+  data['video_class'] = entity.videoClass;
   data['category_id'] = entity.categoryId;
   data['category_pid'] = entity.categoryPid;
   data['surface_plot'] = entity.surfacePlot;
@@ -311,13 +326,16 @@ extension VideoDetailDataExtension on VideoDetailData {
     dynamic createUserId,
     dynamic updateUserId,
     String? title,
+    String? subTitle,
+    dynamic videoTag,
+    dynamic videoClass,
     int? categoryId,
     int? categoryPid,
     String? surfacePlot,
     String? cycle,
     dynamic cycleImg,
-    dynamic directors,
-    dynamic actors,
+    String? directors,
+    String? actors,
     String? imdbScore,
     String? imdbScoreId,
     int? doubanScore,
@@ -348,8 +366,8 @@ extension VideoDetailDataExtension on VideoDetailData {
     String? playUrl,
     int? playUrlPutIn,
     int? collectionId,
-    dynamic up,
-    dynamic down,
+    int? up,
+    int? down,
     String? collectionName,
   }) {
     return VideoDetailData()
@@ -360,6 +378,9 @@ extension VideoDetailDataExtension on VideoDetailData {
       ..createUserId = createUserId ?? this.createUserId
       ..updateUserId = updateUserId ?? this.updateUserId
       ..title = title ?? this.title
+      ..subTitle = subTitle ?? this.subTitle
+      ..videoTag = videoTag ?? this.videoTag
+      ..videoClass = videoClass ?? this.videoClass
       ..categoryId = categoryId ?? this.categoryId
       ..categoryPid = categoryPid ?? this.categoryPid
       ..surfacePlot = surfacePlot ?? this.surfacePlot

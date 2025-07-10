@@ -33,6 +33,12 @@ class VideoDetailData {
   dynamic createUserId;
   dynamic updateUserId;
   String? title;
+  @JSONField(name: 'sub_title')
+  String? subTitle;
+  @JSONField(name: 'video_tag')
+  dynamic videoTag;
+  @JSONField(name: 'video_class')
+  dynamic videoClass;
   @JSONField(name: 'category_id')
   int? categoryId;
   @JSONField(name: 'category_pid')
@@ -42,8 +48,8 @@ class VideoDetailData {
   String? cycle;
   @JSONField(name: 'cycle_img')
   dynamic cycleImg;
-  dynamic directors;
-  dynamic actors;
+  String? directors;
+  String? actors;
   @JSONField(name: 'imdb_score')
   String? imdbScore;
   @JSONField(name: 'imdb_score_id')
@@ -88,8 +94,8 @@ class VideoDetailData {
   int? playUrlPutIn;
   @JSONField(name: 'collection_id')
   int? collectionId;
-  dynamic up;
-  dynamic down;
+  int? up;
+  int? down;
   @JSONField(name: 'collection_name')
   String? collectionName;
 

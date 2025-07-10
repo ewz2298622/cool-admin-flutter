@@ -110,6 +110,12 @@ class VideoPageDataList {
   int? down;
   String? popularity;
   String? pubdate;
+  @JSONField(name: 'sub_title')
+  String? subTitle;
+  @JSONField(name: 'video_tag')
+  dynamic videoTag;
+  @JSONField(name: 'video_class')
+  dynamic videoClass;
 
   VideoPageDataList();
 

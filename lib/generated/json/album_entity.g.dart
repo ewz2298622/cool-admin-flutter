@@ -88,7 +88,7 @@ AlbumDataList $AlbumDataListFromJson(Map<String, dynamic> json) {
   if (tenantId != null) {
     albumDataList.tenantId = tenantId;
   }
-  final dynamic createUserId = json['createUserId'];
+  final int? createUserId = jsonConvert.convert<int>(json['createUserId']);
   if (createUserId != null) {
     albumDataList.createUserId = createUserId;
   }
@@ -200,7 +200,7 @@ extension AlbumDataListExtension on AlbumDataList {
     String? createTime,
     String? updateTime,
     dynamic tenantId,
-    dynamic createUserId,
+    int? createUserId,
     dynamic updateUserId,
     String? title,
     dynamic name,
@@ -270,6 +270,18 @@ AlbumDataListList $AlbumDataListListFromJson(Map<String, dynamic> json) {
   final String? title = jsonConvert.convert<String>(json['title']);
   if (title != null) {
     albumDataListList.title = title;
+  }
+  final String? subTitle = jsonConvert.convert<String>(json['sub_title']);
+  if (subTitle != null) {
+    albumDataListList.subTitle = subTitle;
+  }
+  final String? videoTag = jsonConvert.convert<String>(json['video_tag']);
+  if (videoTag != null) {
+    albumDataListList.videoTag = videoTag;
+  }
+  final String? videoClass = jsonConvert.convert<String>(json['video_class']);
+  if (videoClass != null) {
+    albumDataListList.videoClass = videoClass;
   }
   final int? categoryId = jsonConvert.convert<int>(json['category_id']);
   if (categoryId != null) {
@@ -459,6 +471,9 @@ Map<String, dynamic> $AlbumDataListListToJson(AlbumDataListList entity) {
   data['createUserId'] = entity.createUserId;
   data['updateUserId'] = entity.updateUserId;
   data['title'] = entity.title;
+  data['sub_title'] = entity.subTitle;
+  data['video_tag'] = entity.videoTag;
+  data['video_class'] = entity.videoClass;
   data['category_id'] = entity.categoryId;
   data['category_pid'] = entity.categoryPid;
   data['surface_plot'] = entity.surfacePlot;
@@ -511,6 +526,9 @@ extension AlbumDataListListExtension on AlbumDataListList {
     dynamic createUserId,
     dynamic updateUserId,
     String? title,
+    String? subTitle,
+    String? videoTag,
+    String? videoClass,
     int? categoryId,
     int? categoryPid,
     String? surfacePlot,
@@ -560,6 +578,9 @@ extension AlbumDataListListExtension on AlbumDataListList {
       ..createUserId = createUserId ?? this.createUserId
       ..updateUserId = updateUserId ?? this.updateUserId
       ..title = title ?? this.title
+      ..subTitle = subTitle ?? this.subTitle
+      ..videoTag = videoTag ?? this.videoTag
+      ..videoClass = videoClass ?? this.videoClass
       ..categoryId = categoryId ?? this.categoryId
       ..categoryPid = categoryPid ?? this.categoryPid
       ..surfacePlot = surfacePlot ?? this.surfacePlot
@@ -609,13 +630,13 @@ AlbumDataPagination $AlbumDataPaginationFromJson(Map<String, dynamic> json) {
   if (page != null) {
     albumDataPagination.page = page;
   }
-  final int? categoryId = jsonConvert.convert<int>(json['category_id']);
-  if (categoryId != null) {
-    albumDataPagination.categoryId = categoryId;
-  }
   final int? size = jsonConvert.convert<int>(json['size']);
   if (size != null) {
     albumDataPagination.size = size;
+  }
+  final int? categoryId = jsonConvert.convert<int>(json['category_id']);
+  if (categoryId != null) {
+    albumDataPagination.categoryId = categoryId;
   }
   final int? videoSize = jsonConvert.convert<int>(json['videoSize']);
   if (videoSize != null) {
@@ -631,8 +652,8 @@ AlbumDataPagination $AlbumDataPaginationFromJson(Map<String, dynamic> json) {
 Map<String, dynamic> $AlbumDataPaginationToJson(AlbumDataPagination entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['page'] = entity.page;
-  data['category_id'] = entity.categoryId;
   data['size'] = entity.size;
+  data['category_id'] = entity.categoryId;
   data['videoSize'] = entity.videoSize;
   data['videoPage'] = entity.videoPage;
   return data;
@@ -641,15 +662,15 @@ Map<String, dynamic> $AlbumDataPaginationToJson(AlbumDataPagination entity) {
 extension AlbumDataPaginationExtension on AlbumDataPagination {
   AlbumDataPagination copyWith({
     int? page,
-    int? categoryId,
     int? size,
+    int? categoryId,
     int? videoSize,
     int? videoPage,
   }) {
     return AlbumDataPagination()
       ..page = page ?? this.page
-      ..categoryId = categoryId ?? this.categoryId
       ..size = size ?? this.size
+      ..categoryId = categoryId ?? this.categoryId
       ..videoSize = videoSize ?? this.videoSize
       ..videoPage = videoPage ?? this.videoPage;
   }

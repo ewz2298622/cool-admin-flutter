@@ -12,7 +12,7 @@ class Video extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 120,
+      width: 130,
       height: 205,
       child: Column(
         children: [
@@ -20,12 +20,12 @@ class Video extends StatelessWidget {
             children: [
               TDImage(
                 fit: BoxFit.cover,
-                width: 120,
+                width: 130,
                 height: 180,
                 imgUrl: videoData.surfacePlot ?? "",
                 errorWidget: const TDImage(
                   fit: BoxFit.fill,
-                  width: 120,
+                  width: 130,
                   height: 180,
                   assetUrl: 'assets/images/loading.gif',
                 ),
@@ -49,7 +49,7 @@ class Video extends StatelessWidget {
       onTap: () => {_buildvideo_onClick(item.id ?? 0, context)},
       child: Container(
         width: 130,
-        height: 175,
+        height: 180,
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -64,19 +64,46 @@ class Video extends StatelessWidget {
     if (item?.remarks == null) {
       return Container();
     }
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(right: 4, top: 2),
-          padding: const EdgeInsets.only(top: 2, bottom: 2, left: 4, right: 4),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            color: const Color.fromRGBO(0, 0, 0, 0.302),
-          ),
-          child: Text(item?.remarks ?? '', style: _videoNoteTextStyle),
+    double doubanScore = item.doubanScore!.toDouble() / 100;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.only(right: 4, bottom: 3),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.transparent, // 顶部透明
+            Colors.black.withOpacity(0.7), // 底部黑色
+          ],
         ),
-      ],
+      ),
+      child: Row(
+        //右对齐
+        mainAxisAlignment: MainAxisAlignment.end,
+        spacing: 5,
+        children: [
+          Text(
+            item?.remarks ?? '',
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.white,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+          Text(
+            doubanScore.toString(),
+            textAlign: TextAlign.right,
+            style: const TextStyle(
+              fontSize: 10,
+              color: Color.fromRGBO(255, 102, 0, 1),
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -85,10 +112,10 @@ class Video extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Container(
-          margin: const EdgeInsets.only(right: 4, top: 2),
-          padding: const EdgeInsets.only(top: 2, bottom: 2, left: 4, right: 4),
+          padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          margin: EdgeInsets.only(right: 4, top: 4), // 调整内边距
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
+            borderRadius: BorderRadius.circular(3),
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -98,9 +125,15 @@ class Video extends StatelessWidget {
               ],
             ),
           ),
+          alignment: Alignment.center, // 关键：强制内容居中
           child: Text(
             VideoUtil.formatTag(item?.pubdate ?? ""),
-            style: _hdTagTextStyle,
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.white,
+              fontWeight: FontWeight.w400,
+              height: 1.0, // 关键：避免行高影响垂直对齐
+            ),
           ),
         ),
       ],
@@ -108,9 +141,11 @@ class Video extends StatelessWidget {
   }
 
   static const _hdTagTextStyle = TextStyle(
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.white,
-    fontWeight: FontWeight.w400,
+    fontWeight: FontWeight.w100,
+    //文字垂直居中
+    textBaseline: TextBaseline.ideographic,
   );
 
   static const _videoNoteTextStyle = TextStyle(
@@ -191,7 +226,7 @@ class VideoThree extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
-          children: [_buildVideoItemHDTag(item), _buildVideoItemNote(item)],
+          children: [_buildVideoItemHDTag(item)],
         ),
       ),
     );
@@ -205,13 +240,23 @@ class VideoThree extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Container(
+          //继承父级的宽度
+          width: double.infinity,
           margin: const EdgeInsets.only(right: 4, top: 2),
           padding: const EdgeInsets.only(top: 2, bottom: 2, left: 4, right: 4),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
-            color: const Color.fromRGBO(0, 0, 0, 0.302),
+            color: Colors.red,
           ),
-          child: Text(item?.remarks ?? '', style: _videoNoteTextStyle),
+          child: Text(
+            item?.remarks ?? '',
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.white,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
         ),
       ],
     );
@@ -246,12 +291,6 @@ class VideoThree extends StatelessWidget {
 
   static const _hdTagTextStyle = TextStyle(
     fontSize: 11,
-    color: Colors.white,
-    fontWeight: FontWeight.w400,
-  );
-
-  static const _videoNoteTextStyle = TextStyle(
-    fontSize: 10,
     color: Colors.white,
     fontWeight: FontWeight.w400,
   );

@@ -1,5 +1,5 @@
-import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 import 'package:flutter_app/entity/video_sort_entity.dart';
+import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 
 VideoSortEntity $VideoSortEntityFromJson(Map<String, dynamic> json) {
   final VideoSortEntity videoSortEntity = VideoSortEntity();
@@ -27,11 +27,7 @@ Map<String, dynamic> $VideoSortEntityToJson(VideoSortEntity entity) {
 }
 
 extension VideoSortEntityExtension on VideoSortEntity {
-  VideoSortEntity copyWith({
-    int? code,
-    String? message,
-    VideoSortData? data,
-  }) {
+  VideoSortEntity copyWith({int? code, String? message, VideoSortData? data}) {
     return VideoSortEntity()
       ..code = code ?? this.code
       ..message = message ?? this.message
@@ -41,15 +37,18 @@ extension VideoSortEntityExtension on VideoSortEntity {
 
 VideoSortData $VideoSortDataFromJson(Map<String, dynamic> json) {
   final VideoSortData videoSortData = VideoSortData();
-  final List<VideoSortDataList>? list = (json['list'] as List<dynamic>?)
-      ?.map(
-          (e) => jsonConvert.convert<VideoSortDataList>(e) as VideoSortDataList)
-      .toList();
+  final List<VideoSortDataList>? list =
+      (json['list'] as List<dynamic>?)
+          ?.map(
+            (e) =>
+                jsonConvert.convert<VideoSortDataList>(e) as VideoSortDataList,
+          )
+          .toList();
   if (list != null) {
     videoSortData.list = list;
   }
-  final VideoSortDataPagination? pagination = jsonConvert.convert<
-      VideoSortDataPagination>(json['pagination']);
+  final VideoSortDataPagination? pagination = jsonConvert
+      .convert<VideoSortDataPagination>(json['pagination']);
   if (pagination != null) {
     videoSortData.pagination = pagination;
   }
@@ -88,6 +87,10 @@ VideoSortDataList $VideoSortDataListFromJson(Map<String, dynamic> json) {
   if (updateTime != null) {
     videoSortDataList.updateTime = updateTime;
   }
+  final dynamic tenantId = json['tenantId'];
+  if (tenantId != null) {
+    videoSortDataList.tenantId = tenantId;
+  }
   final dynamic createUserId = json['createUserId'];
   if (createUserId != null) {
     videoSortDataList.createUserId = createUserId;
@@ -100,43 +103,17 @@ VideoSortDataList $VideoSortDataListFromJson(Map<String, dynamic> json) {
   if (title != null) {
     videoSortDataList.title = title;
   }
-  final String? categoryPid = jsonConvert.convert<String>(json['category_pid']);
-  if (categoryPid != null) {
-    videoSortDataList.categoryPid = categoryPid;
-  }
-  final String? categoryChildId = jsonConvert.convert<String>(
-      json['category_child_id']);
-  if (categoryChildId != null) {
-    videoSortDataList.categoryChildId = categoryChildId;
-  }
   final String? surfacePlot = jsonConvert.convert<String>(json['surface_plot']);
   if (surfacePlot != null) {
     videoSortDataList.surfacePlot = surfacePlot;
-  }
-  final String? recommend = jsonConvert.convert<String>(json['recommend']);
-  if (recommend != null) {
-    videoSortDataList.recommend = recommend;
   }
   final String? cycle = jsonConvert.convert<String>(json['cycle']);
   if (cycle != null) {
     videoSortDataList.cycle = cycle;
   }
-  final String? cycleImg = jsonConvert.convert<String>(json['cycle_img']);
+  final dynamic cycleImg = json['cycle_img'];
   if (cycleImg != null) {
     videoSortDataList.cycleImg = cycleImg;
-  }
-  final String? chargingMode = jsonConvert.convert<String>(
-      json['charging_mode']);
-  if (chargingMode != null) {
-    videoSortDataList.chargingMode = chargingMode;
-  }
-  final String? buyMode = jsonConvert.convert<String>(json['buy_mode']);
-  if (buyMode != null) {
-    videoSortDataList.buyMode = buyMode;
-  }
-  final String? gold = jsonConvert.convert<String>(json['gold']);
-  if (gold != null) {
-    videoSortDataList.gold = gold;
   }
   final String? directors = jsonConvert.convert<String>(json['directors']);
   if (directors != null) {
@@ -151,7 +128,8 @@ VideoSortDataList $VideoSortDataListFromJson(Map<String, dynamic> json) {
     videoSortDataList.imdbScore = imdbScore;
   }
   final String? imdbScoreId = jsonConvert.convert<String>(
-      json['imdb_score_id']);
+    json['imdb_score_id'],
+  );
   if (imdbScoreId != null) {
     videoSortDataList.imdbScoreId = imdbScoreId;
   }
@@ -160,7 +138,8 @@ VideoSortDataList $VideoSortDataListFromJson(Map<String, dynamic> json) {
     videoSortDataList.doubanScore = doubanScore;
   }
   final String? doubanScoreId = jsonConvert.convert<String>(
-      json['douban_score_id']);
+    json['douban_score_id'],
+  );
   if (doubanScoreId != null) {
     videoSortDataList.doubanScoreId = doubanScoreId;
   }
@@ -169,64 +148,40 @@ VideoSortDataList $VideoSortDataListFromJson(Map<String, dynamic> json) {
     videoSortDataList.introduce = introduce;
   }
   final String? popularityDay = jsonConvert.convert<String>(
-      json['popularity_day']);
+    json['popularity_day'],
+  );
   if (popularityDay != null) {
     videoSortDataList.popularityDay = popularityDay;
   }
   final String? popularityWeek = jsonConvert.convert<String>(
-      json['popularity_week']);
+    json['popularity_week'],
+  );
   if (popularityWeek != null) {
     videoSortDataList.popularityWeek = popularityWeek;
   }
   final String? popularityMonth = jsonConvert.convert<String>(
-      json['popularity_month']);
+    json['popularity_month'],
+  );
   if (popularityMonth != null) {
     videoSortDataList.popularityMonth = popularityMonth;
   }
   final String? popularitySum = jsonConvert.convert<String>(
-      json['popularity_sum']);
+    json['popularity_sum'],
+  );
   if (popularitySum != null) {
     videoSortDataList.popularitySum = popularitySum;
   }
-  final String? note = jsonConvert.convert<String>(json['note']);
+  final dynamic note = json['note'];
   if (note != null) {
     videoSortDataList.note = note;
-  }
-  final String? year = jsonConvert.convert<String>(json['year']);
-  if (year != null) {
-    videoSortDataList.year = year;
-  }
-  final int? albumId = jsonConvert.convert<int>(json['album_id']);
-  if (albumId != null) {
-    videoSortDataList.albumId = albumId;
   }
   final String? status = jsonConvert.convert<String>(json['status']);
   if (status != null) {
     videoSortDataList.status = status;
   }
-  final String? createAt = jsonConvert.convert<String>(json['create_at']);
-  if (createAt != null) {
-    videoSortDataList.createAt = createAt;
-  }
-  final String? updateAt = jsonConvert.convert<String>(json['update_at']);
-  if (updateAt != null) {
-    videoSortDataList.updateAt = updateAt;
-  }
-  final String? duration = jsonConvert.convert<String>(json['duration']);
+  final dynamic duration = json['duration'];
   if (duration != null) {
     videoSortDataList.duration = duration;
-  }
-  final String? region = jsonConvert.convert<String>(json['region']);
-  if (region != null) {
-    videoSortDataList.region = region;
-  }
-  final String? language = jsonConvert.convert<String>(json['language']);
-  if (language != null) {
-    videoSortDataList.language = language;
-  }
-  final String? label = jsonConvert.convert<String>(json['label']);
-  if (label != null) {
-    videoSortDataList.label = label;
   }
   final String? number = jsonConvert.convert<String>(json['number']);
   if (number != null) {
@@ -237,86 +192,34 @@ VideoSortDataList $VideoSortDataListFromJson(Map<String, dynamic> json) {
     videoSortDataList.total = total;
   }
   final String? horizontalPoster = jsonConvert.convert<String>(
-      json['horizontal_poster']);
+    json['horizontal_poster'],
+  );
   if (horizontalPoster != null) {
     videoSortDataList.horizontalPoster = horizontalPoster;
   }
-  final String? verticalPoster = jsonConvert.convert<String>(
-      json['vertical_poster']);
+  final dynamic verticalPoster = json['vertical_poster'];
   if (verticalPoster != null) {
     videoSortDataList.verticalPoster = verticalPoster;
   }
-  final String? publish = jsonConvert.convert<String>(json['publish']);
+  final dynamic publish = json['publish'];
   if (publish != null) {
     videoSortDataList.publish = publish;
   }
-  final String? serialNumber = jsonConvert.convert<String>(
-      json['serial_number']);
+  final dynamic serialNumber = json['serial_number'];
   if (serialNumber != null) {
     videoSortDataList.serialNumber = serialNumber;
   }
-  final String? screenshot = jsonConvert.convert<String>(json['screenshot']);
+  final dynamic screenshot = json['screenshot'];
   if (screenshot != null) {
     videoSortDataList.screenshot = screenshot;
-  }
-  final String? gif = jsonConvert.convert<String>(json['gif']);
-  if (gif != null) {
-    videoSortDataList.gif = gif;
-  }
-  final String? alias = jsonConvert.convert<String>(json['alias']);
-  if (alias != null) {
-    videoSortDataList.alias = alias;
-  }
-  final String? releaseAt = jsonConvert.convert<String>(json['release_at']);
-  if (releaseAt != null) {
-    videoSortDataList.releaseAt = releaseAt;
-  }
-  final String? shelfAt = jsonConvert.convert<String>(json['shelf_at']);
-  if (shelfAt != null) {
-    videoSortDataList.shelfAt = shelfAt;
   }
   final int? end = jsonConvert.convert<int>(json['end']);
   if (end != null) {
     videoSortDataList.end = end;
   }
-  final String? unit = jsonConvert.convert<String>(json['unit']);
+  final dynamic unit = json['unit'];
   if (unit != null) {
     videoSortDataList.unit = unit;
-  }
-  final String? watch = jsonConvert.convert<String>(json['watch']);
-  if (watch != null) {
-    videoSortDataList.watch = watch;
-  }
-  final String? collectionId = jsonConvert.convert<String>(
-      json['collection_id']);
-  if (collectionId != null) {
-    videoSortDataList.collectionId = collectionId;
-  }
-  final dynamic useLocalImage = json['use_local_image'];
-  if (useLocalImage != null) {
-    videoSortDataList.useLocalImage = useLocalImage;
-  }
-  final int? titlesTime = jsonConvert.convert<int>(json['titles_time']);
-  if (titlesTime != null) {
-    videoSortDataList.titlesTime = titlesTime;
-  }
-  final int? trailerTime = jsonConvert.convert<int>(json['trailer_time']);
-  if (trailerTime != null) {
-    videoSortDataList.trailerTime = trailerTime;
-  }
-  final int? siteId = jsonConvert.convert<int>(json['site_id']);
-  if (siteId != null) {
-    videoSortDataList.siteId = siteId;
-  }
-  final int? categoryPidStatus = jsonConvert.convert<int>(
-      json['category_pid_status']);
-  if (categoryPidStatus != null) {
-    videoSortDataList.categoryPidStatus = categoryPidStatus;
-  }
-  final int? categoryChildIdStatus = jsonConvert.convert<int>(
-      json['category_child_id_status']);
-  if (categoryChildIdStatus != null) {
-    videoSortDataList.categoryChildIdStatus = categoryChildIdStatus;
   }
   final String? playUrl = jsonConvert.convert<String>(json['play_url']);
   if (playUrl != null) {
@@ -326,6 +229,68 @@ VideoSortDataList $VideoSortDataListFromJson(Map<String, dynamic> json) {
   if (playUrlPutIn != null) {
     videoSortDataList.playUrlPutIn = playUrlPutIn;
   }
+  final int? categoryId = jsonConvert.convert<int>(json['category_id']);
+  if (categoryId != null) {
+    videoSortDataList.categoryId = categoryId;
+  }
+  final int? region = jsonConvert.convert<int>(json['region']);
+  if (region != null) {
+    videoSortDataList.region = region;
+  }
+  final int? language = jsonConvert.convert<int>(json['language']);
+  if (language != null) {
+    videoSortDataList.language = language;
+  }
+  final int? collectionId = jsonConvert.convert<int>(json['collection_id']);
+  if (collectionId != null) {
+    videoSortDataList.collectionId = collectionId;
+  }
+  final String? collectionName = jsonConvert.convert<String>(
+    json['collection_name'],
+  );
+  if (collectionName != null) {
+    videoSortDataList.collectionName = collectionName;
+  }
+  final String? remarks = jsonConvert.convert<String>(json['remarks']);
+  if (remarks != null) {
+    videoSortDataList.remarks = remarks;
+  }
+  final int? year = jsonConvert.convert<int>(json['year']);
+  if (year != null) {
+    videoSortDataList.year = year;
+  }
+  final int? categoryPid = jsonConvert.convert<int>(json['category_pid']);
+  if (categoryPid != null) {
+    videoSortDataList.categoryPid = categoryPid;
+  }
+  final int? up = jsonConvert.convert<int>(json['up']);
+  if (up != null) {
+    videoSortDataList.up = up;
+  }
+  final int? down = jsonConvert.convert<int>(json['down']);
+  if (down != null) {
+    videoSortDataList.down = down;
+  }
+  final String? popularity = jsonConvert.convert<String>(json['popularity']);
+  if (popularity != null) {
+    videoSortDataList.popularity = popularity;
+  }
+  final String? pubdate = jsonConvert.convert<String>(json['pubdate']);
+  if (pubdate != null) {
+    videoSortDataList.pubdate = pubdate;
+  }
+  final String? subTitle = jsonConvert.convert<String>(json['sub_title']);
+  if (subTitle != null) {
+    videoSortDataList.subTitle = subTitle;
+  }
+  final dynamic videoTag = json['video_tag'];
+  if (videoTag != null) {
+    videoSortDataList.videoTag = videoTag;
+  }
+  final dynamic videoClass = json['video_class'];
+  if (videoClass != null) {
+    videoSortDataList.videoClass = videoClass;
+  }
   return videoSortDataList;
 }
 
@@ -334,18 +299,13 @@ Map<String, dynamic> $VideoSortDataListToJson(VideoSortDataList entity) {
   data['id'] = entity.id;
   data['createTime'] = entity.createTime;
   data['updateTime'] = entity.updateTime;
+  data['tenantId'] = entity.tenantId;
   data['createUserId'] = entity.createUserId;
   data['updateUserId'] = entity.updateUserId;
   data['title'] = entity.title;
-  data['category_pid'] = entity.categoryPid;
-  data['category_child_id'] = entity.categoryChildId;
   data['surface_plot'] = entity.surfacePlot;
-  data['recommend'] = entity.recommend;
   data['cycle'] = entity.cycle;
   data['cycle_img'] = entity.cycleImg;
-  data['charging_mode'] = entity.chargingMode;
-  data['buy_mode'] = entity.buyMode;
-  data['gold'] = entity.gold;
   data['directors'] = entity.directors;
   data['actors'] = entity.actors;
   data['imdb_score'] = entity.imdbScore;
@@ -358,15 +318,8 @@ Map<String, dynamic> $VideoSortDataListToJson(VideoSortDataList entity) {
   data['popularity_month'] = entity.popularityMonth;
   data['popularity_sum'] = entity.popularitySum;
   data['note'] = entity.note;
-  data['year'] = entity.year;
-  data['album_id'] = entity.albumId;
   data['status'] = entity.status;
-  data['create_at'] = entity.createAt;
-  data['update_at'] = entity.updateAt;
   data['duration'] = entity.duration;
-  data['region'] = entity.region;
-  data['language'] = entity.language;
-  data['label'] = entity.label;
   data['number'] = entity.number;
   data['total'] = entity.total;
   data['horizontal_poster'] = entity.horizontalPoster;
@@ -374,22 +327,25 @@ Map<String, dynamic> $VideoSortDataListToJson(VideoSortDataList entity) {
   data['publish'] = entity.publish;
   data['serial_number'] = entity.serialNumber;
   data['screenshot'] = entity.screenshot;
-  data['gif'] = entity.gif;
-  data['alias'] = entity.alias;
-  data['release_at'] = entity.releaseAt;
-  data['shelf_at'] = entity.shelfAt;
   data['end'] = entity.end;
   data['unit'] = entity.unit;
-  data['watch'] = entity.watch;
-  data['collection_id'] = entity.collectionId;
-  data['use_local_image'] = entity.useLocalImage;
-  data['titles_time'] = entity.titlesTime;
-  data['trailer_time'] = entity.trailerTime;
-  data['site_id'] = entity.siteId;
-  data['category_pid_status'] = entity.categoryPidStatus;
-  data['category_child_id_status'] = entity.categoryChildIdStatus;
   data['play_url'] = entity.playUrl;
   data['play_url_put_in'] = entity.playUrlPutIn;
+  data['category_id'] = entity.categoryId;
+  data['region'] = entity.region;
+  data['language'] = entity.language;
+  data['collection_id'] = entity.collectionId;
+  data['collection_name'] = entity.collectionName;
+  data['remarks'] = entity.remarks;
+  data['year'] = entity.year;
+  data['category_pid'] = entity.categoryPid;
+  data['up'] = entity.up;
+  data['down'] = entity.down;
+  data['popularity'] = entity.popularity;
+  data['pubdate'] = entity.pubdate;
+  data['sub_title'] = entity.subTitle;
+  data['video_tag'] = entity.videoTag;
+  data['video_class'] = entity.videoClass;
   return data;
 }
 
@@ -398,18 +354,13 @@ extension VideoSortDataListExtension on VideoSortDataList {
     int? id,
     String? createTime,
     String? updateTime,
+    dynamic tenantId,
     dynamic createUserId,
     dynamic updateUserId,
     String? title,
-    String? categoryPid,
-    String? categoryChildId,
     String? surfacePlot,
-    String? recommend,
     String? cycle,
-    String? cycleImg,
-    String? chargingMode,
-    String? buyMode,
-    String? gold,
+    dynamic cycleImg,
     String? directors,
     String? actors,
     String? imdbScore,
@@ -421,56 +372,47 @@ extension VideoSortDataListExtension on VideoSortDataList {
     String? popularityWeek,
     String? popularityMonth,
     String? popularitySum,
-    String? note,
-    String? year,
-    int? albumId,
+    dynamic note,
     String? status,
-    String? createAt,
-    String? updateAt,
-    String? duration,
-    String? region,
-    String? language,
-    String? label,
+    dynamic duration,
     String? number,
     String? total,
     String? horizontalPoster,
-    String? verticalPoster,
-    String? publish,
-    String? serialNumber,
-    String? screenshot,
-    String? gif,
-    String? alias,
-    String? releaseAt,
-    String? shelfAt,
+    dynamic verticalPoster,
+    dynamic publish,
+    dynamic serialNumber,
+    dynamic screenshot,
     int? end,
-    String? unit,
-    String? watch,
-    String? collectionId,
-    dynamic useLocalImage,
-    int? titlesTime,
-    int? trailerTime,
-    int? siteId,
-    int? categoryPidStatus,
-    int? categoryChildIdStatus,
+    dynamic unit,
     String? playUrl,
     int? playUrlPutIn,
+    int? categoryId,
+    int? region,
+    int? language,
+    int? collectionId,
+    String? collectionName,
+    String? remarks,
+    int? year,
+    int? categoryPid,
+    int? up,
+    int? down,
+    String? popularity,
+    String? pubdate,
+    String? subTitle,
+    dynamic videoTag,
+    dynamic videoClass,
   }) {
     return VideoSortDataList()
       ..id = id ?? this.id
       ..createTime = createTime ?? this.createTime
       ..updateTime = updateTime ?? this.updateTime
+      ..tenantId = tenantId ?? this.tenantId
       ..createUserId = createUserId ?? this.createUserId
       ..updateUserId = updateUserId ?? this.updateUserId
       ..title = title ?? this.title
-      ..categoryPid = categoryPid ?? this.categoryPid
-      ..categoryChildId = categoryChildId ?? this.categoryChildId
       ..surfacePlot = surfacePlot ?? this.surfacePlot
-      ..recommend = recommend ?? this.recommend
       ..cycle = cycle ?? this.cycle
       ..cycleImg = cycleImg ?? this.cycleImg
-      ..chargingMode = chargingMode ?? this.chargingMode
-      ..buyMode = buyMode ?? this.buyMode
-      ..gold = gold ?? this.gold
       ..directors = directors ?? this.directors
       ..actors = actors ?? this.actors
       ..imdbScore = imdbScore ?? this.imdbScore
@@ -483,15 +425,8 @@ extension VideoSortDataListExtension on VideoSortDataList {
       ..popularityMonth = popularityMonth ?? this.popularityMonth
       ..popularitySum = popularitySum ?? this.popularitySum
       ..note = note ?? this.note
-      ..year = year ?? this.year
-      ..albumId = albumId ?? this.albumId
       ..status = status ?? this.status
-      ..createAt = createAt ?? this.createAt
-      ..updateAt = updateAt ?? this.updateAt
       ..duration = duration ?? this.duration
-      ..region = region ?? this.region
-      ..language = language ?? this.language
-      ..label = label ?? this.label
       ..number = number ?? this.number
       ..total = total ?? this.total
       ..horizontalPoster = horizontalPoster ?? this.horizontalPoster
@@ -499,29 +434,33 @@ extension VideoSortDataListExtension on VideoSortDataList {
       ..publish = publish ?? this.publish
       ..serialNumber = serialNumber ?? this.serialNumber
       ..screenshot = screenshot ?? this.screenshot
-      ..gif = gif ?? this.gif
-      ..alias = alias ?? this.alias
-      ..releaseAt = releaseAt ?? this.releaseAt
-      ..shelfAt = shelfAt ?? this.shelfAt
       ..end = end ?? this.end
       ..unit = unit ?? this.unit
-      ..watch = watch ?? this.watch
-      ..collectionId = collectionId ?? this.collectionId
-      ..useLocalImage = useLocalImage ?? this.useLocalImage
-      ..titlesTime = titlesTime ?? this.titlesTime
-      ..trailerTime = trailerTime ?? this.trailerTime
-      ..siteId = siteId ?? this.siteId
-      ..categoryPidStatus = categoryPidStatus ?? this.categoryPidStatus
-      ..categoryChildIdStatus = categoryChildIdStatus ??
-          this.categoryChildIdStatus
       ..playUrl = playUrl ?? this.playUrl
-      ..playUrlPutIn = playUrlPutIn ?? this.playUrlPutIn;
+      ..playUrlPutIn = playUrlPutIn ?? this.playUrlPutIn
+      ..categoryId = categoryId ?? this.categoryId
+      ..region = region ?? this.region
+      ..language = language ?? this.language
+      ..collectionId = collectionId ?? this.collectionId
+      ..collectionName = collectionName ?? this.collectionName
+      ..remarks = remarks ?? this.remarks
+      ..year = year ?? this.year
+      ..categoryPid = categoryPid ?? this.categoryPid
+      ..up = up ?? this.up
+      ..down = down ?? this.down
+      ..popularity = popularity ?? this.popularity
+      ..pubdate = pubdate ?? this.pubdate
+      ..subTitle = subTitle ?? this.subTitle
+      ..videoTag = videoTag ?? this.videoTag
+      ..videoClass = videoClass ?? this.videoClass;
   }
 }
 
 VideoSortDataPagination $VideoSortDataPaginationFromJson(
-    Map<String, dynamic> json) {
-  final VideoSortDataPagination videoSortDataPagination = VideoSortDataPagination();
+  Map<String, dynamic> json,
+) {
+  final VideoSortDataPagination videoSortDataPagination =
+      VideoSortDataPagination();
   final int? page = jsonConvert.convert<int>(json['page']);
   if (page != null) {
     videoSortDataPagination.page = page;
@@ -538,7 +477,8 @@ VideoSortDataPagination $VideoSortDataPaginationFromJson(
 }
 
 Map<String, dynamic> $VideoSortDataPaginationToJson(
-    VideoSortDataPagination entity) {
+  VideoSortDataPagination entity,
+) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['page'] = entity.page;
   data['size'] = entity.size;
@@ -547,11 +487,7 @@ Map<String, dynamic> $VideoSortDataPaginationToJson(
 }
 
 extension VideoSortDataPaginationExtension on VideoSortDataPagination {
-  VideoSortDataPagination copyWith({
-    int? page,
-    int? size,
-    int? total,
-  }) {
+  VideoSortDataPagination copyWith({int? page, int? size, int? total}) {
     return VideoSortDataPagination()
       ..page = page ?? this.page
       ..size = size ?? this.size

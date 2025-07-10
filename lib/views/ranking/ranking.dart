@@ -201,6 +201,14 @@ class VideoRankingState extends State<VideoRanking>
           showIndicator: false,
           dividerHeight: 0,
           height: 40,
+          unselectedLabelStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+          ),
+          labelStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+          ),
           labelColor: const Color.fromRGBO(252, 119, 66, 1),
           unselectedLabelColor: const Color.fromRGBO(102, 102, 102, 1),
           labelPadding: const EdgeInsets.only(left: 16, right: 16),

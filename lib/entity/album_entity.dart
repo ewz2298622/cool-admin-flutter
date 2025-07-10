@@ -48,7 +48,7 @@ class AlbumDataList {
   String? createTime;
   String? updateTime;
   dynamic tenantId;
-  dynamic createUserId;
+  int? createUserId;
   dynamic updateUserId;
   String? title;
   dynamic name;
@@ -93,6 +93,12 @@ class AlbumDataListList {
   dynamic createUserId;
   dynamic updateUserId;
   String? title;
+  @JSONField(name: 'sub_title')
+  String? subTitle;
+  @JSONField(name: 'video_tag')
+  String? videoTag;
+  @JSONField(name: 'video_class')
+  String? videoClass;
   @JSONField(name: 'category_id')
   int? categoryId;
   @JSONField(name: 'category_pid')
@@ -169,9 +175,9 @@ class AlbumDataListList {
 @JsonSerializable()
 class AlbumDataPagination {
   int? page;
+  int? size;
   @JSONField(name: 'category_id')
   int? categoryId;
-  int? size;
   int? videoSize;
   int? videoPage;
 
