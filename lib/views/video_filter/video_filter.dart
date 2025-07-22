@@ -229,7 +229,8 @@ class VideoFilterState extends State<VideoFilter>
                               key == item.id
                                   ? const Color.fromRGBO(244, 244, 244, 1)
                                   : Colors.transparent,
-                          isOutline: false,
+                          isOutline: true,
+                          style: TDTagStyle(borderColor: Colors.transparent),
                         ),
                         onTap: () => _category_change(item),
                       ),
@@ -272,7 +273,8 @@ class VideoFilterState extends State<VideoFilter>
                               key == item.id
                                   ? const Color.fromRGBO(244, 244, 244, 1)
                                   : Colors.transparent,
-                          isOutline: false,
+                          isOutline: true,
+                          style: TDTagStyle(borderColor: Colors.transparent),
                         ),
                         onTap: () => _area_change(item),
                       ),
@@ -312,7 +314,8 @@ class VideoFilterState extends State<VideoFilter>
                               : Colors.transparent,
                       shape: TDTagShape.round,
                       size: TDTagSize.large,
-                      isOutline: false,
+                      isOutline: true,
+                      style: TDTagStyle(borderColor: Colors.transparent),
                     ),
                     onTap: () => _year_change(item),
                   ),

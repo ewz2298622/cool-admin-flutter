@@ -1,5 +1,6 @@
 import 'package:flutter_app/entity/swiper_entity.dart';
-import 'package:flutter_app/generated/json/base/json_convert_content.dart';
+
+import 'base/json_convert_content.dart';
 
 SwiperEntity $SwiperEntityFromJson(Map<String, dynamic> json) {
   final SwiperEntity swiperEntity = SwiperEntity();

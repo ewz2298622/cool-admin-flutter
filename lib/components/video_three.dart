@@ -87,6 +87,8 @@ class Video extends StatelessWidget {
           Text(
             item?.remarks ?? '',
             textAlign: TextAlign.right,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 10,
               color: Colors.white,
@@ -96,6 +98,8 @@ class Video extends StatelessWidget {
           Text(
             doubanScore.toString(),
             textAlign: TextAlign.right,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontSize: 10,
               color: Color.fromRGBO(255, 102, 0, 1),
@@ -140,20 +144,6 @@ class Video extends StatelessWidget {
     );
   }
 
-  static const _hdTagTextStyle = TextStyle(
-    fontSize: 10,
-    color: Colors.white,
-    fontWeight: FontWeight.w100,
-    //文字垂直居中
-    textBaseline: TextBaseline.ideographic,
-  );
-
-  static const _videoNoteTextStyle = TextStyle(
-    fontSize: 10,
-    color: Colors.white,
-    fontWeight: FontWeight.w400,
-  );
-
   void _buildvideo_onClick(int id, BuildContext context) {
     Navigator.push(
       context,
@@ -170,42 +160,22 @@ class VideoThree extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: (MediaQuery.of(context).size.width - 380) / 2,
-      runSpacing: 10,
-      children: List<Widget>.generate(videoPageData.length, (i) {
-        return SizedBox(
-          width: 120,
-          height: 205,
-          child: Column(
-            children: [
-              Stack(
-                children: [
-                  TDImage(
-                    fit: BoxFit.cover,
-                    width: 120,
-                    height: 180,
-                    imgUrl: videoPageData[i].surfacePlot ?? "",
-                    errorWidget: const TDImage(
-                      fit: BoxFit.fill,
-                      width: 120,
-                      height: 180,
-                      assetUrl: 'assets/images/loading.gif',
-                    ),
-                  ),
-                  _buildVideoItemOverlay(videoPageData[i], context),
-                ],
-              ),
-              Text(
-                videoPageData[i].title ?? "",
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-            ],
+    return GridView.builder(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 4.0,
+        mainAxisSpacing: 4.0,
+        childAspectRatio: 0.7,
+        mainAxisExtent: 205,
+      ),
+      itemBuilder:
+          (context, i) => GridTile(
+            child: Center(child: Video(videoData: videoPageData[i])),
           ),
-        );
-      }),
+      itemCount: videoPageData.length,
+      padding: EdgeInsets.zero, // 如果需要可以添加 padding
+      shrinkWrap: true, // 如果需要在可滚动组件中使用
+      physics: NeverScrollableScrollPhysics(), // 如果需要禁用滚动
     );
   }
 

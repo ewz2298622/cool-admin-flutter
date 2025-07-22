@@ -6,6 +6,7 @@ import '../entity/album_entity.dart';
 import '../entity/album_video_list_entity.dart';
 import '../entity/captcha_entity.dart';
 import '../entity/dict_info_list_entity.dart';
+import '../entity/live_info_entity.dart';
 import '../entity/notice_Info_entity.dart';
 import '../entity/play_line_entity.dart';
 import '../entity/swiper_entity.dart';
@@ -471,6 +472,20 @@ class Api {
         data: data,
       ); // 添加注释说明 ONE 的含义});
       return NoticeInfoEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //添加公告
+  static Future<LiveInfoEntity> liveInfo(Map<String, dynamic>? param) async {
+    try {
+      final response = await server.get(
+        "/app/video/live/info",
+        param: param,
+      ); // 添加注释说明 ONE 的含义});
+      return LiveInfoEntity.fromJson(response.data);
     } catch (error) {
       // 重新抛出异常以便上层处理
       rethrow;

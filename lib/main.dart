@@ -7,6 +7,7 @@ import 'package:flutter_app/utils/store/user/user.dart';
 import 'package:flutter_app/views/home/home.dart';
 import 'package:flutter_app/views/my/my.dart';
 import 'package:flutter_app/views/ranking/ranking.dart';
+import 'package:flutter_app/views/service/service.dart';
 import 'package:flutter_app/views/video_filter/video_filter.dart';
 import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -67,6 +68,7 @@ class _MainPageState extends State<MainPage> {
     const Home(),
     const VideoFilter(),
     const VideoRanking(),
+    const VideoService(),
     const My(), // 确保每次切换时重新创建My页面
   ];
   int _selectedIndex = 0;
@@ -116,6 +118,21 @@ class _MainPageState extends State<MainPage> {
               assetUrl: 'assets/images/4.png',
             ),
             label: '频道',
+          ),
+          BottomNavigationBarItem(
+            activeIcon: TDImage(
+              width: 25,
+              height: 25,
+              fit: BoxFit.cover,
+              assetUrl: 'assets/images/6.png',
+            ),
+            icon: TDImage(
+              width: 25,
+              height: 25,
+              fit: BoxFit.cover,
+              assetUrl: 'assets/images/5.png',
+            ),
+            label: '排行',
           ),
           BottomNavigationBarItem(
             activeIcon: TDImage(

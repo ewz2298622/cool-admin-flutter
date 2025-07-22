@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:chewie/chewie.dart';
 import 'package:dlna_dart/dlna.dart';
-import 'package:flustars/flustars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:fplayer/fplayer.dart';
@@ -47,8 +46,8 @@ class _Video_DetailState extends State<Video_Detail>
   VideoDetailData? videoData;
   List<VideoPageDataList> videoPageData = [];
   List<VideoPageDataList> selectVideoPageData = [];
-  List<VideoLineDataList>? videoLineData = [];
-  List<PlayLineDataList>? playerLineData = [];
+  List<VideoLineDataList> videoLineData = [];
+  List<PlayLineDataList> playerLineData = [];
   List<VideoItem> videoList = [];
   List<DictDataDataArea>? area = [];
   List<DictDataDataVideoCategory>? videoCategory = [];
@@ -189,15 +188,16 @@ class _Video_DetailState extends State<Video_Detail>
 
   Future<void> getPlayLinePages() async {
     try {
+      playerLineData.clear();
+      videoList.clear();
       playerLineData =
           (await Api.getPlayLinePages({
                 "video_id": widget.id,
-                "video_line_id": videoLineData?[currentLine.value].id,
+                "video_line_id": videoLineData[currentLine.value].id,
                 "size": 10000,
               })).data?.list
               as List<PlayLineDataList>;
-      LogUtil.d("getPlayLinePages", tag: TAG);
-      playerLineData?.forEach((element) {
+      for (var element in playerLineData) {
         videoList.add(
           VideoItem(
             url: element.file ?? "",
@@ -205,7 +205,7 @@ class _Video_DetailState extends State<Video_Detail>
             subTitle: element.subTitle ?? '',
           ),
         );
-      });
+      }
       debugPrint(
         'Initialization getPlayLinePages success "video_id": ${widget.id}"video_line_id": ${videoLineData?[currentLine.value].id}',
       );
@@ -230,7 +230,7 @@ class _Video_DetailState extends State<Video_Detail>
       await getVideoLinePages();
       await getPlayLinePages();
       await getVideoPages();
-      setVideoUrl(playerLineData?[currentPlay.value].file ?? "");
+      setVideoUrl(playerLineData[currentPlay.value].file ?? "");
       _currentPosSubs = player.onCurrentPosUpdate.listen((v) {
         setState(() {
           _currentPos = v;
@@ -478,8 +478,6 @@ class _Video_DetailState extends State<Video_Detail>
                 '选集',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-
-              ///Todo 更多按钮
               Row(
                 children: [
                   GestureDetector(
@@ -508,51 +506,44 @@ class _Video_DetailState extends State<Video_Detail>
             ],
           ),
           // 自定义小屏列表
-          SizedBox(
-            width: double.infinity,
-            height: 38,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.zero,
-              itemCount: videoList.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  width: 100,
-                  height: 38,
-                  alignment: Alignment.center,
-                  //设置border
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color:
-                          index == currentPlay.value
-                              ? Color.fromRGBO(241, 98, 16, 1)
-                              : Colors.transparent,
-                      width: index == currentPlay.value ? 1 : 0,
-                    ),
-                    //设置圆角
-                    borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                    color: Color.fromRGBO(247, 247, 247, 1),
-                    //水平居中
-                  ),
-                  child: GestureDetector(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          videoList[index].title,
-                          style: TextStyle(
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children:
+                  videoList.map((item) {
+                    int index = videoList.indexOf(item);
+                    return Padding(
+                      padding: EdgeInsets.only(right: 10), // 设置间隔为10
+                      child: Container(
+                        width: 100,
+                        height: 38,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          border: Border.all(
                             color:
                                 index == currentPlay.value
                                     ? Color.fromRGBO(241, 98, 16, 1)
-                                    : Colors.black,
+                                    : Colors.transparent,
+                            width: index == currentPlay.value ? 1 : 0,
                           ),
+                          borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                          color: Color.fromRGBO(247, 247, 247, 1),
                         ),
-                      ],
-                    ),
-                    onTap: () => _play_change(index),
-                  ),
-                );
-              },
+                        child: GestureDetector(
+                          child: Text(
+                            item.title,
+                            style: TextStyle(
+                              color:
+                                  index == currentPlay.value
+                                      ? Color.fromRGBO(241, 98, 16, 1)
+                                      : Colors.black,
+                            ),
+                          ),
+                          onTap: () => _play_change(index),
+                        ),
+                      ),
+                    );
+                  }).toList(),
             ),
           ),
         ],
@@ -834,15 +825,19 @@ class _Video_DetailState extends State<Video_Detail>
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    TDRate(
+                      value: (videoData?.doubanScore ?? 0).toDouble(),
+                      disabled: true,
+                    ),
                     Row(
                       spacing: 5,
                       children: [
                         Text(
-                          videoData?.videoClass ?? "",
+                          videoData?.videoClass ?? "暂无分类",
                           style: TextStyle(color: Colors.grey),
                         ),
                         Text(
-                          videoData?.videoTag ?? "",
+                          videoData?.videoTag ?? "暂无标签",
                           style: TextStyle(color: Colors.grey),
                         ),
                       ],
@@ -851,7 +846,7 @@ class _Video_DetailState extends State<Video_Detail>
                       spacing: 5,
                       children: [
                         TDTag(
-                          videoData?.year.toString() ?? "",
+                          videoData?.year.toString() ?? "暂无上映时间",
                           isLight: true,
                           theme: TDTagTheme.success,
                         ),
@@ -881,7 +876,6 @@ class _Video_DetailState extends State<Video_Detail>
                         ),
                       ],
                     ),
-                    TDRate(value: (videoData?.doubanScore ?? 0).toDouble()),
                   ],
                 ),
               ),

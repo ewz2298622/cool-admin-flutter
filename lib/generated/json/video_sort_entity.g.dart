@@ -1,5 +1,6 @@
 import 'package:flutter_app/entity/video_sort_entity.dart';
-import 'package:flutter_app/generated/json/base/json_convert_content.dart';
+
+import 'base/json_convert_content.dart';
 
 VideoSortEntity $VideoSortEntityFromJson(Map<String, dynamic> json) {
   final VideoSortEntity videoSortEntity = VideoSortEntity();
