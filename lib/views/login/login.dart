@@ -274,7 +274,7 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
               onTap: () {
                 String phone = controller[0].text;
                 String password = controller[1].text;
-                String code = controller[2].text;
+                String _ = controller[2].text;
                 if (phone.isEmpty || password.isEmpty) {
                   TDToast.showText('账号或密码不能为空', context: context);
                 } else {

@@ -38,7 +38,6 @@ class _LiveStreamPageState extends State<VideoService> {
           [] as List<DictInfoListData>;
     } catch (e) {
       // 捕获并处理异常
-      print('获取视频分类数据失败: $e');
     }
   }
 
@@ -56,7 +55,6 @@ class _LiveStreamPageState extends State<VideoService> {
       setState(() {});
     } catch (e) {
       // 捕获并处理异常
-      print('获取视频直播数据失败: $e');
     }
   }
 
@@ -67,7 +65,6 @@ class _LiveStreamPageState extends State<VideoService> {
       return "init success";
     } catch (e) {
       // 捕获并处理异常
-      print('Initialization failed: $e');
       return "init success";
     }
   }
@@ -217,19 +214,6 @@ class _LiveStreamPageState extends State<VideoService> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildDefaultSearchBar() {
-    return TDSearchBar(
-      placeHolder: '',
-      backgroundColor: Colors.transparent,
-      style: TDSearchStyle.round,
-      onTextChanged: (String text) {
-        keyWord = text;
-      },
-      // 防止键盘闪退问题
-      focusNode: FocusNode(),
     );
   }
 }

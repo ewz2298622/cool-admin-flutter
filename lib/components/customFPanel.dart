@@ -73,8 +73,6 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
   bool _hideStuff = true;
   bool _lockStuff = true;
 
-  double _volume = 1.0;
-
   final barHeight = 50.0;
 
   @override
@@ -170,15 +168,15 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
   @override
   void dispose() {
     super.dispose();
-    _hideTimer?.cancel();
+    _hideTimer.cancel();
 
     player.removeListener(_playerValueChanged);
-    _currentPosSubs?.cancel();
-    _bufferPosSubs?.cancel();
+    _currentPosSubs.cancel();
+    _bufferPosSubs.cancel();
   }
 
   void _startHideTimer() {
-    _hideTimer?.cancel();
+    _hideTimer.cancel();
     _hideTimer = Timer(const Duration(seconds: 3), () {
       setState(() {
         _hideStuff = true;
@@ -192,13 +190,6 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
     }
     setState(() {
       _hideStuff = !_hideStuff;
-    });
-  }
-
-  void _changePlayerLockState() {
-    setState(() {
-      _lockStuff = !_lockStuff;
-      _cancelAndRestartTimer();
     });
   }
 
@@ -271,7 +262,6 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
                       onChangeEnd: (v) {
                         setState(() {
                           player.seekTo(v.toInt());
-                          print("seek to $v");
                           _currentPos = Duration(
                             milliseconds: _seekPos.toInt(),
                           );
@@ -284,11 +274,11 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
 
             // 总播放时间
             _duration.inMilliseconds == 0
-                ? Container(child: const Text("LIVE"))
+                ? const Text("LIVE")
                 : Padding(
                   padding: EdgeInsets.only(right: 5.0, left: 5),
                   child: Text(
-                    '${_duration2String(_duration)}',
+                    _duration2String(_duration),
                     style: TextStyle(fontSize: 14.0, color: Colors.white),
                   ),
                 ),
@@ -438,51 +428,49 @@ class _CustomFijkPanelState extends State<CustomFijkPanel> {
                     onTap: () {
                       _cancelAndRestartTimer();
                     },
-                    child: Container(
-                      child: Stack(
-                        children: <Widget>[
-                          Align(
-                            alignment: Alignment.topCenter,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                // 显示快进时间的块
-                                _isTouch
-                                    ? Container(
-                                      height: 40,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(5),
-                                        ),
-                                        color: Color.fromRGBO(0, 0, 0, 0.8),
+                    child: Stack(
+                      children: <Widget>[
+                        Align(
+                          alignment: Alignment.topCenter,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // 显示快进时间的块
+                              _isTouch
+                                  ? Container(
+                                    height: 40,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(5),
                                       ),
-                                      child: Padding(
-                                        padding: EdgeInsets.only(
-                                          left: 10,
-                                          right: 10,
-                                        ),
-                                        child: Text(
-                                          '${_duration2String(_dargPos)}/${_duration2String(_duration)}',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                      color: Color.fromRGBO(0, 0, 0, 0.8),
+                                    ),
+                                    child: Padding(
+                                      padding: EdgeInsets.only(
+                                        left: 10,
+                                        right: 10,
+                                      ),
+                                      child: Text(
+                                        '${_duration2String(_dargPos)}/${_duration2String(_duration)}',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                    )
-                                    : Container(),
-                              ],
-                            ),
+                                    ),
+                                  )
+                                  : Container(),
+                            ],
                           ),
-                          // 中间按钮
-                          Align(
-                            alignment: Alignment.center,
-                            child: _buildCenterPlayBtn(),
-                          ),
-                        ],
-                      ),
+                        ),
+                        // 中间按钮
+                        Align(
+                          alignment: Alignment.center,
+                          child: _buildCenterPlayBtn(),
+                        ),
+                      ],
                     ),
                   ),
                 ),

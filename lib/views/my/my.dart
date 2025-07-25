@@ -46,7 +46,6 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
   List<NoticeInfoDataList>? noticeInfoData = [];
   StreamSubscription? subscription;
 
-  @override
   void didPopNext() {
     // 从目标页面返回时调用
     debugPrint('main dart didPopNext');
@@ -63,8 +62,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
     try {
       List<NoticeInfoDataList> list =
           (await Api.noticeInfo({"page": 1, "size": 1, "type": 640})).data?.list
-              as List<NoticeInfoDataList> ??
-          [];
+              as List<NoticeInfoDataList>;
       noticeInfoData = list;
     } catch (e) {
       // 捕获并处理异常

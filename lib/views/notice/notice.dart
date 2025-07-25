@@ -38,8 +38,7 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
     try {
       List<NoticeInfoDataList> list =
           (await Api.noticeInfo({"page": currentPage})).data?.list
-              as List<NoticeInfoDataList> ??
-          [];
+              as List<NoticeInfoDataList>;
       setState(() {
         noticeInfoData = list;
       });
@@ -54,7 +53,6 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
       await noticeInfo();
       return "init success";
     } catch (e) {
-      print('Initialization failed: $e');
       return "init success";
     }
   }
@@ -195,7 +193,7 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
   //标题title
   Widget _buildTitle(String title) {
     return TDTag(
-      title ?? "",
+      title,
       isOutline: true,
       textColor: Color.fromRGBO(249, 99, 7, 1),
       style: TDTagStyle(

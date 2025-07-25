@@ -234,13 +234,6 @@ class VideoSearchState extends State<VideoSearch>
     );
   }
 
-  // 提取常量
-  static const _gradientColors = [
-    Color.fromRGBO(255, 218, 112, 1),
-    Color.fromRGBO(255, 255, 255, 1),
-  ];
-  static const _gradientStops = [0.2, 0.8];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -24,11 +24,6 @@ class VideoFilter extends StatefulWidget {
 class VideoFilterState extends State<VideoFilter>
     with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   // 提取常量
-  static const _gradientColors = [
-    Color.fromRGBO(255, 218, 112, 1),
-    Color.fromRGBO(255, 255, 255, 1),
-  ];
-  static const _gradientStops = [0.2, 0.8];
 
   final ScrollController _scrollController = ScrollController();
   //定义currentPage
@@ -104,7 +99,6 @@ class VideoFilterState extends State<VideoFilter>
           areaDictList.where((element) => element.parentId == null).toList();
     } catch (e) {
       // 捕获并处理异常
-      print('获取视频地区数据失败: $e');
     }
   }
 
@@ -143,7 +137,6 @@ class VideoFilterState extends State<VideoFilter>
       return "init success";
     } catch (e) {
       // 捕获并处理异常
-      print('Initialization failed: $e');
       return "init success";
     }
   }
@@ -219,13 +212,13 @@ class VideoFilterState extends State<VideoFilter>
           child: Row(
             children: [
               GestureDetector(
-                child: Center(child: Text(title ?? "")),
+                child: Center(child: Text(title)),
                 onTap: () {
                   _category_change(null);
                 },
               ),
 
-              ...(items ?? [])
+              ...(items)
                   .map(
                     (item) => Padding(
                       padding: const EdgeInsets.only(left: 8),
@@ -277,37 +270,33 @@ class VideoFilterState extends State<VideoFilter>
                   _area_change(null);
                 },
               ),
-              ...(items ?? [])
-                  .map(
-                    (item) => Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: GestureDetector(
-                        child: TDTag(
-                          item.name ?? "",
-                          shape: TDTagShape.round,
-                          size: TDTagSize.large,
-                          isLight: true,
-                          textColor:
-                              key == item.id
-                                  ? const Color.fromRGBO(255, 122, 27, 1)
-                                  : Theme.of(
-                                    context,
-                                  ).textTheme.titleLarge?.color,
-                          backgroundColor:
-                              key == item.id
-                                  ? const Color.fromRGBO(244, 244, 244, 1)
-                                  : Colors.transparent,
-                          isOutline: true,
-                          style: TDTagStyle(
-                            borderColor: Colors.transparent,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        onTap: () => _area_change(item),
+              ...(items ?? []).map(
+                (item) => Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: GestureDetector(
+                    child: TDTag(
+                      item.name ?? "",
+                      shape: TDTagShape.round,
+                      size: TDTagSize.large,
+                      isLight: true,
+                      textColor:
+                          key == item.id
+                              ? const Color.fromRGBO(255, 122, 27, 1)
+                              : Theme.of(context).textTheme.titleLarge?.color,
+                      backgroundColor:
+                          key == item.id
+                              ? const Color.fromRGBO(244, 244, 244, 1)
+                              : Colors.transparent,
+                      isOutline: true,
+                      style: TDTagStyle(
+                        borderColor: Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                  )
-                  .toList(),
+                    onTap: () => _area_change(item),
+                  ),
+                ),
+              ),
             ],
           ),
         );

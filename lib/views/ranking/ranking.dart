@@ -115,7 +115,6 @@ class VideoRankingState extends State<VideoRanking>
       // await getVideoSortPage();
       return "init success";
     } catch (e) {
-      print('Initialization failed: $e');
       return "init success";
     }
   }
@@ -145,7 +144,7 @@ class VideoRankingState extends State<VideoRanking>
                       fit: BoxFit.cover,
                       width: double.infinity,
                       height: 200,
-                      assetUrl: "assets/images/ranking.png" ?? "",
+                      assetUrl: "assets/images/ranking.png",
                       errorWidget: const TDImage(
                         width: 150,
                         assetUrl: 'assets/images/loading.gif',

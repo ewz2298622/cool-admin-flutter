@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:fplayer/fplayer.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
-import 'package:video_player/video_player.dart';
 
 import '../../api/api.dart';
 import '../../components/loading.dart';
@@ -52,13 +51,9 @@ class _Video_DetailState extends State<Video_Detail>
   List<DictDataDataArea>? area = [];
   List<DictDataDataVideoCategory>? videoCategory = [];
   List<DictDataDataLanguage>? language = [];
-  TabController? _tabController;
-  late VideoPlayerController _videoPlayerController;
   late ChewieController chewieController;
   final PageController pageController = PageController(initialPage: 0);
   final FPlayer player = FPlayer();
-  late StreamSubscription _currentPosSubs;
-  Duration _currentPos = Duration();
   List<dynamic> deviceList = [];
   StateSetter? TVshowModalBottomSheetListSate;
 
@@ -207,7 +202,7 @@ class _Video_DetailState extends State<Video_Detail>
         );
       }
       debugPrint(
-        'Initialization getPlayLinePages success "video_id": ${widget.id}"video_line_id": ${videoLineData?[currentLine.value].id}',
+        'Initialization getPlayLinePages success "video_id": ${widget.id}"video_line_id": ${videoLineData[currentLine.value].id}',
       );
     } catch (e) {
       // 捕获并处理异常
@@ -216,9 +211,7 @@ class _Video_DetailState extends State<Video_Detail>
   }
 
   /// 初始化tab
-  void _initTabController() {
-    _tabController = TabController(length: 2, vsync: this);
-  }
+  void _initTabController() {}
 
   Future<String> init() async {
     try {
@@ -231,17 +224,9 @@ class _Video_DetailState extends State<Video_Detail>
       await getPlayLinePages();
       await getVideoPages();
       setVideoUrl(playerLineData[currentPlay.value].file ?? "");
-      _currentPosSubs = player.onCurrentPosUpdate.listen((v) {
-        setState(() {
-          _currentPos = v;
-          videoData?.duration = player.value.duration.inMilliseconds;
-          seekTime = _currentPos.inMilliseconds;
-        });
-      });
       return "init success";
     } catch (e) {
       // 捕获并处理异常
-      print('Initialization failed: $e');
       return "init success";
     }
   }
@@ -567,24 +552,22 @@ class _Video_DetailState extends State<Video_Detail>
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                ...(videoLineData ?? [])
-                    .map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: TDButton(
-                          text: item.collectionName,
-                          size: TDButtonSize.small,
-                          style: TDButtonStyle(
-                            textColor:
-                                key == item.id
-                                    ? const Color.fromRGBO(249, 174, 61, 1)
-                                    : Colors.black,
-                          ),
-                          onTap: () => {_play_change_line(item)},
-                        ),
+                ...(videoLineData).map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: TDButton(
+                      text: item.collectionName,
+                      size: TDButtonSize.small,
+                      style: TDButtonStyle(
+                        textColor:
+                            key == item.id
+                                ? const Color.fromRGBO(249, 174, 61, 1)
+                                : Colors.black,
                       ),
-                    )
-                    .toList(),
+                      onTap: () => {_play_change_line(item)},
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -1098,7 +1081,7 @@ class _Video_DetailState extends State<Video_Detail>
                                       size: TDButtonSize.large,
                                       onTap: () {
                                         deviceList[index]["value"].setUrl(
-                                          playerLineData?[currentPlay.value]
+                                          playerLineData[currentPlay.value]
                                                   .file ??
                                               "",
                                         );
