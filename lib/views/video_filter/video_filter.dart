@@ -175,12 +175,18 @@ class VideoFilterState extends State<VideoFilter>
     );
   }
 
-  Future<void> _category_change(DictInfoListData item) async {
-    categoryCurrent.value = item.id ?? 0;
+  Future<void> _category_change(DictInfoListData? item) async {
+    if (item != null) {
+      categoryCurrent.value = item.id ?? 0;
+    } else {
+      categoryCurrent.value = 0;
+    }
     videoPageData.clear();
     currentPage = 1;
     await getVideoPages();
     setState(() {});
+    _year_change(0);
+    _area_change(null);
   }
 
   Future<void> _year_change(int item) async {
@@ -192,8 +198,12 @@ class VideoFilterState extends State<VideoFilter>
     setState(() {});
   }
 
-  Future<void> _area_change(DictInfoListData item) async {
-    regionCurrent.value = item.id ?? 0;
+  Future<void> _area_change(DictInfoListData? item) async {
+    if (item != null) {
+      regionCurrent.value = item.id ?? 0;
+    } else {
+      regionCurrent.value = 0;
+    }
     videoPageData.clear();
     currentPage = 1;
     await getVideoPages();
@@ -208,7 +218,13 @@ class VideoFilterState extends State<VideoFilter>
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
-              Center(child: Text(title ?? "")),
+              GestureDetector(
+                child: Center(child: Text(title ?? "")),
+                onTap: () {
+                  _category_change(null);
+                },
+              ),
+
               ...(items ?? [])
                   .map(
                     (item) => Padding(
@@ -230,7 +246,10 @@ class VideoFilterState extends State<VideoFilter>
                                   ? const Color.fromRGBO(244, 244, 244, 1)
                                   : Colors.transparent,
                           isOutline: true,
-                          style: TDTagStyle(borderColor: Colors.transparent),
+                          style: TDTagStyle(
+                            borderColor: Colors.transparent,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                         onTap: () => _category_change(item),
                       ),
@@ -252,7 +271,12 @@ class VideoFilterState extends State<VideoFilter>
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
-              Center(child: Text(title ?? "")),
+              GestureDetector(
+                child: Center(child: Text(title ?? "")),
+                onTap: () {
+                  _area_change(null);
+                },
+              ),
               ...(items ?? [])
                   .map(
                     (item) => Padding(
@@ -274,7 +298,10 @@ class VideoFilterState extends State<VideoFilter>
                                   ? const Color.fromRGBO(244, 244, 244, 1)
                                   : Colors.transparent,
                           isOutline: true,
-                          style: TDTagStyle(borderColor: Colors.transparent),
+                          style: TDTagStyle(
+                            borderColor: Colors.transparent,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                         onTap: () => _area_change(item),
                       ),
@@ -296,7 +323,12 @@ class VideoFilterState extends State<VideoFilter>
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
-              Center(child: Text(title ?? "")),
+              GestureDetector(
+                child: Center(child: Text(title ?? "")),
+                onTap: () {
+                  _year_change(0);
+                },
+              ),
               ...(items ?? []).map(
                 (item) => Padding(
                   padding: const EdgeInsets.only(left: 8),
@@ -315,7 +347,10 @@ class VideoFilterState extends State<VideoFilter>
                       shape: TDTagShape.round,
                       size: TDTagSize.large,
                       isOutline: true,
-                      style: TDTagStyle(borderColor: Colors.transparent),
+                      style: TDTagStyle(
+                        borderColor: Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                     onTap: () => _year_change(item),
                   ),

@@ -3,6 +3,7 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
 import '../../components/loading.dart';
+import '../../components/no_data.dart';
 import '../../entity/dict_info_list_entity.dart';
 import '../../entity/video_live_entity.dart';
 import '../../style/layout.dart';
@@ -82,8 +83,11 @@ class _LiveStreamPageState extends State<VideoService> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(toolbarHeight: 20),
-      resizeToAvoidBottomInset: true, //添加这一行
+      appBar: AppBar(
+        toolbarHeight: 20,
+        automaticallyImplyLeading: false, //设置为false
+      ),
+      resizeToAvoidBottomInset: false,
       body: RefreshIndicator(
         key: refreshKey,
         onRefresh: onRefresh,
@@ -120,7 +124,7 @@ class _LiveStreamPageState extends State<VideoService> {
                 child: Column(
                   children: [
                     // 顶部搜索框
-                    _buildDefaultSearchBar(),
+                    // _buildDefaultSearchBar(),
 
                     // 列表
                     Expanded(child: _buildStreamList()),
@@ -138,21 +142,27 @@ class _LiveStreamPageState extends State<VideoService> {
 
   /// 构建分类侧边栏
   Widget _buildCategorySidebar() {
-    return Container(
+    return SizedBox(
       width: 120,
-      color: Colors.grey[100],
-      child: TDSideBar(
-        style: TDSideBarStyle.normal,
-        value: _selectedCategory,
-        controller: _sideBarController,
-        children:
-            dictInfoListData
-                .map(
-                  (ele) =>
-                      TDSideBarItem(label: ele.name ?? '', value: ele.id ?? 0),
-                )
-                .toList(),
-        onSelected: onSelected,
+      child: Card(
+        child: TDSideBar(
+          style: TDSideBarStyle.normal,
+          value: _selectedCategory,
+          controller: _sideBarController,
+          unSelectedBgColor: Colors.transparent,
+          selectedBgColor: Colors.transparent,
+          selectedColor: Color.fromRGBO(255, 197, 6, 1),
+          children:
+              dictInfoListData
+                  .map(
+                    (ele) => TDSideBarItem(
+                      label: ele.name ?? '',
+                      value: ele.id ?? 0,
+                    ),
+                  )
+                  .toList(),
+          onSelected: onSelected,
+        ),
       ),
     );
   }
@@ -164,6 +174,9 @@ class _LiveStreamPageState extends State<VideoService> {
 
   /// 构建直播列表
   Widget _buildStreamList() {
+    if (videoLiveData.isEmpty) {
+      return const NoData();
+    }
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 1,
@@ -215,6 +228,8 @@ class _LiveStreamPageState extends State<VideoService> {
       onTextChanged: (String text) {
         keyWord = text;
       },
+      // 防止键盘闪退问题
+      focusNode: FocusNode(),
     );
   }
 }

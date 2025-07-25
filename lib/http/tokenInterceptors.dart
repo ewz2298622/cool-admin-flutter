@@ -1,25 +1,29 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_app/http/requestConfig.dart';
 
+import '../db/manager/AldultDatabaseHelper.dart';
 import '../db/manager/TokenDatabaseHelper.dart';
-import '../utils/device_info.dart';
 
 String TAG = "TokenDatabaseHelper";
 TokenDatabaseHelper tokenDatabaseHelper = TokenDatabaseHelper();
+AldultDatabaseHelper aldultDatabaseHelper = AldultDatabaseHelper();
 
 /// Token拦截器
 class TokenInterceptors extends InterceptorsWrapper {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    //如果需要token的接口，则添加token
-    if (tokenRequiredUrls.contains(options.path)) {
+    try {
       String authorization = tokenDatabaseHelper.getLatest()?.token ?? "";
-      options.headers["Authorization"] = authorization;
+      int aldult = aldultDatabaseHelper.getLatest()?.status ?? 1;
+      if (authorization.isNotEmpty) {
+        // 修改: 直接赋值而不是addAll，避免重复添加header导致handler被多次调用
+        options.headers["authorization"] = authorization;
+        options.headers["aldult"] = aldult;
+      }
+      handler.next(options);
+    } catch (e) {
+      //打印错误
+      handler.next(options);
+      // 忽略已调用的错误，避免程序崩溃
     }
-    Map<String, dynamic>? deviceInfo = DeviceInfoUtils().getDeviceInfo();
-    deviceInfo?.forEach((key, value) {
-      options.headers[key] = value;
-    });
-    handler.next(options);
   }
 }

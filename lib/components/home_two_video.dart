@@ -16,14 +16,21 @@ class HomeTwoVideo extends StatelessWidget {
   }
 
   Widget _buildAlbumItems(AlbumDataList album, BuildContext context) {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: List<Widget>.generate(
-        album.list?.length ?? 0,
-        (index) =>
-            _buildAlbumItem(album.list?[index] ?? AlbumDataListList(), context),
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 0,
+        crossAxisSpacing: 10,
+        childAspectRatio: 1.2, // 修改：加大子项宽度
       ),
+      itemCount: album.list?.length ?? 0,
+      itemBuilder:
+          (context, index) => _buildAlbumItem(
+            album.list?[index] ?? AlbumDataListList(),
+            context,
+          ),
     );
   }
 
@@ -35,17 +42,20 @@ class HomeTwoVideo extends StatelessWidget {
   }
 
   Widget _buildAlbumItemImage(AlbumDataListList item) {
-    return SizedBox(
-      width: 180,
-      height: 100,
-      child: TDImage(
-        fit: BoxFit.cover,
-        width: 200,
-        imgUrl: item.surfacePlot ?? '',
-        errorWidget: const TDImage(
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxHeight: 100),
+      child: SizedBox(
+        child: TDImage(
+          width: double.infinity,
+          height: double.infinity,
           fit: BoxFit.cover,
-          width: 180,
-          assetUrl: 'assets/images/loading.gif',
+          imgUrl: item.surfacePlot ?? '',
+          errorWidget: const TDImage(
+            width: double.infinity,
+            height: double.infinity,
+            fit: BoxFit.cover,
+            assetUrl: 'assets/images/loading.gif',
+          ),
         ),
       ),
     );
@@ -53,7 +63,7 @@ class HomeTwoVideo extends StatelessWidget {
 
   Widget _buildAlbumItemOverlay(AlbumDataListList item) {
     return Container(
-      width: 180,
+      width: double.infinity,
       height: 100,
       decoration: BoxDecoration(
         //圆角
@@ -172,7 +182,7 @@ class HomeTwoVideo extends StatelessWidget {
 
   Widget _buildAlbumItemTitle(AlbumDataListList item) {
     return SizedBox(
-      width: 180,
+      width: double.infinity,
       child: Text(
         item.title ?? '',
         style: const TextStyle(
@@ -189,7 +199,7 @@ class HomeTwoVideo extends StatelessWidget {
     String subTitle = item.subTitle ?? '';
     subTitle = subTitle.isEmpty ? item.videoTag ?? '' : subTitle;
     return SizedBox(
-      width: 180,
+      width: double.infinity,
       child: Text(
         subTitle ?? '',
         style: const TextStyle(
@@ -209,19 +219,24 @@ class HomeTwoVideo extends StatelessWidget {
             item.id ?? 0,
             context,
           ), //写入方法名称就可以了，但是是无参的
-      child: Column(
-        //添加点击事件
-        children: [
-          Stack(
-            children: [
-              _buildAlbumItemImage(item),
-              _buildAlbumItemOverlay(item),
-            ],
-            //添加点击事件
-          ),
-          _buildAlbumItemTitle(item),
-          _buildAlbumItemSubTitle(item),
-        ],
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8), // 可选：添加圆角
+        ), // 可选：添加内边距
+        child: Column(
+          //添加点击事件
+          children: [
+            Stack(
+              children: [
+                _buildAlbumItemImage(item),
+                _buildAlbumItemOverlay(item),
+              ],
+              //添加点击事件
+            ),
+            _buildAlbumItemTitle(item),
+            _buildAlbumItemSubTitle(item),
+          ],
+        ),
       ),
     );
   }

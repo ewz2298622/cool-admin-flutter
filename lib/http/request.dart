@@ -34,18 +34,25 @@ class DioHttp {
     Options? options,
     CancelToken? cancelToken,
   }) async {
-    return await _dio.get<Response>(
-      url,
-      queryParameters: param ?? {},
-      options:
-          options ??
-          Options(
-            method: HttpMethod.GET,
-            receiveTimeout: _defaultTime,
-            sendTimeout: _defaultTime,
-          ),
-      cancelToken: cancelToken,
-    );
+    try {
+      return await _dio.get<Response>(
+        url,
+        queryParameters: param ?? {},
+        options:
+            options ??
+            Options(
+              method: HttpMethod.GET,
+              receiveTimeout: _defaultTime,
+              sendTimeout: _defaultTime,
+            ),
+      );
+    } on DioException catch (e) {
+      // 处理 Dio 异常
+      throw _handleDioError(e);
+    } catch (e) {
+      // 处理其他异常
+      throw '未知错误: $e';
+    }
   }
 
   // post请求
@@ -55,17 +62,47 @@ class DioHttp {
     Options? options,
     CancelToken? cancelToken,
   }) async {
-    return await _dio.post<Response>(
-      url,
-      data: data,
-      options:
-          options ??
-          Options(
-            method: HttpMethod.POST,
-            receiveTimeout: _defaultTime,
-            sendTimeout: _defaultTime,
-          ),
-      cancelToken: cancelToken ?? CancelToken(),
-    );
+    try {
+      return await _dio.post<Response>(
+        url,
+        data: data,
+        options:
+            options ??
+            Options(
+              method: HttpMethod.POST,
+              receiveTimeout: _defaultTime,
+              sendTimeout: _defaultTime,
+            ),
+      );
+    } on DioException catch (e) {
+      // 处理 Dio 异常
+      throw _handleDioError(e);
+    } catch (e) {
+      // 处理其他异常
+      throw '未知错误: $e';
+    }
+  }
+
+  // 统一处理 Dio 错误信息
+  String _handleDioError(DioException e) {
+    final requestOptions = e.requestOptions;
+    final uri = '${requestOptions.method} ${requestOptions.uri}';
+
+    switch (e.type) {
+      case DioExceptionType.connectionTimeout:
+        return '连接超时: $uri';
+      case DioExceptionType.sendTimeout:
+        return '发送超时: $uri';
+      case DioExceptionType.receiveTimeout:
+        return '接收超时: $uri';
+      case DioExceptionType.badResponse:
+        return '服务器错误(${e.response?.statusCode}): ${e.message}';
+      case DioExceptionType.cancel:
+        return '请求被取消: $uri';
+      case DioExceptionType.unknown:
+        return '网络异常: $uri';
+      default:
+        return '请求失败: $uri';
+    }
   }
 }

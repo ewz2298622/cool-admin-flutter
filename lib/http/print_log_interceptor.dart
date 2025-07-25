@@ -8,7 +8,6 @@ class PrintLogInterceptor extends InterceptorsWrapper {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     TAG = options.path;
-    LogUtil.e("请求头:${options.headers}", tag: TAG);
     LogUtil.e("请求路径:${options.path}", tag: TAG);
     LogUtil.e("请求方法:${options.method}", tag: TAG);
     LogUtil.e("请求时间:${options.receiveTimeout}", tag: TAG);

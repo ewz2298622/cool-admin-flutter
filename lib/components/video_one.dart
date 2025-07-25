@@ -68,9 +68,8 @@ class VideoItem extends StatelessWidget {
                             fontWeight: FontWeight.w400,
                           ),
                         ),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 80,
+                        // 修改: 使用Flexible包装Html组件以防止溢出
+                        Flexible(
                           child: Html(
                             data: videoData[i].introduce ?? "",
                             style: {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/style/color_styles.dart';
+import 'package:flutter_app/utils/contacts.dart';
 import 'package:flutter_app/utils/context_manager.dart';
 import 'package:flutter_app/utils/store/app/appState.dart';
 import 'package:flutter_app/utils/store/theme/theme.dart';
@@ -28,7 +29,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -74,10 +75,6 @@ class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
 
   void onTap(int index) {
-    // if (index == (pages.length - 1)) {
-    //   // 如果是非缓存页面，每次切换时重新创建
-    //   pages[pages.length - 1] = My(key: UniqueKey());
-    // }
     setState(() => _selectedIndex = index);
     TDToast.dismissLoading();
   }
@@ -139,15 +136,15 @@ class _MainPageState extends State<MainPage> {
               width: 25,
               height: 25,
               fit: BoxFit.cover,
-              assetUrl: 'assets/images/6.png',
+              assetUrl: 'assets/images/8.png',
             ),
             icon: TDImage(
               width: 25,
               height: 25,
               fit: BoxFit.cover,
-              assetUrl: 'assets/images/5.png',
+              assetUrl: 'assets/images/7.png',
             ),
-            label: '排行',
+            label: '服务',
           ),
           BottomNavigationBarItem(
             activeIcon: TDImage(
@@ -179,6 +176,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<void> init() async {
+    Contacts.requestPermissions();
     await DBManager.init();
     debugPrint('main dart dbHelper init success');
   }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
+import '../../db/entity/AldultEntity.dart';
+import '../../db/manager/AldultDatabaseHelper.dart';
 import '../../db/manager/helper.dart';
 import '../../utils/store/app/appState.dart';
 import '../../utils/store/theme/theme.dart';
@@ -20,9 +22,9 @@ class Setting extends StatefulWidget {
 
 // 定义 Setting 组件对应的状态类
 class _SettingState extends State<Setting> {
-  // bool flag = ThemeManager.themeMode == ThemeMode.dark;
   //判断当前主题如何是黑夜模式就是true 否则就是false
-
+  static final AldultDatabaseHelper aldultDatabaseHelper =
+      AldultDatabaseHelper();
   // 组件状态初始化方法，在组件创建时调用
   @override
   void initState() {
@@ -33,6 +35,7 @@ class _SettingState extends State<Setting> {
   Widget _buildTDCellGroup(BuildContext context) {
     bool flag =
         Provider.of<ThemeChangeEvent>(context).themeMode == ThemeMode.dark;
+    int teenagerModel = aldultDatabaseHelper.getLatest()?.status ?? 0;
     return Card(
       child: TDCellGroup(
         theme: TDCellGroupTheme.cardTheme,
@@ -44,7 +47,7 @@ class _SettingState extends State<Setting> {
                 color: Theme.of(context).textTheme.titleLarge!.color,
               ),
             ),
-            arrow: true,
+            arrow: false,
             title: '深色模式',
             rightIconWidget: TDSwitch(
               isOn: flag,
@@ -60,6 +63,37 @@ class _SettingState extends State<Setting> {
                   value ? ThemeMode.dark : ThemeMode.light,
                 );
                 return flag;
+              },
+            ),
+          ),
+          TDCell(
+            style: TDCellStyle(
+              padding: EdgeInsets.only(top: 10, bottom: 10),
+              titleStyle: TextStyle(
+                color: Theme.of(context).textTheme.titleLarge!.color,
+              ),
+            ),
+            arrow: false,
+            title: '青少年模式',
+            rightIconWidget: TDSwitch(
+              isOn: teenagerModel == 0,
+              trackOnColor: Colors.green,
+              openText: "开",
+              type: TDSwitchType.text,
+              closeText: "关",
+              onChanged: (bool value) {
+                setState(() {
+                  teenagerModel = value == true ? 0 : 1;
+                });
+                aldultDatabaseHelper.insertAldult(
+                  AldultEntity(
+                    status: teenagerModel,
+                    timestamp: DateTime.now(),
+                  ),
+                );
+                //重启app
+                Navigator.of(context).pushReplacementNamed('/');
+                return value;
               },
             ),
           ),

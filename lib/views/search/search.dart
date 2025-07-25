@@ -95,7 +95,7 @@ class VideoSearchState extends State<VideoSearch>
       padding: EdgeInsets.only(left: 0, right: 0),
       titleWidget: TDSearchBar(
         backgroundColor: Colors.transparent,
-        placeHolder: '',
+        placeHolder: '请输入剧名',
         action: "搜索",
         style: TDSearchStyle.round,
         padding: EdgeInsets.only(left: 0, right: 0, bottom: 2, top: 2),

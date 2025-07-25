@@ -12,6 +12,7 @@ import '../../components/loading.dart';
 import '../../components/sectionWithMore.dart';
 import '../../components/video_scroll.dart';
 import '../../entity/album_entity.dart';
+import '../../entity/dict_data_entity.dart';
 import '../../entity/dict_info_list_entity.dart';
 import '../../entity/notice_Info_entity.dart';
 import '../../entity/swiper_entity.dart';
@@ -46,23 +47,22 @@ class _HomePageState extends State<Home>
   Map<int, List<AlbumDataList>> albumMap = {};
   List<NoticeInfoDataList>? noticeInfoData = [];
 
+  List<DictDataDataVideoCategory> category = [];
+
   Future<void> getDictInfoPages() async {
     try {
-      dictInfoListData =
-          (await Api.getDictInfoPages({
-                "order": "orderNum",
-                "sort": "desc",
-                "typeId": 49,
-              })).data
-              as List<DictInfoListData>;
-      //返回parentId :  null 的数据
-      dictInfoListData =
-          dictInfoListData
-              .where((element) => element.parentId == null)
-              .toList();
-      videoCategoryIds = dictInfoListData.map((e) => e.id ?? 0).toList() ?? [];
+      category =
+          ((await Api.getDictData({
+                    "types": ["video_category"],
+                  })).data
+                  as DictDataData)
+              .videoCategory!;
+
+      category = category.where((element) => element.parentId == null).toList();
+
+      videoCategoryIds = category.map((e) => e.id ?? 0).toList() ?? [];
       tabs.clear();
-      for (var element in dictInfoListData ?? []) {
+      for (var element in category ?? []) {
         tabs.add(TDTab(text: element.name));
       }
     } catch (e) {
@@ -207,7 +207,6 @@ class _HomePageState extends State<Home>
     await getDictInfoPages();
     await getSwiperListByCategoryIds();
     await getAlbumListByCategoryIds();
-    setState(() {});
     if (disposed) {
       return;
     }
@@ -359,13 +358,11 @@ class _HomePageState extends State<Home>
                         children: [
                           SizedBox(
                             height: 200,
-                            child: _buildDotsSwiper(
-                              dictInfoListData[index].id ?? 0,
-                            ),
+                            child: _buildDotsSwiper(category[index].id ?? 0),
                           ),
                           Column(
                             children: _buildAlbumContentList(
-                              albumMap[dictInfoListData[index].id] ?? [],
+                              albumMap[category[index].id] ?? [],
                             ),
                           ),
                         ],
@@ -391,7 +388,14 @@ class _HomePageState extends State<Home>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      appBar: AppBar(toolbarHeight: 20),
+      appBar: AppBar(
+        toolbarHeight: 20,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        //不显示icon
+        leading: Container(),
+        automaticallyImplyLeading: false, //设置为false
+      ),
       resizeToAvoidBottomInset: true, //添加这一行
       body: RefreshIndicator(
         key: refreshKey,
