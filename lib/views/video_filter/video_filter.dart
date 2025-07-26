@@ -437,21 +437,7 @@ class VideoFilterState extends State<VideoFilter>
                     ],
                   ),
                 ),
-                sliver: SliverGrid(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 4.0,
-                    mainAxisSpacing: 4.0,
-                    childAspectRatio: 0.7,
-                    mainAxisExtent: 205,
-                  ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, i) => GridTile(
-                      child: Center(child: Video(videoData: videoPageData[i])),
-                    ),
-                    childCount: videoPageData.length,
-                  ),
-                ),
+                sliver: isShowContent(),
               ),
             ],
           );
@@ -464,30 +450,39 @@ class VideoFilterState extends State<VideoFilter>
 
   Widget isShowContent() {
     if (videoPageData.isEmpty && isLoading == false) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 20),
-        child: NoData(),
-      );
+      return SliverToBoxAdapter(child: Center(child: NoData()));
     } else if (isLoading == false && videoPageData.isEmpty == false) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 20),
-        child: VideoThree(videoPageData: videoPageData),
+      return SliverGrid(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          crossAxisSpacing: 4.0,
+          mainAxisSpacing: 4.0,
+          childAspectRatio: 0.7,
+          mainAxisExtent: 205,
+        ),
+        delegate: SliverChildBuilderDelegate(
+          (context, i) => GridTile(
+            child: Center(child: Video(videoData: videoPageData[i])),
+          ),
+          childCount: videoPageData.length,
+        ),
       );
     } else if (videoPageData.isEmpty && isLoading == true) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 20),
+      return SliverToBoxAdapter(
         child: TDLoading(
           size: TDLoadingSize.small,
           icon: TDLoadingIcon.point,
           iconColor: const Color.fromRGBO(255, 162, 16, 1),
         ),
       );
-    } else {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 20),
-        child: NoData(),
-      );
     }
+    return SliverToBoxAdapter(
+      child: TDLoading(
+        size: TDLoadingSize.small,
+        icon: TDLoadingIcon.point,
+        iconColor: const Color.fromRGBO(255, 162, 16, 1),
+      ),
+    );
   }
 
   @override

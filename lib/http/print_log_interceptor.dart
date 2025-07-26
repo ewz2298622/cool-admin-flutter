@@ -16,6 +16,7 @@ class PrintLogInterceptor extends InterceptorsWrapper {
     LogUtil.e("请求类型:${options.responseType}", tag: TAG);
     LogUtil.e("请求参数:${options.queryParameters}", tag: TAG);
     LogUtil.e("请求数据:${options.data}", tag: TAG);
+    LogUtil.e("请求头:${options.headers}", tag: TAG);
     return handler.next(options);
   }
 

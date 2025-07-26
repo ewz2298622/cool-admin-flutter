@@ -316,7 +316,6 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
         ),
       );
       TDToast.showText('登录成功', context: context);
-      Navigator.of(context, rootNavigator: true).pop(context);
       _context?.read<UserState>().updateUserInfoData(
         UserEntity(
           unionid: userInfoData.unionid,
@@ -330,6 +329,9 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
           userId: userInfoData.id,
         ),
       );
+      //等待500ms
+      await Future.delayed(Duration(milliseconds: 500));
+      Navigator.of(context).pushReplacementNamed('/');
     }
   }
 

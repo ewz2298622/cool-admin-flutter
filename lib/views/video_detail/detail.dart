@@ -472,7 +472,7 @@ class _Video_DetailState extends State<Video_Detail>
                     child: Row(
                       children: [
                         Text(
-                          "${videoData?.remarks}",
+                          videoData?.remarks ?? "暂无描述",
                           style: TextStyle(
                             fontSize: 12,
                             color: Color.fromRGBO(162, 162, 162, 1),
@@ -825,39 +825,44 @@ class _Video_DetailState extends State<Video_Detail>
                         ),
                       ],
                     ),
-                    Row(
-                      spacing: 5,
-                      children: [
-                        TDTag(
-                          videoData?.year.toString() ?? "暂无上映时间",
-                          isLight: true,
-                          theme: TDTagTheme.success,
-                        ),
-                        TDTag(
-                          Dict.getDictName(
-                            videoData?.region ?? 0,
-                            area as List<DictDataDataArea>,
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        //可以水平滚动
+                        mainAxisSize: MainAxisSize.min,
+                        spacing: 5,
+                        children: [
+                          TDTag(
+                            videoData?.year.toString() ?? "暂无上映时间",
+                            isLight: true,
+                            theme: TDTagTheme.success,
                           ),
-                          isLight: true,
-                          theme: TDTagTheme.success,
-                        ),
-                        TDTag(
-                          Dict.getDictName(
-                            videoData?.categoryId ?? 0,
-                            videoCategory as List<DictDataDataVideoCategory>,
+                          TDTag(
+                            Dict.getDictName(
+                              videoData?.region ?? 0,
+                              area as List<DictDataDataArea>,
+                            ),
+                            isLight: true,
+                            theme: TDTagTheme.success,
                           ),
-                          isLight: true,
-                          theme: TDTagTheme.success,
-                        ),
-                        TDTag(
-                          Dict.getDictName(
-                            videoData?.language ?? 0,
-                            language as List<DictDataDataLanguage>,
+                          TDTag(
+                            Dict.getDictName(
+                              videoData?.categoryId ?? 0,
+                              videoCategory as List<DictDataDataVideoCategory>,
+                            ),
+                            isLight: true,
+                            theme: TDTagTheme.success,
                           ),
-                          isLight: true,
-                          theme: TDTagTheme.success,
-                        ),
-                      ],
+                          TDTag(
+                            Dict.getDictName(
+                              videoData?.language ?? 0,
+                              language as List<DictDataDataLanguage>,
+                            ),
+                            isLight: true,
+                            theme: TDTagTheme.success,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -1067,31 +1072,34 @@ class _Video_DetailState extends State<Video_Detail>
                                   color: Color.fromARGB(142, 142, 142, 0),
                                 ),
                               ),
-                              ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: deviceList.length,
-                                itemBuilder: (context, index) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(top: 15),
-                                    child: TDButton(
-                                      text:
-                                          deviceList[index]["value"]
-                                              .info
-                                              .friendlyName,
-                                      size: TDButtonSize.large,
-                                      onTap: () {
-                                        deviceList[index]["value"].setUrl(
-                                          playerLineData[currentPlay.value]
-                                                  .file ??
-                                              "",
-                                        );
-                                      },
-                                      type: TDButtonType.outline,
-                                      shape: TDButtonShape.rectangle,
-                                      theme: TDButtonTheme.primary,
-                                    ),
-                                  );
-                                },
+                              // 修改: 解决Row可能存在的布局溢出问题
+                              Expanded(
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: deviceList.length,
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(top: 15),
+                                      child: TDButton(
+                                        text:
+                                            deviceList[index]["value"]
+                                                .info
+                                                .friendlyName,
+                                        size: TDButtonSize.large,
+                                        onTap: () {
+                                          deviceList[index]["value"].setUrl(
+                                            playerLineData[currentPlay.value]
+                                                    .file ??
+                                                "",
+                                          );
+                                        },
+                                        type: TDButtonType.outline,
+                                        shape: TDButtonShape.rectangle,
+                                        theme: TDButtonTheme.primary,
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                               tvDeviceLoading(),
                             ],

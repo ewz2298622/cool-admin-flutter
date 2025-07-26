@@ -12,13 +12,17 @@ class TokenInterceptors extends InterceptorsWrapper {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     try {
-      String authorization = tokenDatabaseHelper.getLatest()?.token ?? "";
-      int aldult = aldultDatabaseHelper.getLatest()?.status ?? 1;
-      if (authorization.isNotEmpty) {
+      late String? authorization = tokenDatabaseHelper.getLatest()?.token;
+      late int? aldult = aldultDatabaseHelper.getLatest()?.status;
+      if (authorization != null) {
         // 修改: 直接赋值而不是addAll，避免重复添加header导致handler被多次调用
         options.headers["authorization"] = authorization;
+      }
+      if (aldult != null) {
+        // 忽略已调用的错误，避免程序崩溃
         options.headers["aldult"] = aldult;
       }
+
       handler.next(options);
     } catch (e) {
       //打印错误
