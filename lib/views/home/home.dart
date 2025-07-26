@@ -236,30 +236,34 @@ class _HomePageState extends State<Home>
                 assetUrl: 'assets/images/loading.gif',
               ),
             ),
-            SizedBox(
+            Container(
               height: 200,
               width: double.infinity,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment:
-                    CrossAxisAlignment.start, // 关键：让 Column 子组件左对齐
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Text(
-                      swiperMap[id]![index].title ?? "",
-                      maxLines: 1,
-                      //溢出省略号
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.left, // 改为左对齐
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
+              //向下对其
+              alignment: Alignment.bottomLeft,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent, // 顶部透明
+                    Colors.black.withOpacity(0.7), // 底部黑色
+                  ],
+                ),
+              ),
+              child: Text(
+                swiperMap[id]![index].title ?? "",
+                maxLines: 1,
+                //溢出省略号
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.left, // 改为左对齐
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
