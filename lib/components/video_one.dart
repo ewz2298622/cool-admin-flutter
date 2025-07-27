@@ -11,15 +11,16 @@ class VideoItem extends StatelessWidget {
   const VideoItem({super.key, required this.videoData});
 
   Widget _buildAlbumItems(BuildContext context) {
-    return Column(
-      children: List<Widget>.generate(videoData.length, (i) {
+    return ListView.builder(
+      itemCount: videoData.length,
+      padding: const EdgeInsets.all(0),
+      itemBuilder: (context, index) {
         return GestureDetector(
-          onTap: () => {_buildvideo_onClick(videoData[i].id ?? 0, context)},
+          onTap: () => {_buildvideo_onClick(videoData[index].id ?? 0, context)},
           child: Container(
-            height: 185,
-            padding: const EdgeInsets.only(left: 4, right: 4, bottom: 15),
+            padding: const EdgeInsets.only(left: 4, right: 4, bottom: 10),
             child: Row(
-              spacing: 10,
+              spacing: 5,
               children: [
                 Stack(
                   children: [
@@ -27,14 +28,14 @@ class VideoItem extends StatelessWidget {
                       fit: BoxFit.cover,
                       width: 130,
                       height: 180,
-                      imgUrl: videoData[i].surfacePlot ?? "",
+                      imgUrl: videoData[index].surfacePlot ?? "",
                       errorWidget: const TDImage(
                         width: 130,
                         height: 180,
                         assetUrl: 'assets/images/loading.gif',
                       ),
                     ),
-                    _buildVideoItemOverlay(videoData[i]),
+                    _buildVideoItemOverlay(videoData[index]),
                   ],
                 ),
                 Expanded(
@@ -44,23 +45,22 @@ class VideoItem extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.start,
-                      spacing: 5,
                       children: [
                         Text(
-                          videoData[i].title ?? "",
+                          videoData[index].title ?? "",
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontWeight: FontWeight.w500),
                         ),
                         Text(
-                          "${videoData[i].videoClass ?? ''} / ${videoData[i].videoTag ?? ''}",
+                          "${videoData[index].videoClass ?? ''} / ${videoData[index].videoTag ?? ''}",
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
                         Text(
-                          "${videoData[i].year ?? ''} / ${videoData[i].actors ?? ''}",
+                          "${videoData[index].year ?? ''} / ${videoData[index].actors ?? ''}",
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -68,24 +68,24 @@ class VideoItem extends StatelessWidget {
                             fontWeight: FontWeight.w400,
                           ),
                         ),
-                        // 修改: 使用Flexible包装Html组件以防止溢出
-                        Flexible(
+                        // 修改: 使用Expanded包装Html组件以防止溢出
+                        Expanded(
                           child: Html(
-                            data: videoData[i].introduce ?? "",
+                            data: videoData[index].introduce ?? "",
                             style: {
                               "body": Style(
                                 maxLines: 3, // 限制最大行数
                                 textOverflow: TextOverflow.ellipsis, // 溢出显示省略号
-                                color: Color.fromRGBO(153, 153, 153, 1),
+                                color: const Color.fromRGBO(153, 153, 153, 1),
                                 backgroundColor: Colors.transparent,
                               ),
                               "p": Style(
-                                color: Color.fromRGBO(153, 153, 153, 1),
+                                color: const Color.fromRGBO(153, 153, 153, 1),
                                 backgroundColor: Colors.transparent,
                               ),
                               //设置所有html元素字体的颜色
                               "span": Style(
-                                color: Color.fromRGBO(153, 153, 153, 1),
+                                color: const Color.fromRGBO(153, 153, 153, 1),
                                 backgroundColor: Colors.transparent,
                               ),
                             },
@@ -99,7 +99,7 @@ class VideoItem extends StatelessWidget {
             ),
           ),
         );
-      }),
+      },
     );
   }
 
@@ -202,7 +202,7 @@ class VideoItem extends StatelessWidget {
 }
 
 class VideoOne extends StatelessWidget {
-  final dynamic videoData;
+  final List<VideoPageDataList> videoData;
 
   const VideoOne({super.key, required this.videoData});
 

@@ -237,7 +237,7 @@ class _HomePageState extends State<Home>
               ),
             ),
             Container(
-              height: 200,
+              height: 20,
               width: double.infinity,
               //向下对其
               alignment: Alignment.bottomLeft,
@@ -326,7 +326,6 @@ class _HomePageState extends State<Home>
         //清理下边框的样式
         length: tabs.length,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TabBar(
               isScrollable: true,
@@ -353,25 +352,22 @@ class _HomePageState extends State<Home>
               ),
               tabs: tabs,
             ),
-            Expanded(
+            Flexible(
+              flex: 1,
               child: TabBarView(
                 children: List.generate(tabs.length, (index) {
-                  return SingleChildScrollView(
-                    child: SizedBox(
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            height: 200,
-                            child: _buildDotsSwiper(category[index].id ?? 0),
-                          ),
-                          Column(
-                            children: _buildAlbumContentList(
-                              albumMap[category[index].id] ?? [],
-                            ),
-                          ),
-                        ],
+                  return ListView(
+                    children: [
+                      SizedBox(
+                        height: 200,
+                        child: _buildDotsSwiper(category[index].id ?? 0),
                       ),
-                    ),
+                      Column(
+                        children: _buildAlbumContentList(
+                          albumMap[category[index].id] ?? [],
+                        ),
+                      ),
+                    ],
                   );
                 }),
               ),

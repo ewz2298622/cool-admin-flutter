@@ -201,7 +201,7 @@ class HomeTwoVideo extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: Text(
-        subTitle ?? '',
+        subTitle,
         style: const TextStyle(
           overflow: TextOverflow.ellipsis,
           color: Colors.grey,

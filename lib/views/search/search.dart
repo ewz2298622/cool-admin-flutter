@@ -23,7 +23,7 @@ class VideoSearch extends StatefulWidget {
 
 class VideoSearchState extends State<VideoSearch>
     with SingleTickerProviderStateMixin {
-  late final String inputText;
+  String inputText = '';
   List<VideoPageDataList> videoPageData = [];
   //定义猜你喜欢数据
   List<VideoPageDataList> videoPageDataList = [];

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
-import '../../components/auto_height_page_view/auto_height_page_view.dart';
 import '../../components/loading.dart';
 import '../../components/video_one.dart';
 import '../../entity/video_page_entity.dart';
@@ -22,6 +21,12 @@ class VideoRankingState extends State<VideoRanking>
   List<VideoPageDataList> popularity_week = [];
   List<VideoPageDataList> popularity_month = [];
   List<VideoPageDataList> popularity_sum = [];
+  var tabs = [
+    const TDTab(text: '热片榜'),
+    const TDTab(text: '新片榜'),
+    const TDTab(text: '好评榜'),
+    const TDTab(text: '收藏榜'),
+  ];
   final PageController pageController = PageController(initialPage: 0);
   TabController? _tabController;
   int currentPage = 1;
@@ -110,7 +115,7 @@ class VideoRankingState extends State<VideoRanking>
 
   Future<String> init() async {
     try {
-      _initTabController();
+      _initTabController(0);
       await initRequest();
       // await getVideoSortPage();
       return "init success";
@@ -134,43 +139,31 @@ class VideoRankingState extends State<VideoRanking>
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else if (snapshot.hasData) {
-          return SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
-            child: Column(
-              children: [
-                Stack(
-                  children: [
-                    TDImage(
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: 200,
-                      assetUrl: "assets/images/ranking.png",
-                      errorWidget: const TDImage(
-                        width: 150,
-                        assetUrl: 'assets/images/loading.gif',
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.only(top: 70, left: 20),
-                      child: Text(
-                        "排行榜",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-
-                    Container(
-                      margin: const EdgeInsets.only(top: 160),
-                      width: MediaQuery.of(context).size.width,
-                      child: Card(child: _buildTabsContent()),
-                    ),
-                  ],
+          return Stack(
+            children: [
+              TDImage(
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: 200,
+                assetUrl: "assets/images/ranking.png",
+                errorWidget: const TDImage(
+                  width: 150,
+                  assetUrl: 'assets/images/loading.gif',
                 ),
-              ],
-            ),
+              ),
+              Container(
+                margin: const EdgeInsets.only(top: 70, left: 20),
+                child: Text(
+                  "排行榜",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              _buildTabsContent(),
+            ],
           );
         } else {
           return Text('No data available');
@@ -180,54 +173,58 @@ class VideoRankingState extends State<VideoRanking>
   }
 
   /// 初始化tab
-  void _initTabController() {
-    _tabController = TabController(length: 4, vsync: this);
-  }
-
-  Widget _buildTabsContent() {
-    var tabs = [
-      const TDTab(text: '热片榜'),
-      const TDTab(text: '新片榜'),
-      const TDTab(text: '好评榜'),
-      const TDTab(text: '收藏榜'),
-    ];
-    return Stack(
-      children: [
-        TDTabBar(
-          tabs: tabs,
-          controller: _tabController,
-          tabAlignment: TabAlignment.fill,
-          showIndicator: false,
-          dividerHeight: 0,
-          height: 40,
-          unselectedLabelStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-          ),
-          labelStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-          ),
-          labelColor: const Color.fromRGBO(252, 119, 66, 1),
-          unselectedLabelColor: const Color.fromRGBO(102, 102, 102, 1),
-          labelPadding: const EdgeInsets.only(left: 16, right: 16),
-          onTap: (index) {
-            currentIndex = index;
-            pageController.jumpToPage(index);
-          },
-        ),
-        _buildList(),
-      ],
+  void _initTabController(int initialIndex) {
+    _tabController = TabController(
+      initialIndex: initialIndex,
+      length: tabs.length,
+      vsync: this,
     );
   }
 
   Widget _buildTabs() {
-    return AutoHeightPageView(
-      pageController: pageController,
-      children: _getTabViews(),
-      onPageChanged: (index) {
-        _tabController?.animateTo(index);
-      },
+    return DefaultTabController(
+      //清理下边框的样式
+      length: tabs.length,
+      child: Column(
+        children: [
+          Container(
+            margin: EdgeInsets.only(bottom: 0, top: 0),
+            child: TabBar(
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              dividerHeight: 0,
+              //移除下划线
+              // 使用空的指示器来移除下划线
+              indicator: UnderlineTabIndicator(
+                borderSide: BorderSide(
+                  width: 0.0,
+                  color: Colors.transparent,
+                ), // 将宽度设置为0来隐藏下划线
+              ),
+              //选中的字体颜色
+              labelColor: const Color.fromRGBO(252, 119, 66, 1),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+              unselectedLabelColor: const Color.fromRGBO(102, 102, 102, 1),
+              labelStyle: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+              ),
+              tabs: tabs,
+            ),
+          ),
+          Flexible(
+            flex: 1,
+            child: TabBarView(
+              children: List.generate(tabs.length, (index) {
+                return _getTabViews()[index];
+              }),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -243,16 +240,16 @@ class VideoRankingState extends State<VideoRanking>
     return tabViews;
   }
 
-  Widget _buildList() {
+  Widget _buildTabsContent() {
     return Container(
       //动态计算高度
-      margin: const EdgeInsets.only(top: 40),
-      height: MediaQuery.of(context).size.height - 150,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
-      child: SingleChildScrollView(
-        physics: BouncingScrollPhysics(),
-        child: Column(children: [_buildTabs()]),
+      margin: const EdgeInsets.only(top: 180),
+      padding: const EdgeInsets.only(left: 10, right: 10),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(20),
       ),
+      child: _buildTabs(),
     );
   }
 
