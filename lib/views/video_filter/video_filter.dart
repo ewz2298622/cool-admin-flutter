@@ -489,7 +489,14 @@ class VideoFilterState extends State<VideoFilter>
   Widget build(BuildContext context) {
     super.build(context); // 必须调用 super.build
     return Scaffold(
-      appBar: AppBar(toolbarHeight: 20),
+      appBar: AppBar(
+        toolbarHeight: 20,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        //不显示icon
+        leading: Container(),
+        automaticallyImplyLeading: false, //设置为false
+      ),
       resizeToAvoidBottomInset: false,
       body: RefreshIndicator(
         key: refreshKey,

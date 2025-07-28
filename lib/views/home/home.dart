@@ -32,7 +32,6 @@ class _HomePageState extends State<Home>
     with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   //定义swiperData
   SwiperData? swiperData;
-  TabController? _tabController;
   String inputText = '';
   List<TDTab> tabs = [];
   List<int> videoCategoryIds = [];
@@ -104,7 +103,6 @@ class _HomePageState extends State<Home>
   Future<String> init() async {
     try {
       await getDictInfoPages();
-      _initTabController(0);
       await getSwiperListByCategoryIds();
       await getAlbumListByCategoryIds();
       await noticeInfo();
@@ -287,15 +285,6 @@ class _HomePageState extends State<Home>
     );
   }
 
-  /// 初始化tab
-  void _initTabController(int initialIndex) {
-    _tabController = TabController(
-      initialIndex: initialIndex,
-      length: tabs.length,
-      vsync: this,
-    );
-  }
-
   /// 返回一个Widget自动填充剩余高度 且可以滑动
   Widget _buildContent() {
     return FutureBuilder<String>(
@@ -307,10 +296,8 @@ class _HomePageState extends State<Home>
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}'); // 显示错误信息
         } else if (snapshot.hasData) {
-          return Center(
-            child: Stack(
-              children: <Widget>[_buildTabs(), _buildDefaultSearchBar()],
-            ),
+          return Stack(
+            children: <Widget>[_buildTabs(), _buildDefaultSearchBar()],
           );
         } else {
           return Text('No data available');
