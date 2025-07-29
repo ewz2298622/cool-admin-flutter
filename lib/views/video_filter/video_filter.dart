@@ -5,8 +5,8 @@ import '../../api/api.dart';
 import '../../components/loading.dart';
 import '../../components/no_data.dart';
 import '../../components/video_three.dart';
+import '../../entity/dict_data_entity.dart';
 import '../../entity/dict_info_list_entity.dart';
-import '../../entity/video_category_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../style/layout.dart';
 import '../search/search.dart';
@@ -32,7 +32,7 @@ class VideoFilterState extends State<VideoFilter>
   TDBackTopStyle style = TDBackTopStyle.circle;
   var _futureBuilderFuture;
   var inputText = "";
-  VideoCategoryData? categoryData;
+  List<DictDataDataVideoCategory> categoryData = [];
   List<VideoPageDataList> videoPageData = [];
   //实现一个从今年到15年前的list
   List<int> years = List.generate(20, (index) => DateTime.now().year - index);
@@ -72,13 +72,13 @@ class VideoFilterState extends State<VideoFilter>
   Future<void> getVideoCategoryPages() async {
     try {
       categoryData =
-          (await Api.getVideoCategoryPages({
-                "page": 1,
-                "size": 100,
-                "parent_id": 0,
-                "type": 1,
-              })).data
-              as VideoCategoryData;
+          ((await Api.getDictData({
+                    "types": ["video_category"],
+                  })).data
+                  as DictDataData)
+              .videoCategory!;
+      categoryData =
+          categoryData.where((element) => element.parentId == null).toList();
     } catch (e) {
       // 捕获并处理异常
       debugPrint('Initialization getVideoListByCategoryIds failed: $e');
@@ -102,36 +102,10 @@ class VideoFilterState extends State<VideoFilter>
     }
   }
 
-  Future<void> getDictInfoPages() async {
-    try {
-      categoryDictList =
-          (await Api.getDictInfoPages({
-                "order": "orderNum",
-                "sort": "desc",
-                "typeId": 49,
-              })).data
-              as List<DictInfoListData>;
-      //使用浅拷贝
-      categoryOriginalDictList =
-          categoryDictList.map((e) {
-            return e;
-          }).toList();
-      //返回parentId :  null 的数据
-      categoryDictList =
-          categoryDictList
-              .where((element) => element.parentId == null)
-              .toList();
-    } catch (e) {
-      // 捕获并处理异常
-      print('获取视频分类数据失败: $e');
-    }
-  }
-
   Future<String> init() async {
     try {
       await getVideoPages();
       await getVideoCategoryPages();
-      await getDictInfoPages();
       await getVideoAreaPages();
       _scrollControllerAdd();
       return "init success";
@@ -168,7 +142,7 @@ class VideoFilterState extends State<VideoFilter>
     );
   }
 
-  Future<void> _category_change(DictInfoListData? item) async {
+  Future<void> _category_change(DictDataDataVideoCategory? item) async {
     if (item != null) {
       categoryCurrent.value = item.id ?? 0;
     } else {
@@ -203,7 +177,10 @@ class VideoFilterState extends State<VideoFilter>
     setState(() {});
   }
 
-  Widget _buildCategoryRow(String title, List<DictInfoListData> items) {
+  Widget _buildCategoryRow(
+    String title,
+    List<DictDataDataVideoCategory> items,
+  ) {
     return ValueListenableBuilder<int>(
       valueListenable: categoryCurrent,
       builder: (context, key, child) {
@@ -431,7 +408,7 @@ class VideoFilterState extends State<VideoFilter>
                   child: Column(
                     spacing: 10,
                     children: [
-                      _buildCategoryRow('全部分类', categoryDictList),
+                      _buildCategoryRow('全部分类', categoryData),
                       _buildAreaRow('全部地区', areaDictList),
                       _buildYearRow("全部年份", years),
                     ],
