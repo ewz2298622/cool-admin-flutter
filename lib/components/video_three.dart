@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../utils/video.dart';
+import '../views/short_drama/short_drama.dart';
 import '../views/video_detail/detail.dart';
 
 class Video extends StatelessWidget {
@@ -46,7 +47,7 @@ class Video extends StatelessWidget {
 
   Widget _buildVideoItemOverlay(dynamic item, BuildContext context) {
     return GestureDetector(
-      onTap: () => {_buildvideo_onClick(item.id ?? 0, context)},
+      onTap: () => {_buildvideo_onClick(item, context)},
       child: Container(
         width: 130,
         height: 180,
@@ -144,11 +145,18 @@ class Video extends StatelessWidget {
     );
   }
 
-  void _buildvideo_onClick(int id, BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => Video_Detail(id: id)),
-    );
+  void _buildvideo_onClick(dynamic item, BuildContext context) {
+    if (item.categoryPid == 551) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ShortDrama(id: item.id)),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => Video_Detail(id: item.id)),
+      );
+    }
   }
 }
 
