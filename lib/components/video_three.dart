@@ -169,8 +169,8 @@ class VideoThree extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 150.0, // 每个 item 的最大宽度
         crossAxisSpacing: 4.0,
         mainAxisSpacing: 4.0,
         childAspectRatio: 0.7,

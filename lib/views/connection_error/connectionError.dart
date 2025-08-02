@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 // 定义一个名为 ConnectionError 的有状态组件，用于展示一个包含 WebView 的页面
 class ConnectionError extends StatefulWidget {
@@ -26,20 +27,40 @@ class _ConnectionErrorState extends State<ConnectionError> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("设置", style: TextStyle(fontSize: 16)),
+        title: Text("服务错误", style: TextStyle(fontSize: 16)),
         //返回
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, size: 20),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        leading: Container(),
         //标题居中
         centerTitle: true,
         toolbarHeight: 40,
         automaticallyImplyLeading: false, //设置为false
       ),
-      body: Container(child: Text("网络错误")),
+      body: Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          spacing: 20,
+          children: [
+            TDImage(
+              width: 300,
+              height: 300,
+              assetUrl: 'assets/images/server_error.png',
+            ),
+            TDButton(
+              text: '重启应用',
+              size: TDButtonSize.large,
+              type: TDButtonType.outline,
+              isBlock: true,
+              shape: TDButtonShape.rectangle,
+              onTap: () {
+                // 跳转到首页
+                Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

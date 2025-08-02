@@ -13,7 +13,8 @@ import '../../utils/user.dart';
 // 定义一个名为 Setting 的有状态组件，用于展示一个包含 WebView 的页面
 class Setting extends StatefulWidget {
   // 构造函数，Key? key 是可选参数，用于在组件树中唯一标识该组件
-  const Setting({super.key});
+  final bool userStatus;
+  const Setting({super.key, required this.userStatus});
 
   // 创建该组件对应的状态类实例
   @override
@@ -36,98 +37,99 @@ class _SettingState extends State<Setting> {
     bool flag =
         Provider.of<ThemeChangeEvent>(context).themeMode == ThemeMode.dark;
     int teenagerModel = aldultDatabaseHelper.getLatest()?.status ?? 0;
-    return Card(
-      child: TDCellGroup(
-        theme: TDCellGroupTheme.cardTheme,
-        cells: [
-          TDCell(
-            style: TDCellStyle(
-              padding: EdgeInsets.only(top: 10, bottom: 10),
-              titleStyle: TextStyle(
-                color: Theme.of(context).textTheme.titleLarge!.color,
-              ),
-            ),
-            arrow: false,
-            title: '深色模式',
-            rightIconWidget: TDSwitch(
-              isOn: flag,
-              trackOnColor: Colors.green,
-              openText: "夜",
-              type: TDSwitchType.text,
-              closeText: "日",
-              onChanged: (bool value) {
-                setState(() {
-                  flag = value;
-                });
-                context.read<ThemeChangeEvent>().changeTheme(
-                  value ? ThemeMode.dark : ThemeMode.light,
-                );
-                return flag;
-              },
-            ),
+    List<TDCell> cells = [
+      TDCell(
+        style: TDCellStyle(
+          padding: EdgeInsets.only(top: 10, bottom: 10),
+          titleStyle: TextStyle(
+            color: Theme.of(context).textTheme.titleLarge!.color,
           ),
-          TDCell(
-            style: TDCellStyle(
-              padding: EdgeInsets.only(top: 10, bottom: 10),
-              titleStyle: TextStyle(
-                color: Theme.of(context).textTheme.titleLarge!.color,
-              ),
-            ),
-            arrow: false,
-            title: '青少年模式',
-            rightIconWidget: TDSwitch(
-              isOn: teenagerModel == 0,
-              trackOnColor: Colors.green,
-              openText: "开",
-              type: TDSwitchType.text,
-              closeText: "关",
-              onChanged: (bool value) {
-                setState(() {
-                  teenagerModel = value == true ? 0 : 1;
-                });
-                aldultDatabaseHelper.insertAldult(
-                  AldultEntity(
-                    status: teenagerModel,
-                    timestamp: DateTime.now(),
-                  ),
-                );
-                //重启app
-                Navigator.of(context).pushReplacementNamed('/');
-                return value;
-              },
-            ),
-          ),
-          // 可单独修改样式
-          TDCell(
-            style: TDCellStyle(
-              padding: EdgeInsets.only(top: 10, bottom: 25),
-              titleStyle: TextStyle(
-                color: Theme.of(context).textTheme.titleLarge!.color,
-              ),
-              // backgroundColor: Theme.of(context).cardColor,
-            ),
-            arrow: true,
-            title: '清空缓存',
-            onClick: (cell) {
-              deleteAll(context);
-            },
-          ),
-          TDCell(
-            style: TDCellStyle(
-              padding: EdgeInsets.only(top: 10, bottom: 25),
-              titleStyle: TextStyle(
-                color: Theme.of(context).textTheme.titleLarge!.color,
-              ),
-              // backgroundColor: Theme.of(context).cardColor,
-            ),
-            arrow: true,
-            title: '退出登录',
-            onClick: (cell) {
-              logout(context);
-            },
-          ),
-        ],
+        ),
+        arrow: false,
+        title: '深色模式',
+        rightIconWidget: TDSwitch(
+          isOn: flag,
+          trackOnColor: Colors.green,
+          openText: "夜",
+          type: TDSwitchType.text,
+          closeText: "日",
+          onChanged: (bool value) {
+            setState(() {
+              flag = value;
+            });
+            context.read<ThemeChangeEvent>().changeTheme(
+              value ? ThemeMode.dark : ThemeMode.light,
+            );
+            return flag;
+          },
+        ),
       ),
+      // 可单独修改样式
+      TDCell(
+        style: TDCellStyle(
+          padding: EdgeInsets.only(top: 10, bottom: 10),
+          titleStyle: TextStyle(
+            color: Theme.of(context).textTheme.titleLarge!.color,
+          ),
+          // backgroundColor: Theme.of(context).cardColor,
+        ),
+        arrow: true,
+        title: '清空缓存',
+        onClick: (cell) {
+          deleteAll(context);
+        },
+      ),
+      TDCell(
+        style: TDCellStyle(
+          padding: EdgeInsets.only(top: 10, bottom: 10),
+          titleStyle: TextStyle(
+            color: Theme.of(context).textTheme.titleLarge!.color,
+          ),
+          // backgroundColor: Theme.of(context).cardColor,
+        ),
+        arrow: true,
+        title: '退出登录',
+        onClick: (cell) {
+          logout(context);
+        },
+      ),
+    ];
+    //如果widget.userStatus为true的话则给cells第二个索引的位置添加元素
+    if (widget.userStatus) {
+      cells.insert(
+        1,
+        TDCell(
+          style: TDCellStyle(
+            padding: EdgeInsets.only(top: 10, bottom: 10),
+            titleStyle: TextStyle(
+              color: Theme.of(context).textTheme.titleLarge!.color,
+            ),
+          ),
+          arrow: false,
+          title: '青少年模式',
+          rightIconWidget: TDSwitch(
+            isOn: teenagerModel == 0,
+            trackOnColor: Colors.green,
+            openText: "开",
+            type: TDSwitchType.text,
+            closeText: "关",
+            onChanged: (bool value) {
+              setState(() {
+                teenagerModel = value == true ? 0 : 1;
+              });
+              aldultDatabaseHelper.insertAldult(
+                AldultEntity(status: teenagerModel, timestamp: DateTime.now()),
+              );
+              //重启app
+              Navigator.of(context).pushReplacementNamed('/');
+              return value;
+            },
+          ),
+        ),
+      );
+    }
+    return Card(
+      child: TDCellGroup(theme: TDCellGroupTheme.cardTheme, cells: cells),
     );
   }
 

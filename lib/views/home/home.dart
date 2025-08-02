@@ -59,9 +59,9 @@ class _HomePageState extends State<Home>
 
       category = category.where((element) => element.parentId == null).toList();
 
-      videoCategoryIds = category.map((e) => e.id ?? 0).toList() ?? [];
+      videoCategoryIds = category.map((e) => e.id ?? 0).toList();
       tabs.clear();
-      for (var element in category ?? []) {
+      for (var element in category) {
         tabs.add(TDTab(text: element.name));
       }
     } catch (e) {
@@ -126,8 +126,7 @@ class _HomePageState extends State<Home>
                 "type": 637,
                 "status": 1,
               })).data?.list
-              as List<NoticeInfoDataList> ??
-          [];
+              as List<NoticeInfoDataList>;
       noticeInfoData = list;
     } catch (e) {
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
@@ -296,8 +295,8 @@ class _HomePageState extends State<Home>
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}'); // 显示错误信息
         } else if (snapshot.hasData) {
-          return Stack(
-            children: <Widget>[_buildTabs(), _buildDefaultSearchBar()],
+          return Column(
+            children: <Widget>[_buildDefaultSearchBar(), _buildTabs()],
           );
         } else {
           return Text('No data available');
@@ -307,8 +306,8 @@ class _HomePageState extends State<Home>
   }
 
   Widget _buildTabs() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 50),
+    return Flexible(
+      flex: 1,
       child: DefaultTabController(
         //清理下边框的样式
         length: tabs.length,
@@ -316,7 +315,7 @@ class _HomePageState extends State<Home>
           children: [
             TabBar(
               isScrollable: true,
-              tabAlignment: TabAlignment.start,
+              tabAlignment: TabAlignment.center,
               dividerHeight: 0,
               //移除下划线
               // 使用空的指示器来移除下划线
@@ -414,10 +413,16 @@ class _HomePageState extends State<Home>
 
   Widget _buildAlbumItemWidgetType(AlbumDataList item, int index) {
     if (index % 2 == 0) {
-      return HomeTwoVideo(videoPageData: _buildAlbumItem(item, index));
+      return Padding(
+        padding: EdgeInsets.only(bottom: 10),
+        child: HomeTwoVideo(videoPageData: _buildAlbumItem(item, index)),
+      );
     } else {
-      return HorizontalVideoList(
-        videoPageData: _buildAlbumItem(item, index).list as List<dynamic>,
+      return Padding(
+        padding: EdgeInsets.only(bottom: 10),
+        child: HorizontalVideoList(
+          videoPageData: _buildAlbumItem(item, index).list as List<dynamic>,
+        ),
       );
     }
   }
@@ -433,19 +438,16 @@ class _HomePageState extends State<Home>
   }
 
   Widget _buildAlbumHeader(AlbumDataList album) {
-    return Container(
-      margin: const EdgeInsets.only(top: 16),
-      child: SectionWithMore(
-        title: album.title ?? "", // 传入标题
-        onMorePressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => VideoAlbum(id: album.id ?? 0),
-            ),
-          );
-        },
-      ),
+    return SectionWithMore(
+      title: album.title ?? "", // 传入标题
+      onMorePressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VideoAlbum(id: album.id ?? 0),
+          ),
+        );
+      },
     );
   }
 

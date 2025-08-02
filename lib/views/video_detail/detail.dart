@@ -21,6 +21,7 @@ import '../../style/layout.dart';
 import '../../utils/bus/bus.dart';
 import '../../utils/bus/constant.dart';
 import '../../utils/dict.dart';
+import '../feedback/feedback.dart';
 
 String TAG = 'Video_Detail';
 
@@ -224,10 +225,24 @@ class _Video_DetailState extends State<Video_Detail>
       await getPlayLinePages();
       await getVideoPages();
       setVideoUrl(playerLineData[currentPlay.value].file ?? "");
+      _errorListener();
       return "init success";
     } catch (e) {
       // 捕获并处理异常
       return "init success";
+    }
+  }
+
+  _errorListener() {
+    // player._errorListener(() => {});
+    //监听播放器错误
+    player.addListener(oid_playerValueChanged);
+  }
+
+  oid_playerValueChanged() {
+    FValue value = player.value;
+    if (value.state == FState.error) {
+      debugPrint("播放失败: ${value.state} ${videoList[currentPlay.value]}");
     }
   }
 
@@ -323,6 +338,35 @@ class _Video_DetailState extends State<Video_Detail>
                               labelColor: const Color.fromRGBO(252, 119, 66, 1),
                               tabs: [Tab(text: '详情'), Tab(text: '简介')],
                             ),
+                          ),
+                          IconButton(
+                            onPressed:
+                                () => {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => FeedbackPage(
+                                            videoId:
+                                                playerLineData[currentPlay
+                                                        .value]
+                                                    .videoId ??
+                                                "0",
+                                            videoUrl:
+                                                playerLineData[currentPlay
+                                                        .value]
+                                                    .file ??
+                                                "",
+                                            videoName: videoData?.title ?? "",
+                                            playLineId:
+                                                playerLineData[currentPlay
+                                                        .value]
+                                                    .id ??
+                                                0,
+                                          ),
+                                    ),
+                                  ),
+                                },
+                            icon: Icon(Icons.warning_rounded),
                           ),
                           _buildPopFromBottomWithCloseAndLeftTitle(context),
                         ],

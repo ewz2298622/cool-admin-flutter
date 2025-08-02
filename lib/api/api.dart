@@ -266,6 +266,22 @@ class Api {
     }
   }
 
+  /**
+   * 获取视频线路更新
+   * @param data 请求参数
+   */
+  static getVideoLineUpdate(Map<String, dynamic>? data) async {
+    try {
+      await server.post(
+        "/app/video/video_line/update",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
   static Future<PlayLineEntity> getPlayLinePages(
     Map<String, dynamic>? data,
   ) async {
@@ -444,7 +460,23 @@ class Api {
   //添加浏览记录
   static Future<void> addViews(Map<String, dynamic>? data) async {
     try {
-      await server.post("/app/user/views/add", data: data); // 添加注释说明 ONE 的含义});
+      await server.post(
+        "/app/application/views/add",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //添加用户反馈
+  static Future<void> addFeedback(Map<String, dynamic>? data) async {
+    try {
+      await server.post(
+        "/app/application/feedbackInfo/add",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
     } catch (error) {
       // 重新抛出异常以便上层处理
       rethrow;

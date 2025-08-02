@@ -274,194 +274,11 @@ class JsonConvert {
               .toList()
           as M;
     }
-    if (<DictDataDataWallpaperTags>[] is M) {
+    if (<DictDataDataLiveCategory>[] is M) {
       return data
-              .map<DictDataDataWallpaperTags>(
+              .map<DictDataDataLiveCategory>(
                 (Map<String, dynamic> e) =>
-                    DictDataDataWallpaperTags.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataWallpaperType>[] is M) {
-      return data
-              .map<DictDataDataWallpaperType>(
-                (Map<String, dynamic> e) =>
-                    DictDataDataWallpaperType.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataSongTags>[] is M) {
-      return data
-              .map<DictDataDataSongTags>(
-                (Map<String, dynamic> e) => DictDataDataSongTags.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataSongAlbumType>[] is M) {
-      return data
-              .map<DictDataDataSongAlbumType>(
-                (Map<String, dynamic> e) =>
-                    DictDataDataSongAlbumType.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataGoodsTags>[] is M) {
-      return data
-              .map<DictDataDataGoodsTags>(
-                (Map<String, dynamic> e) => DictDataDataGoodsTags.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataGoodsType>[] is M) {
-      return data
-              .map<DictDataDataGoodsType>(
-                (Map<String, dynamic> e) => DictDataDataGoodsType.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataAppType>[] is M) {
-      return data
-              .map<DictDataDataAppType>(
-                (Map<String, dynamic> e) => DictDataDataAppType.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataAppTags>[] is M) {
-      return data
-              .map<DictDataDataAppTags>(
-                (Map<String, dynamic> e) => DictDataDataAppTags.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataAgreementType>[] is M) {
-      return data
-              .map<DictDataDataAgreementType>(
-                (Map<String, dynamic> e) =>
-                    DictDataDataAgreementType.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataOrderStatus>[] is M) {
-      return data
-              .map<DictDataDataOrderStatus>(
-                (Map<String, dynamic> e) => DictDataDataOrderStatus.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataIntegralType>[] is M) {
-      return data
-              .map<DictDataDataIntegralType>(
-                (Map<String, dynamic> e) =>
-                    DictDataDataIntegralType.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataAppModule>[] is M) {
-      return data
-              .map<DictDataDataAppModule>(
-                (Map<String, dynamic> e) => DictDataDataAppModule.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataEmailType>[] is M) {
-      return data
-              .map<DictDataDataEmailType>(
-                (Map<String, dynamic> e) => DictDataDataEmailType.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataSpecialType>[] is M) {
-      return data
-              .map<DictDataDataSpecialType>(
-                (Map<String, dynamic> e) => DictDataDataSpecialType.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataFlix>[] is M) {
-      return data
-              .map<DictDataDataFlix>(
-                (Map<String, dynamic> e) => DictDataDataFlix.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataDocumentType>[] is M) {
-      return data
-              .map<DictDataDataDocumentType>(
-                (Map<String, dynamic> e) =>
-                    DictDataDataDocumentType.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataDocumentTags>[] is M) {
-      return data
-              .map<DictDataDataDocumentTags>(
-                (Map<String, dynamic> e) =>
-                    DictDataDataDocumentTags.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataUpdateType>[] is M) {
-      return data
-              .map<DictDataDataUpdateType>(
-                (Map<String, dynamic> e) => DictDataDataUpdateType.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataCommonType>[] is M) {
-      return data
-              .map<DictDataDataCommonType>(
-                (Map<String, dynamic> e) => DictDataDataCommonType.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataMessageType>[] is M) {
-      return data
-              .map<DictDataDataMessageType>(
-                (Map<String, dynamic> e) => DictDataDataMessageType.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataFriendApplyStatus>[] is M) {
-      return data
-              .map<DictDataDataFriendApplyStatus>(
-                (Map<String, dynamic> e) =>
-                    DictDataDataFriendApplyStatus.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataLiveStatus>[] is M) {
-      return data
-              .map<DictDataDataLiveStatus>(
-                (Map<String, dynamic> e) => DictDataDataLiveStatus.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataLiveType>[] is M) {
-      return data
-              .map<DictDataDataLiveType>(
-                (Map<String, dynamic> e) => DictDataDataLiveType.fromJson(e),
+                    DictDataDataLiveCategory.fromJson(e),
               )
               .toList()
           as M;
@@ -482,22 +299,6 @@ class JsonConvert {
               .toList()
           as M;
     }
-    if (<DictDataDataIndexTabs>[] is M) {
-      return data
-              .map<DictDataDataIndexTabs>(
-                (Map<String, dynamic> e) => DictDataDataIndexTabs.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataComicTags>[] is M) {
-      return data
-              .map<DictDataDataComicTags>(
-                (Map<String, dynamic> e) => DictDataDataComicTags.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
     if (<DictDataDataArea>[] is M) {
       return data
               .map<DictDataDataArea>(
@@ -510,66 +311,6 @@ class JsonConvert {
       return data
               .map<DictDataDataLanguage>(
                 (Map<String, dynamic> e) => DictDataDataLanguage.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataCloudDiskType>[] is M) {
-      return data
-              .map<DictDataDataCloudDiskType>(
-                (Map<String, dynamic> e) =>
-                    DictDataDataCloudDiskType.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataPageType>[] is M) {
-      return data
-              .map<DictDataDataPageType>(
-                (Map<String, dynamic> e) => DictDataDataPageType.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataComicUpdateStatus>[] is M) {
-      return data
-              .map<DictDataDataComicUpdateStatus>(
-                (Map<String, dynamic> e) =>
-                    DictDataDataComicUpdateStatus.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataComicType>[] is M) {
-      return data
-              .map<DictDataDataComicType>(
-                (Map<String, dynamic> e) => DictDataDataComicType.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataVideoM3u8SliceStatus>[] is M) {
-      return data
-              .map<DictDataDataVideoM3u8SliceStatus>(
-                (Map<String, dynamic> e) =>
-                    DictDataDataVideoM3u8SliceStatus.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataCloudDiskTags>[] is M) {
-      return data
-              .map<DictDataDataCloudDiskTags>(
-                (Map<String, dynamic> e) =>
-                    DictDataDataCloudDiskTags.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
-    if (<DictDataDataSongType>[] is M) {
-      return data
-              .map<DictDataDataSongType>(
-                (Map<String, dynamic> e) => DictDataDataSongType.fromJson(e),
               )
               .toList()
           as M;
@@ -587,6 +328,15 @@ class JsonConvert {
       return data
               .map<DictDataDataNoticeType>(
                 (Map<String, dynamic> e) => DictDataDataNoticeType.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<DictDataDataFeedbackType>[] is M) {
+      return data
+              .map<DictDataDataFeedbackType>(
+                (Map<String, dynamic> e) =>
+                    DictDataDataFeedbackType.fromJson(e),
               )
               .toList()
           as M;
@@ -1009,47 +759,14 @@ class JsonConvertClassCollection {
     (CaptchaData).toString(): CaptchaData.fromJson,
     (DictDataEntity).toString(): DictDataEntity.fromJson,
     (DictDataData).toString(): DictDataData.fromJson,
-    (DictDataDataWallpaperTags).toString(): DictDataDataWallpaperTags.fromJson,
-    (DictDataDataWallpaperType).toString(): DictDataDataWallpaperType.fromJson,
-    (DictDataDataSongTags).toString(): DictDataDataSongTags.fromJson,
-    (DictDataDataSongAlbumType).toString(): DictDataDataSongAlbumType.fromJson,
-    (DictDataDataGoodsTags).toString(): DictDataDataGoodsTags.fromJson,
-    (DictDataDataGoodsType).toString(): DictDataDataGoodsType.fromJson,
-    (DictDataDataAppType).toString(): DictDataDataAppType.fromJson,
-    (DictDataDataAppTags).toString(): DictDataDataAppTags.fromJson,
-    (DictDataDataAgreementType).toString(): DictDataDataAgreementType.fromJson,
-    (DictDataDataOrderStatus).toString(): DictDataDataOrderStatus.fromJson,
-    (DictDataDataIntegralType).toString(): DictDataDataIntegralType.fromJson,
-    (DictDataDataAppModule).toString(): DictDataDataAppModule.fromJson,
-    (DictDataDataEmailType).toString(): DictDataDataEmailType.fromJson,
-    (DictDataDataSpecialType).toString(): DictDataDataSpecialType.fromJson,
-    (DictDataDataFlix).toString(): DictDataDataFlix.fromJson,
-    (DictDataDataDocumentType).toString(): DictDataDataDocumentType.fromJson,
-    (DictDataDataDocumentTags).toString(): DictDataDataDocumentTags.fromJson,
-    (DictDataDataUpdateType).toString(): DictDataDataUpdateType.fromJson,
-    (DictDataDataCommonType).toString(): DictDataDataCommonType.fromJson,
-    (DictDataDataMessageType).toString(): DictDataDataMessageType.fromJson,
-    (DictDataDataFriendApplyStatus).toString():
-        DictDataDataFriendApplyStatus.fromJson,
-    (DictDataDataLiveStatus).toString(): DictDataDataLiveStatus.fromJson,
-    (DictDataDataLiveType).toString(): DictDataDataLiveType.fromJson,
+    (DictDataDataLiveCategory).toString(): DictDataDataLiveCategory.fromJson,
     (DictDataDataLiveTags).toString(): DictDataDataLiveTags.fromJson,
     (DictDataDataWeek).toString(): DictDataDataWeek.fromJson,
-    (DictDataDataIndexTabs).toString(): DictDataDataIndexTabs.fromJson,
-    (DictDataDataComicTags).toString(): DictDataDataComicTags.fromJson,
     (DictDataDataArea).toString(): DictDataDataArea.fromJson,
     (DictDataDataLanguage).toString(): DictDataDataLanguage.fromJson,
-    (DictDataDataCloudDiskType).toString(): DictDataDataCloudDiskType.fromJson,
-    (DictDataDataPageType).toString(): DictDataDataPageType.fromJson,
-    (DictDataDataComicUpdateStatus).toString():
-        DictDataDataComicUpdateStatus.fromJson,
-    (DictDataDataComicType).toString(): DictDataDataComicType.fromJson,
-    (DictDataDataVideoM3u8SliceStatus).toString():
-        DictDataDataVideoM3u8SliceStatus.fromJson,
-    (DictDataDataCloudDiskTags).toString(): DictDataDataCloudDiskTags.fromJson,
-    (DictDataDataSongType).toString(): DictDataDataSongType.fromJson,
     (DictDataDataVideoCategory).toString(): DictDataDataVideoCategory.fromJson,
     (DictDataDataNoticeType).toString(): DictDataDataNoticeType.fromJson,
+    (DictDataDataFeedbackType).toString(): DictDataDataFeedbackType.fromJson,
     (DictInfoListEntity).toString(): DictInfoListEntity.fromJson,
     (DictInfoListData).toString(): DictInfoListData.fromJson,
     (LiveInfoEntity).toString(): LiveInfoEntity.fromJson,

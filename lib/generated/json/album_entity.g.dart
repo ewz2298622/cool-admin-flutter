@@ -1,6 +1,5 @@
+import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 import 'package:flutter_app/entity/album_entity.dart';
-
-import 'base/json_convert_content.dart';
 
 AlbumEntity $AlbumEntityFromJson(Map<String, dynamic> json) {
   final AlbumEntity albumEntity = AlbumEntity();
@@ -28,7 +27,11 @@ Map<String, dynamic> $AlbumEntityToJson(AlbumEntity entity) {
 }
 
 extension AlbumEntityExtension on AlbumEntity {
-  AlbumEntity copyWith({int? code, String? message, AlbumData? data}) {
+  AlbumEntity copyWith({
+    int? code,
+    String? message,
+    AlbumData? data,
+  }) {
     return AlbumEntity()
       ..code = code ?? this.code
       ..message = message ?? this.message
@@ -38,15 +41,15 @@ extension AlbumEntityExtension on AlbumEntity {
 
 AlbumData $AlbumDataFromJson(Map<String, dynamic> json) {
   final AlbumData albumData = AlbumData();
-  final List<AlbumDataList>? list =
-      (json['list'] as List<dynamic>?)
-          ?.map((e) => jsonConvert.convert<AlbumDataList>(e) as AlbumDataList)
-          .toList();
+  final List<AlbumDataList>? list = (json['list'] as List<dynamic>?)
+      ?.map(
+          (e) => jsonConvert.convert<AlbumDataList>(e) as AlbumDataList)
+      .toList();
   if (list != null) {
     albumData.list = list;
   }
-  final AlbumDataPagination? pagination = jsonConvert
-      .convert<AlbumDataPagination>(json['pagination']);
+  final AlbumDataPagination? pagination = jsonConvert.convert<
+      AlbumDataPagination>(json['pagination']);
   if (pagination != null) {
     albumData.pagination = pagination;
   }
@@ -122,26 +125,22 @@ AlbumDataList $AlbumDataListFromJson(Map<String, dynamic> json) {
     albumDataList.introduce = introduce;
   }
   final String? popularityDay = jsonConvert.convert<String>(
-    json['popularity_day'],
-  );
+      json['popularity_day']);
   if (popularityDay != null) {
     albumDataList.popularityDay = popularityDay;
   }
   final String? popularityWeek = jsonConvert.convert<String>(
-    json['popularity_week'],
-  );
+      json['popularity_week']);
   if (popularityWeek != null) {
     albumDataList.popularityWeek = popularityWeek;
   }
   final String? popularityMonth = jsonConvert.convert<String>(
-    json['popularity_month'],
-  );
+      json['popularity_month']);
   if (popularityMonth != null) {
     albumDataList.popularityMonth = popularityMonth;
   }
   final String? popularitySum = jsonConvert.convert<String>(
-    json['popularity_sum'],
-  );
+      json['popularity_sum']);
   if (popularitySum != null) {
     albumDataList.popularitySum = popularitySum;
   }
@@ -157,13 +156,10 @@ AlbumDataList $AlbumDataListFromJson(Map<String, dynamic> json) {
   if (categoryId != null) {
     albumDataList.categoryId = categoryId;
   }
-  final List<AlbumDataListList>? list =
-      (json['list'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<AlbumDataListList>(e) as AlbumDataListList,
-          )
-          .toList();
+  final List<AlbumDataListList>? list = (json['list'] as List<dynamic>?)
+      ?.map(
+          (e) => jsonConvert.convert<AlbumDataListList>(e) as AlbumDataListList)
+      .toList();
   if (list != null) {
     albumDataList.list = list;
   }
@@ -317,8 +313,7 @@ AlbumDataListList $AlbumDataListListFromJson(Map<String, dynamic> json) {
     albumDataListList.imdbScore = imdbScore;
   }
   final String? imdbScoreId = jsonConvert.convert<String>(
-    json['imdb_score_id'],
-  );
+      json['imdb_score_id']);
   if (imdbScoreId != null) {
     albumDataListList.imdbScoreId = imdbScoreId;
   }
@@ -327,8 +322,7 @@ AlbumDataListList $AlbumDataListListFromJson(Map<String, dynamic> json) {
     albumDataListList.doubanScore = doubanScore;
   }
   final String? doubanScoreId = jsonConvert.convert<String>(
-    json['douban_score_id'],
-  );
+      json['douban_score_id']);
   if (doubanScoreId != null) {
     albumDataListList.doubanScoreId = doubanScoreId;
   }
@@ -341,26 +335,22 @@ AlbumDataListList $AlbumDataListListFromJson(Map<String, dynamic> json) {
     albumDataListList.popularity = popularity;
   }
   final String? popularityDay = jsonConvert.convert<String>(
-    json['popularity_day'],
-  );
+      json['popularity_day']);
   if (popularityDay != null) {
     albumDataListList.popularityDay = popularityDay;
   }
   final String? popularityWeek = jsonConvert.convert<String>(
-    json['popularity_week'],
-  );
+      json['popularity_week']);
   if (popularityWeek != null) {
     albumDataListList.popularityWeek = popularityWeek;
   }
   final String? popularityMonth = jsonConvert.convert<String>(
-    json['popularity_month'],
-  );
+      json['popularity_month']);
   if (popularityMonth != null) {
     albumDataListList.popularityMonth = popularityMonth;
   }
   final String? popularitySum = jsonConvert.convert<String>(
-    json['popularity_sum'],
-  );
+      json['popularity_sum']);
   if (popularitySum != null) {
     albumDataListList.popularitySum = popularitySum;
   }
@@ -397,8 +387,7 @@ AlbumDataListList $AlbumDataListListFromJson(Map<String, dynamic> json) {
     albumDataListList.total = total;
   }
   final String? horizontalPoster = jsonConvert.convert<String>(
-    json['horizontal_poster'],
-  );
+      json['horizontal_poster']);
   if (horizontalPoster != null) {
     albumDataListList.horizontalPoster = horizontalPoster;
   }
@@ -455,8 +444,7 @@ AlbumDataListList $AlbumDataListListFromJson(Map<String, dynamic> json) {
     albumDataListList.down = down;
   }
   final String? collectionName = jsonConvert.convert<String>(
-    json['collection_name'],
-  );
+      json['collection_name']);
   if (collectionName != null) {
     albumDataListList.collectionName = collectionName;
   }

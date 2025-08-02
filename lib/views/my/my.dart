@@ -260,89 +260,105 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Card(
-          child: Container(
-            padding: EdgeInsets.only(right: 25, left: 25, top: 15, bottom: 15),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(3.0), // 圆角边框
-            ),
-            child: Row(
-              children: [
-                Row(
-                  children: [
-                    Column(
-                      children: [
-                        Text(
-                          '首3月每月6元',
-                          style: TextStyle(
-                            color: Colors.brown,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
+        Flexible(
+          flex: 2,
+          child: Card(
+            child: Container(
+              padding: EdgeInsets.only(
+                right: 25,
+                left: 25,
+                top: 15,
+                bottom: 15,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(3.0), // 圆角边框
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '首3月每月6元',
+                        style: TextStyle(
+                          color: Colors.brown,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                         ),
-                        Text(
-                          '限时专享',
-                          style: TextStyle(color: Colors.brown, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      height: 30,
-                      width: 1,
-                      margin: EdgeInsets.only(right: 12, left: 12),
-                      //设置背景色
-                      decoration: BoxDecoration(
-                        color: Color.fromRGBO(225, 225, 225, 1.0),
                       ),
+                      Text(
+                        '限时专享',
+                        style: TextStyle(color: Colors.brown, fontSize: 12),
+                      ),
+                    ],
+                  ),
+
+                  Container(
+                    height: 30,
+                    width: 1,
+                    margin: EdgeInsets.only(right: 12, left: 12),
+                    //设置背景色
+                    decoration: BoxDecoration(
+                      color: Color.fromRGBO(225, 225, 225, 1.0),
                     ),
-                    Column(
-                      children: [
-                        Text(
-                          '年卡6折',
-                          style: TextStyle(
-                            color: Colors.brown,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '年卡6折',
+                        style: TextStyle(
+                          color: Colors.brown,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                         ),
-                        Text(
-                          '限时专享',
-                          style: TextStyle(color: Colors.brown, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+                      ),
+                      Text(
+                        '限时专享',
+                        style: TextStyle(color: Colors.brown, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-        Card(
-          child: Container(
-            padding: EdgeInsets.only(right: 25, left: 25, top: 15, bottom: 15),
-            child: Row(
-              children: [
-                Row(
-                  children: [
-                    Column(
-                      children: [
-                        Text(
-                          '首月五元',
-                          style: TextStyle(
-                            color: Colors.brown,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
+        Flexible(
+          flex: 1,
+          child: Card(
+            child: Container(
+              padding: EdgeInsets.only(top: 15, bottom: 15),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(3.0), // 圆角边框
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '首3月每月6元',
+                        style: TextStyle(
+                          color: Colors.brown,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                         ),
-                        Text(
-                          '月月省',
-                          style: TextStyle(color: Colors.brown, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+                      ),
+                      Text(
+                        '限时专享',
+                        style: TextStyle(color: Colors.brown, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -472,7 +488,10 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
         // 处理设置点击事件
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => Setting()),
+          MaterialPageRoute(
+            builder:
+                (context) => Setting(userStatus: user != null ? true : false),
+          ),
         );
         break;
       case "关于":

@@ -1,6 +1,5 @@
+import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 import 'package:flutter_app/entity/video_sort_entity.dart';
-
-import 'base/json_convert_content.dart';
 
 VideoSortEntity $VideoSortEntityFromJson(Map<String, dynamic> json) {
   final VideoSortEntity videoSortEntity = VideoSortEntity();
@@ -28,7 +27,11 @@ Map<String, dynamic> $VideoSortEntityToJson(VideoSortEntity entity) {
 }
 
 extension VideoSortEntityExtension on VideoSortEntity {
-  VideoSortEntity copyWith({int? code, String? message, VideoSortData? data}) {
+  VideoSortEntity copyWith({
+    int? code,
+    String? message,
+    VideoSortData? data,
+  }) {
     return VideoSortEntity()
       ..code = code ?? this.code
       ..message = message ?? this.message
@@ -38,18 +41,15 @@ extension VideoSortEntityExtension on VideoSortEntity {
 
 VideoSortData $VideoSortDataFromJson(Map<String, dynamic> json) {
   final VideoSortData videoSortData = VideoSortData();
-  final List<VideoSortDataList>? list =
-      (json['list'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<VideoSortDataList>(e) as VideoSortDataList,
-          )
-          .toList();
+  final List<VideoSortDataList>? list = (json['list'] as List<dynamic>?)
+      ?.map(
+          (e) => jsonConvert.convert<VideoSortDataList>(e) as VideoSortDataList)
+      .toList();
   if (list != null) {
     videoSortData.list = list;
   }
-  final VideoSortDataPagination? pagination = jsonConvert
-      .convert<VideoSortDataPagination>(json['pagination']);
+  final VideoSortDataPagination? pagination = jsonConvert.convert<
+      VideoSortDataPagination>(json['pagination']);
   if (pagination != null) {
     videoSortData.pagination = pagination;
   }
@@ -129,8 +129,7 @@ VideoSortDataList $VideoSortDataListFromJson(Map<String, dynamic> json) {
     videoSortDataList.imdbScore = imdbScore;
   }
   final String? imdbScoreId = jsonConvert.convert<String>(
-    json['imdb_score_id'],
-  );
+      json['imdb_score_id']);
   if (imdbScoreId != null) {
     videoSortDataList.imdbScoreId = imdbScoreId;
   }
@@ -139,8 +138,7 @@ VideoSortDataList $VideoSortDataListFromJson(Map<String, dynamic> json) {
     videoSortDataList.doubanScore = doubanScore;
   }
   final String? doubanScoreId = jsonConvert.convert<String>(
-    json['douban_score_id'],
-  );
+      json['douban_score_id']);
   if (doubanScoreId != null) {
     videoSortDataList.doubanScoreId = doubanScoreId;
   }
@@ -149,26 +147,22 @@ VideoSortDataList $VideoSortDataListFromJson(Map<String, dynamic> json) {
     videoSortDataList.introduce = introduce;
   }
   final String? popularityDay = jsonConvert.convert<String>(
-    json['popularity_day'],
-  );
+      json['popularity_day']);
   if (popularityDay != null) {
     videoSortDataList.popularityDay = popularityDay;
   }
   final String? popularityWeek = jsonConvert.convert<String>(
-    json['popularity_week'],
-  );
+      json['popularity_week']);
   if (popularityWeek != null) {
     videoSortDataList.popularityWeek = popularityWeek;
   }
   final String? popularityMonth = jsonConvert.convert<String>(
-    json['popularity_month'],
-  );
+      json['popularity_month']);
   if (popularityMonth != null) {
     videoSortDataList.popularityMonth = popularityMonth;
   }
   final String? popularitySum = jsonConvert.convert<String>(
-    json['popularity_sum'],
-  );
+      json['popularity_sum']);
   if (popularitySum != null) {
     videoSortDataList.popularitySum = popularitySum;
   }
@@ -193,8 +187,7 @@ VideoSortDataList $VideoSortDataListFromJson(Map<String, dynamic> json) {
     videoSortDataList.total = total;
   }
   final String? horizontalPoster = jsonConvert.convert<String>(
-    json['horizontal_poster'],
-  );
+      json['horizontal_poster']);
   if (horizontalPoster != null) {
     videoSortDataList.horizontalPoster = horizontalPoster;
   }
@@ -247,8 +240,7 @@ VideoSortDataList $VideoSortDataListFromJson(Map<String, dynamic> json) {
     videoSortDataList.collectionId = collectionId;
   }
   final String? collectionName = jsonConvert.convert<String>(
-    json['collection_name'],
-  );
+      json['collection_name']);
   if (collectionName != null) {
     videoSortDataList.collectionName = collectionName;
   }
@@ -458,10 +450,8 @@ extension VideoSortDataListExtension on VideoSortDataList {
 }
 
 VideoSortDataPagination $VideoSortDataPaginationFromJson(
-  Map<String, dynamic> json,
-) {
-  final VideoSortDataPagination videoSortDataPagination =
-      VideoSortDataPagination();
+    Map<String, dynamic> json) {
+  final VideoSortDataPagination videoSortDataPagination = VideoSortDataPagination();
   final int? page = jsonConvert.convert<int>(json['page']);
   if (page != null) {
     videoSortDataPagination.page = page;
@@ -478,8 +468,7 @@ VideoSortDataPagination $VideoSortDataPaginationFromJson(
 }
 
 Map<String, dynamic> $VideoSortDataPaginationToJson(
-  VideoSortDataPagination entity,
-) {
+    VideoSortDataPagination entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['page'] = entity.page;
   data['size'] = entity.size;
@@ -488,7 +477,11 @@ Map<String, dynamic> $VideoSortDataPaginationToJson(
 }
 
 extension VideoSortDataPaginationExtension on VideoSortDataPagination {
-  VideoSortDataPagination copyWith({int? page, int? size, int? total}) {
+  VideoSortDataPagination copyWith({
+    int? page,
+    int? size,
+    int? total,
+  }) {
     return VideoSortDataPagination()
       ..page = page ?? this.page
       ..size = size ?? this.size

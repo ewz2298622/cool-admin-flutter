@@ -407,6 +407,8 @@ class VideoFilterState extends State<VideoFilter>
                   ),
                   child: Column(
                     spacing: 10,
+                    //左对齐
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildCategoryRow('全部分类', categoryData),
                       _buildAreaRow('全部地区', areaDictList),
@@ -430,8 +432,8 @@ class VideoFilterState extends State<VideoFilter>
       return SliverToBoxAdapter(child: Center(child: NoData()));
     } else if (isLoading == false && videoPageData.isEmpty == false) {
       return SliverGrid(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
+        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 150.0, // 每个 item 的最大宽度
           crossAxisSpacing: 4.0,
           mainAxisSpacing: 4.0,
           childAspectRatio: 0.7,

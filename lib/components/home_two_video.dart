@@ -15,22 +15,60 @@ class HomeTwoVideo extends StatelessWidget {
     return _buildAlbumItems(videoPageData, context);
   }
 
+  // Widget _buildAlbumItems(AlbumDataList album, BuildContext context) {
+  //   return GridView.builder(
+  //     shrinkWrap: true,
+  //     physics: const NeverScrollableScrollPhysics(),
+  //     gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+  //       maxCrossAxisExtent: 200.0, // 每个 item 的最大宽度
+  //       mainAxisSpacing: 0,
+  //       crossAxisSpacing: 10,
+  //       childAspectRatio: 1.1,
+  //     ),
+  //
+  //     itemCount: album.list?.length ?? 0,
+  //     itemBuilder:
+  //         (context, index) => _buildAlbumItem(
+  //           album.list?[index] ?? AlbumDataListList(),
+  //           context,
+  //         ),
+  //   );
+  // }
+
   Widget _buildAlbumItems(AlbumDataList album, BuildContext context) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 0,
-        crossAxisSpacing: 10,
-        childAspectRatio: 1.2, // 修改：加大子项宽度
-      ),
-      itemCount: album.list?.length ?? 0,
-      itemBuilder:
-          (context, index) => _buildAlbumItem(
-            album.list?[index] ?? AlbumDataListList(),
-            context,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const double maxItemWidth = 150.0; // 每个 item 的最大宽度
+        const double crossAxisSpacing = 10.0; // 横向间距
+
+        // 计算每行能放多少个 item
+        final screenWidth = constraints.maxWidth;
+        final crossAxisCount =
+            (screenWidth / (maxItemWidth + crossAxisSpacing)).floor();
+        final finalCrossAxisCount = crossAxisCount >= 1 ? crossAxisCount : 1;
+
+        // 计算实际 item 宽度（考虑间距）
+        final itemWidth =
+            (screenWidth - (finalCrossAxisCount - 1) * crossAxisSpacing) /
+            finalCrossAxisCount;
+
+        return SingleChildScrollView(
+          child: Wrap(
+            spacing: crossAxisSpacing, // 横向间距
+            runSpacing: 0, // 纵向间距（可调整）
+            children: List.generate(
+              album.list?.length ?? 0,
+              (index) => SizedBox(
+                width: itemWidth, // 固定宽度
+                child: _buildAlbumItem(
+                  album.list?[index] ?? AlbumDataListList(),
+                  context,
+                ),
+              ),
+            ),
           ),
+        );
+      },
     );
   }
 
@@ -224,6 +262,7 @@ class HomeTwoVideo extends StatelessWidget {
           borderRadius: BorderRadius.circular(8), // 可选：添加圆角
         ), // 可选：添加内边距
         child: Column(
+          mainAxisSize: MainAxisSize.min, // 高度自适应
           //添加点击事件
           children: [
             Stack(
