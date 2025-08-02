@@ -417,25 +417,13 @@ class _HomePageState extends State<Home>
     if (index % 2 == 0) {
       return Padding(
         padding: EdgeInsets.only(bottom: 10),
-        child: HomeTwoVideo(videoPageData: _buildAlbumItem(item, index)),
+        child: HomeTwoVideo(videoPageData: item.list as List<dynamic>),
       );
     } else {
       return Padding(
         padding: EdgeInsets.only(bottom: 10),
-        child: HorizontalVideoList(
-          videoPageData: _buildAlbumItem(item, index).list as List<dynamic>,
-        ),
+        child: HorizontalVideoList(videoPageData: item.list as List<dynamic>),
       );
-    }
-  }
-
-  //传入AlbumDataList 和index 如果是偶数 就去AlbumDataList.list四个元素 否则就取出所有元素
-  AlbumDataList _buildAlbumItem(AlbumDataList item, int index) {
-    if (index % 2 == 0) {
-      item.list = item.list?.sublist(0, 4);
-      return item;
-    } else {
-      return item;
     }
   }
 

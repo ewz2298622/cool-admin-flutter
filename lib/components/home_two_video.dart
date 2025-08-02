@@ -6,7 +6,7 @@ import '../utils/video.dart';
 import '../views/video_detail/detail.dart';
 
 class HomeTwoVideo extends StatelessWidget {
-  final AlbumDataList videoPageData;
+  final List<dynamic> videoPageData;
 
   const HomeTwoVideo({super.key, required this.videoPageData});
 
@@ -14,54 +14,79 @@ class HomeTwoVideo extends StatelessWidget {
   Widget build(BuildContext context) {
     return _buildAlbumItems(videoPageData, context);
   }
-
-  // Widget _buildAlbumItems(AlbumDataList album, BuildContext context) {
-  //   return GridView.builder(
-  //     shrinkWrap: true,
-  //     physics: const NeverScrollableScrollPhysics(),
-  //     gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-  //       maxCrossAxisExtent: 200.0, // 每个 item 的最大宽度
-  //       mainAxisSpacing: 0,
-  //       crossAxisSpacing: 10,
-  //       childAspectRatio: 1.1,
-  //     ),
   //
-  //     itemCount: album.list?.length ?? 0,
-  //     itemBuilder:
-  //         (context, index) => _buildAlbumItem(
-  //           album.list?[index] ?? AlbumDataListList(),
-  //           context,
+  // Widget _buildAlbumItems(AlbumDataList album, BuildContext context) {
+  //   return CustomScrollView(
+  //     shrinkWrap: true,
+  //     physics: NeverScrollableScrollPhysics(),
+  //     slivers: [
+  //       SliverGrid(
+  //         delegate: SliverChildBuilderDelegate(
+  //           (context, index) => _buildAlbumItem(
+  //             album.list?[index] ?? AlbumDataListList(),
+  //             context,
+  //           ),
+  //           childCount: album.list?.length ?? 0,
   //         ),
+  //         gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+  //           maxCrossAxisExtent: 200.0,
+  //           mainAxisSpacing: 0,
+  //           crossAxisSpacing: 10,
+  //           childAspectRatio: 1.2,
+  //         ),
+  //       ),
+  //     ],
   //   );
   // }
 
-  Widget _buildAlbumItems(AlbumDataList album, BuildContext context) {
+  Widget _buildAlbumItems(List<dynamic> album, BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        const double maxItemWidth = 150.0; // 每个 item 的最大宽度
-        const double crossAxisSpacing = 10.0; // 横向间距
+        // 获取当前屏幕方向
+        final mediaQuery = MediaQuery.of(context);
+        final isPortrait = mediaQuery.orientation == Orientation.portrait;
+        
+        // 根据屏幕方向设置最大宽度和间距
+        const double maxItemWidthPortrait = 150.0;
+        const double maxItemWidthLandscape = 200.0;
+        const double crossAxisSpacingPortrait = 10.0;
+        const double crossAxisSpacingLandscape = 15.0;
+        
+        final double maxItemWidth = isPortrait ? maxItemWidthPortrait : maxItemWidthLandscape;
+        final double crossAxisSpacing = isPortrait ? crossAxisSpacingPortrait : crossAxisSpacingLandscape;
 
         // 计算每行能放多少个 item
         final screenWidth = constraints.maxWidth;
         final crossAxisCount =
             (screenWidth / (maxItemWidth + crossAxisSpacing)).floor();
         final finalCrossAxisCount = crossAxisCount >= 1 ? crossAxisCount : 1;
-
+        
+        // 重构album 从0开始截取到finalCrossAxisCount的整数倍
+        final itemCount = finalCrossAxisCount * 2;
+        final actualItemCount = album.length > itemCount ? itemCount : album.length;
+        album = album.sublist(0, actualItemCount);
+        
         // 计算实际 item 宽度（考虑间距）
         final itemWidth =
             (screenWidth - (finalCrossAxisCount - 1) * crossAxisSpacing) /
             finalCrossAxisCount;
 
-        return SingleChildScrollView(
+        return SizedBox(
+          width: double.infinity,
           child: Wrap(
+            //添加自动换行
             spacing: crossAxisSpacing, // 横向间距
             runSpacing: 5, // 纵向间距（可调整）
+            // 添加换行参数以解决换行报错问题
+            alignment: WrapAlignment.start,
+            crossAxisAlignment: WrapCrossAlignment.start,
+            //自动换行
             children: List.generate(
-              album.list?.length ?? 0,
+              album.length ?? 0,
               (index) => SizedBox(
                 width: itemWidth, // 固定宽度
                 child: _buildAlbumItem(
-                  album.list?[index] ?? AlbumDataListList(),
+                  album[index] ?? AlbumDataListList(),
                   context,
                 ),
               ),
