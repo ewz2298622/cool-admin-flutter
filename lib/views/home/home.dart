@@ -212,7 +212,6 @@ class _HomePageState extends State<Home>
 
   /// 轮播图视图
   Widget _buildDotsSwiper(int id) {
-    debugPrint('_buildDotsSwiper${swiperMap[id]}');
     super.build(context); // 必须调用 super.build
     return Swiper(
       autoplay: true,
@@ -348,9 +347,12 @@ class _HomePageState extends State<Home>
                         height: 200,
                         child: _buildDotsSwiper(category[index].id ?? 0),
                       ),
-                      Column(
-                        children: _buildAlbumContentList(
-                          albumMap[category[index].id] ?? [],
+                      Padding(
+                        padding: const EdgeInsets.only(top: Layout.paddingL),
+                        child: Column(
+                          children: _buildAlbumContentList(
+                            albumMap[category[index].id] ?? [],
+                          ),
                         ),
                       ),
                     ],

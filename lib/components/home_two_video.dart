@@ -55,7 +55,7 @@ class HomeTwoVideo extends StatelessWidget {
         return SingleChildScrollView(
           child: Wrap(
             spacing: crossAxisSpacing, // 横向间距
-            runSpacing: 0, // 纵向间距（可调整）
+            runSpacing: 5, // 纵向间距（可调整）
             children: List.generate(
               album.list?.length ?? 0,
               (index) => SizedBox(
