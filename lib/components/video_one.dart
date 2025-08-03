@@ -189,7 +189,7 @@ class VideoItem extends StatelessWidget {
   }
 
   void _buildvideo_onClick(int id, BuildContext context) {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => Video_Detail(id: id)),
     );

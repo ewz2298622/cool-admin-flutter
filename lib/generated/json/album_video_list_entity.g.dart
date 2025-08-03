@@ -1,6 +1,5 @@
 import 'package:flutter_app/entity/album_video_list_entity.dart';
-
-import 'base/json_convert_content.dart';
+import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 
 AlbumVideoListEntity $AlbumVideoListEntityFromJson(Map<String, dynamic> json) {
   final AlbumVideoListEntity albumVideoListEntity = AlbumVideoListEntity();

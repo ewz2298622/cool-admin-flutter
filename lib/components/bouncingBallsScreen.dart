@@ -127,7 +127,7 @@ class _BouncingBallsScreenState extends State<BouncingBallsScreen>
           }
         }
 
-        return Container(child: CustomPaint(painter: BallsPainter(_balls)));
+        return CustomPaint(painter: BallsPainter(_balls));
       },
     );
   }

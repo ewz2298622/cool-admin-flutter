@@ -8,6 +8,7 @@ import 'package:fplayer/fplayer.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
+import '../../components/detail_tabs_vews.dart';
 import '../../components/loading.dart';
 import '../../components/sectionWithMore.dart';
 import '../../components/select_option_detail.dart';
@@ -56,6 +57,8 @@ class _Video_DetailState extends State<Video_Detail>
   final PageController pageController = PageController(initialPage: 0);
   final FPlayer player = FPlayer();
   List<dynamic> deviceList = [];
+  List<TDTab> tabs = [];
+  List<List<PlayLineDataList>> tabData = [];
   StateSetter? TVshowModalBottomSheetListSate;
 
   // 倍速列表
@@ -176,6 +179,9 @@ class _Video_DetailState extends State<Video_Detail>
       videoLineData =
           (await Api.getVideoLinePages({"video_id": widget.id})).data?.list
               as List<VideoLineDataList>;
+      for (var element in videoLineData) {
+        tabs.add(TDTab(text: element.collectionName));
+      }
     } catch (e) {
       // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
@@ -202,6 +208,7 @@ class _Video_DetailState extends State<Video_Detail>
           ),
         );
       }
+      setState(() {});
       debugPrint(
         'Initialization getPlayLinePages success "video_id": ${widget.id}"video_line_id": ${videoLineData[currentLine.value].id}',
       );
@@ -209,6 +216,57 @@ class _Video_DetailState extends State<Video_Detail>
       // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
     }
+  }
+
+  Future<void> getPlayLinePagesTabs() async {
+    try {
+      playerLineData.clear();
+      videoList.clear();
+      playerLineData =
+          (await Api.getPlayLinePages({
+                "video_id": widget.id,
+                // "video_line_id": videoLineData[currentLine.value].id,
+                "size": 10000,
+              })).data?.list
+              as List<PlayLineDataList>;
+
+      tabData = groupAndSortByCollectionId(playerLineData);
+    } catch (e) {
+      // 捕获并处理异常
+      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+    }
+  }
+
+  List<List<PlayLineDataList>> groupAndSortByCollectionId(
+    List<PlayLineDataList> data,
+  ) {
+    debugPrint("groupAndSortByCollectionId");
+    // 创建一个Map来存储按collection_id分组的数据
+    Map<int, List<PlayLineDataList>> groupedData = {};
+
+    // 遍历原始数据，按collection_id分组
+    for (var item in data) {
+      int collectionId = item.collectionId as int;
+      if (!groupedData.containsKey(collectionId)) {
+        groupedData[collectionId] = [];
+      }
+      groupedData[collectionId]!.add(item);
+    }
+
+    // 对每个分组内的数据按sort字段进行排序
+    List<List<PlayLineDataList>> result = [];
+    groupedData.forEach((collectionId, items) {
+      // 按sort字段从小到大排序
+      items.sort((a, b) => (a.sort as int).compareTo(b.sort as int));
+      result.add(items);
+    });
+
+    // 如果需要按collection_id排序（可选）
+    // result.sort((a, b) => a.first['collection_id'].compareTo(b.first['collection_id']));
+
+    debugPrint("groupAndSortByCollectionId: ${result.length}");
+
+    return result;
   }
 
   /// 初始化tab
@@ -224,6 +282,7 @@ class _Video_DetailState extends State<Video_Detail>
       await getVideoLinePages();
       await getPlayLinePages();
       await getVideoPages();
+      await getPlayLinePagesTabs();
       setVideoUrl(playerLineData[currentPlay.value].file ?? "");
       _errorListener();
       return "init success";
@@ -248,11 +307,10 @@ class _Video_DetailState extends State<Video_Detail>
 
   Future<void> setVideoUrl(String url) async {
     try {
+      await player.reset();
       player.setDataSource(url, autoPlay: true, showCover: true);
-      debugPrint('setVideoUrl success: $url');
     } catch (error) {
       debugPrint('setVideoUrl error: $error');
-      return;
     }
   }
 
@@ -262,11 +320,33 @@ class _Video_DetailState extends State<Video_Detail>
     super.initState();
   }
 
+  goFeedbackPage() {
+    player.stop();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder:
+            (context) => FeedbackPage(
+              videoId: playerLineData[currentPlay.value].videoId ?? "0",
+              videoUrl: playerLineData[currentPlay.value].file ?? "",
+              videoName: videoData?.title ?? "",
+              playLineId: playerLineData[currentPlay.value].id ?? 0,
+            ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     super.dispose();
-    player.release();
+    removeVideo();
+    debugPrint('player  dispose');
     addViews();
+  }
+
+  removeVideo() {
+    player.stop();
+    player.reset();
+    player.release();
   }
 
   /// 返回一个Widget自动填充剩余高度 且可以滑动
@@ -340,32 +420,7 @@ class _Video_DetailState extends State<Video_Detail>
                             ),
                           ),
                           IconButton(
-                            onPressed:
-                                () => {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) => FeedbackPage(
-                                            videoId:
-                                                playerLineData[currentPlay
-                                                        .value]
-                                                    .videoId ??
-                                                "0",
-                                            videoUrl:
-                                                playerLineData[currentPlay
-                                                        .value]
-                                                    .file ??
-                                                "",
-                                            videoName: videoData?.title ?? "",
-                                            playLineId:
-                                                playerLineData[currentPlay
-                                                        .value]
-                                                    .id ??
-                                                0,
-                                          ),
-                                    ),
-                                  ),
-                                },
+                            onPressed: goFeedbackPage,
                             icon: Icon(Icons.warning_rounded),
                           ),
                           _buildPopFromBottomWithCloseAndLeftTitle(context),
@@ -482,17 +537,6 @@ class _Video_DetailState extends State<Video_Detail>
     );
   }
 
-  Future<void> _play_change(int index) async {
-    await player.reset();
-    setVideoUrl(videoList[index].url);
-    setState(() {
-      currentPlay.value = index; // 确保这里触发了 notifyListeners()
-    });
-    showModalBottomSheetListSate!(() {
-      currentPlay.value = index;
-    });
-  }
-
   Widget _buildEpisodeList() {
     return Container(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
@@ -537,83 +581,53 @@ class _Video_DetailState extends State<Video_Detail>
           // 自定义小屏列表
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            child: Row(
-              children:
-                  videoList.map((item) {
-                    int index = videoList.indexOf(item);
-                    return Padding(
-                      padding: EdgeInsets.only(right: 10), // 设置间隔为10
-                      child: Container(
-                        width: 100,
-                        height: 38,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color:
-                                index == currentPlay.value
-                                    ? Color.fromRGBO(241, 98, 16, 1)
-                                    : Colors.transparent,
-                            width: index == currentPlay.value ? 1 : 0,
-                          ),
-                          borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                          color: Color.fromRGBO(247, 247, 247, 1),
-                        ),
-                        child: GestureDetector(
-                          child: Text(
-                            item.title,
-                            style: TextStyle(
-                              color:
-                                  index == currentPlay.value
-                                      ? Color.fromRGBO(241, 98, 16, 1)
-                                      : Colors.black,
-                            ),
-                          ),
-                          onTap: () => _play_change(index),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-            ),
+            child: _buildPlayer(tabData[currentPlay.value]),
           ),
         ],
       ),
     );
   }
 
-  Future<void> _play_change_line(VideoLineDataList item) async {
-    currentLine.value = item.id!;
-    await getPlayLinePages();
-    setState(() {});
-  }
-
-  Widget _buildItemWithLogo(BuildContext context) {
+  Widget _buildPlayer(List<PlayLineDataList> entry) {
     return ValueListenableBuilder<int>(
-      valueListenable: currentLine,
+      valueListenable: currentPlay,
       builder: (context, key, child) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                ...(videoLineData).map(
-                  (item) => Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: TDButton(
-                      text: item.collectionName,
-                      size: TDButtonSize.small,
-                      style: TDButtonStyle(
-                        textColor:
-                            key == item.id
-                                ? const Color.fromRGBO(249, 174, 61, 1)
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              ...entry.asMap().entries.map((entry) {
+                final index = entry.key; // 获取当前索引
+                final item = entry.value; // 获取当前项
+                return Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor:
+                          currentPlay.value == index
+                              ? const Color.fromRGBO(252, 119, 66, 1)
+                              : Color.fromRGBO(255, 255, 255, 1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                    onPressed: () {
+                      currentPlay.value = index;
+                      setVideoUrl(tabData[currentPlay.value][index].file ?? "");
+                    },
+                    child: Text(
+                      item.name ?? '',
+                      style: TextStyle(
+                        color:
+                            currentPlay.value == index
+                                ? Colors.white
                                 : Colors.black,
                       ),
-                      onTap: () => {_play_change_line(item)},
                     ),
                   ),
-                ),
-              ],
-            ),
+                );
+              }),
+            ],
           ),
         );
       },
@@ -685,73 +699,20 @@ class _Video_DetailState extends State<Video_Detail>
                           ),
                         ],
                       ),
-                      _buildItemWithLogo(context),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          physics: const BouncingScrollPhysics(),
-                          child: Wrap(
-                            spacing: 20,
-                            runSpacing: 10,
-                            children: List<Widget>.generate(videoList.length, (
-                              index,
-                            ) {
-                              return Column(
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 10),
-                                    child: Container(
-                                      width: 80,
-                                      height: 38,
-                                      alignment: Alignment.center,
-                                      //设置border
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color:
-                                              index == currentPlay.value
-                                                  ? Color.fromRGBO(
-                                                    241,
-                                                    98,
-                                                    16,
-                                                    1,
-                                                  )
-                                                  : Colors.transparent,
-                                          width:
-                                              index == currentPlay.value
-                                                  ? 1
-                                                  : 0,
-                                        ),
-                                        //设置圆角
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(6.0),
-                                        ),
-
-                                        color: Color.fromRGBO(247, 247, 247, 1),
-
-                                        //水平居中
-                                      ),
-                                      child: GestureDetector(
-                                        child: Text(
-                                          videoList[index].title,
-                                          style: TextStyle(
-                                            color:
-                                                index == currentPlay.value
-                                                    ? Color.fromRGBO(
-                                                      241,
-                                                      98,
-                                                      16,
-                                                      1,
-                                                    )
-                                                    : Colors.black,
-                                          ),
-                                        ),
-                                        onTap: () => _play_change(index),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }),
-                          ),
+                      Flexible(
+                        flex: 1,
+                        child: DetailTabsView(
+                          tabData: tabData,
+                          tabs: videoLineData,
+                          onSelectionChanged: (tabIndex, selectedIndices) {
+                            setVideoUrl(
+                              tabData[tabIndex][selectedIndices.first].file ??
+                                  "",
+                            );
+                            setState(() {
+                              currentPlay.value = selectedIndices.first;
+                            });
+                          },
                         ),
                       ),
                     ],

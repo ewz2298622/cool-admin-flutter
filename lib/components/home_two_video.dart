@@ -45,27 +45,30 @@ class HomeTwoVideo extends StatelessWidget {
         // 获取当前屏幕方向
         final mediaQuery = MediaQuery.of(context);
         final isPortrait = mediaQuery.orientation == Orientation.portrait;
-        
+
         // 根据屏幕方向设置最大宽度和间距
         const double maxItemWidthPortrait = 150.0;
         const double maxItemWidthLandscape = 200.0;
         const double crossAxisSpacingPortrait = 10.0;
         const double crossAxisSpacingLandscape = 15.0;
-        
-        final double maxItemWidth = isPortrait ? maxItemWidthPortrait : maxItemWidthLandscape;
-        final double crossAxisSpacing = isPortrait ? crossAxisSpacingPortrait : crossAxisSpacingLandscape;
+
+        final double maxItemWidth =
+            isPortrait ? maxItemWidthPortrait : maxItemWidthLandscape;
+        final double crossAxisSpacing =
+            isPortrait ? crossAxisSpacingPortrait : crossAxisSpacingLandscape;
 
         // 计算每行能放多少个 item
         final screenWidth = constraints.maxWidth;
         final crossAxisCount =
             (screenWidth / (maxItemWidth + crossAxisSpacing)).floor();
         final finalCrossAxisCount = crossAxisCount >= 1 ? crossAxisCount : 1;
-        
+
         // 重构album 从0开始截取到finalCrossAxisCount的整数倍
         final itemCount = finalCrossAxisCount * 2;
-        final actualItemCount = album.length > itemCount ? itemCount : album.length;
+        final actualItemCount =
+            album.length > itemCount ? itemCount : album.length;
         album = album.sublist(0, actualItemCount);
-        
+
         // 计算实际 item 宽度（考虑间距）
         final itemWidth =
             (screenWidth - (finalCrossAxisCount - 1) * crossAxisSpacing) /
@@ -98,7 +101,7 @@ class HomeTwoVideo extends StatelessWidget {
   }
 
   void _buildAlbumItem_onClick(int id, BuildContext context) {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => Video_Detail(id: id)),
     );

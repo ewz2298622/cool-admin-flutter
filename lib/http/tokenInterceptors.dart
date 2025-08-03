@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../db/manager/AldultDatabaseHelper.dart';
 import '../db/manager/TokenDatabaseHelper.dart';
+import '../utils/device_info.dart';
 
 String TAG = "TokenDatabaseHelper";
 TokenDatabaseHelper tokenDatabaseHelper = TokenDatabaseHelper();
@@ -10,7 +12,10 @@ AldultDatabaseHelper aldultDatabaseHelper = AldultDatabaseHelper();
 /// Token拦截器
 class TokenInterceptors extends InterceptorsWrapper {
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+  Future<void> onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
     try {
       late String? authorization = tokenDatabaseHelper.getLatest()?.token;
       late int? aldult = aldultDatabaseHelper.getLatest()?.status;
@@ -22,6 +27,13 @@ class TokenInterceptors extends InterceptorsWrapper {
         // 忽略已调用的错误，避免程序崩溃
         options.headers["aldult"] = aldult;
       }
+
+      Map<String, dynamic>? deviceInfo =
+          await DeviceInfoUtils().requestDeviceInfo();
+      deviceInfo.forEach((key, value) {
+        options.headers[key] = value;
+        debugPrint("$TAG: $key: $value");
+      });
 
       handler.next(options);
     } catch (e) {

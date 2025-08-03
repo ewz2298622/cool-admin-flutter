@@ -247,7 +247,7 @@ class VideoFilterState extends State<VideoFilter>
                   _area_change(null);
                 },
               ),
-              ...(items ?? []).map(
+              ...(items).map(
                 (item) => Padding(
                   padding: const EdgeInsets.only(left: 8),
                   child: GestureDetector(

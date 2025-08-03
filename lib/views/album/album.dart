@@ -87,31 +87,47 @@ class VideoAlbumState extends State<VideoAlbum>
                         assetUrl: 'assets/images/loading.gif',
                       ),
                     ),
+
                     Container(
-                      margin: const EdgeInsets.only(top: 70, left: 20),
-                      child: Column(
-                        //左對齊
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            albumInfoData?.title ?? "",
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                      height: 300,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent, // 顶部透明
+                            Colors.black, // 底部黑色
+                          ],
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 20, top: 80),
+                        child: Column(
+                          //左對齊
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              albumInfoData?.title ?? "",
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
                             ),
-                          ),
-                          Text(
-                            albumInfoData?.introduce ?? "",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.white,
+                            Text(
+                              albumInfoData?.introduce ?? "",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w400,
+                                color: Colors.white,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     _buildList(),
@@ -166,7 +182,7 @@ class VideoAlbumState extends State<VideoAlbum>
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, size: 20),
+          icon: Icon(Icons.arrow_back_ios, size: 20, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },

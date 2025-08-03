@@ -44,33 +44,29 @@ class PlayLineData {
 
 @JsonSerializable()
 class PlayLineDataList {
-  @JSONField(name: 'video_line_id')
-  String? videoLineId;
-  @JSONField(name: 'video_id')
-  String? videoId;
-  String? name;
-  String? file;
-  @JSONField(name: 'charging_mode')
-  String? chargingMode;
-  String? currency;
-  @JSONField(name: 'sub_title')
-  String? subTitle;
-  @JSONField(name: 'create_at')
-  String? createAt;
-  @JSONField(name: 'update_at')
-  String? updateAt;
-  @JSONField(name: 'site_id')
-  int? siteId;
-  String? tag;
-  @JSONField(name: 'live_source')
-  int? liveSource;
+  int? id;
   String? createTime;
   String? updateTime;
+  dynamic tenantId;
   dynamic createUserId;
   dynamic updateUserId;
-  int? id;
-  int? status;
+  @JSONField(name: 'video_id')
+  String? videoId;
+  @JSONField(name: 'video_line_id')
+  String? videoLineId;
+  String? name;
+  @JSONField(name: 'sub_title')
+  String? subTitle;
   int? sort;
+  String? tag;
+  String? file;
+  @JSONField(name: 'collection_id')
+  int? collectionId;
+  @JSONField(name: 'video_name')
+  String? videoName;
+  @JSONField(name: 'collection_name')
+  String? collectionName;
+  int? status;
 
   PlayLineDataList();
 
@@ -86,6 +82,8 @@ class PlayLineDataList {
 }
 
 @JsonSerializable()
+set tenantId(tenantId) {}
+
 class PlayLineDataPagination {
   int? page;
   int? size;

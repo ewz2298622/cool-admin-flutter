@@ -1,6 +1,5 @@
+import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 import 'package:flutter_app/entity/dict_data_entity.dart';
-
-import 'base/json_convert_content.dart';
 
 DictDataEntity $DictDataEntityFromJson(Map<String, dynamic> json) {
   final DictDataEntity dictDataEntity = DictDataEntity();
@@ -28,7 +27,11 @@ Map<String, dynamic> $DictDataEntityToJson(DictDataEntity entity) {
 }
 
 extension DictDataEntityExtension on DictDataEntity {
-  DictDataEntity copyWith({int? code, String? message, DictDataData? data}) {
+  DictDataEntity copyWith({
+    int? code,
+    String? message,
+    DictDataData? data,
+  }) {
     return DictDataEntity()
       ..code = code ?? this.code
       ..message = message ?? this.message
@@ -38,87 +41,71 @@ extension DictDataEntityExtension on DictDataEntity {
 
 DictDataData $DictDataDataFromJson(Map<String, dynamic> json) {
   final DictDataData dictDataData = DictDataData();
-  final List<DictDataDataLiveCategory>? liveCategory =
-      (json['live_category'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataLiveCategory>(e)
-                    as DictDataDataLiveCategory,
-          )
-          .toList();
+  final List<
+      DictDataDataLiveCategory>? liveCategory = (json['live_category'] as List<
+      dynamic>?)?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataLiveCategory>(
+          e) as DictDataDataLiveCategory).toList();
   if (liveCategory != null) {
     dictDataData.liveCategory = liveCategory;
   }
-  final List<DictDataDataLiveTags>? liveTags =
-      (json['liveTags'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataLiveTags>(e)
-                    as DictDataDataLiveTags,
-          )
-          .toList();
+  final List<DictDataDataLiveTags>? liveTags = (json['liveTags'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataLiveTags>(e) as DictDataDataLiveTags)
+      .toList();
   if (liveTags != null) {
     dictDataData.liveTags = liveTags;
   }
-  final List<DictDataDataWeek>? week =
-      (json['week'] as List<dynamic>?)
-          ?.map(
-            (e) => jsonConvert.convert<DictDataDataWeek>(e) as DictDataDataWeek,
-          )
-          .toList();
+  final List<DictDataDataWeek>? week = (json['week'] as List<dynamic>?)
+      ?.map(
+          (e) => jsonConvert.convert<DictDataDataWeek>(e) as DictDataDataWeek)
+      .toList();
   if (week != null) {
     dictDataData.week = week;
   }
-  final List<DictDataDataArea>? area =
-      (json['area'] as List<dynamic>?)
-          ?.map(
-            (e) => jsonConvert.convert<DictDataDataArea>(e) as DictDataDataArea,
-          )
-          .toList();
+  final List<DictDataDataArea>? area = (json['area'] as List<dynamic>?)
+      ?.map(
+          (e) => jsonConvert.convert<DictDataDataArea>(e) as DictDataDataArea)
+      .toList();
   if (area != null) {
     dictDataData.area = area;
   }
-  final List<DictDataDataLanguage>? language =
-      (json['language'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataLanguage>(e)
-                    as DictDataDataLanguage,
-          )
-          .toList();
+  final List<DictDataDataLanguage>? language = (json['language'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataLanguage>(e) as DictDataDataLanguage)
+      .toList();
   if (language != null) {
     dictDataData.language = language;
   }
-  final List<DictDataDataVideoCategory>? videoCategory =
-      (json['video_category'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataVideoCategory>(e)
-                    as DictDataDataVideoCategory,
-          )
-          .toList();
+  final List<
+      DictDataDataVideoCategory>? videoCategory = (json['video_category'] as List<
+      dynamic>?)?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataVideoCategory>(
+          e) as DictDataDataVideoCategory).toList();
   if (videoCategory != null) {
     dictDataData.videoCategory = videoCategory;
   }
-  final List<DictDataDataNoticeType>? noticeType =
-      (json['notice_type'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataNoticeType>(e)
-                    as DictDataDataNoticeType,
-          )
-          .toList();
+  final List<DictDataDataNoticeType>? noticeType = (json['notice_type'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataNoticeType>(e) as DictDataDataNoticeType)
+      .toList();
   if (noticeType != null) {
     dictDataData.noticeType = noticeType;
   }
-  final List<DictDataDataFeedbackType>? feedbackType =
-      (json['feedback_type'] as List<dynamic>?)
-          ?.map(
-            (e) =>
-                jsonConvert.convert<DictDataDataFeedbackType>(e)
-                    as DictDataDataFeedbackType,
-          )
-          .toList();
+  final List<
+      DictDataDataFeedbackType>? feedbackType = (json['feedback_type'] as List<
+      dynamic>?)?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataFeedbackType>(
+          e) as DictDataDataFeedbackType).toList();
   if (feedbackType != null) {
     dictDataData.feedbackType = feedbackType;
   }
@@ -163,10 +150,8 @@ extension DictDataDataExtension on DictDataData {
 }
 
 DictDataDataLiveCategory $DictDataDataLiveCategoryFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataLiveCategory dictDataDataLiveCategory =
-      DictDataDataLiveCategory();
+    Map<String, dynamic> json) {
+  final DictDataDataLiveCategory dictDataDataLiveCategory = DictDataDataLiveCategory();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataLiveCategory.id = id;
@@ -199,8 +184,7 @@ DictDataDataLiveCategory $DictDataDataLiveCategoryFromJson(
 }
 
 Map<String, dynamic> $DictDataDataLiveCategoryToJson(
-  DictDataDataLiveCategory entity,
-) {
+    DictDataDataLiveCategory entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -498,10 +482,8 @@ extension DictDataDataLanguageExtension on DictDataDataLanguage {
 }
 
 DictDataDataVideoCategory $DictDataDataVideoCategoryFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataVideoCategory dictDataDataVideoCategory =
-      DictDataDataVideoCategory();
+    Map<String, dynamic> json) {
+  final DictDataDataVideoCategory dictDataDataVideoCategory = DictDataDataVideoCategory();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataVideoCategory.id = id;
@@ -534,8 +516,7 @@ DictDataDataVideoCategory $DictDataDataVideoCategoryFromJson(
 }
 
 Map<String, dynamic> $DictDataDataVideoCategoryToJson(
-  DictDataDataVideoCategory entity,
-) {
+    DictDataDataVideoCategory entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -569,10 +550,8 @@ extension DictDataDataVideoCategoryExtension on DictDataDataVideoCategory {
 }
 
 DictDataDataNoticeType $DictDataDataNoticeTypeFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataNoticeType dictDataDataNoticeType =
-      DictDataDataNoticeType();
+    Map<String, dynamic> json) {
+  final DictDataDataNoticeType dictDataDataNoticeType = DictDataDataNoticeType();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataNoticeType.id = id;
@@ -605,8 +584,7 @@ DictDataDataNoticeType $DictDataDataNoticeTypeFromJson(
 }
 
 Map<String, dynamic> $DictDataDataNoticeTypeToJson(
-  DictDataDataNoticeType entity,
-) {
+    DictDataDataNoticeType entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -640,10 +618,8 @@ extension DictDataDataNoticeTypeExtension on DictDataDataNoticeType {
 }
 
 DictDataDataFeedbackType $DictDataDataFeedbackTypeFromJson(
-  Map<String, dynamic> json,
-) {
-  final DictDataDataFeedbackType dictDataDataFeedbackType =
-      DictDataDataFeedbackType();
+    Map<String, dynamic> json) {
+  final DictDataDataFeedbackType dictDataDataFeedbackType = DictDataDataFeedbackType();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataFeedbackType.id = id;
@@ -676,8 +652,7 @@ DictDataDataFeedbackType $DictDataDataFeedbackTypeFromJson(
 }
 
 Map<String, dynamic> $DictDataDataFeedbackTypeToJson(
-  DictDataDataFeedbackType entity,
-) {
+    DictDataDataFeedbackType entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
