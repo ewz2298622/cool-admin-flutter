@@ -35,8 +35,8 @@ class Video_Detail extends StatefulWidget {
   _Video_DetailState createState() => _Video_DetailState();
 }
 
-class _Video_DetailState extends State<Video_Detail>
-    with SingleTickerProviderStateMixin {
+class _Video_DetailState extends State<Video_Detail> with RouteAware {
+  final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
   final ValueNotifier<int> currentLine = ValueNotifier<int>(0);
   final ValueNotifier<int> currentPlay = ValueNotifier<int>(0);
   StateSetter? showModalBottomSheetListSate;
@@ -336,10 +336,57 @@ class _Video_DetailState extends State<Video_Detail>
   }
 
   @override
+  void didPop() {
+    ///从B退回到A的是调用
+    print("detailllll didPop");
+    super.didPop();
+  }
+
+  @override
+  void didPush() {
+    ///从A进入B的时候调用
+    print("detailllll didPush");
+
+    super.didPush();
+  }
+
+  @override
+  void didPopNext() {
+    ///从C回到B的时候调用
+    print("detailllll didPopNext");
+    super.didPopNext();
+  }
+
+  @override
+  void didPushNext() {
+    ///从B进入C的时候调用
+    print("detailllll didPushNext");
+    super.didPushNext();
+  }
+
+  @override
+  void didUpdateWidget(covariant Video_Detail oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.id != widget.id) {
+      // widget.id 发生变化，重新加载数据
+      _futureBuilderFuture = init();
+      setState(() {});
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute);
+    debugPrint('detailllll didChangeDependencies');
+    super.didChangeDependencies();
+  }
+
+  @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     super.dispose();
     removeVideo();
-    debugPrint('player  dispose');
+    debugPrint('detailllll dispose');
     addViews();
   }
 

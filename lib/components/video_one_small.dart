@@ -99,7 +99,7 @@ class VideoOneSmall extends StatelessWidget {
   }
 
   void _buildvideo_onClick(int id, BuildContext context) {
-    Navigator.pushReplacement(
+    Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => Video_Detail(id: id)),
     );

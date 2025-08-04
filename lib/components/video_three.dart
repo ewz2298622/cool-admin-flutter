@@ -152,7 +152,7 @@ class Video extends StatelessWidget {
         MaterialPageRoute(builder: (context) => ShortDrama(id: item.id)),
       );
     } else {
-      Navigator.pushReplacement(
+      Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => Video_Detail(id: item.id)),
       );

@@ -101,7 +101,7 @@ class HomeTwoVideo extends StatelessWidget {
   }
 
   void _buildAlbumItem_onClick(int id, BuildContext context) {
-    Navigator.pushReplacement(
+    Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => Video_Detail(id: id)),
     );

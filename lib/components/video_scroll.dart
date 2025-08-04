@@ -111,7 +111,13 @@ class HorizontalVideoList extends StatelessWidget {
   void _buildvideo_onClick(int id, BuildContext context) {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => Video_Detail(id: id)),
+      MaterialPageRoute(
+        builder:
+            (context) => Video_Detail(
+              key: ValueKey(id), // 不同 id 对应不同 Key
+              id: id,
+            ),
+      ),
     );
   }
 }
