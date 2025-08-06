@@ -21,6 +21,46 @@ import '../album/album.dart';
 import '../notice/notice.dart';
 import '../search/search.dart';
 
+class GradientTabIndicator extends Decoration {
+  final Gradient gradient;
+  final double height;
+  final double radius;
+
+  const GradientTabIndicator({
+    required this.gradient,
+    this.height = 2.0,
+    this.radius = 2.0,
+  });
+
+  @override
+  BoxPainter createBoxPainter([VoidCallback? onChanged]) {
+    return _GradientPainter(this, onChanged);
+  }
+}
+
+class _GradientPainter extends BoxPainter {
+  final GradientTabIndicator decoration;
+
+  _GradientPainter(this.decoration, VoidCallback? onChanged) : super(onChanged);
+
+  @override
+  void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
+    final rect =
+        Offset(offset.dx, configuration.size!.height - decoration.height) &
+        Size(configuration.size!.width, decoration.height);
+
+    final paint =
+        Paint()
+          ..shader = decoration.gradient.createShader(rect)
+          ..isAntiAlias = true;
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, Radius.circular(decoration.radius)),
+      paint,
+    );
+  }
+}
+
 class Home extends StatefulWidget {
   const Home({super.key});
 
@@ -47,6 +87,13 @@ class _HomePageState extends State<Home>
   List<NoticeInfoDataList>? noticeInfoData = [];
 
   List<DictDataDataVideoCategory> category = [];
+
+  // 添加 TabController
+  late TabController _tabController;
+
+  // 添加滚动监听相关变量
+  final ScrollController _scrollController = ScrollController();
+  double _appBarOpacity = 0.0; // AppBar透明度
 
   Future<void> getDictInfoPages() async {
     try {
@@ -91,12 +138,16 @@ class _HomePageState extends State<Home>
   @override
   void initState() {
     _futureBuilderFuture = init();
+    // 添加滚动监听器
+    _scrollController.addListener(_onScroll);
     super.initState();
   }
 
   @override
   void dispose() {
     disposed = true;
+    _tabController.dispose(); // 释放 TabController
+    _scrollController.dispose(); // 释放 ScrollController
     super.dispose();
   }
 
@@ -106,6 +157,12 @@ class _HomePageState extends State<Home>
       await getSwiperListByCategoryIds();
       await getAlbumListByCategoryIds();
       await noticeInfo();
+
+      // 初始化 TabController
+      _tabController = TabController(length: tabs.length, vsync: this);
+      // 添加监听器以同步 PageView 和 TabBar
+      _tabController.addListener(_handleTabSelection);
+
       //判斷noticeInfoData是否有數據
       if (noticeInfoData?.isNotEmpty ?? false) {
         message();
@@ -207,7 +264,22 @@ class _HomePageState extends State<Home>
     if (disposed) {
       return;
     }
+    // 重新初始化 TabController
+    _tabController.dispose();
+    _tabController = TabController(length: tabs.length, vsync: this);
+    _tabController.addListener(_handleTabSelection);
     setState(() {});
+  }
+
+  // 处理 Tab 选择事件
+  void _handleTabSelection() {
+    if (_tabController.indexIsChanging) {
+      pageController.animateToPage(
+        _tabController.index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.ease,
+      );
+    }
   }
 
   /// 轮播图视图
@@ -221,7 +293,7 @@ class _HomePageState extends State<Home>
           fit: StackFit.expand,
           children: [
             TDImage(
-              height: 200,
+              height: double.infinity,
               width: double.infinity,
               fit: BoxFit.cover,
               imgUrl: swiperMap[id]?[index].image ?? '',
@@ -239,7 +311,6 @@ class _HomePageState extends State<Home>
               alignment: Alignment.bottomLeft,
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -269,22 +340,49 @@ class _HomePageState extends State<Home>
   }
 
   Widget _buildDefaultSearchBar() {
-    return TDSearchBar(
-      placeHolder: '',
-      backgroundColor: Colors.transparent,
-      style: TDSearchStyle.round,
-      readOnly: true,
-      onInputClick: () {
+    //返回点击
+    return GestureDetector(
+      child: Padding(
+        padding: const EdgeInsets.only(left: 10, right: 10),
+        child: SizedBox(
+          height: 36,
+          child: SearchAnchor(
+            builder: (context, controller) {
+              return SearchBar(
+                controller: controller,
+                backgroundColor: MaterialStateProperty.all(
+                  Colors.white.withOpacity(0.3),
+                ),
+                hintText: '搜索...',
+                hintStyle: MaterialStateProperty.all(
+                  TextStyle(color: Colors.white),
+                ),
+                trailing: [
+                  IconButton(
+                    icon: Icon(Icons.search, color: Colors.white),
+                    onPressed: () {},
+                  ),
+                ],
+              );
+            },
+            suggestionsBuilder: (context, controller) {
+              return [ListTile(title: Text('建议项'))];
+            },
+          ),
+        ),
+      ),
+      onTap: () {
+        //跳转
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const VideoSearch()),
+          MaterialPageRoute(builder: (context) => VideoSearch()),
         );
       },
     );
   }
 
   /// 返回一个Widget自动填充剩余高度 且可以滑动
-  Widget _buildContent() {
+  Widget _buildContent(BuildContext context) {
     return FutureBuilder<String>(
       future: _futureBuilderFuture, // 异步操作
       builder: (context, snapshot) {
@@ -294,9 +392,7 @@ class _HomePageState extends State<Home>
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}'); // 显示错误信息
         } else if (snapshot.hasData) {
-          return Column(
-            children: <Widget>[_buildDefaultSearchBar(), _buildTabs()],
-          );
+          return Column(children: <Widget>[_buildTabs(context)]);
         } else {
           return Text('No data available');
         }
@@ -304,64 +400,110 @@ class _HomePageState extends State<Home>
     );
   }
 
-  Widget _buildTabs() {
+  Widget _buildTabs(BuildContext context) {
     return Flexible(
       flex: 1,
-      child: DefaultTabController(
-        //清理下边框的样式
-        length: tabs.length,
-        child: Column(
-          children: [
-            TabBar(
-              isScrollable: true,
-              tabAlignment: TabAlignment.center,
-              dividerHeight: 0,
-              //移除下划线
-              // 使用空的指示器来移除下划线
-              indicator: UnderlineTabIndicator(
-                borderSide: BorderSide(
-                  width: 0.0,
-                  color: Colors.transparent,
-                ), // 将宽度设置为0来隐藏下划线
-              ),
-              //选中的字体颜色
-              labelColor: const Color.fromRGBO(252, 119, 66, 1),
-              unselectedLabelStyle: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-              ),
-              unselectedLabelColor: const Color.fromRGBO(102, 102, 102, 1),
-              labelStyle: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-              ),
-              tabs: tabs,
-            ),
-            Flexible(
-              flex: 1,
-              child: TabBarView(
-                children: List.generate(tabs.length, (index) {
-                  return ListView(
-                    children: [
-                      SizedBox(
-                        height: 200,
-                        child: _buildDotsSwiper(category[index].id ?? 0),
+      child: Stack(
+        children: [
+          Flexible(
+            flex: 1,
+            child: PageView(
+              controller: pageController,
+              onPageChanged: (index) {
+                print("indexindex:$index");
+                //修改TabBar选中项
+                // 使用 TabController 设置索引而不是 animateTo
+                _tabController.animateTo(index);
+              },
+              children: List.generate(tabs.length, (index) {
+                return ListView(
+                  controller: _scrollController, // 添加控制器
+                  padding: EdgeInsets.only(top: 0),
+                  children: [
+                    SizedBox(
+                      height: 250,
+                      child: _buildDotsSwiper(category[index].id ?? 0),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: Layout.paddingL,
+                        right: Layout.paddingL,
+                        left: Layout.paddingL,
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: Layout.paddingL),
-                        child: Column(
-                          children: _buildAlbumContentList(
-                            albumMap[category[index].id] ?? [],
-                          ),
+                      child: Column(
+                        children: _buildAlbumContentList(
+                          albumMap[category[index].id] ?? [],
                         ),
                       ),
-                    ],
-                  );
-                }),
+                    ),
+                  ],
+                );
+              }),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(_appBarOpacity),
+              //添加白色外阴影
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.white.withOpacity(0.3), // 降低透明度（0.0 ~ 1.0）
+                  offset: Offset(0.0, 0.0),
+                  blurRadius: 10.0,
+                ),
+              ],
+            ),
+            padding: EdgeInsets.only(top: 40, bottom: 20),
+            child: SingleChildScrollView(
+              controller: ScrollController(),
+              child: Column(
+                children: [
+                  _buildDefaultSearchBar(),
+                  SizedBox(
+                    height: 35,
+                    child: TabBar(
+                      padding: EdgeInsets.only(top: 0),
+                      controller: _tabController, // 使用 controller
+                      isScrollable: true,
+                      tabAlignment: TabAlignment.center,
+
+                      dividerHeight: 0,
+                      indicator: GradientTabIndicator(
+                        gradient: LinearGradient(
+                          colors: [
+                            Color.fromRGBO(255, 153, 0, 1), // 完全不透明的橙色
+                            Color.fromRGBO(255, 153, 0, 0), // 完全透明（alpha=0）
+                          ],
+                        ),
+                        height: 3.0, // 指示器高度
+                        radius: 4.0, // 圆角
+                      ),
+                      //选中的字体颜色
+                      labelColor: const Color.fromRGBO(252, 119, 66, 1),
+                      unselectedLabelStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      unselectedLabelColor: Colors.black87,
+                      labelStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                      tabs: tabs,
+                      onTap: (index) {
+                        pageController.animateToPage(
+                          index,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.ease,
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -376,26 +518,19 @@ class _HomePageState extends State<Home>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        toolbarHeight: 20,
+        leading: Center(),
+        //透明
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        //不显示icon
-        leading: Container(),
-        automaticallyImplyLeading: false, //设置为false
+        centerTitle: true,
+        toolbarHeight: 40,
+        automaticallyImplyLeading: false,
       ),
-      resizeToAvoidBottomInset: true, //添加这一行
-      body: RefreshIndicator(
-        key: refreshKey,
-        onRefresh: onRefresh,
-        child: Container(
-          padding: const EdgeInsets.only(
-            left: Layout.paddingL,
-            right: Layout.paddingR,
-          ),
-          //设置一个下到上以此是白色向黄色渐变的背景色
-          child: _buildContent(),
-        ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [Container(child: _buildContent(context))],
       ),
     );
   }
@@ -439,6 +574,19 @@ class _HomePageState extends State<Home>
         );
       },
     );
+  }
+
+  // 处理滚动事件
+  void _onScroll() {
+    final scrollOffset = _scrollController.offset;
+    // 根据滚动位置计算透明度 (0-0.8)
+    final newOpacity = (scrollOffset / 100).clamp(0.0, 0.8);
+
+    if (_appBarOpacity != newOpacity) {
+      setState(() {
+        _appBarOpacity = newOpacity;
+      });
+    }
   }
 
   @override

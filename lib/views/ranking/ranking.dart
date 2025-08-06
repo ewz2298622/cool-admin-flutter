@@ -21,6 +21,9 @@ class VideoRankingState extends State<VideoRanking>
   List<VideoPageDataList> popularity_week = [];
   List<VideoPageDataList> popularity_month = [];
   List<VideoPageDataList> popularity_sum = [];
+  //定义一个二维数组储存List<VideoPageDataList>
+  List<List<VideoPageDataList>> videoPageDataList = [];
+
   var tabs = [
     const TDTab(text: '热片榜'),
     const TDTab(text: '新片榜'),
@@ -37,43 +40,6 @@ class VideoRankingState extends State<VideoRanking>
     "popularity_month",
     "popularity_sum",
   ];
-
-  Future<void> getVideoSortPage() async {
-    try {
-      Map<String, dynamic>? data = {"page": currentPage, "category_pid": "1"};
-
-      data = {"page": currentPage, "sort": sort[0]};
-      if (currentIndex == 0) {
-        List<VideoPageDataList> list =
-            (await Api.getVideoSortPage(data)).data?.list ??
-            [] as List<VideoPageDataList>;
-        data = {"page": currentPage, "sort": sort[2]};
-        popularity_day = [...popularity_day, ...list];
-      } else if (currentIndex == 1) {
-        List<VideoPageDataList> list =
-            (await Api.getVideoSortPage(data)).data?.list ??
-            [] as List<VideoPageDataList>;
-        data = {"page": currentPage, "sort": sort[0]};
-        popularity_week = [...popularity_week, ...list];
-      } else if (currentIndex == 2) {
-        List<VideoPageDataList> list =
-            (await Api.getVideoSortPage(data)).data?.list ??
-            [] as List<VideoPageDataList>;
-        data = {"page": currentPage, "sort": sort[3]};
-        popularity_month = [...popularity_month, ...list];
-      } else if (currentIndex == 3) {
-        List<VideoPageDataList> list =
-            (await Api.getVideoSortPage(data)).data?.list ??
-            [] as List<VideoPageDataList>;
-        data = {"page": currentPage, "sort": sort[currentIndex]};
-        popularity_sum = [...popularity_sum, ...list];
-      }
-      setState(() {});
-    } catch (e) {
-      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
-    }
-  }
-
   Future<void> initRequest() async {
     List<VideoPageDataList> popularity_day_list =
         (await Api.getVideoSortPage({
@@ -111,13 +77,16 @@ class VideoRankingState extends State<VideoRanking>
         })).data?.list ??
         [] as List<VideoPageDataList>;
     popularity_sum = [...popularity_sum, ...popularity_sum_list];
+    videoPageDataList.add(popularity_day);
+    videoPageDataList.add(popularity_month);
+    videoPageDataList.add(popularity_sum);
+    videoPageDataList.add(popularity_week);
   }
 
   Future<String> init() async {
     try {
       _initTabController(0);
       await initRequest();
-      // await getVideoSortPage();
       return "init success";
     } catch (e) {
       return "init success";
@@ -145,20 +114,48 @@ class VideoRankingState extends State<VideoRanking>
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: 200,
-                assetUrl: "assets/images/ranking.png",
+                imgUrl: videoPageDataList[currentIndex][0].surfacePlot ?? "",
                 errorWidget: const TDImage(
                   width: 150,
                   assetUrl: 'assets/images/loading.gif',
                 ),
               ),
               Container(
-                margin: const EdgeInsets.only(top: 70, left: 20),
-                child: Text(
-                  "排行榜",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
+                height: 200,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent, // 顶部透明
+                      Colors.black, // 底部黑色
+                    ],
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20, right: 20, top: 60),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 10,
+                    children: [
+                      Text(
+                        "排行榜",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        "根据内容热点排名，每小时更新一次",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -184,60 +181,59 @@ class VideoRankingState extends State<VideoRanking>
   Widget _buildTabs() {
     return DefaultTabController(
       //清理下边框的样式
+      //会哦去当前索引
       length: tabs.length,
-      child: Column(
-        children: [
-          Container(
-            margin: EdgeInsets.only(bottom: 0, top: 0),
-            child: TabBar(
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
-              dividerHeight: 0,
-              //移除下划线
-              // 使用空的指示器来移除下划线
-              indicator: UnderlineTabIndicator(
-                borderSide: BorderSide(
-                  width: 0.0,
-                  color: Colors.transparent,
-                ), // 将宽度设置为0来隐藏下划线
+      child: Builder(
+        builder: (context) {
+          final tabController = DefaultTabController.of(context);
+          tabController.addListener(() {
+            currentIndex = tabController.index;
+            setState(() {});
+            print("New tab index: ${tabController.index}");
+          });
+          return Column(
+            children: [
+              Container(
+                margin: EdgeInsets.only(bottom: 0, top: 0),
+                child: TabBar(
+                  isScrollable: true,
+                  tabAlignment: TabAlignment.start,
+                  dividerHeight: 0,
+                  //移除下划线
+                  // 使用空的指示器来移除下划线
+                  indicator: UnderlineTabIndicator(
+                    borderSide: BorderSide(
+                      width: 0.0,
+                      color: Colors.transparent,
+                    ), // 将宽度设置为0来隐藏下划线
+                  ),
+                  //选中的字体颜色
+                  labelColor: const Color.fromRGBO(252, 119, 66, 1),
+                  unselectedLabelStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  unselectedLabelColor: const Color.fromRGBO(102, 102, 102, 1),
+                  labelStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                  tabs: tabs,
+                ),
               ),
-              //选中的字体颜色
-              labelColor: const Color.fromRGBO(252, 119, 66, 1),
-              unselectedLabelStyle: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
+              Flexible(
+                flex: 1,
+                child: TabBarView(
+                  children: List.generate(tabs.length, (index) {
+                    return VideoOne(videoData: videoPageDataList[index]);
+                  }),
+                ),
               ),
-              unselectedLabelColor: const Color.fromRGBO(102, 102, 102, 1),
-              labelStyle: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-              ),
-              tabs: tabs,
-            ),
-          ),
-          Flexible(
-            flex: 1,
-            child: TabBarView(
-              children: List.generate(tabs.length, (index) {
-                return _getTabViews()[index];
-              }),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
-  }
-
-  List<Widget> _getTabViews() {
-    List<Widget> tabViews;
-    tabViews = [
-      VideoOne(videoData: popularity_day),
-      VideoOne(videoData: popularity_week),
-      VideoOne(videoData: popularity_month),
-      VideoOne(videoData: popularity_sum),
-    ];
-
-    return tabViews;
   }
 
   Widget _buildTabsContent() {
