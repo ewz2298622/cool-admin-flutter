@@ -41,6 +41,7 @@ class DeviceInfoUtils {
         "deviceBrand": androidInfo.brand,
         "deviceType": Platform.operatingSystem,
         "deviceVersion": androidInfo.version.release,
+        "isPhysicalDevice": androidInfo.isPhysicalDevice,
       };
     } else if (Platform.isIOS) {
       // 获取iOS设备信息
@@ -50,6 +51,7 @@ class DeviceInfoUtils {
         "deviceBrand": iosInfo.utsname.machine,
         "deviceType": Platform.operatingSystem,
         "deviceVersion": iosInfo.systemVersion,
+        "isPhysicalDevice": iosInfo.isPhysicalDevice,
       };
     } else {
       // 其他平台

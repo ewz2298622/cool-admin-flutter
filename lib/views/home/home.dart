@@ -305,7 +305,7 @@ class _HomePageState extends State<Home>
               ),
             ),
             Container(
-              height: 20,
+              height: double.infinity,
               width: double.infinity,
               //向下对其
               alignment: Alignment.bottomLeft,
@@ -316,7 +316,7 @@ class _HomePageState extends State<Home>
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent, // 顶部透明
-                    Colors.black.withOpacity(0.7), // 底部黑色
+                    Colors.black.withOpacity(0.6), // 底部黑色
                   ],
                 ),
               ),
@@ -340,44 +340,43 @@ class _HomePageState extends State<Home>
   }
 
   Widget _buildDefaultSearchBar() {
-    //返回点击
-    return GestureDetector(
-      child: Padding(
-        padding: const EdgeInsets.only(left: 10, right: 10),
-        child: SizedBox(
-          height: 36,
-          child: SearchAnchor(
-            builder: (context, controller) {
-              return SearchBar(
-                controller: controller,
-                backgroundColor: MaterialStateProperty.all(
-                  Colors.white.withOpacity(0.3),
+    return Padding(
+      padding: const EdgeInsets.only(left: 10, right: 10),
+      child: SizedBox(
+        height: 36,
+        child: SearchAnchor(
+          builder: (context, controller) {
+            return SearchBar(
+              controller: controller,
+              backgroundColor: MaterialStateProperty.all(
+                Colors.white.withOpacity(0.4),
+              ),
+              hintText: '搜索...',
+              hintStyle: MaterialStateProperty.all(
+                TextStyle(color: Colors.white),
+              ),
+              trailing: [
+                IconButton(
+                  icon: Icon(Icons.search, color: Colors.white),
+                  onPressed: () {},
                 ),
-                hintText: '搜索...',
-                hintStyle: MaterialStateProperty.all(
-                  TextStyle(color: Colors.white),
-                ),
-                trailing: [
-                  IconButton(
-                    icon: Icon(Icons.search, color: Colors.white),
-                    onPressed: () {},
-                  ),
-                ],
-              );
-            },
-            suggestionsBuilder: (context, controller) {
-              return [ListTile(title: Text('建议项'))];
-            },
-          ),
+              ],
+              onTap: () {
+                //打印
+                print('点击了搜索');
+                // 直接在这里跳转
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => VideoSearch()),
+                );
+              },
+            );
+          },
+          suggestionsBuilder: (context, controller) {
+            return [ListTile(title: Text('建议项'))];
+          },
         ),
       ),
-      onTap: () {
-        //跳转
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => VideoSearch()),
-        );
-      },
     );
   }
 
@@ -392,7 +391,7 @@ class _HomePageState extends State<Home>
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}'); // 显示错误信息
         } else if (snapshot.hasData) {
-          return Column(children: <Widget>[_buildTabs(context)]);
+          return _buildTabs(context);
         } else {
           return Text('No data available');
         }
@@ -401,110 +400,106 @@ class _HomePageState extends State<Home>
   }
 
   Widget _buildTabs(BuildContext context) {
-    return Flexible(
-      flex: 1,
-      child: Stack(
-        children: [
-          Flexible(
-            flex: 1,
-            child: PageView(
-              controller: pageController,
-              onPageChanged: (index) {
-                print("indexindex:$index");
-                //修改TabBar选中项
-                // 使用 TabController 设置索引而不是 animateTo
-                _tabController.animateTo(index);
-              },
-              children: List.generate(tabs.length, (index) {
-                return ListView(
-                  controller: _scrollController, // 添加控制器
-                  padding: EdgeInsets.only(top: 0),
-                  children: [
-                    SizedBox(
-                      height: 250,
-                      child: _buildDotsSwiper(category[index].id ?? 0),
+    return Stack(
+      fit: StackFit.passthrough,
+      children: [
+        PageView(
+          controller: pageController,
+          onPageChanged: (index) {
+            print("indexindex:$index");
+            //修改TabBar选中项
+            // 使用 TabController 设置索引而不是 animateTo
+            _tabController.animateTo(index);
+          },
+          children: List.generate(tabs.length, (index) {
+            return ListView(
+              controller: _scrollController, // 添加控制器
+              padding: EdgeInsets.only(top: 0),
+              children: [
+                SizedBox(
+                  height: 250,
+                  child: _buildDotsSwiper(category[index].id ?? 0),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: Layout.paddingL,
+                    right: Layout.paddingL,
+                    left: Layout.paddingL,
+                  ),
+                  child: Column(
+                    children: _buildAlbumContentList(
+                      albumMap[category[index].id] ?? [],
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        top: Layout.paddingL,
-                        right: Layout.paddingL,
-                        left: Layout.paddingL,
-                      ),
-                      child: Column(
-                        children: _buildAlbumContentList(
-                          albumMap[category[index].id] ?? [],
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              }),
-            ),
+                  ),
+                ),
+              ],
+            );
+          }),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(_appBarOpacity),
+            //添加白色外阴影
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withOpacity(0.3), // 降低透明度（0.0 ~ 1.0）
+                offset: Offset(0.0, 0.0),
+                blurRadius: 10.0,
+              ),
+            ],
           ),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(_appBarOpacity),
-              //添加白色外阴影
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.white.withOpacity(0.3), // 降低透明度（0.0 ~ 1.0）
-                  offset: Offset(0.0, 0.0),
-                  blurRadius: 10.0,
+          padding: EdgeInsets.only(top: 40, bottom: 20),
+          child: SingleChildScrollView(
+            controller: ScrollController(),
+            physics: BouncingScrollPhysics(),
+            child: Column(
+              children: [
+                _buildDefaultSearchBar(),
+                SizedBox(
+                  height: 35,
+                  child: TabBar(
+                    padding: EdgeInsets.only(top: 0),
+                    controller: _tabController, // 使用 controller
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.center,
+
+                    dividerHeight: 0,
+                    indicator: GradientTabIndicator(
+                      gradient: LinearGradient(
+                        colors: [
+                          Color.fromRGBO(255, 153, 0, 1), // 完全不透明的橙色
+                          Color.fromRGBO(255, 153, 0, 0), // 完全透明（alpha=0）
+                        ],
+                      ),
+                      height: 3.0, // 指示器高度
+                      radius: 4.0, // 圆角
+                    ),
+                    //选中的字体颜色
+                    labelColor: const Color.fromRGBO(252, 119, 66, 1),
+                    unselectedLabelStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    unselectedLabelColor: Colors.black87,
+                    labelStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                    ),
+                    tabs: tabs,
+                    onTap: (index) {
+                      pageController.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.ease,
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
-            padding: EdgeInsets.only(top: 40, bottom: 20),
-            child: SingleChildScrollView(
-              controller: ScrollController(),
-              child: Column(
-                children: [
-                  _buildDefaultSearchBar(),
-                  SizedBox(
-                    height: 35,
-                    child: TabBar(
-                      padding: EdgeInsets.only(top: 0),
-                      controller: _tabController, // 使用 controller
-                      isScrollable: true,
-                      tabAlignment: TabAlignment.center,
-
-                      dividerHeight: 0,
-                      indicator: GradientTabIndicator(
-                        gradient: LinearGradient(
-                          colors: [
-                            Color.fromRGBO(255, 153, 0, 1), // 完全不透明的橙色
-                            Color.fromRGBO(255, 153, 0, 0), // 完全透明（alpha=0）
-                          ],
-                        ),
-                        height: 3.0, // 指示器高度
-                        radius: 4.0, // 圆角
-                      ),
-                      //选中的字体颜色
-                      labelColor: const Color.fromRGBO(252, 119, 66, 1),
-                      unselectedLabelStyle: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      unselectedLabelColor: Colors.black87,
-                      labelStyle: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                      ),
-                      tabs: tabs,
-                      onTap: (index) {
-                        pageController.animateToPage(
-                          index,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.ease,
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -528,10 +523,7 @@ class _HomePageState extends State<Home>
         toolbarHeight: 40,
         automaticallyImplyLeading: false,
       ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [Container(child: _buildContent(context))],
-      ),
+      body: _buildContent(context),
     );
   }
 
