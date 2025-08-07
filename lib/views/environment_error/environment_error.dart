@@ -43,7 +43,8 @@ class _EnvErrorState extends State<EnvironmentError> {
             TDImage(
               width: 300,
               height: 300,
-              assetUrl: 'assets/images/env_error.png',
+              fit: BoxFit.cover,
+              assetUrl: 'assets/images/enverror.png',
             ),
             TDButton(
               text: '重启应用',

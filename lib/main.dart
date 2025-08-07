@@ -15,6 +15,7 @@ import 'package:flutter_app/views/video_filter/video_filter.dart';
 import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
+import 'components/loading.dart';
 import 'db/manager/DBManager.dart';
 
 void main() {
@@ -67,6 +68,8 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
+  var _futureBuilderFuture;
+  Map<String, dynamic>? deviceInfo;
   final List<Widget> pages = [
     const Home(),
     const VideoFilter(),
@@ -84,120 +87,147 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     ContextManager.setContext(context);
-    return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: pages),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            activeIcon: TDImage(
-              width: 25,
-              height: 25,
-              fit: BoxFit.cover,
-              assetUrl: 'assets/images/1.png',
-            ),
-            icon: TDImage(
-              width: 25,
-              height: 25,
-              fit: BoxFit.cover,
-              assetUrl: 'assets/images/2.png',
-            ),
-            label: '首页',
-          ),
-          BottomNavigationBarItem(
-            activeIcon: TDImage(
-              width: 25,
-              height: 25,
-              fit: BoxFit.cover,
-              assetUrl: 'assets/images/3.png',
-            ),
-            icon: TDImage(
-              width: 25,
-              height: 25,
-              fit: BoxFit.cover,
-              assetUrl: 'assets/images/4.png',
-            ),
-            label: '频道',
-          ),
-          BottomNavigationBarItem(
-            activeIcon: TDImage(
-              width: 25,
-              height: 25,
-              fit: BoxFit.cover,
-              assetUrl: 'assets/images/6.png',
-            ),
-            icon: TDImage(
-              width: 25,
-              height: 25,
-              fit: BoxFit.cover,
-              assetUrl: 'assets/images/5.png',
-            ),
-            label: '排行',
-          ),
-          BottomNavigationBarItem(
-            activeIcon: TDImage(
-              width: 25,
-              height: 25,
-              fit: BoxFit.cover,
-              assetUrl: 'assets/images/8.png',
-            ),
-            icon: TDImage(
-              width: 25,
-              height: 25,
-              fit: BoxFit.cover,
-              assetUrl: 'assets/images/7.png',
-            ),
-            label: '服务',
-          ),
-          BottomNavigationBarItem(
-            activeIcon: TDImage(
-              width: 25,
-              height: 25,
-              fit: BoxFit.cover,
-              assetUrl: 'assets/images/9.png',
-            ),
-            icon: TDImage(
-              width: 25,
-              height: 25,
-              fit: BoxFit.cover,
-              assetUrl: 'assets/images/10.png',
-            ),
-            label: '我的',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        onTap: onTap,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor:
-            Theme.of(context).bottomNavigationBarTheme.backgroundColor,
-        unselectedItemColor: ColorStyles.color_1E88E5,
-        unselectedFontSize: 14,
-        selectedItemColor: ColorStyles.color_EA5034,
-        selectedFontSize: 14,
-      ),
+    return _buildContent();
+  }
+
+  Widget _buildContent() {
+    return FutureBuilder<String>(
+      future: _futureBuilderFuture, // 异步操作
+      builder: (context, snapshot) {
+        debugPrint('snapshot: ${snapshot.hasData}');
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return PageLoading();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}'); // 显示错误信息
+        } else if (snapshot.hasData) {
+          return AppView();
+        } else {
+          return Text('No data available');
+        }
+      },
     );
   }
 
-  Future<void> init() async {
-    Contacts.requestPermissions();
-    await DBManager.init();
-    debugPrint('main dart dbHelper init success');
+  Widget AppView() {
+    bool status =
+        deviceInfo?["checkIsTheDeveloperModeOn"] == true ||
+        deviceInfo?["isphysicaldevice"] == false ||
+        deviceInfo?["deviceUseVPN"] == true;
+    if (status) {
+      return EnvironmentError();
+    } else {
+      return Scaffold(
+        body: IndexedStack(index: _selectedIndex, children: pages),
+        bottomNavigationBar: BottomNavigationBar(
+          items: const [
+            BottomNavigationBarItem(
+              activeIcon: TDImage(
+                width: 25,
+                height: 25,
+                fit: BoxFit.cover,
+                assetUrl: 'assets/images/1.png',
+              ),
+              icon: TDImage(
+                width: 25,
+                height: 25,
+                fit: BoxFit.cover,
+                assetUrl: 'assets/images/2.png',
+              ),
+              label: '首页',
+            ),
+            BottomNavigationBarItem(
+              activeIcon: TDImage(
+                width: 25,
+                height: 25,
+                fit: BoxFit.cover,
+                assetUrl: 'assets/images/3.png',
+              ),
+              icon: TDImage(
+                width: 25,
+                height: 25,
+                fit: BoxFit.cover,
+                assetUrl: 'assets/images/4.png',
+              ),
+              label: '频道',
+            ),
+            BottomNavigationBarItem(
+              activeIcon: TDImage(
+                width: 25,
+                height: 25,
+                fit: BoxFit.cover,
+                assetUrl: 'assets/images/6.png',
+              ),
+              icon: TDImage(
+                width: 25,
+                height: 25,
+                fit: BoxFit.cover,
+                assetUrl: 'assets/images/5.png',
+              ),
+              label: '排行',
+            ),
+            BottomNavigationBarItem(
+              activeIcon: TDImage(
+                width: 25,
+                height: 25,
+                fit: BoxFit.cover,
+                assetUrl: 'assets/images/8.png',
+              ),
+              icon: TDImage(
+                width: 25,
+                height: 25,
+                fit: BoxFit.cover,
+                assetUrl: 'assets/images/7.png',
+              ),
+              label: '服务',
+            ),
+            BottomNavigationBarItem(
+              activeIcon: TDImage(
+                width: 25,
+                height: 25,
+                fit: BoxFit.cover,
+                assetUrl: 'assets/images/9.png',
+              ),
+              icon: TDImage(
+                width: 25,
+                height: 25,
+                fit: BoxFit.cover,
+                assetUrl: 'assets/images/10.png',
+              ),
+              label: '我的',
+            ),
+          ],
+          currentIndex: _selectedIndex,
+          onTap: onTap,
+          type: BottomNavigationBarType.fixed,
+          backgroundColor:
+              Theme.of(context).bottomNavigationBarTheme.backgroundColor,
+          unselectedItemColor: ColorStyles.color_1E88E5,
+          unselectedFontSize: 14,
+          selectedItemColor: ColorStyles.color_EA5034,
+          selectedFontSize: 14,
+        ),
+      );
+    }
+  }
+
+  Future<String> init() async {
+    try {
+      Contacts.requestPermissions();
+      await DBManager.init();
+      await initPlatformState();
+      return "init success";
+    } catch (e) {
+      return "init fail";
+    }
   }
 
   Future<void> initPlatformState() async {
-    Map<String, dynamic>? deviceInfo =
-        await DeviceInfoUtils().requestDeviceInfo();
-    if (deviceInfo["checkIsTheDeveloperModeOn"] == true ||
-        deviceInfo["isphysicaldevice"] == false) {
-      Navigator.pushReplacement(
-        ContextManager.getNavigatorKey()?.currentState!.context as BuildContext,
-        MaterialPageRoute(builder: (context) => EnvironmentError()),
-      );
-    }
+    deviceInfo = await DeviceInfoUtils().requestDeviceInfo();
   }
 
   @override
   void initState() {
     super.initState();
-    init();
+    _futureBuilderFuture = init();
   }
 }

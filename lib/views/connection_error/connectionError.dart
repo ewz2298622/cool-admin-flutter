@@ -43,7 +43,7 @@ class _ConnectionErrorState extends State<ConnectionError> {
             TDImage(
               width: 300,
               height: 300,
-              assetUrl: 'assets/images/server_error.png',
+              assetUrl: 'assets/images/servererror.png',
             ),
             TDButton(
               text: '重启应用',

@@ -239,7 +239,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
             width: 80,
             height: 80,
             type: TDImageType.circle,
-            assetUrl: 'assets/images/Lawyer.png',
+            assetUrl: 'assets/images/user.png',
           ),
         ),
         SizedBox(height: 16.0),
