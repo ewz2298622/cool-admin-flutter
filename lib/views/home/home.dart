@@ -436,24 +436,23 @@ class _HomePageState extends State<Home>
             );
           }),
         ),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(_appBarOpacity),
-            //添加白色外阴影
-            boxShadow: [
-              BoxShadow(
-                color: Colors.white.withOpacity(0.3), // 降低透明度（0.0 ~ 1.0）
-                offset: Offset(0.0, 0.0),
-                blurRadius: 10.0,
-              ),
-            ],
-          ),
-          padding: EdgeInsets.only(top: 40, bottom: 20),
-          child: SingleChildScrollView(
-            controller: ScrollController(),
-            physics: BouncingScrollPhysics(),
+        SizedBox(
+          height: 120,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(_appBarOpacity),
+              //添加白色外阴影
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.white.withOpacity(0.3), // 降低透明度（0.0 ~ 1.0）
+                  offset: Offset(0.0, 0.0),
+                  blurRadius: 10.0,
+                ),
+              ],
+            ),
             child: Column(
               children: [
+                SizedBox(height: 40),
                 _buildDefaultSearchBar(),
                 SizedBox(
                   height: 35,

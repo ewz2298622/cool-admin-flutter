@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/style/color_styles.dart';
 import 'package:flutter_app/utils/contacts.dart';
 import 'package:flutter_app/utils/context_manager.dart';
+import 'package:flutter_app/utils/device_info.dart';
 import 'package:flutter_app/utils/store/app/appState.dart';
 import 'package:flutter_app/utils/store/theme/theme.dart';
 import 'package:flutter_app/utils/store/user/user.dart';
+import 'package:flutter_app/views/environment_error/environment_error.dart';
 import 'package:flutter_app/views/home/home.dart';
 import 'package:flutter_app/views/my/my.dart';
 import 'package:flutter_app/views/ranking/ranking.dart';
@@ -179,6 +181,18 @@ class _MainPageState extends State<MainPage> {
     Contacts.requestPermissions();
     await DBManager.init();
     debugPrint('main dart dbHelper init success');
+  }
+
+  Future<void> initPlatformState() async {
+    Map<String, dynamic>? deviceInfo =
+        await DeviceInfoUtils().requestDeviceInfo();
+    if (deviceInfo["checkIsTheDeveloperModeOn"] == true ||
+        deviceInfo["isphysicaldevice"] == false) {
+      Navigator.pushReplacement(
+        ContextManager.getNavigatorKey()?.currentState!.context as BuildContext,
+        MaterialPageRoute(builder: (context) => EnvironmentError()),
+      );
+    }
   }
 
   @override

@@ -35,6 +35,17 @@ class TokenInterceptors extends InterceptorsWrapper {
         debugPrint("$TAG: $key: $value");
       });
 
+      // if (options.headers["checkIsTheDeveloperModeOn"] == true ||
+      //     options.headers["isphysicaldevice"] == false) {
+      //   handler.reject(
+      //     DioException(
+      //       requestOptions: options,
+      //       type: DioExceptionType.cancel,
+      //       error: "checkIsTheDeveloperModeOn is true, not request",
+      //     ),
+      //   );
+      // }
+
       handler.next(options);
     } catch (e) {
       //打印错误

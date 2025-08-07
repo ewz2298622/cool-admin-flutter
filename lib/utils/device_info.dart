@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:protect_app/protect_app.dart';
 
 class DeviceInfoUtils {
   // 添加单例实例
@@ -25,10 +26,20 @@ class DeviceInfoUtils {
   }
 
   Future<Map<String, dynamic>> requestDeviceInfo() async {
+    await ProtectApp().turnOffScreenshots();
     // 如果已经获取过设备信息，则直接返回
     if (deviceInfo != null) {
       return deviceInfo!;
     }
+    final _protectAppPlugin = ProtectApp();
+    bool deviceUseVPN = await _protectAppPlugin.isDeviceUseVPN() ?? false;
+    bool tempIsRunOnTestFlight =
+        await _protectAppPlugin.isRunningInTestFlight() ?? false;
+    bool tempIsDeviceIsReal = await _protectAppPlugin.isItRealDevice() ?? false;
+    bool tempIsUseJailBrokenOrRoot =
+        await _protectAppPlugin.isUseJailBrokenOrRoot() ?? false;
+    bool checkIsTheDeveloperModeOn =
+        await _protectAppPlugin.checkIsTheDeveloperModeOn() ?? false;
 
     //判断平台
     if (Platform.isAndroid) {
@@ -42,6 +53,11 @@ class DeviceInfoUtils {
         "deviceType": Platform.operatingSystem,
         "deviceVersion": androidInfo.version.release,
         "isPhysicalDevice": androidInfo.isPhysicalDevice,
+        "deviceUseVPN": deviceUseVPN,
+        "isDeviceIsReal": tempIsDeviceIsReal,
+        "isUseJailBrokenOrRoot": tempIsUseJailBrokenOrRoot,
+        "isRunOnTestFlight": tempIsRunOnTestFlight,
+        "checkIsTheDeveloperModeOn": checkIsTheDeveloperModeOn,
       };
     } else if (Platform.isIOS) {
       // 获取iOS设备信息
@@ -52,6 +68,11 @@ class DeviceInfoUtils {
         "deviceType": Platform.operatingSystem,
         "deviceVersion": iosInfo.systemVersion,
         "isPhysicalDevice": iosInfo.isPhysicalDevice,
+        "deviceUseVPN": deviceUseVPN,
+        "isDeviceIsReal": tempIsDeviceIsReal,
+        "isUseJailBrokenOrRoot": tempIsUseJailBrokenOrRoot,
+        "isRunOnTestFlight": tempIsRunOnTestFlight,
+        "checkIsTheDeveloperModeOn": checkIsTheDeveloperModeOn,
       };
     } else {
       // 其他平台
@@ -60,6 +81,11 @@ class DeviceInfoUtils {
         "deviceBrand": "Unknown",
         "deviceType": Platform.operatingSystem,
         "deviceVersion": "Unknown",
+        "deviceUseVPN": deviceUseVPN,
+        "isDeviceIsReal": tempIsDeviceIsReal,
+        "isUseJailBrokenOrRoot": tempIsUseJailBrokenOrRoot,
+        "isRunOnTestFlight": tempIsRunOnTestFlight,
+        "checkIsTheDeveloperModeOn": checkIsTheDeveloperModeOn,
       };
     }
     debugPrint("deviceInfo: $deviceInfo");

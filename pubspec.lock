@@ -792,6 +792,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "6.0.2"
+  protect_app:
+    dependency: "direct main"
+    description:
+      name: protect_app
+      sha256: "8d2a85819fe16e06e1cf65fc4c8bd5a0665719dd6447d4b8a0d5246f41b0e929"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.0.5"
   provider:
     dependency: "direct main"
     description:
