@@ -421,84 +421,74 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
     } else if (snapshot.hasError) {
       return Text('Error: ${snapshot.error}');
     } else if (snapshot.hasData) {
-      return Stack(
-        children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                left: Layout.paddingL,
-                right: Layout.paddingR,
-              ),
-              // child: _buildNavigationTabs(),
-              child: Padding(
-                padding: const EdgeInsets.only(top: 0),
-                child: DefaultTabController(
-                  length: 2,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 150,
-                            child: TabBar(
-                              dividerHeight: 0,
-                              isScrollable: true,
-                              tabAlignment: TabAlignment.start,
-                              indicatorPadding: const EdgeInsets.all(0),
-                              indicator: UnderlineTabIndicator(
-                                borderSide: BorderSide(
-                                  width: 0.0,
-                                  color: Colors.transparent,
-                                ), // 将宽度设置为0来隐藏下划线
-                              ),
-                              //设置未选中的字体颜色
-                              unselectedLabelColor: const Color.fromRGBO(
-                                153,
-                                153,
-                                153,
-                                1,
-                              ),
-                              //选中的字体颜色
-                              labelColor: const Color.fromRGBO(252, 119, 66, 1),
-                              tabs: [Tab(text: '详情'), Tab(text: '简介')],
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: goFeedbackPage,
-                            icon: Icon(Icons.warning_rounded),
-                          ),
-                          _buildPopFromBottomWithCloseAndLeftTitle(context),
-                        ],
+      return Padding(
+        padding: const EdgeInsets.only(
+          left: Layout.paddingL,
+          right: Layout.paddingR,
+        ),
+        child: DefaultTabController(
+          length: 2,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 150,
+                    child: TabBar(
+                      dividerHeight: 0,
+                      isScrollable: true,
+                      tabAlignment: TabAlignment.start,
+                      indicatorPadding: const EdgeInsets.all(0),
+                      indicator: UnderlineTabIndicator(
+                        borderSide: BorderSide(
+                          width: 0.0,
+                          color: Colors.transparent,
+                        ), // 将宽度设置为0来隐藏下划线
                       ),
-                      Expanded(
-                        child: TabBarView(
-                          children: [
-                            ListView(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              children: [
-                                // 视频信息
-                                _buildVideoInfo(),
-                                // 广告横幅
-                                _buildBanner(),
-                                // 猜你喜欢
-                                _buildRecommendations(),
-                              ],
-                            ),
-                            SingleChildScrollView(child: _buildTabsVideoInfo()),
-                          ],
-                        ),
+                      //设置未选中的字体颜色
+                      unselectedLabelColor: const Color.fromRGBO(
+                        153,
+                        153,
+                        153,
+                        1,
                       ),
-                    ],
+                      //选中的字体颜色
+                      labelColor: const Color.fromRGBO(252, 119, 66, 1),
+                      tabs: [Tab(text: '详情'), Tab(text: '简介')],
+                    ),
                   ),
+                  IconButton(
+                    onPressed: goFeedbackPage,
+                    icon: Icon(Icons.warning_rounded),
+                  ),
+                  _buildPopFromBottomWithCloseAndLeftTitle(context),
+                ],
+              ),
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    ListView(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        // 视频信息
+                        _buildVideoInfo(),
+                        // 广告横幅
+                        _buildBanner(),
+                        // 猜你喜欢
+                        _buildRecommendations(),
+                      ],
+                    ),
+                    SingleChildScrollView(child: _buildTabsVideoInfo()),
+                  ],
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       );
     } else {
       return Text('No data available');

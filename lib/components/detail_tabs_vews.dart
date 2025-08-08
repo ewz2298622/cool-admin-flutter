@@ -8,12 +8,15 @@ class DetailTabsView extends StatefulWidget {
   final List<VideoLineDataList> tabs;
   // 添加回调函数参数，用于将选中的项目返回给父组件
   final Function(int tabIndex, Set<int> selectedIndices)? onSelectionChanged;
+  // 添加默认选中项参数
+  final Map<int, Set<int>>? defaultSelectedItems;
 
   const DetailTabsView({
     Key? key,
     required this.tabData,
     required this.tabs,
     this.onSelectionChanged,
+    this.defaultSelectedItems,
   }) : super(key: key);
 
   @override
@@ -31,6 +34,14 @@ class _DetailTabsViewState extends State<DetailTabsView>
   void initState() {
     super.initState();
     _tabController = TabController(length: widget.tabs.length, vsync: this);
+
+    // 初始化默认选中项，只有第一个tab有默认选中项
+    if (widget.defaultSelectedItems != null) {
+      _selectedItems.addAll(widget.defaultSelectedItems!);
+    } else {
+      // 如果没有提供默认选中项，则默认选中第一个tab的第一个项目
+      _selectedItems[0] = {0};
+    }
   }
 
   @override

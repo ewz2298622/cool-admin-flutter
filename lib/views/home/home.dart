@@ -20,6 +20,7 @@ import '../../style/layout.dart';
 import '../album/album.dart';
 import '../notice/notice.dart';
 import '../search/search.dart';
+import '../week/week.dart';
 
 class GradientTabIndicator extends Decoration {
   final Gradient gradient;
@@ -342,40 +343,58 @@ class _HomePageState extends State<Home>
   Widget _buildDefaultSearchBar() {
     return Padding(
       padding: const EdgeInsets.only(left: 10, right: 10),
-      child: SizedBox(
-        height: 36,
-        child: SearchAnchor(
-          builder: (context, controller) {
-            return SearchBar(
-              controller: controller,
-              backgroundColor: MaterialStateProperty.all(
-                Colors.white.withOpacity(0.4),
-              ),
-              hintText: '搜索...',
-              hintStyle: MaterialStateProperty.all(
-                TextStyle(color: Colors.white),
-              ),
-              trailing: [
-                IconButton(
-                  icon: Icon(Icons.search, color: Colors.white),
-                  onPressed: () {},
-                ),
-              ],
-              onTap: () {
-                //打印
-                print('点击了搜索');
-                // 直接在这里跳转
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => VideoSearch()),
+      child: Row(
+        children: [
+          SizedBox(
+            height: 36,
+            //宽度设置成百分之80%
+            width: MediaQuery.of(context).size.width * 0.8,
+            child: SearchAnchor(
+              builder: (context, controller) {
+                return SearchBar(
+                  controller: controller,
+                  backgroundColor: MaterialStateProperty.all(
+                    Colors.white.withOpacity(0.4),
+                  ),
+                  hintText: '搜索...',
+                  hintStyle: MaterialStateProperty.all(
+                    TextStyle(color: Colors.white),
+                  ),
+                  trailing: [
+                    IconButton(
+                      icon: Icon(Icons.search, color: Colors.white),
+                      onPressed: () {},
+                    ),
+                  ],
+                  onTap: () {
+                    //打印
+                    print('点击了搜索');
+                    // 直接在这里跳转
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => VideoSearch()),
+                    );
+                  },
                 );
               },
-            );
-          },
-          suggestionsBuilder: (context, controller) {
-            return [ListTile(title: Text('建议项'))];
-          },
-        ),
+              suggestionsBuilder: (context, controller) {
+                return [ListTile(title: Text('建议项'))];
+              },
+            ),
+          ),
+          Flexible(
+            flex: 1,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => WeekPage()),
+                );
+              },
+              child: Center(child: Text("更新")),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -406,9 +425,6 @@ class _HomePageState extends State<Home>
         PageView(
           controller: pageController,
           onPageChanged: (index) {
-            print("indexindex:$index");
-            //修改TabBar选中项
-            // 使用 TabController 设置索引而不是 animateTo
             _tabController.animateTo(index);
           },
           children: List.generate(tabs.length, (index) {
@@ -457,7 +473,7 @@ class _HomePageState extends State<Home>
                 SizedBox(
                   height: 35,
                   child: TabBar(
-                    padding: EdgeInsets.only(top: 0),
+                    padding: EdgeInsets.only(top: 2),
                     controller: _tabController, // 使用 controller
                     isScrollable: true,
                     tabAlignment: TabAlignment.center,
@@ -511,19 +527,7 @@ class _HomePageState extends State<Home>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        leading: Center(),
-        //透明
-        backgroundColor: Colors.transparent,
-        centerTitle: true,
-        toolbarHeight: 40,
-        automaticallyImplyLeading: false,
-      ),
-      body: _buildContent(context),
-    );
+    return _buildContent(context);
   }
 
   List<Widget> _buildAlbumContentList(List<AlbumDataList> list) {

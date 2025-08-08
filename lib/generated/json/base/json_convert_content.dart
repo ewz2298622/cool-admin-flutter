@@ -23,6 +23,7 @@ import 'package:flutter_app/entity/video_live_entity.dart';
 import 'package:flutter_app/entity/video_page_entity.dart';
 import 'package:flutter_app/entity/video_sort_entity.dart';
 import 'package:flutter_app/entity/views_entity.dart';
+import 'package:flutter_app/entity/week_entity.dart';
 
 JsonConvert jsonConvert = JsonConvert();
 
@@ -444,14 +445,6 @@ class JsonConvert {
               .toList()
           as M;
     }
-    if (<PlayLineDataPagination>[] is M) {
-      return data
-              .map<PlayLineDataPagination>(
-                (Map<String, dynamic> e) => PlayLineDataPagination.fromJson(e),
-              )
-              .toList()
-          as M;
-    }
     if (<SwiperEntity>[] is M) {
       return data
               .map<SwiperEntity>(
@@ -723,6 +716,36 @@ class JsonConvert {
               .toList()
           as M;
     }
+    if (<WeekEntity>[] is M) {
+      return data
+              .map<WeekEntity>(
+                (Map<String, dynamic> e) => WeekEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<WeekData>[] is M) {
+      return data
+              .map<WeekData>((Map<String, dynamic> e) => WeekData.fromJson(e))
+              .toList()
+          as M;
+    }
+    if (<WeekDataList>[] is M) {
+      return data
+              .map<WeekDataList>(
+                (Map<String, dynamic> e) => WeekDataList.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<WeekDataPagination>[] is M) {
+      return data
+              .map<WeekDataPagination>(
+                (Map<String, dynamic> e) => WeekDataPagination.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
 
     debugPrint("$M not found");
 
@@ -780,7 +803,6 @@ class JsonConvertClassCollection {
     (PlayLineEntity).toString(): PlayLineEntity.fromJson,
     (PlayLineData).toString(): PlayLineData.fromJson,
     (PlayLineDataList).toString(): PlayLineDataList.fromJson,
-    (PlayLineDataPagination).toString(): PlayLineDataPagination.fromJson,
     (SwiperEntity).toString(): SwiperEntity.fromJson,
     (SwiperData).toString(): SwiperData.fromJson,
     (SwiperDataList).toString(): SwiperDataList.fromJson,
@@ -816,6 +838,10 @@ class JsonConvertClassCollection {
     (ViewsData).toString(): ViewsData.fromJson,
     (ViewsDataList).toString(): ViewsDataList.fromJson,
     (ViewsDataPagination).toString(): ViewsDataPagination.fromJson,
+    (WeekEntity).toString(): WeekEntity.fromJson,
+    (WeekData).toString(): WeekData.fromJson,
+    (WeekDataList).toString(): WeekDataList.fromJson,
+    (WeekDataPagination).toString(): WeekDataPagination.fromJson,
   };
 
   bool containsKey(String type) {

@@ -12,7 +12,7 @@ class HorizontalVideoList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 150,
+      height: 160,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: videoPageData.length,
@@ -23,19 +23,19 @@ class HorizontalVideoList extends StatelessWidget {
               },
               child: Container(
                 width: 120,
-                height: 150,
+                height: 160,
                 padding: const EdgeInsets.only(right: 10),
                 child: Stack(
                   children: [
                     Positioned.fill(
                       child: TDImage(
                         width: 120,
-                        height: 150,
+                        height: 160,
                         fit: BoxFit.cover,
                         imgUrl: videoPageData[i].surfacePlot ?? "",
                         errorWidget: const TDImage(
                           width: 120,
-                          height: 150,
+                          height: 160,
                           fit: BoxFit.cover,
                           assetUrl: 'assets/images/loading.gif',
                         ),

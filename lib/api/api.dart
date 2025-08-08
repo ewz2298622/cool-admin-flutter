@@ -18,6 +18,7 @@ import '../entity/video_line_entity.dart';
 import '../entity/video_live_entity.dart';
 import '../entity/video_page_entity.dart';
 import '../entity/views_entity.dart';
+import '../entity/week_entity.dart';
 import '../http/request.dart';
 
 /// 请求接口
@@ -531,6 +532,19 @@ class Api {
         "/app/user/contacts/add",
         data: data,
       ); // 添加注释说明 ONE 的含义});
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  static Future<WeekEntity> getWeek(Map<String, dynamic>? data) async {
+    try {
+      final response = await server.post(
+        "/app/video/week/page",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
+      return WeekEntity.fromJson(response.data);
     } catch (error) {
       // 重新抛出异常以便上层处理
       rethrow;
