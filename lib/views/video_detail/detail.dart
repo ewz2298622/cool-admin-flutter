@@ -22,6 +22,7 @@ import '../../style/layout.dart';
 import '../../utils/bus/bus.dart';
 import '../../utils/bus/constant.dart';
 import '../../utils/dict.dart';
+import '../../utils/video.dart';
 import '../feedback/feedback.dart';
 
 String TAG = 'Video_Detail';
@@ -283,8 +284,8 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
       await getPlayLinePages();
       await getVideoPages();
       await getPlayLinePagesTabs();
-      setVideoUrl(playerLineData[currentPlay.value].file ?? "");
       _errorListener();
+      setVideoUrl(playerLineData[currentPlay.value].file ?? "");
       return "init success";
     } catch (e) {
       // 捕获并处理异常
@@ -295,13 +296,17 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   _errorListener() {
     // player._errorListener(() => {});
     //监听播放器错误
-    player.addListener(oid_playerValueChanged);
+    player.addListener(playerValueChanged);
   }
 
-  oid_playerValueChanged() {
+  playerValueChanged() {
     FValue value = player.value;
     if (value.state == FState.error) {
-      debugPrint("播放失败: ${value.state} ${videoList[currentPlay.value]}");
+      debugPrint("播放失败");
+      Api.VideoLineUpdate({
+        "id": playerLineData[currentPlay.value].id,
+        "status": 0,
+      });
     }
   }
 
@@ -426,67 +431,71 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
           left: Layout.paddingL,
           right: Layout.paddingR,
         ),
-        child: DefaultTabController(
-          length: 2,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 150,
-                    child: TabBar(
-                      dividerHeight: 0,
-                      isScrollable: true,
-                      tabAlignment: TabAlignment.start,
-                      indicatorPadding: const EdgeInsets.all(0),
-                      indicator: UnderlineTabIndicator(
-                        borderSide: BorderSide(
-                          width: 0.0,
-                          color: Colors.transparent,
-                        ), // 将宽度设置为0来隐藏下划线
-                      ),
-                      //设置未选中的字体颜色
-                      unselectedLabelColor: const Color.fromRGBO(
-                        153,
-                        153,
-                        153,
-                        1,
-                      ),
-                      //选中的字体颜色
-                      labelColor: const Color.fromRGBO(252, 119, 66, 1),
-                      tabs: [Tab(text: '详情'), Tab(text: '简介')],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: goFeedbackPage,
-                    icon: Icon(Icons.warning_rounded),
-                  ),
-                  _buildPopFromBottomWithCloseAndLeftTitle(context),
-                ],
-              ),
-              Expanded(
-                child: TabBarView(
+        // child: _buildNavigationTabs(),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 0),
+          child: DefaultTabController(
+            length: 2,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    ListView(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        // 视频信息
-                        _buildVideoInfo(),
-                        // 广告横幅
-                        _buildBanner(),
-                        // 猜你喜欢
-                        _buildRecommendations(),
-                      ],
+                    SizedBox(
+                      width: 150,
+                      child: TabBar(
+                        dividerHeight: 0,
+                        isScrollable: true,
+                        tabAlignment: TabAlignment.start,
+                        indicatorPadding: const EdgeInsets.all(0),
+                        indicator: UnderlineTabIndicator(
+                          borderSide: BorderSide(
+                            width: 0.0,
+                            color: Colors.transparent,
+                          ), // 将宽度设置为0来隐藏下划线
+                        ),
+                        //设置未选中的字体颜色
+                        unselectedLabelColor: const Color.fromRGBO(
+                          153,
+                          153,
+                          153,
+                          1,
+                        ),
+                        //选中的字体颜色
+                        labelColor: const Color.fromRGBO(252, 119, 66, 1),
+                        tabs: [Tab(text: '详情'), Tab(text: '简介')],
+                      ),
                     ),
-                    SingleChildScrollView(child: _buildTabsVideoInfo()),
+                    IconButton(
+                      onPressed: goFeedbackPage,
+                      icon: Icon(Icons.warning_rounded),
+                    ),
+                    _buildPopFromBottomWithCloseAndLeftTitle(context),
                   ],
                 ),
-              ),
-            ],
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      ListView(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        children: [
+                          // 视频信息
+                          _buildVideoInfo(),
+                          // 广告横幅
+                          _buildBanner(),
+                          // 猜你喜欢
+                          _buildRecommendations(),
+                        ],
+                      ),
+                      SingleChildScrollView(child: _buildTabsVideoInfo()),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -525,9 +534,34 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 10,
         children: [
-          Text(
-            videoData?.title ?? "",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                videoData?.title ?? "",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              ShaderMask(
+                shaderCallback:
+                    (bounds) => LinearGradient(
+                      begin: Alignment.bottomCenter, // 从底部开始
+                      end: Alignment.topCenter, // 到顶部结束
+                      colors: [
+                        Color.fromRGBO(255, 153, 0, 0),
+                        Color.fromRGBO(255, 153, 0, 1), // 完全不透明的橙色
+                      ], // 黑色到白色
+                    ).createShader(bounds),
+                child: Text(
+                  VideoUtil.formatScore(videoData?.doubanScore),
+                  style: TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.w500,
+                    color: Color.fromRGBO(255, 153, 0, 1),
+                  ),
+                ),
+              ),
+            ],
           ),
           Row(
             children:
@@ -616,55 +650,58 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
             ],
           ),
           // 自定义小屏列表
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: _buildPlayer(tabData[currentPlay.value]),
-          ),
+          _buildPlayer(),
         ],
       ),
     );
   }
 
-  Widget _buildPlayer(List<PlayLineDataList> entry) {
+  Widget _buildPlayer() {
+    if (tabData.isEmpty) {
+      return const Text("暂无数据");
+    }
+    if (tabData[currentPlay.value].isEmpty) {
+      return const Text("暂无数据");
+    }
+    List<PlayLineDataList> entry = tabData[currentPlay.value];
     return ValueListenableBuilder<int>(
       valueListenable: currentPlay,
       builder: (context, key, child) {
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              ...entry.asMap().entries.map((entry) {
-                final index = entry.key; // 获取当前索引
-                final item = entry.value; // 获取当前项
-                return Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                      backgroundColor:
-                          currentPlay.value == index
-                              ? const Color.fromRGBO(252, 119, 66, 1)
-                              : Color.fromRGBO(255, 255, 255, 1),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
-                    onPressed: () {
-                      currentPlay.value = index;
-                      setVideoUrl(tabData[currentPlay.value][index].file ?? "");
-                    },
-                    child: Text(
-                      item.name ?? '',
-                      style: TextStyle(
-                        color:
-                            currentPlay.value == index
-                                ? Colors.white
-                                : Colors.black,
-                      ),
+        return SizedBox(
+          height: 40,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal, // 水平滚动
+            itemCount: entry.length, // 列表项数量
+            itemBuilder: (context, index) {
+              final item = entry[index]; // 获取当前项
+              return Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor:
+                        currentPlay.value == index
+                            ? const Color.fromRGBO(252, 119, 66, 1)
+                            : Color.fromRGBO(255, 255, 255, 1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
-                );
-              }),
-            ],
+                  onPressed: () {
+                    currentPlay.value = index;
+                    setVideoUrl(tabData[currentPlay.value][index].file ?? "");
+                  },
+                  child: Text(
+                    item.name ?? '',
+                    style: TextStyle(
+                      color:
+                          currentPlay.value == index
+                              ? Colors.white
+                              : Colors.black,
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         );
       },
@@ -1062,93 +1099,71 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                   ),
                 ),
                 height: 650,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 10),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: Center(
-                              child: Text("投屏", style: TextStyle(fontSize: 14)),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 10, right: 10),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Center(
+                                child: Text(
+                                  "投屏",
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: Navigator.of(context).pop,
+                              child: const Icon(Icons.close),
+                            ),
+                          ],
+                        ),
+                        //定位组件
+                        Container(
+                          margin: const EdgeInsets.only(top: 30),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              spacing: 10,
+                              children: [
+                                Text(
+                                  "注意:",
+                                  style: TextStyle(
+                                    color: Color.fromARGB(142, 142, 142, 0),
+                                  ),
+                                ),
+                                Text(
+                                  "1、电视投屏的广告与本APP无关",
+                                  style: TextStyle(
+                                    color: Color.fromARGB(142, 142, 142, 0),
+                                  ),
+                                ),
+                                Text(
+                                  "2、投屏后无法再次投屏，请重置投屏或者退出投屏",
+                                  style: TextStyle(
+                                    color: Color.fromARGB(142, 142, 142, 0),
+                                  ),
+                                ),
+                                Text(
+                                  "3、设备扫描过程是持续的请静心等待10秒左右",
+                                  style: TextStyle(
+                                    color: Color.fromARGB(142, 142, 142, 0),
+                                  ),
+                                ),
+
+                                // 修改: 解决Row可能存在的布局溢出问题
+                                tvDeviceLoading(),
+                              ],
                             ),
                           ),
-                          GestureDetector(
-                            onTap: Navigator.of(context).pop,
-                            child: const Icon(Icons.close),
-                          ),
-                        ],
-                      ),
-                      //定位组件
-                      Container(
-                        margin: const EdgeInsets.only(top: 30),
-                        child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            spacing: 10,
-                            children: [
-                              Text(
-                                "注意:",
-                                style: TextStyle(
-                                  color: Color.fromARGB(142, 142, 142, 0),
-                                ),
-                              ),
-                              Text(
-                                "1、电视投屏的广告与本APP无关",
-                                style: TextStyle(
-                                  color: Color.fromARGB(142, 142, 142, 0),
-                                ),
-                              ),
-                              Text(
-                                "2、投屏后无法再次投屏，请重置投屏或者退出投屏",
-                                style: TextStyle(
-                                  color: Color.fromARGB(142, 142, 142, 0),
-                                ),
-                              ),
-                              Text(
-                                "3、设备扫描过程是持续的请静心等待10秒左右",
-                                style: TextStyle(
-                                  color: Color.fromARGB(142, 142, 142, 0),
-                                ),
-                              ),
-                              // 修改: 解决Row可能存在的布局溢出问题
-                              Expanded(
-                                child: ListView.builder(
-                                  shrinkWrap: true,
-                                  itemCount: deviceList.length,
-                                  itemBuilder: (context, index) {
-                                    return Padding(
-                                      padding: const EdgeInsets.only(top: 15),
-                                      child: TDButton(
-                                        text:
-                                            deviceList[index]["value"]
-                                                .info
-                                                .friendlyName,
-                                        size: TDButtonSize.large,
-                                        onTap: () {
-                                          deviceList[index]["value"].setUrl(
-                                            playerLineData[currentPlay.value]
-                                                    .file ??
-                                                "",
-                                          );
-                                        },
-                                        type: TDButtonType.outline,
-                                        shape: TDButtonShape.rectangle,
-                                        theme: TDButtonTheme.primary,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              tvDeviceLoading(),
-                            ],
-                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -1171,7 +1186,27 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
         ),
       );
     } else {
-      return Center();
+      return ListView.builder(
+        shrinkWrap: true,
+        itemCount: deviceList.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(top: 15),
+            child: TDButton(
+              text: deviceList[index]["value"].info.friendlyName,
+              size: TDButtonSize.large,
+              onTap: () {
+                deviceList[index]["value"].setUrl(
+                  playerLineData[currentPlay.value].file ?? "",
+                );
+              },
+              type: TDButtonType.outline,
+              shape: TDButtonShape.rectangle,
+              theme: TDButtonTheme.primary,
+            ),
+          );
+        },
+      );
     }
   }
 
@@ -1193,40 +1228,40 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
             // 右上方按钮组开关
             isRightButton: true,
             // 右上方按钮组
-            rightButtonList: [
-              InkWell(
-                onTap: () {},
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColorLight,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(5),
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.favorite,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: () {},
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColorLight,
-                    borderRadius: const BorderRadius.vertical(
-                      bottom: Radius.circular(5),
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.thumb_up,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ),
-              ),
-            ],
+            // rightButtonList: [
+            //   InkWell(
+            //     onTap: () {},
+            //     child: Container(
+            //       padding: const EdgeInsets.all(10),
+            //       decoration: BoxDecoration(
+            //         color: Theme.of(context).primaryColorLight,
+            //         borderRadius: const BorderRadius.vertical(
+            //           top: Radius.circular(5),
+            //         ),
+            //       ),
+            //       child: Icon(
+            //         Icons.favorite,
+            //         color: Theme.of(context).primaryColor,
+            //       ),
+            //     ),
+            //   ),
+            //   InkWell(
+            //     onTap: () {},
+            //     child: Container(
+            //       padding: const EdgeInsets.all(10),
+            //       decoration: BoxDecoration(
+            //         color: Theme.of(context).primaryColorLight,
+            //         borderRadius: const BorderRadius.vertical(
+            //           bottom: Radius.circular(5),
+            //         ),
+            //       ),
+            //       child: Icon(
+            //         Icons.thumb_up,
+            //         color: Theme.of(context).primaryColor,
+            //       ),
+            //     ),
+            //   ),
+            // ],
             settingFun: () {
               tvDevice();
             },

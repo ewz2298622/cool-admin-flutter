@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
 import '../../components/loading.dart';
 import '../../entity/dict_data_entity.dart';
 import '../../entity/week_entity.dart';
+import '../../utils/video.dart';
+import '../video_detail/detail.dart';
 
 class WeekPage extends StatefulWidget {
   @override
@@ -33,7 +34,7 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
       tabs.clear();
       for (var element in week) {
         tabs.add(TDTab(text: element.name));
-        getWeekList(element.id ?? 0);
+        await getWeekList(element.id ?? 0);
       }
     } catch (e) {
       // 捕获并处理异常
@@ -52,112 +53,114 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
   }
 
   Widget _buildWeekItem(WeekDataList item) {
-    return Container(
-      height: 150,
-      margin: EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        spacing: 10,
-        children: [
-          // 封面
-          TDImage(
-            fit: BoxFit.cover,
-            width: 110,
-            height: 140,
-            imgUrl: item.surfacePlot ?? "",
-            errorWidget: const TDImage(
-              width: 150,
-              assetUrl: 'assets/images/loading.gif',
+    return GestureDetector(
+      child: Container(
+        height: 150,
+        margin: EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 10,
+              offset: Offset(0, 2),
             ),
-          ),
-          // 内容
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.all(0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  // 标题
-                  Text(
-                    item.title ?? "",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 4),
-                  // 更新信息
-                  SizedBox(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Wrap(
-                        spacing: 12,
-                        runSpacing: 8,
-                        children:
-                            formatString(item.videoClass ?? "")
-                                .map(
-                                  (name) => TDTag(
-                                    name,
-                                    isLight: true,
-                                    theme: TDTagTheme.danger,
-                                  ),
-                                )
-                                .toList(),
-                      ),
-                    ),
-                  ),
-                  // 简介
-                  Html(
-                    data: item.introduce ?? "",
-                    style: {
-                      "body": Style(
-                        maxLines: 1, // 限制最大行数
-                        textOverflow: TextOverflow.ellipsis, // 溢出显示省略号
-                        color: const Color.fromRGBO(153, 153, 153, 1),
-                        backgroundColor: Colors.transparent,
-                      ),
-                      "p": Style(
-                        color: const Color.fromRGBO(153, 153, 153, 1),
-                        backgroundColor: Colors.transparent,
-                      ),
-                      //设置所有html元素字体的颜色
-                      "span": Style(
-                        color: const Color.fromRGBO(153, 153, 153, 1),
-                        backgroundColor: Colors.transparent,
-                      ),
-                    },
-                  ),
-                  // 底部信息
-                  Row(
-                    spacing: 5,
-                    children: [
-                      Icon(
-                        Icons.access_time,
-                        size: 14,
-                        color: Colors.grey[400],
-                      ),
-                      Text(
-                        item.time ?? "",
-                        style: TextStyle(color: Colors.grey[400], fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ],
+          ],
+        ),
+        child: Row(
+          spacing: 10,
+          children: [
+            // 封面
+            TDImage(
+              fit: BoxFit.cover,
+              width: 110,
+              height: 140,
+              imgUrl: item.surfacePlot ?? "",
+              errorWidget: const TDImage(
+                width: 150,
+                assetUrl: 'assets/images/loading.gif',
               ),
             ),
-          ),
-        ],
+            // 内容
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // 标题
+                    Text(
+                      item.title ?? "",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 4),
+                    // 更新信息
+                    SizedBox(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Wrap(
+                          spacing: 12,
+                          runSpacing: 8,
+                          children:
+                              formatString(item.videoClass ?? "")
+                                  .map(
+                                    (name) => TDTag(
+                                      name,
+                                      isLight: true,
+                                      theme: TDTagTheme.danger,
+                                    ),
+                                  )
+                                  .toList(),
+                        ),
+                      ),
+                    ),
+                    // 简介
+                    Text(
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      VideoUtil.extractPlainText(item.introduce ?? ""),
+                      style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                    ),
+                    // 底部信息
+                    Row(
+                      spacing: 5,
+                      children: [
+                        Icon(
+                          Icons.access_time,
+                          size: 14,
+                          color: Colors.grey[400],
+                        ),
+                        Text(
+                          item.time ?? "",
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Video_Detail(id: item.videoId ?? 0),
+          ),
+        );
+      },
     );
   }
 

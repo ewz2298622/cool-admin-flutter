@@ -85,7 +85,7 @@ class HomeTwoVideo extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.start,
             //自动换行
             children: List.generate(
-              album.length ?? 0,
+              album.length,
               (index) => SizedBox(
                 width: itemWidth, // 固定宽度
                 child: _buildAlbumItem(

@@ -79,20 +79,6 @@ class _SettingState extends State<Setting> {
           deleteAll(context);
         },
       ),
-      TDCell(
-        style: TDCellStyle(
-          padding: EdgeInsets.only(top: 10, bottom: 10),
-          titleStyle: TextStyle(
-            color: Theme.of(context).textTheme.titleLarge!.color,
-          ),
-          // backgroundColor: Theme.of(context).cardColor,
-        ),
-        arrow: true,
-        title: '退出登录',
-        onClick: (cell) {
-          logout(context);
-        },
-      ),
     ];
     //如果widget.userStatus为true的话则给cells第二个索引的位置添加元素
     if (widget.userStatus) {
@@ -125,6 +111,22 @@ class _SettingState extends State<Setting> {
               return value;
             },
           ),
+        ),
+      );
+      cells.add(
+        TDCell(
+          style: TDCellStyle(
+            padding: EdgeInsets.only(top: 10, bottom: 10),
+            titleStyle: TextStyle(
+              color: Theme.of(context).textTheme.titleLarge!.color,
+            ),
+            // backgroundColor: Theme.of(context).cardColor,
+          ),
+          arrow: true,
+          title: '退出登录',
+          onClick: (cell) {
+            logout(context);
+          },
         ),
       );
     }

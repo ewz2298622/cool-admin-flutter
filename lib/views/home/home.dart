@@ -391,7 +391,13 @@ class _HomePageState extends State<Home>
                   MaterialPageRoute(builder: (context) => WeekPage()),
                 );
               },
-              child: Center(child: Text("更新")),
+              child: Center(
+                child: TDImage(
+                  width: 30,
+                  height: 30,
+                  assetUrl: 'assets/images/week.png',
+                ),
+              ),
             ),
           ),
         ],

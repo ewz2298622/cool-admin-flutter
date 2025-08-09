@@ -11,6 +11,7 @@ import '../../entity/dict_data_entity.dart';
 import '../../entity/play_line_entity.dart';
 import '../../entity/video_detail_entity.dart';
 import '../../entity/video_line_entity.dart';
+import '../../utils/video.dart';
 
 class ShortDrama extends StatefulWidget {
   //接受路由传递过来的props id
@@ -406,7 +407,9 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
                 SizedBox(
                   width: MediaQuery.of(context).size.width - 32,
                   child: Text(
-                    "${widget.videoData.introduce}",
+                    VideoUtil.extractPlainText(
+                      widget.videoData.introduce ?? "",
+                    ),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,

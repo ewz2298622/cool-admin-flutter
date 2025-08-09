@@ -271,10 +271,10 @@ class Api {
    * 获取视频线路更新
    * @param data 请求参数
    */
-  static getVideoLineUpdate(Map<String, dynamic>? data) async {
+  static VideoLineUpdate(Map<String, dynamic>? data) async {
     try {
       await server.post(
-        "/app/video/video_line/update",
+        "/app/video/play_line/update",
         data: data,
       ); // 添加注释说明 ONE 的含义});
     } catch (error) {

@@ -65,7 +65,6 @@ class Video extends StatelessWidget {
     if (item?.remarks == null) {
       return Container();
     }
-    double doubanScore = item.doubanScore!.toDouble() / 100;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.only(right: 4, bottom: 3),
@@ -97,7 +96,7 @@ class Video extends StatelessWidget {
             ),
           ),
           Text(
-            doubanScore.toString(),
+            VideoUtil.formatScore(item?.doubanScore),
             textAlign: TextAlign.right,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

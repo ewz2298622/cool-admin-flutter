@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:html/parser.dart';
 
 class VideoUtil {
   //tag格式化
@@ -62,5 +63,43 @@ class VideoUtil {
 
     // 向上取整，确保能容纳所有子项
     return newCrossAxisCount.ceil();
+  }
+
+  static String extractPlainText(String html) {
+    final document = parse(html); // 解析 HTML
+    return document.body?.text ?? ''; // 提取纯文本（自动忽略所有标签）
+  }
+
+  static String formatScore(int? number) {
+    if (number == null) {
+      return "0.0";
+    }
+    if (number == 0) return "0.0";
+
+    int magnitude = 0;
+    double temp = number.toDouble();
+
+    // 计算数量级，使得 temp 在 1.0 到 10.0 之间
+    while (temp >= 10.0) {
+      temp /= 10.0;
+      magnitude++;
+    }
+
+    while (temp < 1.0) {
+      temp *= 10.0;
+      magnitude--;
+    }
+
+    // 保留一位小数
+    double compressed = double.parse(temp.toStringAsFixed(1));
+
+    // 如果因为四舍五入导致个位数超过10，调整一下（例如 9.99 -> 10.0）
+    if (compressed >= 10.0) {
+      compressed /= 10.0;
+      magnitude++;
+    }
+    //将compressed转化成字符串
+    String compressedString = compressed.toString();
+    return compressedString;
   }
 }
