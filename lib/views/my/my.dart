@@ -43,7 +43,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
 
   List<ViewsDataList> viewsData = [];
 
-  List<NoticeInfoDataList>? noticeInfoData = [];
+  List<NoticeInfoDataList> noticeInfoData = [];
   StreamSubscription? subscription;
 
   void didPopNext() {
@@ -496,13 +496,17 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
         break;
       case "关于":
         // 跳转About页面
+        if (noticeInfoData.isEmpty) {
+          TDToast.showText('暂无数据', context: context);
+          return;
+        }
         Navigator.push(
           context,
           MaterialPageRoute(
             builder:
                 (context) => HtmlPage(
-                  content: noticeInfoData?[0].content ?? "",
-                  title: noticeInfoData?[0].title ?? "",
+                  content: noticeInfoData[0].content ?? "",
+                  title: noticeInfoData[0].title ?? "",
                 ),
           ),
         );

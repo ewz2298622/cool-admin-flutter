@@ -139,6 +139,9 @@ class _LiveStreamPageState extends State<VideoService> {
 
   /// 构建分类侧边栏
   Widget _buildCategorySidebar() {
+    if (dictInfoListData.isEmpty) {
+      return Container();
+    }
     return SizedBox(
       width: 120,
       child: Card(

@@ -6,6 +6,7 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
 import '../../components/loading.dart';
+import '../../components/no_data.dart';
 import '../../components/sectionWithMore.dart';
 import '../../components/video_scroll.dart';
 import '../../components/video_three.dart';
@@ -158,27 +159,45 @@ class VideoSearchState extends State<VideoSearch>
   }
 
   Widget _buildRecommendations() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 10,
-      children: [
-        SectionWithMore(title: '猜你想搜'),
-        Padding(
-          padding: EdgeInsets.only(bottom: 15),
-          child: HorizontalVideoList(videoPageData: videoPageData),
-        ),
-      ],
-    );
+    if (videoPageData.isNotEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 10,
+        children: [
+          SectionWithMore(title: '猜你想搜'),
+          Padding(
+            padding: EdgeInsets.only(bottom: 15),
+            child: HorizontalVideoList(videoPageData: videoPageData),
+          ),
+        ],
+      );
+    } else {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 10,
+        children: [
+          SectionWithMore(title: '猜你想搜'),
+          Padding(padding: EdgeInsets.only(bottom: 15), child: NoData()),
+        ],
+      );
+    }
   }
 
   Widget _buildAlbumItems() {
-    return Column(
-      spacing: 10,
-      children: [
-        SectionWithMore(title: '视频热搜榜'),
-        VideoThree(videoPageData: videoPageDataList),
-      ],
-    );
+    if (videoPageDataList.isNotEmpty) {
+      return Column(
+        spacing: 10,
+        children: [
+          SectionWithMore(title: '视频热搜榜'),
+          VideoThree(videoPageData: videoPageDataList),
+        ],
+      );
+    } else {
+      return Column(
+        spacing: 10,
+        children: [SectionWithMore(title: '视频热搜榜'), NoData()],
+      );
+    }
   }
 
   // 区块标题组件

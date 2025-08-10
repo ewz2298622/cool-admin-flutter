@@ -3,6 +3,7 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
 import '../../components/loading.dart';
+import '../../components/no_data.dart';
 import '../../components/video_one.dart';
 import '../../entity/video_page_entity.dart';
 
@@ -108,65 +109,70 @@ class VideoRankingState extends State<VideoRanking>
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else if (snapshot.hasData) {
-          return Stack(
-            children: [
-              TDImage(
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: 200,
-                imgUrl: videoPageDataList[currentIndex][0].surfacePlot ?? "",
-                errorWidget: const TDImage(
-                  width: 150,
-                  assetUrl: 'assets/images/loading.gif',
-                ),
-              ),
-              Container(
-                height: 200,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5),
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent, // 顶部透明
-                      Colors.black, // 底部黑色
-                    ],
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 20, right: 20, top: 60),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 10,
-                    children: [
-                      Text(
-                        "排行榜",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        "根据内容热点排名，每小时更新一次",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              _buildTabsContent(),
-            ],
-          );
+          return contentIsEmpty();
         } else {
           return Text('No data available');
         }
       },
     );
+  }
+
+  Widget contentIsEmpty() {
+    if (videoPageDataList.isEmpty) {
+      return Padding(padding: const EdgeInsets.only(top: 120), child: NoData());
+    } else {
+      return Stack(
+        children: [
+          TDImage(
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: 200,
+            imgUrl: videoPageDataList[currentIndex][0].surfacePlot ?? "",
+            errorWidget: const TDImage(
+              width: 150,
+              assetUrl: 'assets/images/loading.gif',
+            ),
+          ),
+          Container(
+            height: 200,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent, // 顶部透明
+                  Colors.black, // 底部黑色
+                ],
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20, top: 60),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 10,
+                children: [
+                  Text(
+                    "排行榜",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    "根据内容热点排名，每小时更新一次",
+                    style: const TextStyle(color: Colors.white, fontSize: 15),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          _buildTabsContent(),
+        ],
+      );
+    }
   }
 
   /// 初始化tab

@@ -478,17 +478,19 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                 Expanded(
                   child: TabBarView(
                     children: [
-                      ListView(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        children: [
-                          // 视频信息
-                          _buildVideoInfo(),
-                          // 广告横幅
-                          _buildBanner(),
-                          // 猜你喜欢
-                          _buildRecommendations(),
-                        ],
+                      SingleChildScrollView(
+                        child: ListView(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          children: [
+                            // 视频信息
+                            _buildVideoInfo(),
+                            // 广告横幅
+                            _buildBanner(),
+                            // 猜你喜欢
+                            _buildRecommendations(),
+                          ],
+                        ),
                       ),
                       SingleChildScrollView(child: _buildTabsVideoInfo()),
                     ],

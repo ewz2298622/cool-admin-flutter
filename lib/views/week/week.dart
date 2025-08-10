@@ -3,11 +3,15 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
 import '../../components/loading.dart';
+import '../../components/no_data.dart';
 import '../../entity/dict_data_entity.dart';
 import '../../entity/week_entity.dart';
 import '../../utils/video.dart';
 import '../video_detail/detail.dart';
 
+/// 周播放时间表页面
+///
+/// 显示按星期分类的视频列表，用户可以通过顶部Tab切换不同日期的视频内容
 class WeekPage extends StatefulWidget {
   @override
   _WeekPageState createState() => _WeekPageState();
@@ -18,10 +22,17 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
   late TabController _tabController;
   List<TDTab> tabs = [];
 
+  /// 存储每周的视频列表数据
+  /// 结构: List<每日视频列表>
   List<List<WeekDataList>> weekList = [];
 
+  /// 存储星期字典数据
   List<DictDataDataWeek> week = [];
 
+  /// 获取字典信息和对应的星期数据
+  ///
+  /// 从API获取星期分类数据，并为每个分类获取对应的视频列表
+  /// 通过并行请求优化数据加载性能
   Future<void> getDictInfoPages() async {
     try {
       week =
@@ -32,16 +43,27 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
               .week!;
 
       tabs.clear();
+      weekList.clear();
+
+      // 并行获取所有星期的视频列表，提高加载性能
+      final futures = <Future>[];
       for (var element in week) {
         tabs.add(TDTab(text: element.name));
-        await getWeekList(element.id ?? 0);
+        // 创建并行请求
+        futures.add(getWeekList(element.id ?? 0));
       }
+      // 等待所有请求完成
+      await Future.wait(futures);
     } catch (e) {
       // 捕获并处理异常
       print('获取视频分类数据失败: $e');
     }
   }
 
+  /// 格式化字符串，支持逗号和斜杠分隔符
+  ///
+  /// [str] 输入的字符串，可能包含逗号或斜杠分隔的多个值
+  /// 返回分割后的字符串列表
   List<String> formatString(String str) {
     if (str.contains(',')) {
       return str.split(',');
@@ -52,6 +74,10 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
     return [str];
   }
 
+  /// 构建单个星期视频项的UI组件
+  ///
+  /// [item] 视频数据对象
+  /// 返回包含视频封面、标题、标签和简介的列表项组件
   Widget _buildWeekItem(WeekDataList item) {
     return GestureDetector(
       child: Container(
@@ -69,9 +95,10 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
           ],
         ),
         child: Row(
+          // 使用spacing替代手动添加间距
           spacing: 10,
           children: [
-            // 封面
+            // 视频封面图片
             TDImage(
               fit: BoxFit.cover,
               width: 110,
@@ -82,7 +109,7 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
                 assetUrl: 'assets/images/loading.gif',
               ),
             ),
-            // 内容
+            // 视频信息内容区域
             Expanded(
               child: Padding(
                 padding: EdgeInsets.all(0),
@@ -90,7 +117,7 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    // 标题
+                    // 视频标题
                     Text(
                       item.title ?? "",
                       style: TextStyle(
@@ -101,7 +128,7 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
                       overflow: TextOverflow.ellipsis,
                     ),
                     SizedBox(height: 4),
-                    // 更新信息
+                    // 视频分类标签区域
                     SizedBox(
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
@@ -121,14 +148,14 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
-                    // 简介
+                    // 视频简介
                     Text(
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       VideoUtil.extractPlainText(item.introduce ?? ""),
                       style: TextStyle(color: Colors.grey[400], fontSize: 12),
                     ),
-                    // 底部信息
+                    // 底部时间信息
                     Row(
                       spacing: 5,
                       children: [
@@ -164,6 +191,10 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
     );
   }
 
+  /// 获取指定星期的视频列表
+  ///
+  /// [week] 星期ID，用于查询对应日期的视频
+  /// 从API获取视频列表并添加到weekList中
   Future<void> getWeekList(int week) async {
     try {
       List<WeekDataList> list =
@@ -178,13 +209,22 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
     } catch (e) {
       // 捕获并处理异常
       print('获取视频分类数据失败: $e');
+      // 添加空列表以防止索引越界
+      weekList.add([]);
     }
   }
 
+  /// 初始化页面数据
+  ///
+  /// 调用getDictInfoPages获取所有数据，并初始化TabController
+  /// 返回初始化结果字符串
   Future<String> init() async {
     try {
       await getDictInfoPages();
-      _tabController = TabController(length: tabs.length, vsync: this);
+      // 确保在有数据的情况下才初始化TabController
+      if (tabs.isNotEmpty) {
+        _tabController = TabController(length: tabs.length, vsync: this);
+      }
       return "init success";
     } catch (e) {
       return "init err";
@@ -199,11 +239,26 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    // 释放TabController资源
     _tabController.dispose();
     super.dispose();
   }
 
-  /// 返回一个Widget自动填充剩余高度 且可以滑动
+  /// 检查内容是否为空并返回相应组件
+  ///
+  /// 如果tabs为空则显示无数据组件，否则显示Tab内容
+  Widget contentIsEmpty(BuildContext context) {
+    if (tabs.isEmpty) {
+      return NoData();
+    } else {
+      return _buildTabs(context);
+    }
+  }
+
+  /// 构建页面主要内容
+  ///
+  /// 使用FutureBuilder处理异步数据加载状态
+  /// 显示加载中、错误或实际内容
   Widget _buildContent(BuildContext context) {
     return FutureBuilder<String>(
       future: _futureBuilderFuture, // 异步操作
@@ -214,7 +269,7 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}'); // 显示错误信息
         } else if (snapshot.hasData) {
-          return _buildTabs(context);
+          return contentIsEmpty(context);
         } else {
           return Text('No data available');
         }
@@ -222,12 +277,17 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
     );
   }
 
+  /// 构建Tab导航和内容视图
+  ///
+  /// 包含可滚动的TabBar和对应的TabBarView内容区域
   Widget _buildTabs(BuildContext context) {
     return Column(
       children: [
+        // 顶部Tab导航栏
         Container(
           color: Colors.white,
           child: TabBar(
+            tabAlignment: TabAlignment.center,
             controller: _tabController,
             indicatorColor: Color.fromRGBO(255, 153, 0, 1),
             indicatorWeight: 3.0,
@@ -239,6 +299,7 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
             isScrollable: true,
           ),
         ),
+        // Tab内容区域
         Expanded(
           child: TabBarView(
             controller: _tabController,
@@ -257,7 +318,7 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
     return Scaffold(
       appBar: AppBar(
         title: Text("时间表", style: TextStyle(fontSize: 16)),
-        //返回
+        //返回按钮
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, size: 20),
           onPressed: () {
@@ -273,7 +334,16 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
     );
   }
 
+  /// 构建指定日期的动漫列表
+  ///
+  /// [day] 日期索引
+  /// 使用ListView.builder构建可滚动的视频列表
   Widget _buildAnimeList(int day) {
+    // 添加空状态检查
+    if (day >= weekList.length) {
+      return NoData();
+    }
+
     return ListView.builder(
       padding: EdgeInsets.all(16),
       itemCount: weekList[day].length,

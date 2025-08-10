@@ -181,104 +181,112 @@ class VideoFilterState extends State<VideoFilter>
     String title,
     List<DictDataDataVideoCategory> items,
   ) {
-    return ValueListenableBuilder<int>(
-      valueListenable: categoryCurrent,
-      builder: (context, key, child) {
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              GestureDetector(
-                child: Center(child: Text(title)),
-                onTap: () {
-                  _category_change(null);
-                },
-              ),
+    if (items.isEmpty) {
+      return Container();
+    } else {
+      return ValueListenableBuilder<int>(
+        valueListenable: categoryCurrent,
+        builder: (context, key, child) {
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                GestureDetector(
+                  child: Center(child: Text(title)),
+                  onTap: () {
+                    _category_change(null);
+                  },
+                ),
 
-              ...(items)
-                  .map(
-                    (item) => Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: GestureDetector(
-                        child: TDTag(
-                          item.name ?? "",
-                          shape: TDTagShape.round,
-                          isLight: true,
-                          size: TDTagSize.large,
-                          textColor:
-                              key == item.id
-                                  ? const Color.fromRGBO(255, 122, 27, 1)
-                                  : Theme.of(
-                                    context,
-                                  ).textTheme.titleLarge?.color,
-                          backgroundColor:
-                              key == item.id
-                                  ? const Color.fromRGBO(244, 244, 244, 1)
-                                  : Colors.transparent,
-                          isOutline: true,
-                          style: TDTagStyle(
-                            borderColor: Colors.transparent,
-                            borderRadius: BorderRadius.circular(10),
+                ...(items)
+                    .map(
+                      (item) => Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: GestureDetector(
+                          child: TDTag(
+                            item.name ?? "",
+                            shape: TDTagShape.round,
+                            isLight: true,
+                            size: TDTagSize.large,
+                            textColor:
+                                key == item.id
+                                    ? const Color.fromRGBO(255, 122, 27, 1)
+                                    : Theme.of(
+                                      context,
+                                    ).textTheme.titleLarge?.color,
+                            backgroundColor:
+                                key == item.id
+                                    ? const Color.fromRGBO(244, 244, 244, 1)
+                                    : Colors.transparent,
+                            isOutline: true,
+                            style: TDTagStyle(
+                              borderColor: Colors.transparent,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
+                          onTap: () => _category_change(item),
                         ),
-                        onTap: () => _category_change(item),
                       ),
-                    ),
-                  )
-                  .toList(),
-            ],
-          ),
-        );
-      },
-    );
+                    )
+                    .toList(),
+              ],
+            ),
+          );
+        },
+      );
+    }
   }
 
   Widget _buildAreaRow(String title, List<DictInfoListData> items) {
-    return ValueListenableBuilder<int>(
-      valueListenable: regionCurrent,
-      builder: (context, key, child) {
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              GestureDetector(
-                child: Center(child: Text(title ?? "")),
-                onTap: () {
-                  _area_change(null);
-                },
-              ),
-              ...(items).map(
-                (item) => Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: GestureDetector(
-                    child: TDTag(
-                      item.name ?? "",
-                      shape: TDTagShape.round,
-                      size: TDTagSize.large,
-                      isLight: true,
-                      textColor:
-                          key == item.id
-                              ? const Color.fromRGBO(255, 122, 27, 1)
-                              : Theme.of(context).textTheme.titleLarge?.color,
-                      backgroundColor:
-                          key == item.id
-                              ? const Color.fromRGBO(244, 244, 244, 1)
-                              : Colors.transparent,
-                      isOutline: true,
-                      style: TDTagStyle(
-                        borderColor: Colors.transparent,
-                        borderRadius: BorderRadius.circular(10),
+    if (items.isEmpty) {
+      return Container();
+    } else {
+      return ValueListenableBuilder<int>(
+        valueListenable: regionCurrent,
+        builder: (context, key, child) {
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                GestureDetector(
+                  child: Center(child: Text(title ?? "")),
+                  onTap: () {
+                    _area_change(null);
+                  },
+                ),
+                ...(items).map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: GestureDetector(
+                      child: TDTag(
+                        item.name ?? "",
+                        shape: TDTagShape.round,
+                        size: TDTagSize.large,
+                        isLight: true,
+                        textColor:
+                            key == item.id
+                                ? const Color.fromRGBO(255, 122, 27, 1)
+                                : Theme.of(context).textTheme.titleLarge?.color,
+                        backgroundColor:
+                            key == item.id
+                                ? const Color.fromRGBO(244, 244, 244, 1)
+                                : Colors.transparent,
+                        isOutline: true,
+                        style: TDTagStyle(
+                          borderColor: Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
+                      onTap: () => _area_change(item),
                     ),
-                    onTap: () => _area_change(item),
                   ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+              ],
+            ),
+          );
+        },
+      );
+    }
   }
 
   Widget _buildYearRow(String title, List<int> items) {

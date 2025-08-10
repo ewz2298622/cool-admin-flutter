@@ -206,7 +206,15 @@ class _FeedbackState extends State<FeedbackPage> {
                   borderRadius: BorderRadius.circular(5),
                 ),
                 child: Center(
-                  child: Text(feedback_type[index].name!, style: TextStyle()),
+                  child: Text(
+                    feedback_type[index].name!,
+                    style: TextStyle(
+                      color:
+                          currentIndex.value == index
+                              ? TDTheme.of(context).whiteColor1
+                              : TDTheme.of(context).grayColor14,
+                    ),
+                  ),
                 ),
               ),
             );

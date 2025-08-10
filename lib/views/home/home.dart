@@ -9,6 +9,7 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 import '../../api/api.dart';
 import '../../components/home_two_video.dart';
 import '../../components/loading.dart';
+import '../../components/no_data.dart';
 import '../../components/sectionWithMore.dart';
 import '../../components/video_scroll.dart';
 import '../../entity/album_entity.dart';
@@ -85,7 +86,7 @@ class _HomePageState extends State<Home>
 
   Map<int, List<SwiperDataList>> swiperMap = {};
   Map<int, List<AlbumDataList>> albumMap = {};
-  List<NoticeInfoDataList>? noticeInfoData = [];
+  List<NoticeInfoDataList> noticeInfoData = [];
 
   List<DictDataDataVideoCategory> category = [];
 
@@ -165,7 +166,7 @@ class _HomePageState extends State<Home>
       _tabController.addListener(_handleTabSelection);
 
       //判斷noticeInfoData是否有數據
-      if (noticeInfoData?.isNotEmpty ?? false) {
+      if (noticeInfoData.isNotEmpty ?? false) {
         message();
       }
       return "init success";
@@ -207,9 +208,9 @@ class _HomePageState extends State<Home>
                 Column(
                   spacing: 10,
                   children: [
-                    Text(noticeInfoData?[0].title ?? ""),
+                    Text(noticeInfoData[0].title ?? ""),
                     Text(
-                      noticeInfoData?[0].summary ?? "",
+                      noticeInfoData[0].summary ?? "",
                       maxLines: 5,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -348,7 +349,7 @@ class _HomePageState extends State<Home>
           SizedBox(
             height: 36,
             //宽度设置成百分之80%
-            width: MediaQuery.of(context).size.width * 0.8,
+            width: MediaQuery.of(context).size.width * 0.85,
             child: SearchAnchor(
               builder: (context, controller) {
                 return SearchBar(
@@ -367,8 +368,6 @@ class _HomePageState extends State<Home>
                     ),
                   ],
                   onTap: () {
-                    //打印
-                    print('点击了搜索');
                     // 直接在这里跳转
                     Navigator.push(
                       context,
@@ -384,14 +383,14 @@ class _HomePageState extends State<Home>
           ),
           Flexible(
             flex: 1,
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => WeekPage()),
-                );
-              },
-              child: Center(
+            child: Center(
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => WeekPage()),
+                  );
+                },
                 child: TDImage(
                   width: 30,
                   height: 30,
@@ -428,36 +427,7 @@ class _HomePageState extends State<Home>
     return Stack(
       fit: StackFit.passthrough,
       children: [
-        PageView(
-          controller: pageController,
-          onPageChanged: (index) {
-            _tabController.animateTo(index);
-          },
-          children: List.generate(tabs.length, (index) {
-            return ListView(
-              controller: _scrollController, // 添加控制器
-              padding: EdgeInsets.only(top: 0),
-              children: [
-                SizedBox(
-                  height: 250,
-                  child: _buildDotsSwiper(category[index].id ?? 0),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(
-                    top: Layout.paddingL,
-                    right: Layout.paddingL,
-                    left: Layout.paddingL,
-                  ),
-                  child: Column(
-                    children: _buildAlbumContentList(
-                      albumMap[category[index].id] ?? [],
-                    ),
-                  ),
-                ),
-              ],
-            );
-          }),
-        ),
+        contentIsEmpty(context),
         SizedBox(
           height: 120,
           child: DecoratedBox(
@@ -522,6 +492,43 @@ class _HomePageState extends State<Home>
         ),
       ],
     );
+  }
+
+  //判断是否为空
+  Widget contentIsEmpty(BuildContext context) {
+    if (tabs.isNotEmpty) {
+      return PageView(
+        controller: pageController,
+        onPageChanged: (index) {
+          _tabController.animateTo(index);
+        },
+        children: List.generate(tabs.length, (index) {
+          return ListView(
+            controller: _scrollController, // 添加控制器
+            padding: EdgeInsets.only(top: 0),
+            children: [
+              SizedBox(
+                height: 250,
+                child: _buildDotsSwiper(category[index].id ?? 0),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(
+                  top: Layout.paddingL,
+                  right: Layout.paddingL,
+                  left: Layout.paddingL,
+                ),
+                child: Column(
+                  children: _buildAlbumContentList(
+                    albumMap[category[index].id] ?? [],
+                  ),
+                ),
+              ),
+            ],
+          );
+        }),
+      );
+    }
+    return Padding(padding: const EdgeInsets.only(top: 120), child: NoData());
   }
 
   @override
