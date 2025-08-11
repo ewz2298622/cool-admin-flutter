@@ -35,8 +35,11 @@ class VideoSearchState extends State<VideoSearch>
 
   Future<String> init() async {
     try {
-      await getVideoPages();
-      await getSearchHistoryEntity();
+      await Future.wait([
+        videoPageDataGet(),
+        videoPageDataListGet(),
+        getSearchHistoryEntity(),
+      ]);
       return "init success";
     } catch (e) {
       // 捕获并处理异常
@@ -51,7 +54,7 @@ class VideoSearchState extends State<VideoSearch>
     super.initState();
   }
 
-  Future<void> getVideoPages() async {
+  Future<void> videoPageDataGet() async {
     try {
       videoPageData =
           (await Api.getVideoPages({
@@ -63,6 +66,21 @@ class VideoSearchState extends State<VideoSearch>
             "page": Random().nextInt(30) + 1,
           })).data?.list ??
           [] as List<VideoPageDataList>;
+      //改成并发
+    } catch (e) {
+      // 捕获并处理异常
+      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+    }
+  }
+
+  Future<void> videoPageDataListGet() async {
+    try {
+      videoPageDataList =
+          (await Api.getVideoPages({
+            "page": Random().nextInt(30) + 1,
+          })).data?.list ??
+          [] as List<VideoPageDataList>;
+      //改成并发
     } catch (e) {
       // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');

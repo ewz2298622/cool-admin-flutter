@@ -8,6 +8,7 @@ import 'package:fplayer/fplayer.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
+import '../../components/banner_ads.dart';
 import '../../components/detail_tabs_vews.dart';
 import '../../components/loading.dart';
 import '../../components/sectionWithMore.dart';
@@ -276,14 +277,17 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   Future<String> init() async {
     try {
       _initTabController();
-      await getDictVideoCategoryData();
-      await getDictLanguageData();
-      await getDictAreaData();
       await getVideoById();
       await getVideoLinePages();
       await getPlayLinePages();
-      await getVideoPages();
+      // await getVideoPages();
       await getPlayLinePagesTabs();
+      await Future.wait([
+        getDictVideoCategoryData(),
+        getDictLanguageData(),
+        getDictAreaData(),
+        getVideoPages(),
+      ]);
       _errorListener();
       setVideoUrl(playerLineData[currentPlay.value].file ?? "");
       return "init success";
@@ -683,7 +687,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                     backgroundColor:
                         currentPlay.value == index
                             ? const Color.fromRGBO(252, 119, 66, 1)
-                            : Color.fromRGBO(255, 255, 255, 1),
+                            : Theme.of(context).cardColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
                     ),
@@ -811,20 +815,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
         right: Layout.paddingR,
       ),
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TDImage(
-            fit: BoxFit.cover,
-            width: double.infinity,
-            assetUrl: 'assets/images/doubao.png',
-            errorWidget: TDImage(
-              fit: BoxFit.cover,
-              assetUrl: 'assets/images/loading.gif',
-            ),
-          ),
-        ],
-      ),
+      child: BannerAds(androidCodeId: "969380337", iosCodeId: "969380337"),
     );
   }
 

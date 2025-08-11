@@ -63,6 +63,7 @@ dependencies:
   permission_handler: ^12.0.1
   protect_app: ^0.0.5
   html: ^0.15.6
+  flutter_unionad: ^2.1.12
 
 dev_dependencies:
   flutter_test:

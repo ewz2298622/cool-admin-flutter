@@ -1,0 +1,169 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_unionad/flutter_unionad.dart';
+
+class Ads {
+  static bool? _init;
+  static String SDKVersion = "";
+  //注册
+  static initRegister() async {
+    try {
+      _init = await FlutterUnionad.register(
+        //穿山甲广告 Android appid 必填
+        androidAppId: "5730751",
+        //穿山甲广告 ios appid 必填
+        iosAppId: "5730751",
+        //appname 必填
+        appName: "com.example.flutter_app",
+        //使用聚合功能一定要打开此开关，否则不会请求聚合广告，默认这个值为false
+        //true使用GroMore下的广告位
+        //false使用广告变现下的广告位
+        useMediation: true,
+        //是否为计费用户 选填
+        paid: false,
+        //用户画像的关键词列表 选填
+        keywords: "",
+        //是否允许sdk展示通知栏提示 选填
+        allowShowNotify: true,
+        //是否显示debug日志
+        debug: true,
+        //是否支持多进程 选填
+        supportMultiProcess: false,
+        //主题模式 默认FlutterUnionAdTheme.DAY,修改后需重新调用初始化
+        //允许直接下载的网络状态集合 选填
+        directDownloadNetworkType: [
+          FlutterUnionadNetCode.NETWORK_STATE_2G,
+          FlutterUnionadNetCode.NETWORK_STATE_3G,
+          FlutterUnionadNetCode.NETWORK_STATE_4G,
+          FlutterUnionadNetCode.NETWORK_STATE_WIFI,
+        ],
+        androidPrivacy: AndroidPrivacy(
+          //是否允许SDK主动使用地理位置信息 true可以获取，false禁止获取。默认为true
+          isCanUseLocation: false,
+          //当isCanUseLocation=false时，可传入地理位置信息，穿山甲sdk使用您传入的地理位置信息lat
+          lat: 0.0,
+          //当isCanUseLocation=false时，可传入地理位置信息，穿山甲sdk使用您传入的地理位置信息lon
+          lon: 0.0,
+          // 是否允许SDK主动使用手机硬件参数，如：imei
+          isCanUsePhoneState: false,
+          //当isCanUsePhoneState=false时，可传入imei信息，穿山甲sdk使用您传入的imei信息
+          imei: "",
+          // 是否允许SDK主动使用ACCESS_WIFI_STATE权限
+          isCanUseWifiState: false,
+          // 当isCanUseWifiState=false时，可传入Mac地址信息
+          macAddress: "",
+          // 是否允许SDK主动使用WRITE_EXTERNAL_STORAGE权限
+          isCanUseWriteExternal: false,
+          // 开发者可以传入oaid
+          // 是否允许SDK主动获取设备上应用安装列表的采集权限
+          alist: false,
+          // 是否能获取android ID
+          isCanUseAndroidId: false,
+          // 开发者可以传入android ID
+          androidId: "",
+          // 是否允许SDK在申明和授权了的情况下使用录音权限
+          isCanUsePermissionRecordAudio: false,
+          // 是否限制个性化推荐接口
+          isLimitPersonalAds: false,
+          // 是否启用程序化广告推荐 true启用 false不启用
+          isProgrammaticRecommend: false,
+          userPrivacyConfig: {
+            //控制QQ真g获取频率，"0"表示关闭，“1"或者其他值表示打开。
+            "mcod": "0",
+          },
+        ),
+        iosPrivacy: IOSPrivacy(
+          //允许个性化广告
+          limitPersonalAds: false,
+          //允许程序化广告
+          limitProgrammaticAds: false,
+          //允许CAID
+          forbiddenCAID: false,
+        ),
+        //配置拉取失败时导入本地配置 https://www.csjplatform.com/supportcenter/5885
+        //android导入/android/app/src/main/assets/下，文件必须为json文件，传入文件名
+        //ios导入/ios/下，文件必须为json文件，传入文件名
+      );
+      if (_init == true) {
+        SDKVersion = await FlutterUnionad.getSDKVersion();
+        debugPrint("initRegister success SDKVersion $SDKVersion");
+      } else {
+        debugPrint("initRegister fail");
+      }
+    } catch (e) {
+      debugPrint("initRegister error: $e");
+    }
+  }
+
+  //请求权限
+  static requestPermission() async {
+    try {
+      await FlutterUnionad.requestPermissionIfNecessary(
+        callBack: FlutterUnionadPermissionCallBack(
+          notDetermined: () {
+            print("权限未确定");
+          },
+          restricted: () {
+            print("权限限制");
+          },
+          denied: () {
+            print("权限拒绝");
+          },
+          authorized: () {
+            print("权限同意");
+          },
+        ),
+      );
+    } catch (e) {
+      debugPrint("requestPermission error: $e");
+    }
+  }
+
+  //插屏广告
+  static loadFullScreenVideoAdInteraction() async {
+    try {
+      await FlutterUnionad.loadFullScreenVideoAdInteraction(
+        //android 全屏广告id 必填
+        androidCodeId: "969380338",
+        //ios 全屏广告id 必填
+        iosCodeId: "969380338",
+        //视屏方向 选填
+        orientation: FlutterUnionadOrientation.VERTICAL,
+      );
+    } catch (e) {
+      debugPrint("插屏广告加载失败");
+    }
+  }
+
+  //预加载激励广告
+  static Future<void> loadRewardVideoAd() async {
+    try {
+      await FlutterUnionad.loadRewardVideoAd(
+        //是否个性化 选填
+        androidCodeId: "969412287",
+        //Android 激励视频广告id  必填
+        iosCodeId: "969412287",
+        //ios 激励视频广告id  必填
+        rewardName: "200金币",
+        //奖励名称 选填
+        rewardAmount: 200,
+        //奖励数量 选填
+        userID: "123",
+        //  用户id 选填
+        orientation: FlutterUnionadOrientation.VERTICAL,
+        //视屏方向 选填
+        mediaExtra: null,
+        //扩展参数 选填
+      );
+    } catch (e) {
+      debugPrint("激励广告加载失败");
+    }
+  }
+
+  //显示激励广告
+  static Future<void> showRewardVideoAd() async {
+    await FlutterUnionad.showRewardVideoAd();
+  }
+
+  //监听激励广告
+  static void addRewardVideoAdListener() {}
+}

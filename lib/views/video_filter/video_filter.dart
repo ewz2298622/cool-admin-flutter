@@ -104,9 +104,11 @@ class VideoFilterState extends State<VideoFilter>
 
   Future<String> init() async {
     try {
-      await getVideoPages();
-      await getVideoCategoryPages();
-      await getVideoAreaPages();
+      await Future.wait([
+        getVideoPages(),
+        getVideoCategoryPages(),
+        getVideoAreaPages(),
+      ]);
       _scrollControllerAdd();
       return "init success";
     } catch (e) {

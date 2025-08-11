@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
+import '../../components/banner_ads.dart';
 import '../../components/loading.dart';
 import '../../components/sectionWithMore.dart';
 import '../../components/video_view.dart';
@@ -19,6 +20,7 @@ import '../../entity/notice_Info_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../entity/views_entity.dart';
 import '../../style/layout.dart';
+import '../../utils/ads.dart';
 import '../../utils/bus/bus.dart';
 import '../../utils/bus/constant.dart';
 import '../history/history.dart';
@@ -76,6 +78,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
       await getUserInfo();
       await getViews();
       await noticeInfo();
+      Ads.loadRewardVideoAd();
       didChangeAppLifecycleState();
       debugPrint("init success");
       return "init success";
@@ -542,9 +545,19 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
                       spacing: Layout.paddingT,
                       children: [
                         _buildHead(context, data),
-                        buildPricingLayout(),
+
+                        GestureDetector(
+                          onTap: () async {
+                            Ads.showRewardVideoAd();
+                          },
+                          child: buildPricingLayout(),
+                        ),
                         _buildRecommendations(data),
                         _buildModelList(),
+                        BannerAds(
+                          androidCodeId: "969380339",
+                          iosCodeId: "969380339",
+                        ),
                       ],
                     ),
                   );

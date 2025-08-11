@@ -158,8 +158,7 @@ class _HomePageState extends State<Home>
       await getDictInfoPages();
       await getSwiperListByCategoryIds();
       await getAlbumListByCategoryIds();
-      await noticeInfo();
-
+      noticeInfo();
       // 初始化 TabController
       _tabController = TabController(length: tabs.length, vsync: this);
       // 添加监听器以同步 PageView 和 TabBar
@@ -540,7 +539,7 @@ class _HomePageState extends State<Home>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return _buildContent(context);
+    return Scaffold(body: _buildContent(context));
   }
 
   List<Widget> _buildAlbumContentList(List<AlbumDataList> list) {

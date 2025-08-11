@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/style/color_styles.dart';
+import 'package:flutter_app/utils/ads.dart';
 import 'package:flutter_app/utils/contacts.dart';
 import 'package:flutter_app/utils/context_manager.dart';
 import 'package:flutter_app/utils/device_info.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_app/views/home/home.dart';
 import 'package:flutter_app/views/my/my.dart';
 import 'package:flutter_app/views/ranking/ranking.dart';
 import 'package:flutter_app/views/service/service.dart';
+import 'package:flutter_app/views/splash_page/splash_page.dart';
 import 'package:flutter_app/views/video_filter/video_filter.dart';
 import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -45,6 +47,7 @@ class MyApp extends StatelessWidget {
             primaryColor: const Color(0xFFFFFFFF),
             primaryColorDark: const Color(0xFFFFFFFF),
             primaryColorLight: const Color(0x33000000),
+            scaffoldBackgroundColor: const Color(0xFFFFFFFF),
             textButtonTheme: TextButtonThemeData(
               style: ButtonStyle(
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -106,6 +109,15 @@ class _MainPageState extends State<MainPage> {
         }
       },
     );
+  }
+
+  /// 初始化SDK
+  Future<void> initSDK() async {
+    try {
+      await Ads.initRegister();
+    } catch (e) {
+      debugPrint('初始化失败: $e');
+    }
   }
 
   Widget AppView() {
@@ -212,12 +224,24 @@ class _MainPageState extends State<MainPage> {
 
   Future<String> init() async {
     try {
-      Contacts.requestPermissions();
-      await DBManager.init();
-      await initPlatformState();
+      // 使用Future.wait并发执行多个异步操作
+      await Future.wait([
+        initSDK(),
+        Future.microtask(
+          () => Contacts.requestPermissions(),
+        ), // 放在microtask中执行，因为它是同步方法但需要返回Future
+        DBManager.init(),
+        initPlatformState(),
+      ]);
+      //跳转到SplashPage组件
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (context) => SplashPage()));
       return "init success";
     } catch (e) {
-      return "init fail";
+      // 注意：Future.wait会在任意一个Future失败时立即抛出异常
+      // 如果需要收集所有错误，需要更复杂的处理
+      return "init fail: ${e.toString()}";
     }
   }
 

@@ -204,7 +204,6 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
                 "week": week,
               })).data?.list
               as List<WeekDataList>);
-      debugPrint('getWeekList: ${list.length}');
       weekList.add(list);
     } catch (e) {
       // 捕获并处理异常

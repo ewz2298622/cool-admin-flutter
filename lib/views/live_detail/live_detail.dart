@@ -63,8 +63,7 @@ class Live_DetailState extends State<Live_Detail>
 
   Future<String> init() async {
     try {
-      await liveInfo();
-      await getVideoPages();
+      await Future.wait([liveInfo(), getVideoPages()]);
       setVideoUrl(videoData?.pullUrl ?? "");
       //打印
       debugPrint('videoData: ${videoData?.pullUrl ?? ""}');
