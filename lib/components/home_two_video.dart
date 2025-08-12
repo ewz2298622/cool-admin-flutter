@@ -14,30 +14,6 @@ class HomeTwoVideo extends StatelessWidget {
   Widget build(BuildContext context) {
     return _buildAlbumItems(videoPageData, context);
   }
-  //
-  // Widget _buildAlbumItems(AlbumDataList album, BuildContext context) {
-  //   return CustomScrollView(
-  //     shrinkWrap: true,
-  //     physics: NeverScrollableScrollPhysics(),
-  //     slivers: [
-  //       SliverGrid(
-  //         delegate: SliverChildBuilderDelegate(
-  //           (context, index) => _buildAlbumItem(
-  //             album.list?[index] ?? AlbumDataListList(),
-  //             context,
-  //           ),
-  //           childCount: album.list?.length ?? 0,
-  //         ),
-  //         gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-  //           maxCrossAxisExtent: 200.0,
-  //           mainAxisSpacing: 0,
-  //           crossAxisSpacing: 10,
-  //           childAspectRatio: 1.2,
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
 
   Widget _buildAlbumItems(List<dynamic> album, BuildContext context) {
     return LayoutBuilder(
@@ -113,7 +89,7 @@ class HomeTwoVideo extends StatelessWidget {
       child: SizedBox(
         child: TDImage(
           width: double.infinity,
-          height: double.infinity,
+          height: 100,
           fit: BoxFit.cover,
           imgUrl: item.surfacePlot ?? '',
           errorWidget: const TDImage(
@@ -147,8 +123,8 @@ class HomeTwoVideo extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.transparent, // 顶部透明
-                    Colors.black.withOpacity(0.7), // 底部黑色
+                    Color.fromRGBO(217, 217, 217, 0), // 顶部透明
+                    Color.fromRGBO(88, 88, 88, 1), // 部黑色
                   ],
                 ),
                 borderRadius: BorderRadius.circular(5),
@@ -174,8 +150,8 @@ class HomeTwoVideo extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color.fromRGBO(59, 101, 244, 1),
-                Color.fromRGBO(64, 177, 254, 1),
+                Color.fromRGBO(253, 221, 68, 0.80),
+                Color.fromRGBO(253, 221, 68, 0.80),
               ],
             ),
           ),
@@ -184,8 +160,8 @@ class HomeTwoVideo extends StatelessWidget {
             VideoUtil.formatTag(item.pubdate ?? ""),
             style: TextStyle(
               fontSize: 11,
-              color: Colors.white,
-              fontWeight: FontWeight.w400,
+              color: Colors.black87,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
@@ -196,7 +172,7 @@ class HomeTwoVideo extends StatelessWidget {
   Widget _buildAlbumItemNote(AlbumDataListList item) {
     if (item.categoryPid != 537) {
       return Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
             margin: const EdgeInsets.only(right: 4, top: 2),
@@ -209,10 +185,11 @@ class HomeTwoVideo extends StatelessWidget {
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
             child: Text(
               item.remarks ?? "",
-              style: const TextStyle(
-                fontSize: 10,
+              style: TextStyle(
+                fontFamily: 'PingFang SC',
+                fontWeight: FontWeight.w500,
+                fontSize: 11.0,
                 color: Colors.white,
-                fontWeight: FontWeight.w400,
               ),
             ),
           ),
@@ -235,9 +212,10 @@ class HomeTwoVideo extends StatelessWidget {
             child: Text(
               doubanScore.toString(),
               style: const TextStyle(
-                fontSize: 10,
                 color: Color.fromRGBO(255, 102, 0, 1),
-                fontWeight: FontWeight.w400,
+                fontFamily: 'PingFang SC',
+                fontWeight: FontWeight.w500,
+                fontSize: 11.0,
               ),
             ),
           ),
@@ -262,12 +240,15 @@ class HomeTwoVideo extends StatelessWidget {
 
   Widget _buildAlbumItemSubTitle(AlbumDataListList item) {
     //定义一个变量如果item.subTitle不为空则显示item.subTitle，否则显示item.videoTag
-    String subTitle = item.subTitle ?? '';
+    String subTitle =
+        item.subTitle ?? VideoUtil.extractPlainText(item.introduce ?? "");
     subTitle = subTitle.isEmpty ? item.videoTag ?? '' : subTitle;
     return SizedBox(
       width: double.infinity,
       child: Text(
         subTitle,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: const TextStyle(
           overflow: TextOverflow.ellipsis,
           color: Colors.grey,

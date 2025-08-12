@@ -3,6 +3,7 @@
 import 'dart:core';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swiper_null_safety/flutter_swiper_null_safety.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -287,54 +288,62 @@ class _HomePageState extends State<Home>
   Widget _buildDotsSwiper(int id) {
     super.build(context); // 必须调用 super.build
     return Swiper(
+      itemHeight: 158,
       autoplay: true,
       itemCount: (swiperMap[id]?.length) ?? 0,
       itemBuilder: (BuildContext context, int index) {
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            TDImage(
-              height: double.infinity,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              imgUrl: swiperMap[id]?[index].image ?? '',
-              errorWidget: const TDImage(
-                //宽度100%
+        return Container(
+          decoration: BoxDecoration(
+            //5px圆角
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              TDImage(
+                height: 158,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                assetUrl: 'assets/images/loading.gif',
-              ),
-            ),
-            Container(
-              height: double.infinity,
-              width: double.infinity,
-              //向下对其
-              alignment: Alignment.bottomLeft,
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent, // 顶部透明
-                    Colors.black.withOpacity(0.6), // 底部黑色
-                  ],
+                imgUrl: swiperMap[id]?[index].image ?? '',
+                errorWidget: const TDImage(
+                  //宽度100%
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  assetUrl: 'assets/images/loading.gif',
                 ),
               ),
-              child: Text(
-                swiperMap[id]![index].title ?? "",
-                maxLines: 1,
-                //溢出省略号
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.left, // 改为左对齐
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+              Container(
+                height: 158,
+                width: double.infinity,
+                //向下对其
+                alignment: Alignment.bottomLeft,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5), // 添加圆角
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent, // 顶部透明
+                      Colors.black.withOpacity(0.6), // 底部黑色
+                    ],
+                  ),
+                ),
+                child: Text(
+                  swiperMap[id]![index].title ?? "",
+                  maxLines: 1,
+                  //溢出省略号
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.left, // 改为左对齐
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
@@ -345,40 +354,39 @@ class _HomePageState extends State<Home>
       padding: const EdgeInsets.only(left: 10, right: 10),
       child: Row(
         children: [
-          SizedBox(
-            height: 36,
-            //宽度设置成百分之80%
-            width: MediaQuery.of(context).size.width * 0.85,
-            child: SearchAnchor(
-              builder: (context, controller) {
-                return SearchBar(
-                  controller: controller,
-                  backgroundColor: MaterialStateProperty.all(
-                    Colors.white.withOpacity(0.4),
-                  ),
-                  hintText: '搜索...',
-                  hintStyle: MaterialStateProperty.all(
-                    TextStyle(color: Colors.white),
-                  ),
-                  trailing: [
-                    IconButton(
-                      icon: Icon(Icons.search, color: Colors.white),
-                      onPressed: () {},
+          GestureDetector(
+            child: Container(
+              height: 36,
+              //宽度设置成百分之80%
+              width: MediaQuery.of(context).size.width * 0.85,
+              padding: const EdgeInsets.only(left: 10),
+              decoration: BoxDecoration(
+                color: Color.fromRGBO(245, 244, 247, 1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                spacing: 8,
+                children: [
+                  Icon(Icons.search, color: Color.fromRGBO(153, 153, 153, 1)),
+                  Text(
+                    '请输入关键字',
+                    style: TextStyle(
+                      fontFamily: 'PingFang SC', // iOS 默认支持，Android 需确保字体可用
+                      fontWeight: FontWeight.w500, // 对应 500
+                      fontSize: 14.0, // 14px
+                      color: Color(0xFF979797), // #979797
+                      fontStyle: FontStyle.normal, // 正常样式
                     ),
-                  ],
-                  onTap: () {
-                    // 直接在这里跳转
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => VideoSearch()),
-                    );
-                  },
-                );
-              },
-              suggestionsBuilder: (context, controller) {
-                return [ListTile(title: Text('建议项'))];
-              },
+                  ),
+                ],
+              ),
             ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => VideoSearch()),
+              );
+            },
           ),
           Flexible(
             flex: 1,
@@ -390,10 +398,13 @@ class _HomePageState extends State<Home>
                     MaterialPageRoute(builder: (context) => WeekPage()),
                   );
                 },
-                child: TDImage(
+                //渲染svg
+                // child: SvgPicture.asset('assets/images/zhou.svg'),
+                //设置SvgPicture宽高
+                child: SvgPicture.asset(
+                  'assets/images/zhou.svg',
                   width: 30,
                   height: 30,
-                  assetUrl: 'assets/images/week.png',
                 ),
               ),
             ),
@@ -426,20 +437,27 @@ class _HomePageState extends State<Home>
     return Stack(
       fit: StackFit.passthrough,
       children: [
+        Container(
+          width: double.infinity,
+          height: 250,
+          decoration: BoxDecoration(
+            //从上到下的线性渐变
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color.fromRGBO(255, 232, 128, 1), // 顶部透明
+                Color.fromRGBO(255, 232, 128, 0), // 底部透明
+              ],
+            ),
+          ),
+        ),
         contentIsEmpty(context),
         SizedBox(
           height: 120,
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(_appBarOpacity),
-              //添加白色外阴影
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.white.withOpacity(0.3), // 降低透明度（0.0 ~ 1.0）
-                  offset: Offset(0.0, 0.0),
-                  blurRadius: 10.0,
-                ),
-              ],
             ),
             child: Column(
               children: [
@@ -457,8 +475,8 @@ class _HomePageState extends State<Home>
                     indicator: GradientTabIndicator(
                       gradient: LinearGradient(
                         colors: [
-                          Color.fromRGBO(255, 153, 0, 1), // 完全不透明的橙色
-                          Color.fromRGBO(255, 153, 0, 0), // 完全透明（alpha=0）
+                          Color.fromRGBO(254, 210, 71, 1), // 完全不透明的橙色
+                          Color.fromRGBO(254, 210, 71, 0), // 完全透明（alpha=0）
                         ],
                       ),
                       height: 3.0, // 指示器高度
@@ -504,18 +522,18 @@ class _HomePageState extends State<Home>
         children: List.generate(tabs.length, (index) {
           return ListView(
             controller: _scrollController, // 添加控制器
-            padding: EdgeInsets.only(top: 0),
+            padding: EdgeInsets.only(
+              top: 120,
+              left: Layout.paddingL,
+              right: Layout.paddingL,
+            ),
             children: [
               SizedBox(
-                height: 250,
+                height: 158,
                 child: _buildDotsSwiper(category[index].id ?? 0),
               ),
               Padding(
-                padding: const EdgeInsets.only(
-                  top: Layout.paddingL,
-                  right: Layout.paddingL,
-                  left: Layout.paddingL,
-                ),
+                padding: const EdgeInsets.only(top: Layout.paddingL),
                 child: Column(
                   children: _buildAlbumContentList(
                     albumMap[category[index].id] ?? [],

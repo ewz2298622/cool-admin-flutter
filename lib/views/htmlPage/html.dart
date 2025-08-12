@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 // 导入 webview_flutter 包，用于在 Flutter 应用中嵌入 WebView 来显示网页内容
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -58,6 +59,12 @@ class _HtmlPageState extends State<HtmlPage> {
               // 当有导航请求时调用该回调函数，参数 request 包含导航请求的信息
               // 根据具体情况返回 NavigationDecision.navigate 或 NavigationDecision.prevent 来决定是否允许导航
               onNavigationRequest: (NavigationRequest request) {
+                // 如果不是本地内容且不是以特定域名开头的链接，则在系统浏览器中打开
+                if (!request.url.startsWith('data:text/html') &&
+                    !request.url.startsWith('https://www.geekailab.com')) {
+                  _launchURL(request.url);
+                  return NavigationDecision.prevent;
+                }
                 // 允许所有导航请求
                 return NavigationDecision.navigate;
               },
@@ -66,6 +73,16 @@ class _HtmlPageState extends State<HtmlPage> {
           // 加载指定 URL 的网页
           // ..loadRequest(Uri.parse('https://www.geekailab.com'));
           ..loadHtmlString(widget.content);
+  }
+
+  // 在系统浏览器中打开链接
+  Future<void> _launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 
   // 构建组件的 UI 界面

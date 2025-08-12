@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../entity/video_page_entity.dart';
@@ -52,43 +51,43 @@ class VideoItem extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontWeight: FontWeight.w500),
                         ),
-                        Text(
-                          "${videoData[index].videoClass ?? ''} / ${videoData[index].videoTag ?? ''}",
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5),
+                          child: Text(
+                            "${videoData[index].videoClass ?? ''} / ${videoData[index].videoTag ?? ''}",
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                            ),
                           ),
                         ),
-                        Text(
-                          "${videoData[index].year ?? ''} / ${videoData[index].actors ?? ''}",
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5),
+                          child: Text(
+                            "${videoData[index].year ?? ''} / ${videoData[index].actors ?? ''}",
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                            ),
                           ),
                         ),
                         // 修改: 使用Expanded包装Html组件以防止溢出
                         Expanded(
-                          child: Html(
-                            data: videoData[index].introduce ?? "",
-                            style: {
-                              "body": Style(
-                                maxLines: 3, // 限制最大行数
-                                textOverflow: TextOverflow.ellipsis, // 溢出显示省略号
-                                color: const Color.fromRGBO(153, 153, 153, 1),
-                                backgroundColor: Colors.transparent,
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 5),
+                            child: Text(
+                              VideoUtil.extractPlainText(
+                                videoData[index].introduce ?? "",
                               ),
-                              "p": Style(
-                                color: const Color.fromRGBO(153, 153, 153, 1),
-                                backgroundColor: Colors.transparent,
+                              maxLines: 4,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color.fromRGBO(153, 153, 153, 1),
                               ),
-                              //设置所有html元素字体的颜色
-                              "span": Style(
-                                color: const Color.fromRGBO(153, 153, 153, 1),
-                                backgroundColor: Colors.transparent,
-                              ),
-                            },
+                            ),
                           ),
                         ),
                       ],

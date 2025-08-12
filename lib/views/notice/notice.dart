@@ -41,7 +41,7 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
           (await Api.noticeInfo({"page": currentPage})).data?.list
               as List<NoticeInfoDataList>;
       setState(() {
-        noticeInfoData = list;
+        noticeInfoData.addAll(list);
       });
     } catch (e) {
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
@@ -94,8 +94,8 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
       MaterialPageRoute(
         builder:
             (context) => HtmlPage(
-              content: noticeInfoData?[index].content ?? "",
-              title: noticeInfoData?[index].title ?? "",
+              content: noticeInfoData[index].content ?? "",
+              title: noticeInfoData[index].title ?? "",
             ),
       ),
     );

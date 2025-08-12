@@ -100,6 +100,10 @@ class VideoUtil {
     }
     //将compressed转化成字符串
     String compressedString = compressed.toString();
+    //返回三位长度的字符串
+    if (compressedString.length > 3) {
+      compressedString = compressedString.substring(0, 3);
+    }
     return compressedString;
   }
 }

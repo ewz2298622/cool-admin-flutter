@@ -55,8 +55,8 @@ class HorizontalVideoList extends StatelessWidget {
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                               colors: [
-                                Colors.transparent, // 顶部透明
-                                Colors.black.withOpacity(0.7), // 底部黑色
+                                Color.fromRGBO(217, 217, 217, 0), // 顶部透明
+                                Color.fromRGBO(88, 88, 88, 1), // 部黑
                               ],
                             ),
                           ),
@@ -90,8 +90,8 @@ class HorizontalVideoList extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color.fromRGBO(59, 101, 244, 1),
-                Color.fromRGBO(64, 177, 254, 1),
+                Color.fromRGBO(253, 221, 68, 0.80),
+                Color.fromRGBO(253, 221, 68, 0.80),
               ],
             ),
           ),
@@ -99,8 +99,8 @@ class HorizontalVideoList extends StatelessWidget {
             VideoUtil.formatTag(item.pubdate ?? ""),
             style: TextStyle(
               fontSize: 11,
-              color: Colors.white,
-              fontWeight: FontWeight.w400,
+              color: Colors.black87,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),

@@ -17,18 +17,27 @@ class SectionWithMore extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontFamily: 'PingFang SC',
+                fontWeight: FontWeight.bold,
+                fontSize: 17.0,
+                color: Colors.black,
+              ),
             ),
             if (onMorePressed != null) // 判断是否传入更多点击事件
               GestureDetector(
                 onTap: onMorePressed,
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       "更多",
                       style: TextStyle(
-                        fontSize: 12,
-                        color: Color.fromRGBO(162, 162, 162, 1),
+                        fontFamily: 'PingFang SC',
+                        fontWeight: FontWeight.w500,
+                        fontSize: 13.0,
+                        color: Color(0xFF666666),
                       ),
                     ),
                     Icon(

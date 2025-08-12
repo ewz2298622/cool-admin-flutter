@@ -90,9 +90,10 @@ class Video extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 10,
+              fontFamily: 'PingFang SC',
+              fontWeight: FontWeight.w500,
+              fontSize: 11.0,
               color: Colors.white,
-              fontWeight: FontWeight.w400,
             ),
           ),
           Text(
@@ -101,9 +102,10 @@ class Video extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 10,
+              fontFamily: 'PingFang SC',
+              fontWeight: FontWeight.w500,
+              fontSize: 11.0,
               color: Color.fromRGBO(255, 102, 0, 1),
-              fontWeight: FontWeight.w400,
             ),
           ),
         ],
@@ -124,8 +126,8 @@ class Video extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color.fromRGBO(59, 101, 244, 1),
-                Color.fromRGBO(64, 177, 254, 1),
+                Color.fromRGBO(253, 221, 68, 0.80),
+                Color.fromRGBO(253, 221, 68, 0.80),
               ],
             ),
           ),
@@ -133,10 +135,9 @@ class Video extends StatelessWidget {
           child: Text(
             VideoUtil.formatTag(item?.pubdate ?? ""),
             style: TextStyle(
-              fontSize: 10,
-              color: Colors.white,
-              fontWeight: FontWeight.w400,
-              height: 1.0, // 关键：避免行高影响垂直对齐
+              fontSize: 11,
+              color: Colors.black87,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),

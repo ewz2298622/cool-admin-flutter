@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_unionad/flutter_unionad.dart';
+import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 /// 描述：开屏广告页
 /// @author guozi
@@ -13,10 +16,38 @@ class SplashPage extends StatefulWidget {
 
 class _SplashPageState extends State<SplashPage> {
   bool _offstage = true;
+  int _countdown = 3;
+  late Timer _timer;
 
   @override
   void initState() {
     super.initState();
+    _startCountdown();
+  }
+
+  // 开始倒计时
+  void _startCountdown() {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        if (_countdown > 0) {
+          _countdown--;
+        } else {
+          _navigateToNextPage();
+        }
+      });
+    });
+  }
+
+  // 跳转到下一页
+  void _navigateToNextPage() {
+    _timer.cancel();
+    Navigator.pop(context);
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
   }
 
   @override
@@ -52,11 +83,11 @@ class _SplashPageState extends State<SplashPage> {
               },
               onFail: (error) {
                 print("开屏广告失败 $error");
-                Navigator.pop(context);
+                // Navigator.pop(context);
               },
               onFinish: () {
                 print("开屏广告倒计时结束");
-                Navigator.pop(context);
+                // Navigator.pop(context);
               },
               onSkip: () {
                 print("开屏广告跳过");
@@ -73,22 +104,45 @@ class _SplashPageState extends State<SplashPage> {
         ),
         Expanded(
           child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color.fromRGBO(255, 153, 0, 1), // 完全不透明的橙色
-                  Color.fromRGBO(255, 153, 0, 0), // 完全透明（alpha=0）
-                ],
-              ),
-            ),
+            width: double.infinity,
+            height: double.infinity,
             alignment: Alignment.center,
-            child: Text(
-              "麻豆影视",
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.black,
-                decoration: TextDecoration.none,
-              ),
+            child: Stack(
+              children: [
+                TDImage(
+                  width: double.infinity,
+                  height: double.infinity,
+                  fit: BoxFit.cover,
+                  assetUrl:
+                      "assets/images/272bac7e-635a-4b1c-904a-679365a6fed5.jpg",
+                ),
+                // 添加倒计时按钮
+                Positioned(
+                  top: 50,
+                  right: 20,
+                  child: GestureDetector(
+                    onTap: _navigateToNextPage,
+                    child: Container(
+                      width: 60,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        //半透明背景色
+                        color: Colors.black.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        '跳过$_countdown',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.5),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

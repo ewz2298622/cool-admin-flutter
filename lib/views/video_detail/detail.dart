@@ -544,9 +544,14 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                videoData?.title ?? "",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              SizedBox(
+                width: MediaQuery.of(context).size.width - 120,
+                child: Text(
+                  videoData?.title ?? "",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
               ),
               ShaderMask(
                 shaderCallback:
