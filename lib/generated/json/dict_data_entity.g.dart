@@ -109,6 +109,33 @@ DictDataData $DictDataDataFromJson(Map<String, dynamic> json) {
   if (feedbackType != null) {
     dictDataData.feedbackType = feedbackType;
   }
+  final List<DictDataDataAdsType>? adsType = (json['ads_type'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataAdsType>(e) as DictDataDataAdsType)
+      .toList();
+  if (adsType != null) {
+    dictDataData.adsType = adsType;
+  }
+  final List<DictDataDataSearchType>? searchType = (json['search_type'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataSearchType>(e) as DictDataDataSearchType)
+      .toList();
+  if (searchType != null) {
+    dictDataData.searchType = searchType;
+  }
+  final List<DictDataDataVideoTag>? videoTag = (json['video_tag'] as List<
+      dynamic>?)
+      ?.map(
+          (e) =>
+      jsonConvert.convert<DictDataDataVideoTag>(e) as DictDataDataVideoTag)
+      .toList();
+  if (videoTag != null) {
+    dictDataData.videoTag = videoTag;
+  }
   return dictDataData;
 }
 
@@ -123,6 +150,9 @@ Map<String, dynamic> $DictDataDataToJson(DictDataData entity) {
       entity.videoCategory?.map((v) => v.toJson()).toList();
   data['notice_type'] = entity.noticeType?.map((v) => v.toJson()).toList();
   data['feedback_type'] = entity.feedbackType?.map((v) => v.toJson()).toList();
+  data['ads_type'] = entity.adsType?.map((v) => v.toJson()).toList();
+  data['search_type'] = entity.searchType?.map((v) => v.toJson()).toList();
+  data['video_tag'] = entity.videoTag?.map((v) => v.toJson()).toList();
   return data;
 }
 
@@ -136,6 +166,9 @@ extension DictDataDataExtension on DictDataData {
     List<DictDataDataVideoCategory>? videoCategory,
     List<DictDataDataNoticeType>? noticeType,
     List<DictDataDataFeedbackType>? feedbackType,
+    List<DictDataDataAdsType>? adsType,
+    List<DictDataDataSearchType>? searchType,
+    List<DictDataDataVideoTag>? videoTag,
   }) {
     return DictDataData()
       ..liveCategory = liveCategory ?? this.liveCategory
@@ -145,7 +178,10 @@ extension DictDataDataExtension on DictDataData {
       ..language = language ?? this.language
       ..videoCategory = videoCategory ?? this.videoCategory
       ..noticeType = noticeType ?? this.noticeType
-      ..feedbackType = feedbackType ?? this.feedbackType;
+      ..feedbackType = feedbackType ?? this.feedbackType
+      ..adsType = adsType ?? this.adsType
+      ..searchType = searchType ?? this.searchType
+      ..videoTag = videoTag ?? this.videoTag;
   }
 }
 
@@ -675,6 +711,206 @@ extension DictDataDataFeedbackTypeExtension on DictDataDataFeedbackType {
     dynamic parentId,
   }) {
     return DictDataDataFeedbackType()
+      ..id = id ?? this.id
+      ..typeId = typeId ?? this.typeId
+      ..name = name ?? this.name
+      ..value = value ?? this.value
+      ..orderNum = orderNum ?? this.orderNum
+      ..status = status ?? this.status
+      ..parentId = parentId ?? this.parentId;
+  }
+}
+
+DictDataDataAdsType $DictDataDataAdsTypeFromJson(Map<String, dynamic> json) {
+  final DictDataDataAdsType dictDataDataAdsType = DictDataDataAdsType();
+  final int? id = jsonConvert.convert<int>(json['id']);
+  if (id != null) {
+    dictDataDataAdsType.id = id;
+  }
+  final int? typeId = jsonConvert.convert<int>(json['typeId']);
+  if (typeId != null) {
+    dictDataDataAdsType.typeId = typeId;
+  }
+  final String? name = jsonConvert.convert<String>(json['name']);
+  if (name != null) {
+    dictDataDataAdsType.name = name;
+  }
+  final dynamic value = json['value'];
+  if (value != null) {
+    dictDataDataAdsType.value = value;
+  }
+  final int? orderNum = jsonConvert.convert<int>(json['orderNum']);
+  if (orderNum != null) {
+    dictDataDataAdsType.orderNum = orderNum;
+  }
+  final int? status = jsonConvert.convert<int>(json['status']);
+  if (status != null) {
+    dictDataDataAdsType.status = status;
+  }
+  final dynamic parentId = json['parentId'];
+  if (parentId != null) {
+    dictDataDataAdsType.parentId = parentId;
+  }
+  return dictDataDataAdsType;
+}
+
+Map<String, dynamic> $DictDataDataAdsTypeToJson(DictDataDataAdsType entity) {
+  final Map<String, dynamic> data = <String, dynamic>{};
+  data['id'] = entity.id;
+  data['typeId'] = entity.typeId;
+  data['name'] = entity.name;
+  data['value'] = entity.value;
+  data['orderNum'] = entity.orderNum;
+  data['status'] = entity.status;
+  data['parentId'] = entity.parentId;
+  return data;
+}
+
+extension DictDataDataAdsTypeExtension on DictDataDataAdsType {
+  DictDataDataAdsType copyWith({
+    int? id,
+    int? typeId,
+    String? name,
+    dynamic value,
+    int? orderNum,
+    int? status,
+    dynamic parentId,
+  }) {
+    return DictDataDataAdsType()
+      ..id = id ?? this.id
+      ..typeId = typeId ?? this.typeId
+      ..name = name ?? this.name
+      ..value = value ?? this.value
+      ..orderNum = orderNum ?? this.orderNum
+      ..status = status ?? this.status
+      ..parentId = parentId ?? this.parentId;
+  }
+}
+
+DictDataDataSearchType $DictDataDataSearchTypeFromJson(
+    Map<String, dynamic> json) {
+  final DictDataDataSearchType dictDataDataSearchType = DictDataDataSearchType();
+  final int? id = jsonConvert.convert<int>(json['id']);
+  if (id != null) {
+    dictDataDataSearchType.id = id;
+  }
+  final int? typeId = jsonConvert.convert<int>(json['typeId']);
+  if (typeId != null) {
+    dictDataDataSearchType.typeId = typeId;
+  }
+  final String? name = jsonConvert.convert<String>(json['name']);
+  if (name != null) {
+    dictDataDataSearchType.name = name;
+  }
+  final dynamic value = json['value'];
+  if (value != null) {
+    dictDataDataSearchType.value = value;
+  }
+  final int? orderNum = jsonConvert.convert<int>(json['orderNum']);
+  if (orderNum != null) {
+    dictDataDataSearchType.orderNum = orderNum;
+  }
+  final int? status = jsonConvert.convert<int>(json['status']);
+  if (status != null) {
+    dictDataDataSearchType.status = status;
+  }
+  final dynamic parentId = json['parentId'];
+  if (parentId != null) {
+    dictDataDataSearchType.parentId = parentId;
+  }
+  return dictDataDataSearchType;
+}
+
+Map<String, dynamic> $DictDataDataSearchTypeToJson(
+    DictDataDataSearchType entity) {
+  final Map<String, dynamic> data = <String, dynamic>{};
+  data['id'] = entity.id;
+  data['typeId'] = entity.typeId;
+  data['name'] = entity.name;
+  data['value'] = entity.value;
+  data['orderNum'] = entity.orderNum;
+  data['status'] = entity.status;
+  data['parentId'] = entity.parentId;
+  return data;
+}
+
+extension DictDataDataSearchTypeExtension on DictDataDataSearchType {
+  DictDataDataSearchType copyWith({
+    int? id,
+    int? typeId,
+    String? name,
+    dynamic value,
+    int? orderNum,
+    int? status,
+    dynamic parentId,
+  }) {
+    return DictDataDataSearchType()
+      ..id = id ?? this.id
+      ..typeId = typeId ?? this.typeId
+      ..name = name ?? this.name
+      ..value = value ?? this.value
+      ..orderNum = orderNum ?? this.orderNum
+      ..status = status ?? this.status
+      ..parentId = parentId ?? this.parentId;
+  }
+}
+
+DictDataDataVideoTag $DictDataDataVideoTagFromJson(Map<String, dynamic> json) {
+  final DictDataDataVideoTag dictDataDataVideoTag = DictDataDataVideoTag();
+  final int? id = jsonConvert.convert<int>(json['id']);
+  if (id != null) {
+    dictDataDataVideoTag.id = id;
+  }
+  final int? typeId = jsonConvert.convert<int>(json['typeId']);
+  if (typeId != null) {
+    dictDataDataVideoTag.typeId = typeId;
+  }
+  final String? name = jsonConvert.convert<String>(json['name']);
+  if (name != null) {
+    dictDataDataVideoTag.name = name;
+  }
+  final dynamic value = json['value'];
+  if (value != null) {
+    dictDataDataVideoTag.value = value;
+  }
+  final int? orderNum = jsonConvert.convert<int>(json['orderNum']);
+  if (orderNum != null) {
+    dictDataDataVideoTag.orderNum = orderNum;
+  }
+  final int? status = jsonConvert.convert<int>(json['status']);
+  if (status != null) {
+    dictDataDataVideoTag.status = status;
+  }
+  final dynamic parentId = json['parentId'];
+  if (parentId != null) {
+    dictDataDataVideoTag.parentId = parentId;
+  }
+  return dictDataDataVideoTag;
+}
+
+Map<String, dynamic> $DictDataDataVideoTagToJson(DictDataDataVideoTag entity) {
+  final Map<String, dynamic> data = <String, dynamic>{};
+  data['id'] = entity.id;
+  data['typeId'] = entity.typeId;
+  data['name'] = entity.name;
+  data['value'] = entity.value;
+  data['orderNum'] = entity.orderNum;
+  data['status'] = entity.status;
+  data['parentId'] = entity.parentId;
+  return data;
+}
+
+extension DictDataDataVideoTagExtension on DictDataDataVideoTag {
+  DictDataDataVideoTag copyWith({
+    int? id,
+    int? typeId,
+    String? name,
+    dynamic value,
+    int? orderNum,
+    int? status,
+    dynamic parentId,
+  }) {
+    return DictDataDataVideoTag()
       ..id = id ?? this.id
       ..typeId = typeId ?? this.typeId
       ..name = name ?? this.name

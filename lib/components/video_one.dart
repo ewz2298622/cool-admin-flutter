@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../entity/video_page_entity.dart';
@@ -45,12 +46,39 @@ class VideoItem extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text(
-                          videoData[index].title ?? "",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width - 250,
+                              child: Text(
+                                videoData[index].title ?? "",
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  "${videoData[index].up ?? 0}",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Color.fromRGBO(255, 101, 39, 1),
+                                  ),
+                                ),
+                                SvgPicture.asset(
+                                  'assets/images/hot_surface.svg',
+                                  width: 20,
+                                  height: 20,
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
+
                         Padding(
                           padding: const EdgeInsets.only(top: 5),
                           child: Text(
@@ -89,6 +117,45 @@ class VideoItem extends StatelessWidget {
                               ),
                             ),
                           ),
+                        ),
+                        Row(
+                          spacing: 10,
+                          children: [
+                            TDTag(
+                              '${videoData[index].popularity ?? 0}万热度',
+                              isLight: true,
+                              backgroundColor: Color.fromRGBO(
+                                195,
+                                161,
+                                101,
+                                0.1,
+                              ),
+                              textColor: Color.fromRGBO(195, 161, 101, 1),
+                              shape: TDTagShape.round,
+                              isOutline: true,
+                              style: TDTagStyle(
+                                borderColor: Colors.transparent,
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                            ),
+                            TDTag(
+                              '${videoData[index].popularitySum ?? 0}万点赞',
+                              isLight: true,
+                              backgroundColor: Color.fromRGBO(
+                                195,
+                                161,
+                                101,
+                                0.1,
+                              ),
+                              textColor: Color.fromRGBO(195, 161, 101, 1),
+                              shape: TDTagShape.round,
+                              isOutline: true,
+                              style: TDTagStyle(
+                                borderColor: Colors.transparent,
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

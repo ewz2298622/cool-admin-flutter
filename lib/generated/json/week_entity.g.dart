@@ -1,5 +1,5 @@
-import 'package:flutter_app/entity/week_entity.dart';
 import 'package:flutter_app/generated/json/base/json_convert_content.dart';
+import 'package:flutter_app/entity/week_entity.dart';
 
 WeekEntity $WeekEntityFromJson(Map<String, dynamic> json) {
   final WeekEntity weekEntity = WeekEntity();
@@ -27,7 +27,11 @@ Map<String, dynamic> $WeekEntityToJson(WeekEntity entity) {
 }
 
 extension WeekEntityExtension on WeekEntity {
-  WeekEntity copyWith({int? code, String? message, WeekData? data}) {
+  WeekEntity copyWith({
+    int? code,
+    String? message,
+    WeekData? data,
+  }) {
     return WeekEntity()
       ..code = code ?? this.code
       ..message = message ?? this.message
@@ -37,15 +41,13 @@ extension WeekEntityExtension on WeekEntity {
 
 WeekData $WeekDataFromJson(Map<String, dynamic> json) {
   final WeekData weekData = WeekData();
-  final List<WeekDataList>? list =
-      (json['list'] as List<dynamic>?)
-          ?.map((e) => jsonConvert.convert<WeekDataList>(e) as WeekDataList)
-          .toList();
+  final List<WeekDataList>? list = (json['list'] as List<dynamic>?)?.map(
+          (e) => jsonConvert.convert<WeekDataList>(e) as WeekDataList).toList();
   if (list != null) {
     weekData.list = list;
   }
-  final WeekDataPagination? pagination = jsonConvert
-      .convert<WeekDataPagination>(json['pagination']);
+  final WeekDataPagination? pagination = jsonConvert.convert<
+      WeekDataPagination>(json['pagination']);
   if (pagination != null) {
     weekData.pagination = pagination;
   }
@@ -153,8 +155,7 @@ WeekDataList $WeekDataListFromJson(Map<String, dynamic> json) {
     weekDataList.imdbScore = imdbScore;
   }
   final String? imdbScoreId = jsonConvert.convert<String>(
-    json['imdb_score_id'],
-  );
+      json['imdb_score_id']);
   if (imdbScoreId != null) {
     weekDataList.imdbScoreId = imdbScoreId;
   }
@@ -163,8 +164,7 @@ WeekDataList $WeekDataListFromJson(Map<String, dynamic> json) {
     weekDataList.doubanScore = doubanScore;
   }
   final String? doubanScoreId = jsonConvert.convert<String>(
-    json['douban_score_id'],
-  );
+      json['douban_score_id']);
   if (doubanScoreId != null) {
     weekDataList.doubanScoreId = doubanScoreId;
   }
@@ -177,26 +177,22 @@ WeekDataList $WeekDataListFromJson(Map<String, dynamic> json) {
     weekDataList.popularity = popularity;
   }
   final String? popularityDay = jsonConvert.convert<String>(
-    json['popularity_day'],
-  );
+      json['popularity_day']);
   if (popularityDay != null) {
     weekDataList.popularityDay = popularityDay;
   }
   final String? popularityWeek = jsonConvert.convert<String>(
-    json['popularity_week'],
-  );
+      json['popularity_week']);
   if (popularityWeek != null) {
     weekDataList.popularityWeek = popularityWeek;
   }
   final String? popularityMonth = jsonConvert.convert<String>(
-    json['popularity_month'],
-  );
+      json['popularity_month']);
   if (popularityMonth != null) {
     weekDataList.popularityMonth = popularityMonth;
   }
   final String? popularitySum = jsonConvert.convert<String>(
-    json['popularity_sum'],
-  );
+      json['popularity_sum']);
   if (popularitySum != null) {
     weekDataList.popularitySum = popularitySum;
   }
@@ -233,8 +229,7 @@ WeekDataList $WeekDataListFromJson(Map<String, dynamic> json) {
     weekDataList.total = total;
   }
   final String? horizontalPoster = jsonConvert.convert<String>(
-    json['horizontal_poster'],
-  );
+      json['horizontal_poster']);
   if (horizontalPoster != null) {
     weekDataList.horizontalPoster = horizontalPoster;
   }
@@ -287,8 +282,7 @@ WeekDataList $WeekDataListFromJson(Map<String, dynamic> json) {
     weekDataList.down = down;
   }
   final String? collectionName = jsonConvert.convert<String>(
-    json['collection_name'],
-  );
+      json['collection_name']);
   if (collectionName != null) {
     weekDataList.collectionName = collectionName;
   }
@@ -507,7 +501,11 @@ Map<String, dynamic> $WeekDataPaginationToJson(WeekDataPagination entity) {
 }
 
 extension WeekDataPaginationExtension on WeekDataPagination {
-  WeekDataPagination copyWith({int? page, int? size, int? total}) {
+  WeekDataPagination copyWith({
+    int? page,
+    int? size,
+    int? total,
+  }) {
     return WeekDataPagination()
       ..page = page ?? this.page
       ..size = size ?? this.size

@@ -1,5 +1,5 @@
-import 'package:flutter_app/entity/swiper_entity.dart';
 import 'package:flutter_app/generated/json/base/json_convert_content.dart';
+import 'package:flutter_app/entity/swiper_entity.dart';
 
 SwiperEntity $SwiperEntityFromJson(Map<String, dynamic> json) {
   final SwiperEntity swiperEntity = SwiperEntity();
@@ -27,7 +27,11 @@ Map<String, dynamic> $SwiperEntityToJson(SwiperEntity entity) {
 }
 
 extension SwiperEntityExtension on SwiperEntity {
-  SwiperEntity copyWith({int? code, String? message, SwiperData? data}) {
+  SwiperEntity copyWith({
+    int? code,
+    String? message,
+    SwiperData? data,
+  }) {
     return SwiperEntity()
       ..code = code ?? this.code
       ..message = message ?? this.message
@@ -37,15 +41,15 @@ extension SwiperEntityExtension on SwiperEntity {
 
 SwiperData $SwiperDataFromJson(Map<String, dynamic> json) {
   final SwiperData swiperData = SwiperData();
-  final List<SwiperDataList>? list =
-      (json['list'] as List<dynamic>?)
-          ?.map((e) => jsonConvert.convert<SwiperDataList>(e) as SwiperDataList)
-          .toList();
+  final List<SwiperDataList>? list = (json['list'] as List<dynamic>?)
+      ?.map(
+          (e) => jsonConvert.convert<SwiperDataList>(e) as SwiperDataList)
+      .toList();
   if (list != null) {
     swiperData.list = list;
   }
-  final SwiperDataPagination? pagination = jsonConvert
-      .convert<SwiperDataPagination>(json['pagination']);
+  final SwiperDataPagination? pagination = jsonConvert.convert<
+      SwiperDataPagination>(json['pagination']);
   if (pagination != null) {
     swiperData.pagination = pagination;
   }
@@ -204,7 +208,11 @@ Map<String, dynamic> $SwiperDataPaginationToJson(SwiperDataPagination entity) {
 }
 
 extension SwiperDataPaginationExtension on SwiperDataPagination {
-  SwiperDataPagination copyWith({int? page, int? size, int? total}) {
+  SwiperDataPagination copyWith({
+    int? page,
+    int? size,
+    int? total,
+  }) {
     return SwiperDataPagination()
       ..page = page ?? this.page
       ..size = size ?? this.size

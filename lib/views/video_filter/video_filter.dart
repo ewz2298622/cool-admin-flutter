@@ -194,7 +194,25 @@ class VideoFilterState extends State<VideoFilter>
             child: Row(
               children: [
                 GestureDetector(
-                  child: Center(child: Text(title)),
+                  child: TDTag(
+                    title ?? "",
+                    shape: TDTagShape.round,
+                    isLight: true,
+                    size: TDTagSize.large,
+                    textColor:
+                        categoryCurrent.value == 0
+                            ? const Color.fromRGBO(255, 122, 27, 1)
+                            : Theme.of(context).textTheme.titleLarge?.color,
+                    backgroundColor:
+                        categoryCurrent.value == 0
+                            ? const Color.fromRGBO(244, 244, 244, 1)
+                            : Colors.transparent,
+                    isOutline: true,
+                    style: TDTagStyle(
+                      borderColor: Colors.transparent,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
                   onTap: () {
                     _category_change(null);
                   },
@@ -223,7 +241,7 @@ class VideoFilterState extends State<VideoFilter>
                             isOutline: true,
                             style: TDTagStyle(
                               borderColor: Colors.transparent,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(15),
                             ),
                           ),
                           onTap: () => _category_change(item),
@@ -251,7 +269,25 @@ class VideoFilterState extends State<VideoFilter>
             child: Row(
               children: [
                 GestureDetector(
-                  child: Center(child: Text(title ?? "")),
+                  child: TDTag(
+                    title,
+                    isLight: true,
+                    textColor:
+                        regionCurrent.value == 0
+                            ? const Color.fromRGBO(255, 122, 27, 1)
+                            : Theme.of(context).textTheme.titleLarge?.color,
+                    backgroundColor:
+                        regionCurrent.value == 0
+                            ? const Color.fromRGBO(244, 244, 244, 1)
+                            : Colors.transparent,
+                    shape: TDTagShape.round,
+                    size: TDTagSize.large,
+                    isOutline: true,
+                    style: TDTagStyle(
+                      borderColor: Colors.transparent,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
                   onTap: () {
                     _area_change(null);
                   },
@@ -276,7 +312,7 @@ class VideoFilterState extends State<VideoFilter>
                         isOutline: true,
                         style: TDTagStyle(
                           borderColor: Colors.transparent,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(15),
                         ),
                       ),
                       onTap: () => _area_change(item),
@@ -300,17 +336,35 @@ class VideoFilterState extends State<VideoFilter>
           child: Row(
             children: [
               GestureDetector(
-                child: Center(child: Text(title ?? "")),
+                child: TDTag(
+                  title,
+                  isLight: true,
+                  textColor:
+                      yearCurrent.value == 0
+                          ? const Color.fromRGBO(255, 122, 27, 1)
+                          : Theme.of(context).textTheme.titleLarge?.color,
+                  backgroundColor:
+                      yearCurrent.value == 0
+                          ? const Color.fromRGBO(244, 244, 244, 1)
+                          : Colors.transparent,
+                  shape: TDTagShape.round,
+                  size: TDTagSize.large,
+                  isOutline: true,
+                  style: TDTagStyle(
+                    borderColor: Colors.transparent,
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
                 onTap: () {
                   _year_change(0);
                 },
               ),
-              ...(items ?? []).map(
+              ...(items).map(
                 (item) => Padding(
                   padding: const EdgeInsets.only(left: 8),
                   child: GestureDetector(
                     child: TDTag(
-                      item.toString() ?? "",
+                      item.toString(),
                       isLight: true,
                       textColor:
                           key == item
@@ -325,7 +379,7 @@ class VideoFilterState extends State<VideoFilter>
                       isOutline: true,
                       style: TDTagStyle(
                         borderColor: Colors.transparent,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(15),
                       ),
                     ),
                     onTap: () => _year_change(item),
@@ -409,10 +463,11 @@ class VideoFilterState extends State<VideoFilter>
               SliverToBoxAdapter(child: _buildDefaultSearchBar()),
               SliverStickyHeader(
                 header: Container(
-                  color: Theme.of(context).colorScheme.surface,
+                  color: Theme.of(context).scaffoldBackgroundColor,
                   padding: EdgeInsets.only(
                     left: Layout.paddingL,
                     right: Layout.paddingR,
+                    top: 5,
                     bottom: Layout.paddingB,
                   ),
                   child: Column(

@@ -12,8 +12,10 @@ import '../../components/video_scroll.dart';
 import '../../components/video_three.dart';
 import '../../db/entity/SearchHistoryEntity.dart';
 import '../../db/manager/SearchHistoryDatabaseHelper.dart';
+import '../../entity/dict_data_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../style/layout.dart';
+import '../../utils/video.dart';
 
 class VideoSearch extends StatefulWidget {
   const VideoSearch({super.key});
@@ -30,16 +32,32 @@ class VideoSearchState extends State<VideoSearch>
   List<VideoPageDataList> videoPageDataList = [];
   final searchHistory = SearchHistoryDatabaseHelper();
   Iterable<SearchHistoryEntity> searchHistoryList = [];
-
+  List<DictDataDataVideoCategory> category = [];
+  List<TDTab> tabs = [];
+  late TabController _tabController;
   var _futureBuilderFuture;
+
+  //生产十个 热门影视剧名字的数组
+  List<String> hotMovieNames = [
+    "浪浪山小妖怪浪浪山小妖怪浪浪山小妖怪浪浪山小妖怪",
+    "小妖怪",
+    "小妖怪",
+    "小妖怪",
+    "浪浪山小妖怪",
+    "小妖怪",
+    "小妖怪",
+    "小妖怪",
+  ];
 
   Future<String> init() async {
     try {
       await Future.wait([
+        getDictInfoPages(),
         videoPageDataGet(),
         videoPageDataListGet(),
         getSearchHistoryEntity(),
       ]);
+      _tabController = TabController(length: tabs.length, vsync: this);
       return "init success";
     } catch (e) {
       // 捕获并处理异常
@@ -54,11 +72,33 @@ class VideoSearchState extends State<VideoSearch>
     super.initState();
   }
 
+  Future<void> getDictInfoPages() async {
+    try {
+      category =
+          ((await Api.getDictData({
+                    "types": ["video_category"],
+                  })).data
+                  as DictDataData)
+              .videoCategory!;
+
+      category = category.where((element) => element.parentId == null).toList();
+
+      tabs.clear();
+      for (var element in category) {
+        tabs.add(TDTab(text: element.name));
+      }
+    } catch (e) {
+      // 捕获并处理异常
+      print('获取视频分类数据失败: $e');
+    }
+  }
+
   Future<void> videoPageDataGet() async {
     try {
       videoPageData =
           (await Api.getVideoPages({
             "page": Random().nextInt(30) + 1,
+            "size": 7,
           })).data?.list ??
           [] as List<VideoPageDataList>;
       videoPageDataList =
@@ -107,8 +147,9 @@ class VideoSearchState extends State<VideoSearch>
   Widget _buildDefaultSearchBar() {
     return TDNavBar(
       useDefaultBack: true,
+      height: 36,
       screenAdaptation: false,
-      backgroundColor: Colors.transparent,
+
       titleMargin: 5,
       centerTitle: false,
       padding: EdgeInsets.only(left: 0, right: 0),
@@ -117,7 +158,7 @@ class VideoSearchState extends State<VideoSearch>
         placeHolder: '请输入剧名',
         action: "搜索",
         style: TDSearchStyle.round,
-        padding: EdgeInsets.only(left: 0, right: 0, bottom: 2, top: 2),
+        padding: EdgeInsets.only(left: 0, right: 0, bottom: 0, top: 0),
         onTextChanged: (String text) {
           setState(() {
             inputText = text;
@@ -149,20 +190,41 @@ class VideoSearchState extends State<VideoSearch>
                   _buildDefaultSearchBar(),
                   Container(
                     padding: EdgeInsets.only(
-                      left: Layout.paddingL,
-                      right: Layout.paddingR,
                       bottom: Layout.paddingB,
                       top: Layout.paddingT,
                     ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SectionTitle('搜索历史'),
-                        const SizedBox(height: 12),
-                        SearchItem(),
-                        const SizedBox(height: 24),
-                        _buildRecommendations(),
-                        _buildAlbumItems(),
+                        _buildSearchHistory(),
+                        _buildTabs(),
+                        //实现三个PagviewContent 组件 水平 滚动
+                        SingleChildScrollView(
+                          //水平滚动
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            spacing: 10,
+                            children: [
+                              PagviewContent(
+                                "热播榜",
+                                Color.fromRGBO(251, 244, 238, 1),
+                              ),
+                              PagviewContent(
+                                "少儿榜",
+                                Color.fromRGBO(233, 242, 254, 1),
+                              ),
+                              PagviewContent(
+                                "电影榜",
+                                Color.fromRGBO(255, 240, 235, 1),
+                              ),
+                              PagviewContent(
+                                "电影榜",
+                                Color.fromRGBO(255, 240, 235, 1),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -174,6 +236,223 @@ class VideoSearchState extends State<VideoSearch>
         }
       },
     );
+  }
+
+  //tabs组件
+  Widget _buildTabs() {
+    return Column(
+      children: [
+        SizedBox(
+          height: 35,
+          child: TabBar(
+            padding: EdgeInsets.only(top: 2),
+            controller: _tabController, // 使用 controller
+            isScrollable: true,
+            tabAlignment: TabAlignment.center,
+            labelColor: Colors.black87,
+            dividerHeight: 0,
+            //选中的字体颜色
+            unselectedLabelStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            //选中下划线颜色
+            indicatorColor: Color.fromRGBO(252, 119, 66, 1),
+            unselectedLabelColor: Colors.black87,
+            labelStyle: const TextStyle(fontSize: 18),
+            tabs: tabs,
+            onTap: (index) {},
+          ),
+        ),
+        Container(
+          height: 150, // 设置固定高度
+          padding: EdgeInsets.only(top: Layout.paddingT),
+          child: TabBarView(
+            controller: _tabController, // 添加 controller
+            children: List.generate(tabs.length, (index) {
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisExtent: 24,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                ),
+                itemCount: hotMovieNames.length,
+                itemBuilder: (context, index) {
+                  return Container(
+                    padding: EdgeInsets.only(
+                      left: Layout.paddingL,
+                      right: Layout.paddingL,
+                    ),
+                    child: Row(
+                      // 改用更可控的Row布局替代ListTile
+                      children: [
+                        Text(
+                          '${index + 1}.',
+                          style: TextStyle(color: Colors.grey, fontSize: 14),
+                        ),
+                        SizedBox(width: 4),
+                        Expanded(
+                          // 关键修改：添加Expanded约束文本区域
+                          child: GestureDetector(
+                            child: Text(
+                              hotMovieNames[index],
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => SearchResult(
+                                        keyWord: hotMovieNames[index],
+                                      ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            }),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget PagviewContent(String title, Color color) {
+    return Container(
+      padding: EdgeInsets.only(left: 5, right: 5, top: 10),
+      //宽度是60%
+      width: MediaQuery.of(context).size.width * 0.75,
+      //渐变色背景
+      decoration: BoxDecoration(
+        //圆角
+        borderRadius: BorderRadius.circular(8),
+        //边框色
+        border: Border.all(color: Color.fromRGBO(243, 241, 240, 1)),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [color, color.withAlpha(0)],
+        ),
+      ),
+      child: Column(
+        children: [
+          SectionWithMore(
+            title: title, // 传入标题
+            onMorePressed: () {},
+          ),
+          //根据 videoPageData
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            scrollDirection: Axis.vertical,
+            //间距
+            itemExtent: 84,
+            itemCount: videoPageData.length,
+            itemBuilder: (context, index) {
+              return SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: Row(
+                  spacing: 10,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        color: _getColor(index),
+                      ),
+                      child: Center(
+                        // 方式1：使用Center组件包裹
+                        child: Text(
+                          "${index + 1}",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            height: 1.0, // 方式2：设置行高系数（关键参数）
+                          ),
+                          textAlign: TextAlign.center, // 多行文本时需要
+                        ),
+                      ),
+                    ),
+                    TDImage(
+                      fit: BoxFit.cover,
+                      width: 120,
+                      height: 75,
+                      imgUrl: videoPageData[index].surfacePlot ?? "",
+                      errorWidget: const TDImage(
+                        width: 120,
+                        height: 75,
+                        assetUrl: 'assets/images/loading.gif',
+                      ),
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      spacing: 5,
+                      children: [
+                        SizedBox(
+                          width: 120,
+                          child: Text(
+                            videoPageData[index].title ?? "",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 100,
+                          child: Text(
+                            VideoUtil.extractPlainText(
+                              videoPageData[index].introduce ?? "",
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color.fromRGBO(153, 153, 153, 1),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  //根据传入的index 返回color
+  Color _getColor(int index) {
+    switch (index) {
+      case 0:
+        return Color.fromRGBO(255, 62, 63, 1);
+      case 1:
+        return Color.fromRGBO(254, 151, 58, 1);
+      case 2:
+        return Color.fromRGBO(254, 209, 53, 1);
+      default:
+        return Color.fromRGBO(178, 188, 198, 1);
+    }
   }
 
   Widget _buildRecommendations() {
@@ -218,6 +497,14 @@ class VideoSearchState extends State<VideoSearch>
     }
   }
 
+  //历史搜索记录
+  Widget _buildSearchHistory() {
+    if (searchHistoryList.isEmpty) {
+      return Container();
+    }
+    return Column(children: [SearchItem()]);
+  }
+
   // 区块标题组件
   Widget SectionTitle(String title) {
     return Text(
@@ -228,18 +515,73 @@ class VideoSearchState extends State<VideoSearch>
 
   // 搜索历史项组件
   Widget SearchItem() {
-    return Row(
-      spacing: 5,
-      children:
-          searchHistoryList.map((entity) {
-            return GestureDetector(
-              child: TDTag(entity.query),
-              onTap: () {
-                inputText = entity.query;
-                goToSearchResult();
-              },
-            );
-          }).toList(),
+    return Column(
+      spacing: 10,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(
+            left: Layout.paddingR,
+            right: Layout.paddingR,
+          ),
+          child: Row(
+            spacing: 10,
+            children: [
+              Icon(Icons.access_time, size: 24, color: Colors.grey[400]),
+              Flexible(
+                flex: 1,
+                child: SizedBox(
+                  height: 30,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: searchHistoryList.length,
+                    separatorBuilder: (context, index) => SizedBox(width: 5),
+                    itemBuilder: (context, index) {
+                      final entity = searchHistoryList.elementAt(index);
+                      return GestureDetector(
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: Color.fromRGBO(239, 239, 239, 1),
+                            //设置圆角
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            spacing: 5,
+                            children: [
+                              Text(entity.query),
+                              GestureDetector(
+                                child: Icon(
+                                  Icons.close,
+                                  size: 14,
+                                  color: Color.fromRGBO(151, 151, 151, 1),
+                                ),
+                                onTap: () {
+                                  searchHistory.deleteSearchHistoryById(
+                                    entity.id ?? 0,
+                                  );
+                                  searchHistoryList =
+                                      searchHistory.getAllSearchHistory();
+                                  setState(() {});
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        onTap: () {
+                          inputText = entity.query;
+                          goToSearchResult();
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Divider(height: 1, color: Colors.grey[300]),
+      ],
     );
   }
 
@@ -279,10 +621,7 @@ class VideoSearchState extends State<VideoSearch>
         automaticallyImplyLeading: false, //设置为false
       ),
       resizeToAvoidBottomInset: false,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [Container(child: _buildContent())],
-      ),
+      body: _buildContent(),
     );
   }
 

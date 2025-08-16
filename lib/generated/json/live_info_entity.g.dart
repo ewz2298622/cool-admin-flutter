@@ -1,5 +1,5 @@
-import 'package:flutter_app/entity/live_info_entity.dart';
 import 'package:flutter_app/generated/json/base/json_convert_content.dart';
+import 'package:flutter_app/entity/live_info_entity.dart';
 
 LiveInfoEntity $LiveInfoEntityFromJson(Map<String, dynamic> json) {
   final LiveInfoEntity liveInfoEntity = LiveInfoEntity();
@@ -27,7 +27,11 @@ Map<String, dynamic> $LiveInfoEntityToJson(LiveInfoEntity entity) {
 }
 
 extension LiveInfoEntityExtension on LiveInfoEntity {
-  LiveInfoEntity copyWith({int? code, String? message, LiveInfoData? data}) {
+  LiveInfoEntity copyWith({
+    int? code,
+    String? message,
+    LiveInfoData? data,
+  }) {
     return LiveInfoEntity()
       ..code = code ?? this.code
       ..message = message ?? this.message

@@ -14,6 +14,7 @@ import 'package:flutter_app/views/ranking/ranking.dart';
 import 'package:flutter_app/views/service/service.dart';
 import 'package:flutter_app/views/splash_page/splash_page.dart';
 import 'package:flutter_app/views/video_filter/video_filter.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -53,6 +54,11 @@ class MyApp extends StatelessWidget {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 overlayColor: MaterialStateProperty.all(Colors.transparent),
               ),
+            ),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFFFFFFFF),
+              foregroundColor: Color(0xFF000000),
+              elevation: 0,
             ),
           ),
           home: MainPage(),
@@ -131,79 +137,69 @@ class _MainPageState extends State<MainPage> {
       return Scaffold(
         body: IndexedStack(index: _selectedIndex, children: pages),
         bottomNavigationBar: BottomNavigationBar(
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              activeIcon: TDImage(
+              activeIcon: SvgPicture.asset(
+                'assets/images/sy_ic01h.svg',
                 width: 25,
                 height: 25,
-                fit: BoxFit.cover,
-                assetUrl: 'assets/images/1.png',
               ),
-              icon: TDImage(
+              icon: SvgPicture.asset(
+                'assets/images/sy_ic01.svg',
                 width: 25,
                 height: 25,
-                fit: BoxFit.cover,
-                assetUrl: 'assets/images/2.png',
               ),
               label: '首页',
             ),
             BottomNavigationBarItem(
-              activeIcon: TDImage(
+              activeIcon: SvgPicture.asset(
+                'assets/images/sy_ic02h.svg',
                 width: 25,
                 height: 25,
-                fit: BoxFit.cover,
-                assetUrl: 'assets/images/3.png',
               ),
-              icon: TDImage(
+              icon: SvgPicture.asset(
+                'assets/images/sy_ic02.svg',
                 width: 25,
                 height: 25,
-                fit: BoxFit.cover,
-                assetUrl: 'assets/images/4.png',
               ),
               label: '频道',
             ),
             BottomNavigationBarItem(
-              activeIcon: TDImage(
+              activeIcon: SvgPicture.asset(
+                'assets/images/sy_ic03h.svg',
                 width: 25,
                 height: 25,
-                fit: BoxFit.cover,
-                assetUrl: 'assets/images/6.png',
               ),
-              icon: TDImage(
+              icon: SvgPicture.asset(
+                'assets/images/sy_ic03.svg',
                 width: 25,
                 height: 25,
-                fit: BoxFit.cover,
-                assetUrl: 'assets/images/5.png',
               ),
               label: '排行',
             ),
             BottomNavigationBarItem(
-              activeIcon: TDImage(
+              activeIcon: SvgPicture.asset(
+                'assets/images/sy_ic04h.svg',
                 width: 25,
                 height: 25,
-                fit: BoxFit.cover,
-                assetUrl: 'assets/images/8.png',
               ),
-              icon: TDImage(
+              icon: SvgPicture.asset(
+                'assets/images/sy_ic04.svg',
                 width: 25,
                 height: 25,
-                fit: BoxFit.cover,
-                assetUrl: 'assets/images/7.png',
               ),
               label: '服务',
             ),
             BottomNavigationBarItem(
-              activeIcon: TDImage(
+              activeIcon: SvgPicture.asset(
+                'assets/images/sy_ic05h.svg',
                 width: 25,
                 height: 25,
-                fit: BoxFit.cover,
-                assetUrl: 'assets/images/9.png',
               ),
-              icon: TDImage(
+              icon: SvgPicture.asset(
+                'assets/images/sy_ic05.svg',
                 width: 25,
                 height: 25,
-                fit: BoxFit.cover,
-                assetUrl: 'assets/images/10.png',
               ),
               label: '我的',
             ),

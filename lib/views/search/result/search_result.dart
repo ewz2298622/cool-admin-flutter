@@ -93,6 +93,7 @@ class SearchResultState extends State<SearchResult>
       screenAdaptation: false,
       backgroundColor: Colors.transparent,
       titleMargin: 5,
+      height: 36,
       centerTitle: false,
       padding: EdgeInsets.only(left: 0, right: 0),
       titleWidget: TDSearchBar(
