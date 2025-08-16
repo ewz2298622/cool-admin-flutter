@@ -33,10 +33,12 @@ class VideoFilterState extends State<VideoFilter>
   var _futureBuilderFuture;
   var inputText = "";
   List<DictDataDataVideoCategory> categoryData = [];
+  List<DictDataDataVideoTag> tagData = [];
   List<VideoPageDataList> videoPageData = [];
   //实现一个从今年到15年前的list
   List<int> years = List.generate(20, (index) => DateTime.now().year - index);
   final ValueNotifier<int> categoryCurrent = ValueNotifier<int>(0);
+  final ValueNotifier<int> tagCurrent = ValueNotifier<int>(0);
   final ValueNotifier<int> yearCurrent = ValueNotifier<int>(0);
   final ValueNotifier<int> regionCurrent = ValueNotifier<int>(0);
   bool disposed = false;
@@ -54,6 +56,13 @@ class VideoFilterState extends State<VideoFilter>
         "page": currentPage,
         "category_pid":
             categoryCurrent.value == 0 ? null : categoryCurrent.value,
+        "video_tag":
+            tagCurrent.value == 0
+                ? null
+                : tagData
+                    .where((element) => element.id == tagCurrent.value)
+                    .toList()[0]
+                    .name,
         "year": yearCurrent.value == 0 ? null : yearCurrent.value,
         "region": regionCurrent.value == 0 ? null : regionCurrent.value,
       };
@@ -64,6 +73,7 @@ class VideoFilterState extends State<VideoFilter>
       videoPageData = [...videoPageData, ...list];
       isLoading = false;
     } catch (e) {
+      debugPrint('Initialization getVideoPages failed: $e');
       isLoading = false;
     }
     setState(() {});
@@ -82,6 +92,23 @@ class VideoFilterState extends State<VideoFilter>
     } catch (e) {
       // 捕获并处理异常
       debugPrint('Initialization getVideoListByCategoryIds failed: $e');
+    }
+  }
+
+  Future<void> getVideoTagPages() async {
+    try {
+      tagData =
+          ((await Api.getDictData({
+                    "types": ["video_tag"],
+                  })).data
+                  as DictDataData)
+              .videoTag!;
+      debugPrint(
+        'Initialization getVideoTagPages success ${tagData[tagCurrent.value]}',
+      );
+    } catch (e) {
+      // 捕获并处理异常
+      debugPrint('Initialization getVideoTagPages failed: $e');
     }
   }
 
@@ -108,6 +135,7 @@ class VideoFilterState extends State<VideoFilter>
         getVideoPages(),
         getVideoCategoryPages(),
         getVideoAreaPages(),
+        getVideoTagPages(),
       ]);
       _scrollControllerAdd();
       return "init success";
@@ -158,6 +186,20 @@ class VideoFilterState extends State<VideoFilter>
     _area_change(null);
   }
 
+  Future<void> _tag_change(DictDataDataVideoTag? item) async {
+    if (item != null) {
+      tagCurrent.value = item.id ?? 0;
+    } else {
+      tagCurrent.value = 0;
+    }
+    videoPageData.clear();
+    currentPage = 1;
+    await getVideoPages();
+    setState(() {});
+    _year_change(0);
+    _area_change(null);
+  }
+
   Future<void> _year_change(int item) async {
     yearCurrent.value = item;
     videoPageData.clear();
@@ -195,7 +237,7 @@ class VideoFilterState extends State<VideoFilter>
               children: [
                 GestureDetector(
                   child: TDTag(
-                    title ?? "",
+                    title,
                     shape: TDTagShape.round,
                     isLight: true,
                     size: TDTagSize.large,
@@ -218,37 +260,104 @@ class VideoFilterState extends State<VideoFilter>
                   },
                 ),
 
-                ...(items)
-                    .map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: GestureDetector(
-                          child: TDTag(
-                            item.name ?? "",
-                            shape: TDTagShape.round,
-                            isLight: true,
-                            size: TDTagSize.large,
-                            textColor:
-                                key == item.id
-                                    ? const Color.fromRGBO(255, 122, 27, 1)
-                                    : Theme.of(
-                                      context,
-                                    ).textTheme.titleLarge?.color,
-                            backgroundColor:
-                                key == item.id
-                                    ? const Color.fromRGBO(244, 244, 244, 1)
-                                    : Colors.transparent,
-                            isOutline: true,
-                            style: TDTagStyle(
-                              borderColor: Colors.transparent,
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                          ),
-                          onTap: () => _category_change(item),
+                ...(items).map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: GestureDetector(
+                      child: TDTag(
+                        item.name ?? "",
+                        shape: TDTagShape.round,
+                        isLight: true,
+                        size: TDTagSize.large,
+                        textColor:
+                            key == item.id
+                                ? const Color.fromRGBO(255, 122, 27, 1)
+                                : Theme.of(context).textTheme.titleLarge?.color,
+                        backgroundColor:
+                            key == item.id
+                                ? const Color.fromRGBO(244, 244, 244, 1)
+                                : Colors.transparent,
+                        isOutline: true,
+                        style: TDTagStyle(
+                          borderColor: Colors.transparent,
+                          borderRadius: BorderRadius.circular(15),
                         ),
                       ),
-                    )
-                    .toList(),
+                      onTap: () => _category_change(item),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    }
+  }
+
+  Widget _buildTagRow(String title, List<DictDataDataVideoTag> items) {
+    if (items.isEmpty) {
+      return Container();
+    } else {
+      return ValueListenableBuilder<int>(
+        valueListenable: tagCurrent,
+        builder: (context, key, child) {
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                GestureDetector(
+                  child: TDTag(
+                    title,
+                    shape: TDTagShape.round,
+                    isLight: true,
+                    size: TDTagSize.large,
+                    textColor:
+                        tagCurrent.value == 0
+                            ? const Color.fromRGBO(255, 122, 27, 1)
+                            : Theme.of(context).textTheme.titleLarge?.color,
+                    backgroundColor:
+                        tagCurrent.value == 0
+                            ? const Color.fromRGBO(244, 244, 244, 1)
+                            : Colors.transparent,
+                    isOutline: true,
+                    style: TDTagStyle(
+                      borderColor: Colors.transparent,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                  onTap: () {
+                    _tag_change(null);
+                  },
+                ),
+
+                ...(items).map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: GestureDetector(
+                      child: TDTag(
+                        item.name ?? "",
+                        shape: TDTagShape.round,
+                        isLight: true,
+                        size: TDTagSize.large,
+                        textColor:
+                            key == item.id
+                                ? const Color.fromRGBO(255, 122, 27, 1)
+                                : Theme.of(context).textTheme.titleLarge?.color,
+                        backgroundColor:
+                            key == item.id
+                                ? const Color.fromRGBO(244, 244, 244, 1)
+                                : Colors.transparent,
+                        isOutline: true,
+                        style: TDTagStyle(
+                          borderColor: Colors.transparent,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      onTap: () => _tag_change(item),
+                    ),
+                  ),
+                ),
               ],
             ),
           );
@@ -476,6 +585,7 @@ class VideoFilterState extends State<VideoFilter>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildCategoryRow('全部分类', categoryData),
+                      _buildTagRow("全部标签", tagData),
                       _buildAreaRow('全部地区', areaDictList),
                       _buildYearRow("全部年份", years),
                     ],
