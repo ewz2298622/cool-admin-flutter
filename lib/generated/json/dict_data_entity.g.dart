@@ -1,5 +1,5 @@
-import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 import 'package:flutter_app/entity/dict_data_entity.dart';
+import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 
 DictDataEntity $DictDataEntityFromJson(Map<String, dynamic> json) {
   final DictDataEntity dictDataEntity = DictDataEntity();
@@ -27,11 +27,7 @@ Map<String, dynamic> $DictDataEntityToJson(DictDataEntity entity) {
 }
 
 extension DictDataEntityExtension on DictDataEntity {
-  DictDataEntity copyWith({
-    int? code,
-    String? message,
-    DictDataData? data,
-  }) {
+  DictDataEntity copyWith({int? code, String? message, DictDataData? data}) {
     return DictDataEntity()
       ..code = code ?? this.code
       ..message = message ?? this.message
@@ -41,98 +37,120 @@ extension DictDataEntityExtension on DictDataEntity {
 
 DictDataData $DictDataDataFromJson(Map<String, dynamic> json) {
   final DictDataData dictDataData = DictDataData();
-  final List<
-      DictDataDataLiveCategory>? liveCategory = (json['live_category'] as List<
-      dynamic>?)?.map(
-          (e) =>
-      jsonConvert.convert<DictDataDataLiveCategory>(
-          e) as DictDataDataLiveCategory).toList();
+  final List<DictDataDataLiveCategory>? liveCategory =
+      (json['live_category'] as List<dynamic>?)
+          ?.map(
+            (e) =>
+                jsonConvert.convert<DictDataDataLiveCategory>(e)
+                    as DictDataDataLiveCategory,
+          )
+          .toList();
   if (liveCategory != null) {
     dictDataData.liveCategory = liveCategory;
   }
-  final List<DictDataDataLiveTags>? liveTags = (json['liveTags'] as List<
-      dynamic>?)
-      ?.map(
-          (e) =>
-      jsonConvert.convert<DictDataDataLiveTags>(e) as DictDataDataLiveTags)
-      .toList();
+  final List<DictDataDataLiveTags>? liveTags =
+      (json['liveTags'] as List<dynamic>?)
+          ?.map(
+            (e) =>
+                jsonConvert.convert<DictDataDataLiveTags>(e)
+                    as DictDataDataLiveTags,
+          )
+          .toList();
   if (liveTags != null) {
     dictDataData.liveTags = liveTags;
   }
-  final List<DictDataDataWeek>? week = (json['week'] as List<dynamic>?)
-      ?.map(
-          (e) => jsonConvert.convert<DictDataDataWeek>(e) as DictDataDataWeek)
-      .toList();
+  final List<DictDataDataWeek>? week =
+      (json['week'] as List<dynamic>?)
+          ?.map(
+            (e) => jsonConvert.convert<DictDataDataWeek>(e) as DictDataDataWeek,
+          )
+          .toList();
   if (week != null) {
     dictDataData.week = week;
   }
-  final List<DictDataDataArea>? area = (json['area'] as List<dynamic>?)
-      ?.map(
-          (e) => jsonConvert.convert<DictDataDataArea>(e) as DictDataDataArea)
-      .toList();
+  final List<DictDataDataArea>? area =
+      (json['area'] as List<dynamic>?)
+          ?.map(
+            (e) => jsonConvert.convert<DictDataDataArea>(e) as DictDataDataArea,
+          )
+          .toList();
   if (area != null) {
     dictDataData.area = area;
   }
-  final List<DictDataDataLanguage>? language = (json['language'] as List<
-      dynamic>?)
-      ?.map(
-          (e) =>
-      jsonConvert.convert<DictDataDataLanguage>(e) as DictDataDataLanguage)
-      .toList();
+  final List<DictDataDataLanguage>? language =
+      (json['language'] as List<dynamic>?)
+          ?.map(
+            (e) =>
+                jsonConvert.convert<DictDataDataLanguage>(e)
+                    as DictDataDataLanguage,
+          )
+          .toList();
   if (language != null) {
     dictDataData.language = language;
   }
-  final List<
-      DictDataDataVideoCategory>? videoCategory = (json['video_category'] as List<
-      dynamic>?)?.map(
-          (e) =>
-      jsonConvert.convert<DictDataDataVideoCategory>(
-          e) as DictDataDataVideoCategory).toList();
+  final List<DictDataDataVideoCategory>? videoCategory =
+      (json['video_category'] as List<dynamic>?)
+          ?.map(
+            (e) =>
+                jsonConvert.convert<DictDataDataVideoCategory>(e)
+                    as DictDataDataVideoCategory,
+          )
+          .toList();
   if (videoCategory != null) {
     dictDataData.videoCategory = videoCategory;
   }
-  final List<DictDataDataNoticeType>? noticeType = (json['notice_type'] as List<
-      dynamic>?)
-      ?.map(
-          (e) =>
-      jsonConvert.convert<DictDataDataNoticeType>(e) as DictDataDataNoticeType)
-      .toList();
+  final List<DictDataDataNoticeType>? noticeType =
+      (json['notice_type'] as List<dynamic>?)
+          ?.map(
+            (e) =>
+                jsonConvert.convert<DictDataDataNoticeType>(e)
+                    as DictDataDataNoticeType,
+          )
+          .toList();
   if (noticeType != null) {
     dictDataData.noticeType = noticeType;
   }
-  final List<
-      DictDataDataFeedbackType>? feedbackType = (json['feedback_type'] as List<
-      dynamic>?)?.map(
-          (e) =>
-      jsonConvert.convert<DictDataDataFeedbackType>(
-          e) as DictDataDataFeedbackType).toList();
+  final List<DictDataDataFeedbackType>? feedbackType =
+      (json['feedback_type'] as List<dynamic>?)
+          ?.map(
+            (e) =>
+                jsonConvert.convert<DictDataDataFeedbackType>(e)
+                    as DictDataDataFeedbackType,
+          )
+          .toList();
   if (feedbackType != null) {
     dictDataData.feedbackType = feedbackType;
   }
-  final List<DictDataDataAdsType>? adsType = (json['ads_type'] as List<
-      dynamic>?)
-      ?.map(
-          (e) =>
-      jsonConvert.convert<DictDataDataAdsType>(e) as DictDataDataAdsType)
-      .toList();
+  final List<DictDataDataAdsType>? adsType =
+      (json['ads_type'] as List<dynamic>?)
+          ?.map(
+            (e) =>
+                jsonConvert.convert<DictDataDataAdsType>(e)
+                    as DictDataDataAdsType,
+          )
+          .toList();
   if (adsType != null) {
     dictDataData.adsType = adsType;
   }
-  final List<DictDataDataSearchType>? searchType = (json['search_type'] as List<
-      dynamic>?)
-      ?.map(
-          (e) =>
-      jsonConvert.convert<DictDataDataSearchType>(e) as DictDataDataSearchType)
-      .toList();
+  final List<DictDataDataSearchType>? searchType =
+      (json['search_type'] as List<dynamic>?)
+          ?.map(
+            (e) =>
+                jsonConvert.convert<DictDataDataSearchType>(e)
+                    as DictDataDataSearchType,
+          )
+          .toList();
   if (searchType != null) {
     dictDataData.searchType = searchType;
   }
-  final List<DictDataDataVideoTag>? videoTag = (json['video_tag'] as List<
-      dynamic>?)
-      ?.map(
-          (e) =>
-      jsonConvert.convert<DictDataDataVideoTag>(e) as DictDataDataVideoTag)
-      .toList();
+  final List<DictDataDataVideoTag>? videoTag =
+      (json['video_tag'] as List<dynamic>?)
+          ?.map(
+            (e) =>
+                jsonConvert.convert<DictDataDataVideoTag>(e)
+                    as DictDataDataVideoTag,
+          )
+          .toList();
   if (videoTag != null) {
     dictDataData.videoTag = videoTag;
   }
@@ -186,8 +204,10 @@ extension DictDataDataExtension on DictDataData {
 }
 
 DictDataDataLiveCategory $DictDataDataLiveCategoryFromJson(
-    Map<String, dynamic> json) {
-  final DictDataDataLiveCategory dictDataDataLiveCategory = DictDataDataLiveCategory();
+  Map<String, dynamic> json,
+) {
+  final DictDataDataLiveCategory dictDataDataLiveCategory =
+      DictDataDataLiveCategory();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataLiveCategory.id = id;
@@ -212,6 +232,14 @@ DictDataDataLiveCategory $DictDataDataLiveCategoryFromJson(
   if (status != null) {
     dictDataDataLiveCategory.status = status;
   }
+  final dynamic color = json['color'];
+  if (color != null) {
+    dictDataDataLiveCategory.color = color;
+  }
+  final dynamic remark = json['remark'];
+  if (remark != null) {
+    dictDataDataLiveCategory.remark = remark;
+  }
   final dynamic parentId = json['parentId'];
   if (parentId != null) {
     dictDataDataLiveCategory.parentId = parentId;
@@ -220,7 +248,8 @@ DictDataDataLiveCategory $DictDataDataLiveCategoryFromJson(
 }
 
 Map<String, dynamic> $DictDataDataLiveCategoryToJson(
-    DictDataDataLiveCategory entity) {
+  DictDataDataLiveCategory entity,
+) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -228,6 +257,8 @@ Map<String, dynamic> $DictDataDataLiveCategoryToJson(
   data['value'] = entity.value;
   data['orderNum'] = entity.orderNum;
   data['status'] = entity.status;
+  data['color'] = entity.color;
+  data['remark'] = entity.remark;
   data['parentId'] = entity.parentId;
   return data;
 }
@@ -240,6 +271,8 @@ extension DictDataDataLiveCategoryExtension on DictDataDataLiveCategory {
     dynamic value,
     int? orderNum,
     int? status,
+    dynamic color,
+    dynamic remark,
     dynamic parentId,
   }) {
     return DictDataDataLiveCategory()
@@ -249,6 +282,8 @@ extension DictDataDataLiveCategoryExtension on DictDataDataLiveCategory {
       ..value = value ?? this.value
       ..orderNum = orderNum ?? this.orderNum
       ..status = status ?? this.status
+      ..color = color ?? this.color
+      ..remark = remark ?? this.remark
       ..parentId = parentId ?? this.parentId;
   }
 }
@@ -279,6 +314,14 @@ DictDataDataLiveTags $DictDataDataLiveTagsFromJson(Map<String, dynamic> json) {
   if (status != null) {
     dictDataDataLiveTags.status = status;
   }
+  final dynamic color = json['color'];
+  if (color != null) {
+    dictDataDataLiveTags.color = color;
+  }
+  final dynamic remark = json['remark'];
+  if (remark != null) {
+    dictDataDataLiveTags.remark = remark;
+  }
   final dynamic parentId = json['parentId'];
   if (parentId != null) {
     dictDataDataLiveTags.parentId = parentId;
@@ -294,6 +337,8 @@ Map<String, dynamic> $DictDataDataLiveTagsToJson(DictDataDataLiveTags entity) {
   data['value'] = entity.value;
   data['orderNum'] = entity.orderNum;
   data['status'] = entity.status;
+  data['color'] = entity.color;
+  data['remark'] = entity.remark;
   data['parentId'] = entity.parentId;
   return data;
 }
@@ -306,6 +351,8 @@ extension DictDataDataLiveTagsExtension on DictDataDataLiveTags {
     dynamic value,
     int? orderNum,
     int? status,
+    dynamic color,
+    dynamic remark,
     dynamic parentId,
   }) {
     return DictDataDataLiveTags()
@@ -315,6 +362,8 @@ extension DictDataDataLiveTagsExtension on DictDataDataLiveTags {
       ..value = value ?? this.value
       ..orderNum = orderNum ?? this.orderNum
       ..status = status ?? this.status
+      ..color = color ?? this.color
+      ..remark = remark ?? this.remark
       ..parentId = parentId ?? this.parentId;
   }
 }
@@ -345,6 +394,14 @@ DictDataDataWeek $DictDataDataWeekFromJson(Map<String, dynamic> json) {
   if (status != null) {
     dictDataDataWeek.status = status;
   }
+  final dynamic color = json['color'];
+  if (color != null) {
+    dictDataDataWeek.color = color;
+  }
+  final dynamic remark = json['remark'];
+  if (remark != null) {
+    dictDataDataWeek.remark = remark;
+  }
   final dynamic parentId = json['parentId'];
   if (parentId != null) {
     dictDataDataWeek.parentId = parentId;
@@ -360,6 +417,8 @@ Map<String, dynamic> $DictDataDataWeekToJson(DictDataDataWeek entity) {
   data['value'] = entity.value;
   data['orderNum'] = entity.orderNum;
   data['status'] = entity.status;
+  data['color'] = entity.color;
+  data['remark'] = entity.remark;
   data['parentId'] = entity.parentId;
   return data;
 }
@@ -372,6 +431,8 @@ extension DictDataDataWeekExtension on DictDataDataWeek {
     dynamic value,
     int? orderNum,
     int? status,
+    dynamic color,
+    dynamic remark,
     dynamic parentId,
   }) {
     return DictDataDataWeek()
@@ -381,6 +442,8 @@ extension DictDataDataWeekExtension on DictDataDataWeek {
       ..value = value ?? this.value
       ..orderNum = orderNum ?? this.orderNum
       ..status = status ?? this.status
+      ..color = color ?? this.color
+      ..remark = remark ?? this.remark
       ..parentId = parentId ?? this.parentId;
   }
 }
@@ -411,6 +474,14 @@ DictDataDataArea $DictDataDataAreaFromJson(Map<String, dynamic> json) {
   if (status != null) {
     dictDataDataArea.status = status;
   }
+  final dynamic color = json['color'];
+  if (color != null) {
+    dictDataDataArea.color = color;
+  }
+  final String? remark = jsonConvert.convert<String>(json['remark']);
+  if (remark != null) {
+    dictDataDataArea.remark = remark;
+  }
   final dynamic parentId = json['parentId'];
   if (parentId != null) {
     dictDataDataArea.parentId = parentId;
@@ -426,6 +497,8 @@ Map<String, dynamic> $DictDataDataAreaToJson(DictDataDataArea entity) {
   data['value'] = entity.value;
   data['orderNum'] = entity.orderNum;
   data['status'] = entity.status;
+  data['color'] = entity.color;
+  data['remark'] = entity.remark;
   data['parentId'] = entity.parentId;
   return data;
 }
@@ -438,6 +511,8 @@ extension DictDataDataAreaExtension on DictDataDataArea {
     dynamic value,
     int? orderNum,
     int? status,
+    dynamic color,
+    String? remark,
     dynamic parentId,
   }) {
     return DictDataDataArea()
@@ -447,6 +522,8 @@ extension DictDataDataAreaExtension on DictDataDataArea {
       ..value = value ?? this.value
       ..orderNum = orderNum ?? this.orderNum
       ..status = status ?? this.status
+      ..color = color ?? this.color
+      ..remark = remark ?? this.remark
       ..parentId = parentId ?? this.parentId;
   }
 }
@@ -477,6 +554,14 @@ DictDataDataLanguage $DictDataDataLanguageFromJson(Map<String, dynamic> json) {
   if (status != null) {
     dictDataDataLanguage.status = status;
   }
+  final dynamic color = json['color'];
+  if (color != null) {
+    dictDataDataLanguage.color = color;
+  }
+  final dynamic remark = json['remark'];
+  if (remark != null) {
+    dictDataDataLanguage.remark = remark;
+  }
   final dynamic parentId = json['parentId'];
   if (parentId != null) {
     dictDataDataLanguage.parentId = parentId;
@@ -492,6 +577,8 @@ Map<String, dynamic> $DictDataDataLanguageToJson(DictDataDataLanguage entity) {
   data['value'] = entity.value;
   data['orderNum'] = entity.orderNum;
   data['status'] = entity.status;
+  data['color'] = entity.color;
+  data['remark'] = entity.remark;
   data['parentId'] = entity.parentId;
   return data;
 }
@@ -504,6 +591,8 @@ extension DictDataDataLanguageExtension on DictDataDataLanguage {
     dynamic value,
     int? orderNum,
     int? status,
+    dynamic color,
+    dynamic remark,
     dynamic parentId,
   }) {
     return DictDataDataLanguage()
@@ -513,13 +602,17 @@ extension DictDataDataLanguageExtension on DictDataDataLanguage {
       ..value = value ?? this.value
       ..orderNum = orderNum ?? this.orderNum
       ..status = status ?? this.status
+      ..color = color ?? this.color
+      ..remark = remark ?? this.remark
       ..parentId = parentId ?? this.parentId;
   }
 }
 
 DictDataDataVideoCategory $DictDataDataVideoCategoryFromJson(
-    Map<String, dynamic> json) {
-  final DictDataDataVideoCategory dictDataDataVideoCategory = DictDataDataVideoCategory();
+  Map<String, dynamic> json,
+) {
+  final DictDataDataVideoCategory dictDataDataVideoCategory =
+      DictDataDataVideoCategory();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataVideoCategory.id = id;
@@ -544,6 +637,14 @@ DictDataDataVideoCategory $DictDataDataVideoCategoryFromJson(
   if (status != null) {
     dictDataDataVideoCategory.status = status;
   }
+  final dynamic color = json['color'];
+  if (color != null) {
+    dictDataDataVideoCategory.color = color;
+  }
+  final String? remark = jsonConvert.convert<String>(json['remark']);
+  if (remark != null) {
+    dictDataDataVideoCategory.remark = remark;
+  }
   final int? parentId = jsonConvert.convert<int>(json['parentId']);
   if (parentId != null) {
     dictDataDataVideoCategory.parentId = parentId;
@@ -552,7 +653,8 @@ DictDataDataVideoCategory $DictDataDataVideoCategoryFromJson(
 }
 
 Map<String, dynamic> $DictDataDataVideoCategoryToJson(
-    DictDataDataVideoCategory entity) {
+  DictDataDataVideoCategory entity,
+) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -560,6 +662,8 @@ Map<String, dynamic> $DictDataDataVideoCategoryToJson(
   data['value'] = entity.value;
   data['orderNum'] = entity.orderNum;
   data['status'] = entity.status;
+  data['color'] = entity.color;
+  data['remark'] = entity.remark;
   data['parentId'] = entity.parentId;
   return data;
 }
@@ -572,6 +676,8 @@ extension DictDataDataVideoCategoryExtension on DictDataDataVideoCategory {
     dynamic value,
     int? orderNum,
     int? status,
+    dynamic color,
+    String? remark,
     int? parentId,
   }) {
     return DictDataDataVideoCategory()
@@ -581,13 +687,17 @@ extension DictDataDataVideoCategoryExtension on DictDataDataVideoCategory {
       ..value = value ?? this.value
       ..orderNum = orderNum ?? this.orderNum
       ..status = status ?? this.status
+      ..color = color ?? this.color
+      ..remark = remark ?? this.remark
       ..parentId = parentId ?? this.parentId;
   }
 }
 
 DictDataDataNoticeType $DictDataDataNoticeTypeFromJson(
-    Map<String, dynamic> json) {
-  final DictDataDataNoticeType dictDataDataNoticeType = DictDataDataNoticeType();
+  Map<String, dynamic> json,
+) {
+  final DictDataDataNoticeType dictDataDataNoticeType =
+      DictDataDataNoticeType();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataNoticeType.id = id;
@@ -612,6 +722,14 @@ DictDataDataNoticeType $DictDataDataNoticeTypeFromJson(
   if (status != null) {
     dictDataDataNoticeType.status = status;
   }
+  final dynamic color = json['color'];
+  if (color != null) {
+    dictDataDataNoticeType.color = color;
+  }
+  final dynamic remark = json['remark'];
+  if (remark != null) {
+    dictDataDataNoticeType.remark = remark;
+  }
   final dynamic parentId = json['parentId'];
   if (parentId != null) {
     dictDataDataNoticeType.parentId = parentId;
@@ -620,7 +738,8 @@ DictDataDataNoticeType $DictDataDataNoticeTypeFromJson(
 }
 
 Map<String, dynamic> $DictDataDataNoticeTypeToJson(
-    DictDataDataNoticeType entity) {
+  DictDataDataNoticeType entity,
+) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -628,6 +747,8 @@ Map<String, dynamic> $DictDataDataNoticeTypeToJson(
   data['value'] = entity.value;
   data['orderNum'] = entity.orderNum;
   data['status'] = entity.status;
+  data['color'] = entity.color;
+  data['remark'] = entity.remark;
   data['parentId'] = entity.parentId;
   return data;
 }
@@ -640,6 +761,8 @@ extension DictDataDataNoticeTypeExtension on DictDataDataNoticeType {
     dynamic value,
     int? orderNum,
     int? status,
+    dynamic color,
+    dynamic remark,
     dynamic parentId,
   }) {
     return DictDataDataNoticeType()
@@ -649,13 +772,17 @@ extension DictDataDataNoticeTypeExtension on DictDataDataNoticeType {
       ..value = value ?? this.value
       ..orderNum = orderNum ?? this.orderNum
       ..status = status ?? this.status
+      ..color = color ?? this.color
+      ..remark = remark ?? this.remark
       ..parentId = parentId ?? this.parentId;
   }
 }
 
 DictDataDataFeedbackType $DictDataDataFeedbackTypeFromJson(
-    Map<String, dynamic> json) {
-  final DictDataDataFeedbackType dictDataDataFeedbackType = DictDataDataFeedbackType();
+  Map<String, dynamic> json,
+) {
+  final DictDataDataFeedbackType dictDataDataFeedbackType =
+      DictDataDataFeedbackType();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataFeedbackType.id = id;
@@ -680,6 +807,14 @@ DictDataDataFeedbackType $DictDataDataFeedbackTypeFromJson(
   if (status != null) {
     dictDataDataFeedbackType.status = status;
   }
+  final dynamic color = json['color'];
+  if (color != null) {
+    dictDataDataFeedbackType.color = color;
+  }
+  final dynamic remark = json['remark'];
+  if (remark != null) {
+    dictDataDataFeedbackType.remark = remark;
+  }
   final dynamic parentId = json['parentId'];
   if (parentId != null) {
     dictDataDataFeedbackType.parentId = parentId;
@@ -688,7 +823,8 @@ DictDataDataFeedbackType $DictDataDataFeedbackTypeFromJson(
 }
 
 Map<String, dynamic> $DictDataDataFeedbackTypeToJson(
-    DictDataDataFeedbackType entity) {
+  DictDataDataFeedbackType entity,
+) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -696,6 +832,8 @@ Map<String, dynamic> $DictDataDataFeedbackTypeToJson(
   data['value'] = entity.value;
   data['orderNum'] = entity.orderNum;
   data['status'] = entity.status;
+  data['color'] = entity.color;
+  data['remark'] = entity.remark;
   data['parentId'] = entity.parentId;
   return data;
 }
@@ -708,6 +846,8 @@ extension DictDataDataFeedbackTypeExtension on DictDataDataFeedbackType {
     dynamic value,
     int? orderNum,
     int? status,
+    dynamic color,
+    dynamic remark,
     dynamic parentId,
   }) {
     return DictDataDataFeedbackType()
@@ -717,6 +857,8 @@ extension DictDataDataFeedbackTypeExtension on DictDataDataFeedbackType {
       ..value = value ?? this.value
       ..orderNum = orderNum ?? this.orderNum
       ..status = status ?? this.status
+      ..color = color ?? this.color
+      ..remark = remark ?? this.remark
       ..parentId = parentId ?? this.parentId;
   }
 }
@@ -747,6 +889,14 @@ DictDataDataAdsType $DictDataDataAdsTypeFromJson(Map<String, dynamic> json) {
   if (status != null) {
     dictDataDataAdsType.status = status;
   }
+  final dynamic color = json['color'];
+  if (color != null) {
+    dictDataDataAdsType.color = color;
+  }
+  final dynamic remark = json['remark'];
+  if (remark != null) {
+    dictDataDataAdsType.remark = remark;
+  }
   final dynamic parentId = json['parentId'];
   if (parentId != null) {
     dictDataDataAdsType.parentId = parentId;
@@ -762,6 +912,8 @@ Map<String, dynamic> $DictDataDataAdsTypeToJson(DictDataDataAdsType entity) {
   data['value'] = entity.value;
   data['orderNum'] = entity.orderNum;
   data['status'] = entity.status;
+  data['color'] = entity.color;
+  data['remark'] = entity.remark;
   data['parentId'] = entity.parentId;
   return data;
 }
@@ -774,6 +926,8 @@ extension DictDataDataAdsTypeExtension on DictDataDataAdsType {
     dynamic value,
     int? orderNum,
     int? status,
+    dynamic color,
+    dynamic remark,
     dynamic parentId,
   }) {
     return DictDataDataAdsType()
@@ -783,13 +937,17 @@ extension DictDataDataAdsTypeExtension on DictDataDataAdsType {
       ..value = value ?? this.value
       ..orderNum = orderNum ?? this.orderNum
       ..status = status ?? this.status
+      ..color = color ?? this.color
+      ..remark = remark ?? this.remark
       ..parentId = parentId ?? this.parentId;
   }
 }
 
 DictDataDataSearchType $DictDataDataSearchTypeFromJson(
-    Map<String, dynamic> json) {
-  final DictDataDataSearchType dictDataDataSearchType = DictDataDataSearchType();
+  Map<String, dynamic> json,
+) {
+  final DictDataDataSearchType dictDataDataSearchType =
+      DictDataDataSearchType();
   final int? id = jsonConvert.convert<int>(json['id']);
   if (id != null) {
     dictDataDataSearchType.id = id;
@@ -814,6 +972,14 @@ DictDataDataSearchType $DictDataDataSearchTypeFromJson(
   if (status != null) {
     dictDataDataSearchType.status = status;
   }
+  final String? color = jsonConvert.convert<String>(json['color']);
+  if (color != null) {
+    dictDataDataSearchType.color = color;
+  }
+  final dynamic remark = json['remark'];
+  if (remark != null) {
+    dictDataDataSearchType.remark = remark;
+  }
   final dynamic parentId = json['parentId'];
   if (parentId != null) {
     dictDataDataSearchType.parentId = parentId;
@@ -822,7 +988,8 @@ DictDataDataSearchType $DictDataDataSearchTypeFromJson(
 }
 
 Map<String, dynamic> $DictDataDataSearchTypeToJson(
-    DictDataDataSearchType entity) {
+  DictDataDataSearchType entity,
+) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['typeId'] = entity.typeId;
@@ -830,6 +997,8 @@ Map<String, dynamic> $DictDataDataSearchTypeToJson(
   data['value'] = entity.value;
   data['orderNum'] = entity.orderNum;
   data['status'] = entity.status;
+  data['color'] = entity.color;
+  data['remark'] = entity.remark;
   data['parentId'] = entity.parentId;
   return data;
 }
@@ -842,6 +1011,8 @@ extension DictDataDataSearchTypeExtension on DictDataDataSearchType {
     dynamic value,
     int? orderNum,
     int? status,
+    String? color,
+    dynamic remark,
     dynamic parentId,
   }) {
     return DictDataDataSearchType()
@@ -851,6 +1022,8 @@ extension DictDataDataSearchTypeExtension on DictDataDataSearchType {
       ..value = value ?? this.value
       ..orderNum = orderNum ?? this.orderNum
       ..status = status ?? this.status
+      ..color = color ?? this.color
+      ..remark = remark ?? this.remark
       ..parentId = parentId ?? this.parentId;
   }
 }
@@ -881,6 +1054,14 @@ DictDataDataVideoTag $DictDataDataVideoTagFromJson(Map<String, dynamic> json) {
   if (status != null) {
     dictDataDataVideoTag.status = status;
   }
+  final dynamic color = json['color'];
+  if (color != null) {
+    dictDataDataVideoTag.color = color;
+  }
+  final dynamic remark = json['remark'];
+  if (remark != null) {
+    dictDataDataVideoTag.remark = remark;
+  }
   final dynamic parentId = json['parentId'];
   if (parentId != null) {
     dictDataDataVideoTag.parentId = parentId;
@@ -896,6 +1077,8 @@ Map<String, dynamic> $DictDataDataVideoTagToJson(DictDataDataVideoTag entity) {
   data['value'] = entity.value;
   data['orderNum'] = entity.orderNum;
   data['status'] = entity.status;
+  data['color'] = entity.color;
+  data['remark'] = entity.remark;
   data['parentId'] = entity.parentId;
   return data;
 }
@@ -908,6 +1091,8 @@ extension DictDataDataVideoTagExtension on DictDataDataVideoTag {
     dynamic value,
     int? orderNum,
     int? status,
+    dynamic color,
+    dynamic remark,
     dynamic parentId,
   }) {
     return DictDataDataVideoTag()
@@ -917,6 +1102,8 @@ extension DictDataDataVideoTagExtension on DictDataDataVideoTag {
       ..value = value ?? this.value
       ..orderNum = orderNum ?? this.orderNum
       ..status = status ?? this.status
+      ..color = color ?? this.color
+      ..remark = remark ?? this.remark
       ..parentId = parentId ?? this.parentId;
   }
 }

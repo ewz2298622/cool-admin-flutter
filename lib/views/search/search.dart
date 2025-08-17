@@ -1,20 +1,17 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_app/views/search/result/search_result.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
 import '../../components/loading.dart';
-import '../../components/no_data.dart';
 import '../../components/sectionWithMore.dart';
-import '../../components/video_scroll.dart';
-import '../../components/video_three.dart';
 import '../../db/entity/SearchHistoryEntity.dart';
 import '../../db/manager/SearchHistoryDatabaseHelper.dart';
 import '../../entity/dict_data_entity.dart';
+import '../../entity/hot_keyWord_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../style/layout.dart';
+import '../../utils/color.dart';
 import '../../utils/video.dart';
 
 class VideoSearch extends StatefulWidget {
@@ -33,29 +30,23 @@ class VideoSearchState extends State<VideoSearch>
   final searchHistory = SearchHistoryDatabaseHelper();
   Iterable<SearchHistoryEntity> searchHistoryList = [];
   List<DictDataDataVideoCategory> category = [];
+  List<DictDataDataSearchType> searchType = [];
+  List<List<VideoPageDataList>> searchTypeVideoPageDataList = [];
+
+  List<List<HotKeyWordDataList>> hotKeyWordList = [];
+
   List<TDTab> tabs = [];
   late TabController _tabController;
   var _futureBuilderFuture;
 
   //生产十个 热门影视剧名字的数组
-  List<String> hotMovieNames = [
-    "浪浪山小妖怪浪浪山小妖怪浪浪山小妖怪浪浪山小妖怪",
-    "小妖怪",
-    "小妖怪",
-    "小妖怪",
-    "浪浪山小妖怪",
-    "小妖怪",
-    "小妖怪",
-    "小妖怪",
-  ];
 
   Future<String> init() async {
     try {
       await Future.wait([
-        getDictInfoPages(),
-        videoPageDataGet(),
-        videoPageDataListGet(),
+        getDictCategoryInfoPages(),
         getSearchHistoryEntity(),
+        getDictSearchTypeInfoPages(),
       ]);
       _tabController = TabController(length: tabs.length, vsync: this);
       return "init success";
@@ -72,7 +63,7 @@ class VideoSearchState extends State<VideoSearch>
     super.initState();
   }
 
-  Future<void> getDictInfoPages() async {
+  Future<void> getDictCategoryInfoPages() async {
     try {
       category =
           ((await Api.getDictData({
@@ -80,46 +71,46 @@ class VideoSearchState extends State<VideoSearch>
                   })).data
                   as DictDataData)
               .videoCategory!;
-
       category = category.where((element) => element.parentId == null).toList();
 
       tabs.clear();
       for (var element in category) {
         tabs.add(TDTab(text: element.name));
+        await videoHotKeyWord(element.id ?? 0);
       }
     } catch (e) {
       // 捕获并处理异常
-      print('获取视频分类数据失败: $e');
+      debugPrint('Initialization getDictCategoryInfoPages failed: $e');
     }
   }
 
-  Future<void> videoPageDataGet() async {
+  Future<void> getDictSearchTypeInfoPages() async {
     try {
-      videoPageData =
-          (await Api.getVideoPages({
-            "page": Random().nextInt(30) + 1,
-            "size": 7,
-          })).data?.list ??
-          [] as List<VideoPageDataList>;
-      videoPageDataList =
-          (await Api.getVideoPages({
-            "page": Random().nextInt(30) + 1,
-          })).data?.list ??
-          [] as List<VideoPageDataList>;
-      //改成并发
+      searchType =
+          ((await Api.getDictData({
+                    "types": ["search_type"],
+                  })).data
+                  as DictDataData)
+              .searchType!;
+      for (var element in searchType) {
+        await searchTypeVideoPageDataListGet(element.id ?? 0);
+      }
     } catch (e) {
       // 捕获并处理异常
-      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+      debugPrint('Initialization getDictTagInfoPages failed: $e');
     }
   }
 
-  Future<void> videoPageDataListGet() async {
+  Future<void> videoHotKeyWord(int categoryId) async {
     try {
-      videoPageDataList =
-          (await Api.getVideoPages({
-            "page": Random().nextInt(30) + 1,
+      List<HotKeyWordDataList> list =
+          (await Api.getHostKeyWord({
+            "page": 1,
+            "size": 8,
+            "category_id": categoryId,
           })).data?.list ??
-          [] as List<VideoPageDataList>;
+          [] as List<HotKeyWordDataList>;
+      hotKeyWordList.add(list);
       //改成并发
     } catch (e) {
       // 捕获并处理异常
@@ -133,6 +124,23 @@ class VideoSearchState extends State<VideoSearch>
     } catch (e) {
       // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+    }
+  }
+
+  Future<void> searchTypeVideoPageDataListGet(int searchRecommendType) async {
+    try {
+      List<VideoPageDataList> list =
+          (await Api.getVideoPages({
+            "page": 1,
+            "size": 7,
+            "searchRecommendType": searchRecommendType,
+          })).data?.list ??
+          [] as List<VideoPageDataList>;
+      searchTypeVideoPageDataList.add(list);
+      //改成并发
+    } catch (e) {
+      // 捕获并处理异常
+      debugPrint('Initialization searchTypeVideoPageDataListGet failed: $e');
     }
   }
 
@@ -205,24 +213,7 @@ class VideoSearchState extends State<VideoSearch>
                           scrollDirection: Axis.horizontal,
                           child: Row(
                             spacing: 10,
-                            children: [
-                              PagviewContent(
-                                "热播榜",
-                                Color.fromRGBO(251, 244, 238, 1),
-                              ),
-                              PagviewContent(
-                                "少儿榜",
-                                Color.fromRGBO(233, 242, 254, 1),
-                              ),
-                              PagviewContent(
-                                "电影榜",
-                                Color.fromRGBO(255, 240, 235, 1),
-                              ),
-                              PagviewContent(
-                                "电影榜",
-                                Color.fromRGBO(255, 240, 235, 1),
-                              ),
-                            ],
+                            children: _buildPageViewContentList(),
                           ),
                         ),
                       ],
@@ -236,6 +227,21 @@ class VideoSearchState extends State<VideoSearch>
         }
       },
     );
+  }
+
+  List<Widget> _buildPageViewContentList() {
+    List<Widget> list = [];
+    //改成能拿到index的形式
+    for (int i = 0; i < searchType.length; i++) {
+      list.add(
+        PagviewContent(
+          searchType[i].name ?? "",
+          HexColor(searchType[i].color ?? "#77A1D3"),
+          searchTypeVideoPageDataList[i],
+        ),
+      );
+    }
+    return list;
   }
 
   //tabs组件
@@ -279,8 +285,8 @@ class VideoSearchState extends State<VideoSearch>
                   mainAxisSpacing: 8,
                   crossAxisSpacing: 8,
                 ),
-                itemCount: hotMovieNames.length,
-                itemBuilder: (context, index) {
+                itemCount: hotKeyWordList[index].length,
+                itemBuilder: (context, keyWordIndex) {
                   return Container(
                     padding: EdgeInsets.only(
                       left: Layout.paddingL,
@@ -297,14 +303,44 @@ class VideoSearchState extends State<VideoSearch>
                         Expanded(
                           // 关键修改：添加Expanded约束文本区域
                           child: GestureDetector(
-                            child: Text(
-                              hotMovieNames[index],
-                              style: TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            child: Row(
+                              spacing: 4,
+                              children: [
+                                Text(
+                                  hotKeyWordList[index][keyWordIndex].keyWord ??
+                                      "",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 14,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    color: HexColor(
+                                      hotKeyWordList[index][keyWordIndex]
+                                              .color ??
+                                          "#77A1D3",
+                                    ),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.only(left: 4, right: 4),
+                                    child: Text(
+                                      hotKeyWordList[index][keyWordIndex].tag ??
+                                          "",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 12,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             onTap: () {
                               Navigator.push(
@@ -312,7 +348,10 @@ class VideoSearchState extends State<VideoSearch>
                                 MaterialPageRoute(
                                   builder:
                                       (context) => SearchResult(
-                                        keyWord: hotMovieNames[index],
+                                        keyWord:
+                                            hotKeyWordList[index][keyWordIndex]
+                                                .keyWord ??
+                                            "",
                                       ),
                                 ),
                               );
@@ -331,7 +370,11 @@ class VideoSearchState extends State<VideoSearch>
     );
   }
 
-  Widget PagviewContent(String title, Color color) {
+  Widget PagviewContent(
+    String title,
+    Color color,
+    List<VideoPageDataList> list,
+  ) {
     return Container(
       padding: EdgeInsets.only(left: 5, right: 5, top: 10),
       //宽度是60%
@@ -361,7 +404,7 @@ class VideoSearchState extends State<VideoSearch>
             scrollDirection: Axis.vertical,
             //间距
             itemExtent: 84,
-            itemCount: videoPageData.length,
+            itemCount: list.length,
             itemBuilder: (context, index) {
               return SizedBox(
                 width: MediaQuery.of(context).size.width,
@@ -394,7 +437,7 @@ class VideoSearchState extends State<VideoSearch>
                       fit: BoxFit.cover,
                       width: 120,
                       height: 75,
-                      imgUrl: videoPageData[index].surfacePlot ?? "",
+                      imgUrl: list[index].surfacePlot ?? "",
                       errorWidget: const TDImage(
                         width: 120,
                         height: 75,
@@ -403,13 +446,13 @@ class VideoSearchState extends State<VideoSearch>
                     ),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       spacing: 5,
                       children: [
                         SizedBox(
                           width: 120,
                           child: Text(
-                            videoPageData[index].title ?? "",
+                            list[index].title ?? "",
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(fontSize: 16),
@@ -419,7 +462,7 @@ class VideoSearchState extends State<VideoSearch>
                           width: 100,
                           child: Text(
                             VideoUtil.extractPlainText(
-                              videoPageData[index].introduce ?? "",
+                              list[index].introduce ?? "",
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -452,48 +495,6 @@ class VideoSearchState extends State<VideoSearch>
         return Color.fromRGBO(254, 209, 53, 1);
       default:
         return Color.fromRGBO(178, 188, 198, 1);
-    }
-  }
-
-  Widget _buildRecommendations() {
-    if (videoPageData.isNotEmpty) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 10,
-        children: [
-          SectionWithMore(title: '猜你想搜'),
-          Padding(
-            padding: EdgeInsets.only(bottom: 15),
-            child: HorizontalVideoList(videoPageData: videoPageData),
-          ),
-        ],
-      );
-    } else {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 10,
-        children: [
-          SectionWithMore(title: '猜你想搜'),
-          Padding(padding: EdgeInsets.only(bottom: 15), child: NoData()),
-        ],
-      );
-    }
-  }
-
-  Widget _buildAlbumItems() {
-    if (videoPageDataList.isNotEmpty) {
-      return Column(
-        spacing: 10,
-        children: [
-          SectionWithMore(title: '视频热搜榜'),
-          VideoThree(videoPageData: videoPageDataList),
-        ],
-      );
-    } else {
-      return Column(
-        spacing: 10,
-        children: [SectionWithMore(title: '视频热搜榜'), NoData()],
-      );
     }
   }
 

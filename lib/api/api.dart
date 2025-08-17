@@ -6,6 +6,7 @@ import '../entity/album_entity.dart';
 import '../entity/album_video_list_entity.dart';
 import '../entity/captcha_entity.dart';
 import '../entity/dict_info_list_entity.dart';
+import '../entity/hot_keyWord_entity.dart';
 import '../entity/live_info_entity.dart';
 import '../entity/notice_Info_entity.dart';
 import '../entity/play_line_entity.dart';
@@ -545,6 +546,21 @@ class Api {
         data: data,
       ); // 添加注释说明 ONE 的含义});
       return WeekEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  static Future<HotKeyWordEntity> getHostKeyWord(
+    Map<String, dynamic>? data,
+  ) async {
+    try {
+      final response = await server.post(
+        "/app/video/hot_keyWord/page",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
+      return HotKeyWordEntity.fromJson(response.data);
     } catch (error) {
       // 重新抛出异常以便上层处理
       rethrow;
