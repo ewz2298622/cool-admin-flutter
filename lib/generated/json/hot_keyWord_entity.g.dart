@@ -118,9 +118,13 @@ HotKeyWordDataList $HotKeyWordDataListFromJson(Map<String, dynamic> json) {
   if (tag != null) {
     hotKeyWordDataList.tag = tag;
   }
-  final String? color = jsonConvert.convert<String>(json['color']);
-  if (color != null) {
-    hotKeyWordDataList.color = color;
+  final String? bgColor = jsonConvert.convert<String>(json['bgColor']);
+  if (bgColor != null) {
+    hotKeyWordDataList.bgColor = bgColor;
+  }
+  final String? fontColor = jsonConvert.convert<String>(json['fontColor']);
+  if (fontColor != null) {
+    hotKeyWordDataList.fontColor = fontColor;
   }
   return hotKeyWordDataList;
 }
@@ -136,7 +140,8 @@ Map<String, dynamic> $HotKeyWordDataListToJson(HotKeyWordDataList entity) {
   data['keyWord'] = entity.keyWord;
   data['category_id'] = entity.categoryId;
   data['tag'] = entity.tag;
-  data['color'] = entity.color;
+  data['bgColor'] = entity.bgColor;
+  data['fontColor'] = entity.fontColor;
   return data;
 }
 
@@ -151,7 +156,8 @@ extension HotKeyWordDataListExtension on HotKeyWordDataList {
     String? keyWord,
     int? categoryId,
     String? tag,
-    String? color,
+    String? bgColor,
+    String? fontColor,
   }) {
     return HotKeyWordDataList()
       ..id = id ?? this.id
@@ -163,7 +169,8 @@ extension HotKeyWordDataListExtension on HotKeyWordDataList {
       ..keyWord = keyWord ?? this.keyWord
       ..categoryId = categoryId ?? this.categoryId
       ..tag = tag ?? this.tag
-      ..color = color ?? this.color;
+      ..bgColor = bgColor ?? this.bgColor
+      ..fontColor = fontColor ?? this.fontColor;
   }
 }
 

@@ -54,7 +54,8 @@ class HotKeyWordDataList {
   @JSONField(name: 'category_id')
   int? categoryId;
   String? tag;
-  String? color;
+  String? bgColor;
+  String? fontColor;
 
   HotKeyWordDataList();
 

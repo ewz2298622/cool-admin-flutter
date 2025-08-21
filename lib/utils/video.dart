@@ -106,4 +106,19 @@ class VideoUtil {
     }
     return compressedString;
   }
+
+  //实现一个格式化日期的函数将 00:10:00 转化成 00:10的格式
+  static String formatTime(String timeStr) {
+    // 分割时间字符串
+    List<String> parts = timeStr.split(':');
+
+    // 确保时间格式正确
+    if (parts.length < 2) return timeStr;
+
+    // 如果只有两部分，直接返回
+    if (parts.length == 2) return timeStr;
+
+    // 取前两部分（小时和分钟）
+    return '${parts[0]}:${parts[1]}';
+  }
 }

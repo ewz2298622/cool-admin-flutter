@@ -13,6 +13,8 @@ import '../../entity/video_page_entity.dart';
 import '../../style/layout.dart';
 import '../../utils/color.dart';
 import '../../utils/video.dart';
+import '../home/home.dart';
+import '../video_detail/detail.dart';
 
 class VideoSearch extends StatefulWidget {
   const VideoSearch({super.key});
@@ -197,23 +199,26 @@ class VideoSearchState extends State<VideoSearch>
                 children: [
                   _buildDefaultSearchBar(),
                   Container(
-                    padding: EdgeInsets.only(
-                      bottom: Layout.paddingB,
-                      top: Layout.paddingT,
-                    ),
+                    padding: EdgeInsets.only(bottom: Layout.paddingB, top: 15),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _buildSearchHistory(),
                         _buildTabs(),
-                        //实现三个PagviewContent 组件 水平 滚动
                         SingleChildScrollView(
                           //水平滚动
                           scrollDirection: Axis.horizontal,
-                          child: Row(
-                            spacing: 10,
-                            children: _buildPageViewContentList(),
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              left: Layout.paddingL,
+                              right: Layout.paddingR,
+                              top: Layout.paddingT,
+                            ),
+                            child: Row(
+                              spacing: 10,
+                              children: _buildPageViewContentList(),
+                            ),
                           ),
                         ),
                       ],
@@ -247,32 +252,44 @@ class VideoSearchState extends State<VideoSearch>
   //tabs组件
   Widget _buildTabs() {
     return Column(
+      spacing: 10,
       children: [
         SizedBox(
           height: 35,
           child: TabBar(
-            padding: EdgeInsets.only(top: 2),
             controller: _tabController, // 使用 controller
             isScrollable: true,
             tabAlignment: TabAlignment.center,
-            labelColor: Colors.black87,
+
             dividerHeight: 0,
+            indicator: GradientTabIndicator(
+              gradient: LinearGradient(
+                colors: [
+                  Color.fromRGBO(9, 128, 253, 1), // 完全不透明的橙色
+                  Color.fromRGBO(9, 128, 253, 0), // 完全透明（alpha=0）
+                ],
+              ),
+              height: 3.0, // 指示器高度
+              radius: 4.0, // 圆角
+            ),
             //选中的字体颜色
+            labelColor: const Color.fromRGBO(252, 119, 66, 1),
             unselectedLabelStyle: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
-            //选中下划线颜色
-            indicatorColor: Color.fromRGBO(252, 119, 66, 1),
             unselectedLabelColor: Colors.black87,
-            labelStyle: const TextStyle(fontSize: 18),
+            labelStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+            ),
             tabs: tabs,
             onTap: (index) {},
           ),
         ),
-        Container(
-          height: 150, // 设置固定高度
-          padding: EdgeInsets.only(top: Layout.paddingT),
+        // 修复 TabBarView 不显示的问题，给它一个固定高度
+        SizedBox(
+          height: 130, // 设置一个合适的高度
           child: TabBarView(
             controller: _tabController, // 添加 controller
             children: List.generate(tabs.length, (index) {
@@ -296,47 +313,69 @@ class VideoSearchState extends State<VideoSearch>
                       // 改用更可控的Row布局替代ListTile
                       children: [
                         Text(
-                          '${index + 1}.',
+                          '${keyWordIndex + 1}',
                           style: TextStyle(color: Colors.grey, fontSize: 14),
                         ),
                         SizedBox(width: 4),
                         Expanded(
-                          // 关键修改：添加Expanded约束文本区域
                           child: GestureDetector(
                             child: Row(
-                              spacing: 4,
                               children: [
-                                Text(
-                                  hotKeyWordList[index][keyWordIndex].keyWord ??
-                                      "",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 14,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    color: HexColor(
-                                      hotKeyWordList[index][keyWordIndex]
-                                              .color ??
-                                          "#77A1D3",
+                                Flexible(
+                                  // 使用 Flexible 而不是 Expanded 来包裹文本
+                                  child: Text(
+                                    hotKeyWordList[index][keyWordIndex]
+                                            .keyWord ??
+                                        "",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 14,
                                     ),
-                                    borderRadius: BorderRadius.circular(4),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    // 限制文本长度，例如最多显示8个字符
+                                    // 方法1: 使用 substring 截断
+                                    // text: (hotKeyWordList[index][keyWordIndex].keyWord ?? "").length > 8
+                                    //   ? "${(hotKeyWordList[index][keyWordIndex].keyWord ?? "").substring(0, 8)}..."
+                                    //   : hotKeyWordList[index][keyWordIndex].keyWord ?? "",
                                   ),
-                                  child: Padding(
-                                    padding: EdgeInsets.only(left: 4, right: 4),
-                                    child: Text(
-                                      hotKeyWordList[index][keyWordIndex].tag ??
-                                          "",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 12,
+                                ),
+                                SizedBox(width: 4),
+                                Visibility(
+                                  visible:
+                                      (hotKeyWordList[index][keyWordIndex]
+                                                  .tag ??
+                                              "")
+                                          .isNotEmpty,
+                                  child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      color: HexColor(
+                                        hotKeyWordList[index][keyWordIndex]
+                                                .bgColor ??
+                                            "#77A1D3",
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 4,
+                                      ),
+                                      child: Text(
+                                        hotKeyWordList[index][keyWordIndex]
+                                                .tag ??
+                                            "",
+                                        style: TextStyle(
+                                          color: HexColor(
+                                            hotKeyWordList[index][keyWordIndex]
+                                                    .fontColor ??
+                                                "#77A1D3",
+                                          ),
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 12,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -376,7 +415,7 @@ class VideoSearchState extends State<VideoSearch>
     List<VideoPageDataList> list,
   ) {
     return Container(
-      padding: EdgeInsets.only(left: 5, right: 5, top: 10),
+      padding: EdgeInsets.only(left: 5, right: 5, top: 10, bottom: 10),
       //宽度是60%
       width: MediaQuery.of(context).size.width * 0.75,
       //渐变色背景
@@ -388,7 +427,13 @@ class VideoSearchState extends State<VideoSearch>
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [color, color.withAlpha(0)],
+          colors: [
+            color,
+            color.withAlpha(0),
+            color.withAlpha(0),
+            color.withAlpha(0),
+            color.withAlpha(0),
+          ],
         ),
       ),
       child: Column(
@@ -406,76 +451,92 @@ class VideoSearchState extends State<VideoSearch>
             itemExtent: 84,
             itemCount: list.length,
             itemBuilder: (context, index) {
-              return SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: Row(
-                  spacing: 10,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        color: _getColor(index),
-                      ),
-                      child: Center(
-                        // 方式1：使用Center组件包裹
-                        child: Text(
-                          "${index + 1}",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                            height: 1.0, // 方式2：设置行高系数（关键参数）
+              return GestureDetector(
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: Row(
+                    spacing: 10,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          color: _getColor(index),
+                        ),
+                        child: Center(
+                          // 方式1：使用Center组件包裹
+                          child: Text(
+                            "${index + 1}",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              height: 1.0, // 方式2：设置行高系数（关键参数）
+                            ),
+                            textAlign: TextAlign.center, // 多行文本时需要
                           ),
-                          textAlign: TextAlign.center, // 多行文本时需要
                         ),
                       ),
-                    ),
-                    TDImage(
-                      fit: BoxFit.cover,
-                      width: 120,
-                      height: 75,
-                      imgUrl: list[index].surfacePlot ?? "",
-                      errorWidget: const TDImage(
+                      TDImage(
+                        fit: BoxFit.cover,
                         width: 120,
                         height: 75,
-                        assetUrl: 'assets/images/loading.gif',
-                      ),
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: 5,
-                      children: [
-                        SizedBox(
+                        imgUrl: list[index].surfacePlot ?? "",
+                        errorWidget: const TDImage(
                           width: 120,
-                          child: Text(
-                            list[index].title ?? "",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 16),
-                          ),
+                          height: 75,
+                          assetUrl: 'assets/images/loading.gif',
                         ),
-                        SizedBox(
-                          width: 100,
-                          child: Text(
-                            VideoUtil.extractPlainText(
-                              list[index].introduce ?? "",
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Color.fromRGBO(153, 153, 153, 1),
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 5,
+                        children: [
+                          SizedBox(
+                            width: 120,
+                            child: Text(
+                              list[index].title ?? "",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 16),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          SizedBox(
+                            width: 100,
+                            child: Text(
+                              VideoUtil.extractPlainText(
+                                list[index].introduce ?? "",
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color.fromRGBO(153, 153, 153, 1),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => Video_Detail(
+                            key: ValueKey(
+                              list[index].id ?? 0,
+                            ), // 不同 id 对应不同 Key
+                            id: list[index].id ?? 0,
+                          ),
+                    ),
+                  );
+                },
               );
             },
           ),

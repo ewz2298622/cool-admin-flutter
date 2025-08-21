@@ -165,7 +165,7 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
                           color: Colors.grey[400],
                         ),
                         Text(
-                          item.time ?? "",
+                          VideoUtil.formatTime(item.time ?? "00:00:00"),
                           style: TextStyle(
                             color: Colors.grey[400],
                             fontSize: 12,

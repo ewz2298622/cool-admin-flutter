@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../entity/video_page_entity.dart';
@@ -44,6 +43,7 @@ class VideoOneSmall extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.start,
+                      spacing: 4,
                       children: [
                         Text(
                           videoPageData[i].title ?? "",
@@ -51,10 +51,9 @@ class VideoOneSmall extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontWeight: FontWeight.w500),
                         ),
-                        const SizedBox(height: 10),
                         Text(
                           "${videoPageData[i].year ?? ''} / ${videoPageData[i].actors}",
-                          maxLines: 2,
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: Color.fromRGBO(153, 153, 153, 1),
@@ -62,28 +61,31 @@ class VideoOneSmall extends StatelessWidget {
                             fontWeight: FontWeight.w400,
                           ),
                         ),
+                        Text(
+                          "${videoPageData[i].videoClass ?? ''} / ${videoPageData[i].videoClass}",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Color.fromRGBO(153, 153, 153, 1),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+
                         SizedBox(
                           width: double.infinity,
                           height: 55,
-                          child: Html(
-                            data: videoPageData[i].introduce ?? "",
-                            style: {
-                              "body": Style(
-                                maxLines: 2, // 限制最大行数
-                                textOverflow: TextOverflow.ellipsis, // 溢出显示省略号
-                                color: Color.fromRGBO(153, 153, 153, 1),
-                                backgroundColor: Colors.transparent,
-                              ),
-                              "p": Style(
-                                color: Color.fromRGBO(153, 153, 153, 1),
-                                backgroundColor: Colors.transparent,
-                              ),
-                              //设置所有html元素字体的颜色
-                              "span": Style(
-                                color: Color.fromRGBO(153, 153, 153, 1),
-                                backgroundColor: Colors.transparent,
-                              ),
-                            },
+                          child: Text(
+                            VideoUtil.extractPlainText(
+                              videoPageData[i].introduce ?? "",
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 3,
+                            style: const TextStyle(
+                              color: Color.fromRGBO(153, 153, 153, 1),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                            ),
                           ),
                         ),
                       ],
@@ -143,16 +145,20 @@ class VideoOneSmall extends StatelessWidget {
       children: [
         SizedBox(
           width: 110,
-          child: Text(
-            item.remarks ?? '',
-            maxLines: 1,
-            //缩进2px
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              textBaseline: TextBaseline.alphabetic,
-              fontSize: 10,
-              fontWeight: FontWeight.w400,
-              color: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Text(
+              item.remarks ?? '',
+              maxLines: 1,
+              //首行缩进两个字符
+              //缩进2px
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                textBaseline: TextBaseline.alphabetic,
+                fontSize: 10,
+                fontWeight: FontWeight.w400,
+                color: Colors.white,
+              ),
             ),
           ),
         ),

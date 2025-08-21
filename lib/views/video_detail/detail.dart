@@ -889,18 +889,21 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                       value: (videoData?.doubanScore ?? 0).toDouble(),
                       disabled: true,
                     ),
-                    Row(
-                      spacing: 5,
-                      children: [
-                        Text(
-                          videoData?.videoClass ?? "暂无分类",
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                        Text(
-                          videoData?.videoTag ?? "暂无标签",
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ],
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        spacing: 5,
+                        children: [
+                          Text(
+                            videoData?.videoClass ?? "暂无分类",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                          Text(
+                            videoData?.videoTag ?? "暂无标签",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ],
+                      ),
                     ),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,

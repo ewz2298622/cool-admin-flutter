@@ -208,11 +208,6 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
                 userInfoData.phone ?? "",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              TDImage(
-                width: 30,
-                height: 30,
-                assetUrl: "assets/images/member.png",
-              ),
             ],
           ),
 
