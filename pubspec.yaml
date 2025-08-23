@@ -65,6 +65,7 @@ dependencies:
   html: ^0.15.6
   flutter_unionad: ^2.1.12
   url_launcher: ^6.3.2
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -118,7 +119,15 @@ flutter:
   #
   assets:
     - assets/images/
+    - assets/app/
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
 
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path_ios: "assets/app/app_icon.png"
+  image_path_android: "assets/app/app_icon.png"
+flutter_native_splash:
+  background_image: "assets/app/background.png"
 
