@@ -1271,7 +1271,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
               tvDevice();
             },
             // 视频列表列表
-            videoList: videoList,
+            videoList: videoList.isEmpty ? [VideoItem(url: "", title: "加载中...", subTitle: "")] : videoList,
             // 当前视频索引
             videoIndex: currentPlay.value,
             // 全屏模式下点击播放下一集视频回调
