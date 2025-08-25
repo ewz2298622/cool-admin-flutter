@@ -698,8 +698,12 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                     ),
                   ),
                   onPressed: () {
-                    currentPlay.value = index;
-                    setVideoUrl(tabData[currentPlay.value][index].file ?? "");
+                    try {
+                      currentPlay.value = index;
+                      setVideoUrl(entry[index].file ?? "");
+                    } catch (e) {
+                      debugPrint("切换选集：${e.toString()}");
+                    }
                   },
                   child: Text(
                     item.name ?? '',

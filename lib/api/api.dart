@@ -557,7 +557,7 @@ class Api {
   ) async {
     try {
       final response = await server.post(
-        "/app/video/hot_keyWord/page",
+        "/app/video/hot_keyword/page",
         data: data,
       ); // 添加注释说明 ONE 的含义});
       return HotKeyWordEntity.fromJson(response.data);

@@ -579,16 +579,19 @@ class VideoFilterState extends State<VideoFilter>
                     top: 5,
                     bottom: Layout.paddingB,
                   ),
-                  child: Column(
-                    spacing: 10,
-                    //左对齐
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildCategoryRow('全部分类', categoryData),
-                      _buildTagRow("全部标签", tagData),
-                      _buildAreaRow('全部地区', areaDictList),
-                      _buildYearRow("全部年份", years),
-                    ],
+                  child: Visibility(
+                    visible: (categoryData.isNotEmpty),
+                    child: Column(
+                      spacing: 10,
+                      //左对齐
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildCategoryRow('全部分类', categoryData),
+                        _buildTagRow("全部标签", tagData),
+                        _buildAreaRow('全部地区', areaDictList),
+                        _buildYearRow("全部年份", years),
+                      ],
+                    ),
                   ),
                 ),
                 sliver: isShowContent(),

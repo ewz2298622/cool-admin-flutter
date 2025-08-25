@@ -68,15 +68,17 @@ repositories {
 //}
 
 dependencies {
-    implementation(fileTree(mapOf("dir" to "./libs", "include" to listOf("*.jar"), "exclude" to listOf("*open_ad_sdk*"))))
+//implementation(fileTree(mapOf("dir" to "./libs", "include" to listOf("*.jar"), "exclude" to listOf("*open_ad_sdk*"))))
 
     // AAR 包依赖
-    implementation(":GDTSDK.unionNormal.4.563.1433@aar")
-    implementation(":kssdk-ad-3.3.59@aar")
-    implementation(":mediation_gdt_adapter_4.563.1433.0@aar")
-    implementation(":mediation_ks_adapter_3.3.59.0@aar")
+//    implementation(":GDTSDK.unionNormal.4.563.1433@aar")
+//    implementation(":kssdk-ad-3.3.59@aar")
+//    implementation(":mediation_gdt_adapter_4.563.1433.0@aar")
+//    implementation(":mediation_ks_adapter_3.3.59.0@aar")
     // 广告SDK相关依赖由 flutter_unionad 插件提供，避免与 app 侧重复引入导致冲突
 }
+
+
 
 
 flutter {

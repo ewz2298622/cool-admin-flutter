@@ -66,6 +66,7 @@ dependencies:
   flutter_unionad: ^2.1.12
   url_launcher: ^6.3.2
   flutter_launcher_icons: ^0.14.4
+  package_info_plus: ^8.3.1
 
 dev_dependencies:
   flutter_test:

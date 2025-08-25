@@ -148,6 +148,11 @@ class VideoSearchState extends State<VideoSearch>
 
   goToSearchResult() {
     FocusScope.of(context).unfocus(); // 移除焦点
+    if (inputText.isNotEmpty) {
+      searchHistory.insertSearchHistory(
+        SearchHistoryEntity(query: inputText, timestamp: DateTime.now()),
+      );
+    }
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => SearchResult(keyWord: inputText)),
@@ -173,9 +178,6 @@ class VideoSearchState extends State<VideoSearch>
           setState(() {
             inputText = text;
           });
-          searchHistory.insertSearchHistory(
-            SearchHistoryEntity(query: inputText, timestamp: DateTime.now()),
-          );
         },
         onActionClick: (contexts) {
           goToSearchResult();

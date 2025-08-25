@@ -166,7 +166,7 @@ class _HomePageState extends State<Home>
       _tabController.addListener(_handleTabSelection);
 
       //判斷noticeInfoData是否有數據
-      if (noticeInfoData.isNotEmpty ?? false) {
+      if (noticeInfoData.isNotEmpty) {
         message();
       }
       return "init success";
@@ -475,7 +475,7 @@ class _HomePageState extends State<Home>
                     indicator: GradientTabIndicator(
                       gradient: LinearGradient(
                         colors: [
-                          Color.fromRGBO(254, 210, 71, 1), // 完全不透明的橙色
+                          Color.fromRGBO(250, 165, 49, 1), // 完全不透明的橙色
                           Color.fromRGBO(254, 210, 71, 0), // 完全透明（alpha=0）
                         ],
                       ),
