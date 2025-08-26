@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_unionad/flutter_unionad.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -16,37 +14,19 @@ class SplashPage extends StatefulWidget {
 
 class _SplashPageState extends State<SplashPage> {
   bool _offstage = true;
-  int _countdown = 3;
-  late Timer _timer;
 
   @override
   void initState() {
     super.initState();
-    _startCountdown();
-  }
-
-  // 开始倒计时
-  void _startCountdown() {
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      setState(() {
-        if (_countdown > 0) {
-          _countdown--;
-        } else {
-          _navigateToNextPage();
-        }
-      });
-    });
   }
 
   // 跳转到下一页
   void _navigateToNextPage() {
-    _timer.cancel();
     Navigator.pop(context);
   }
 
   @override
   void dispose() {
-    _timer.cancel();
     super.dispose();
   }
 
@@ -83,11 +63,12 @@ class _SplashPageState extends State<SplashPage> {
               },
               onFail: (error) {
                 print("开屏广告失败 $error");
+                _navigateToNextPage();
                 // Navigator.pop(context);
               },
               onFinish: () {
                 print("开屏广告倒计时结束");
-                // Navigator.pop(context);
+                _navigateToNextPage();
               },
               onSkip: () {
                 print("开屏广告跳过");
@@ -95,6 +76,7 @@ class _SplashPageState extends State<SplashPage> {
               },
               onTimeOut: () {
                 print("开屏广告超时");
+                _navigateToNextPage();
               },
               onEcpm: (info) {
                 print("开屏广告获取ecpm:$info");
@@ -106,43 +88,15 @@ class _SplashPageState extends State<SplashPage> {
           child: Container(
             width: double.infinity,
             height: double.infinity,
+            color: Colors.white,
             alignment: Alignment.center,
-            child: Stack(
-              children: [
-                TDImage(
-                  width: double.infinity,
-                  height: double.infinity,
-                  fit: BoxFit.cover,
-                  assetUrl:
-                      "assets/images/272bac7e-635a-4b1c-904a-679365a6fed5.jpg",
-                ),
-                // 添加倒计时按钮
-                Positioned(
-                  top: 50,
-                  right: 20,
-                  child: GestureDetector(
-                    onTap: _navigateToNextPage,
-                    child: Container(
-                      width: 60,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        //半透明背景色
-                        color: Colors.black.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '跳过$_countdown',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.5),
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+            child: Center(
+              child: TDImage(
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+                assetUrl: "assets/app/app_icon.png",
+              ),
             ),
           ),
         ),

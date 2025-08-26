@@ -78,7 +78,6 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
       await getUserInfo();
       await getViews();
       await noticeInfo();
-      Ads.loadRewardVideoAd();
       didChangeAppLifecycleState();
       debugPrint("init success");
       return "init success";
@@ -540,9 +539,10 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
                       spacing: Layout.paddingT,
                       children: [
                         _buildHead(context, data),
-
                         GestureDetector(
                           onTap: () async {
+                            await Ads.loadRewardVideoAd();
+
                             Ads.showRewardVideoAd();
                           },
                           child: buildPricingLayout(),
