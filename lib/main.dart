@@ -131,7 +131,7 @@ class _MainPageState extends State<MainPage> {
         deviceInfo?["checkIsTheDeveloperModeOn"] == true ||
         deviceInfo?["isphysicaldevice"] == false ||
         deviceInfo?["deviceUseVPN"] == true;
-    if (false) {
+    if (status) {
       return EnvironmentError();
     } else {
       return Scaffold(

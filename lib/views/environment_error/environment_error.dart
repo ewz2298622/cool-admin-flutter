@@ -59,6 +59,15 @@ class _EnvErrorState extends State<EnvironmentError> {
                 ).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
               },
             ),
+            Center(
+              child: Text(
+                '请关闭开发者模式或VPN后重试',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: TDTheme.of(context).fontGyColor3,
+                ),
+              ),
+            ),
           ],
         ),
       ),
