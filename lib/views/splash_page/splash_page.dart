@@ -13,7 +13,7 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
-  bool _offstage = true;
+  bool _offstage = false;
 
   @override
   void initState() {
@@ -22,7 +22,7 @@ class _SplashPageState extends State<SplashPage> {
 
   // 跳转到下一页
   void _navigateToNextPage() {
-    Navigator.pop(context);
+    Navigator.pushReplacementNamed(context, '/main');
   }
 
   @override
@@ -36,51 +36,53 @@ class _SplashPageState extends State<SplashPage> {
       children: [
         Offstage(
           offstage: _offstage,
-          child: FlutterUnionadSplashAdView(
-            //android 开屏广告广告id 必填 889033013 102729400
-            androidCodeId: "892349010",
-            //ios 开屏广告广告id 必填
-            iosCodeId: "892349010",
-            //是否支持 DeepLink 选填
-            supportDeepLink: true,
-            // 期望view 宽度 dp 选填
-            width: MediaQuery.of(context).size.width,
-            //期望view高度 dp 选填
-            height: MediaQuery.of(context).size.height - 100,
-            //是否影藏跳过按钮(当影藏的时候显示自定义跳过按钮) 默认显示
-            hideSkip: false,
-            //超时时间
-            timeout: 3000,
-            //是否摇一摇
-            isShake: true,
-            callBack: FlutterUnionadSplashCallBack(
-              onShow: () {
-                print("开屏广告显示");
-                setState(() => _offstage = false);
-              },
-              onClick: () {
-                print("开屏广告点击");
-              },
-              onFail: (error) {
-                print("开屏广告失败 $error");
-                _navigateToNextPage();
-                // Navigator.pop(context);
-              },
-              onFinish: () {
-                print("开屏广告倒计时结束");
-                _navigateToNextPage();
-              },
-              onSkip: () {
-                print("开屏广告跳过");
-                Navigator.pop(context);
-              },
-              onTimeOut: () {
-                print("开屏广告超时");
-                _navigateToNextPage();
-              },
-              onEcpm: (info) {
-                print("开屏广告获取ecpm:$info");
-              },
+          child: Container(
+            color: Colors.white,
+            child: FlutterUnionadSplashAdView(
+              //android 开屏广告广告id 必填 889033013 102729400
+              androidCodeId: "892349010",
+              //ios 开屏广告广告id 必填
+              iosCodeId: "892349010",
+              //是否支持 DeepLink 选填
+              supportDeepLink: true,
+              // 期望view 宽度 dp 选填
+              width: MediaQuery.of(context).size.width,
+              //期望view高度 dp 选填
+              height: MediaQuery.of(context).size.height - 100,
+              //是否影藏跳过按钮(当影藏的时候显示自定义跳过按钮) 默认显示
+              hideSkip: false,
+              //超时时间
+              timeout: 3000,
+              //是否摇一摇
+              isShake: true,
+              callBack: FlutterUnionadSplashCallBack(
+                onShow: () {
+                  print("开屏广告显示");
+                  setState(() => _offstage = false);
+                },
+                onClick: () {
+                  print("开屏广告点击");
+                },
+                onFail: (error) {
+                  print("开屏广告失败 $error");
+                  _navigateToNextPage();
+                },
+                onFinish: () {
+                  print("开屏广告倒计时结束");
+                  _navigateToNextPage();
+                },
+                onSkip: () {
+                  print("开屏广告跳过");
+                  _navigateToNextPage();
+                },
+                onTimeOut: () {
+                  print("开屏广告超时");
+                  _navigateToNextPage();
+                },
+                onEcpm: (info) {
+                  print("开屏广告获取ecpm:$info");
+                },
+              ),
             ),
           ),
         ),

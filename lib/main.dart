@@ -18,7 +18,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
-import 'components/loading.dart';
 import 'db/manager/DBManager.dart';
 
 void main() {
@@ -39,6 +38,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    initSDK();
     return Consumer<ThemeChangeEvent>(
       builder: (context, themeManager, child) {
         return MaterialApp(
@@ -61,11 +61,24 @@ class MyApp extends StatelessWidget {
               elevation: 0,
             ),
           ),
-          home: MainPage(),
+          initialRoute: '/',
+          routes: {
+            '/': (context) => SplashPage(),
+            '/main': (context) => MainPage(),
+          },
           navigatorKey: ContextManager.navigatorKey,
         );
       },
     );
+  }
+
+  /// 初始化SDK
+  Future<void> initSDK() async {
+    try {
+      await Ads.initRegister();
+    } catch (e) {
+      debugPrint('初始化失败: $e');
+    }
   }
 }
 
@@ -100,30 +113,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   Widget _buildContent() {
-    return FutureBuilder<String>(
-      future: _futureBuilderFuture, // 异步操作
-      builder: (context, snapshot) {
-        debugPrint('snapshot: ${snapshot.hasData}');
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return PageLoading();
-        } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}'); // 显示错误信息
-        } else if (snapshot.hasData) {
-          return AppView();
-        } else {
-          return Text('No data available');
-        }
-      },
-    );
-  }
-
-  /// 初始化SDK
-  Future<void> initSDK() async {
-    try {
-      await Ads.initRegister();
-    } catch (e) {
-      debugPrint('初始化失败: $e');
-    }
+    return AppView();
   }
 
   Widget AppView() {
@@ -131,7 +121,7 @@ class _MainPageState extends State<MainPage> {
         deviceInfo?["checkIsTheDeveloperModeOn"] == true ||
         deviceInfo?["isphysicaldevice"] == false ||
         deviceInfo?["deviceUseVPN"] == true;
-    if (status) {
+    if (false) {
       return EnvironmentError();
     } else {
       return Scaffold(
@@ -222,7 +212,6 @@ class _MainPageState extends State<MainPage> {
     try {
       // 使用Future.wait并发执行多个异步操作
       await Future.wait([
-        initSDK(),
         Future.microtask(
           () => Contacts.requestPermissions(),
         ), // 放在microtask中执行，因为它是同步方法但需要返回Future
@@ -230,9 +219,6 @@ class _MainPageState extends State<MainPage> {
         initPlatformState(),
       ]);
       //跳转到SplashPage组件
-      Navigator.of(
-        context,
-      ).push(MaterialPageRoute(builder: (context) => SplashPage()));
       return "init success";
     } catch (e) {
       // 注意：Future.wait会在任意一个Future失败时立即抛出异常
@@ -248,6 +234,6 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
-    _futureBuilderFuture = init();
+    init();
   }
 }
