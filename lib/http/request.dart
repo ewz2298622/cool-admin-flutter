@@ -5,6 +5,7 @@ import 'package:flutter_app/http/requestConfig.dart';
 import 'package:flutter_app/http/responseInterceptor.dart';
 import 'package:flutter_app/http/tokenInterceptors.dart';
 
+import 'cacheInterceptor.dart';
 import 'errorInterceptor.dart';
 import 'http_method.dart';
 
@@ -22,6 +23,12 @@ class DioHttp {
   DioHttp() {
     // 添加新的拦截器
     debugPrint('DioInstance init');
+    _dio.interceptors.add(
+      CacheInterceptor(
+        cacheDuration: const Duration(minutes: 30), // 设置30分钟缓存
+        // forceRefresh: true, // 强制刷新时取消注释
+      ),
+    );
     _dio.interceptors.add(TokenInterceptors()); //token
     _dio.interceptors.add(ResponseInterceptor()); //response
     _dio.interceptors.add(ErrorInterceptor()); //error
