@@ -25,14 +25,42 @@ class SearchHistoryDatabaseHelper {
 
   // 插入搜索记录
   void insertSearchHistory(SearchHistoryEntity searchHistory) {
+    //清除searchHistory.query 的搜索空格
+    searchHistory.query = searchHistory.query.trim();
     final query = '''
       INSERT INTO search_history (query, timestamp)
       VALUES (?, ?);
     ''';
+    //查询searchHistory.query 是否已经存在
+
+    final result = _database.select(
+      'SELECT * FROM search_history WHERE query = ?;',
+      [searchHistory.query],
+    );
+    if (result.isNotEmpty) {
+      return;
+    }
+
     _database.execute(query, [
       searchHistory.query,
       searchHistory.timestamp.toIso8601String(),
     ]);
+  }
+
+  // 根据搜索内容查询搜索记录
+  SearchHistoryEntity? getSearchHistoryByQuery(String query) {
+    final query = 'SELECT * FROM search_history WHERE query = ?;';
+    final result = _database.select(query, [query]);
+
+    if (result.isEmpty) {
+      return null;
+    }
+
+    return SearchHistoryEntity(
+      id: result.first.columnAt(0),
+      query: result.first.columnAt(1),
+      timestamp: DateTime.parse(result.first.columnAt(2)),
+    );
   }
 
   // 查询所有搜索记录

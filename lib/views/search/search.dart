@@ -176,7 +176,7 @@ class VideoSearchState extends State<VideoSearch>
         padding: EdgeInsets.only(left: 0, right: 0, bottom: 0, top: 0),
         onTextChanged: (String text) {
           setState(() {
-            inputText = text;
+            inputText = text.trim();
           });
         },
         onActionClick: (contexts) {
