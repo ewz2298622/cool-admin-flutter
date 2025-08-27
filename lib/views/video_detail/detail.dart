@@ -201,18 +201,23 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                 "size": 10000,
               })).data?.list
               as List<PlayLineDataList>;
-      for (var element in playerLineData) {
-        videoList.add(
-          VideoItem(
-            url: element.file ?? "",
-            title: element.name ?? "",
-            subTitle: element.subTitle ?? '',
-          ),
-        );
-      }
-      setState(() {});
+
+      setState(() {
+        for (var element in playerLineData) {
+          videoList.add(
+            VideoItem(
+              url: element.file ?? "",
+              title: element.videoName ?? "",
+              subTitle: element.subTitle ?? '',
+            ),
+          );
+        }
+      });
       debugPrint(
         'Initialization getPlayLinePages success "video_id": ${widget.id}"video_line_id": ${videoLineData[currentLine.value].id}',
+      );
+      debugPrint(
+        'Initialization getPlayLinePages success videoList: ${videoList.length}',
       );
     } catch (e) {
       // 捕获并处理异常
@@ -233,6 +238,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
               as List<PlayLineDataList>;
 
       tabData = groupAndSortByCollectionId(playerLineData);
+      getPlayLinePages();
     } catch (e) {
       // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
@@ -1271,7 +1277,16 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
               tvDevice();
             },
             // 视频列表列表
-            videoList: videoList.isEmpty ? [VideoItem(url: "", title: "加载中...", subTitle: "")] : videoList,
+            videoList:
+                videoList.isEmpty
+                    ? [
+                      VideoItem(
+                        url: "",
+                        title: videoData?.title ?? "加载失败",
+                        subTitle: "",
+                      ),
+                    ]
+                    : videoList,
             // 当前视频索引
             videoIndex: currentPlay.value,
             // 全屏模式下点击播放下一集视频回调
