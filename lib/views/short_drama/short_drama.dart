@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../api/api.dart';
@@ -15,8 +16,7 @@ import '../../utils/video.dart';
 
 class ShortDrama extends StatefulWidget {
   //接受路由传递过来的props id
-  final int id;
-  const ShortDrama({super.key, required this.id});
+  const ShortDrama({super.key});
 
   @override
   _ShortDramaState createState() => _ShortDramaState();
@@ -36,6 +36,7 @@ class _ShortDramaState extends State<ShortDrama>
   final ValueNotifier<int> currentLine = ValueNotifier<int>(0);
   final ValueNotifier<int> currentPlay = ValueNotifier<int>(0);
   List<VideoItem> _videoList = [];
+  final id = Get.arguments["id"];
 
   int _currentIndex = 0;
   bool _isDragging = false;
@@ -45,8 +46,7 @@ class _ShortDramaState extends State<ShortDrama>
 
   Future<void> getVideoById() async {
     try {
-      videoData =
-          (await Api.getVideoById({"id": widget.id})).data as VideoDetailData;
+      videoData = (await Api.getVideoById({"id": id})).data as VideoDetailData;
     } catch (e) {
       // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
@@ -56,7 +56,7 @@ class _ShortDramaState extends State<ShortDrama>
   Future<void> getVideoLinePages() async {
     try {
       videoLineData =
-          (await Api.getVideoLinePages({"video_id": widget.id})).data?.list
+          (await Api.getVideoLinePages({"video_id": id})).data?.list
               as List<VideoLineDataList>;
     } catch (e) {
       // 捕获并处理异常
@@ -70,7 +70,7 @@ class _ShortDramaState extends State<ShortDrama>
       videoList.clear();
       playerLineData =
           (await Api.getPlayLinePages({
-                "video_id": widget.id,
+                "video_id": id,
                 "video_line_id": videoLineData[currentLine.value].id,
                 "size": 10000,
               })).data?.list

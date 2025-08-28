@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/views/search/result/search_result.dart';
+import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
@@ -14,7 +14,6 @@ import '../../style/layout.dart';
 import '../../utils/color.dart';
 import '../../utils/video.dart';
 import '../home/home.dart';
-import '../video_detail/detail.dart';
 
 class VideoSearch extends StatefulWidget {
   const VideoSearch({super.key});
@@ -153,10 +152,8 @@ class VideoSearchState extends State<VideoSearch>
         SearchHistoryEntity(query: inputText, timestamp: DateTime.now()),
       );
     }
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => SearchResult(keyWord: inputText)),
-    );
+
+    Get.toNamed("/search_result", arguments: {"keyWord": inputText});
   }
 
   Widget _buildDefaultSearchBar() {
@@ -383,20 +380,15 @@ class VideoSearchState extends State<VideoSearch>
                                 ),
                               ],
                             ),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) => SearchResult(
-                                        keyWord:
-                                            hotKeyWordList[index][keyWordIndex]
-                                                .keyWord ??
-                                            "",
-                                      ),
+                            onTap:
+                                () => Get.toNamed(
+                                  "/search_result",
+                                  arguments: {
+                                    "keyWord":
+                                        hotKeyWordList[index][keyWordIndex]
+                                            .keyWord,
+                                  },
                                 ),
-                              );
-                            },
                           ),
                         ),
                       ],
@@ -525,20 +517,11 @@ class VideoSearchState extends State<VideoSearch>
                     ],
                   ),
                 ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (context) => Video_Detail(
-                            key: ValueKey(
-                              list[index].id ?? 0,
-                            ), // 不同 id 对应不同 Key
-                            id: list[index].id ?? 0,
-                          ),
+                onTap:
+                    () => Get.toNamed(
+                      "/video_detail",
+                      arguments: {"id": list[index].id},
                     ),
-                  );
-                },
               );
             },
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
@@ -7,7 +8,6 @@ import '../../components/no_data.dart';
 import '../../entity/dict_data_entity.dart';
 import '../../entity/week_entity.dart';
 import '../../utils/video.dart';
-import '../video_detail/detail.dart';
 
 /// 周播放时间表页面
 ///
@@ -180,14 +180,8 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
           ],
         ),
       ),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Video_Detail(id: item.videoId ?? 0),
-          ),
-        );
-      },
+      onTap:
+          () => Get.toNamed("/video_detail", arguments: {"id": item.videoId}),
     );
   }
 

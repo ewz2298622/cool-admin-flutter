@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/api/api.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -19,7 +20,6 @@ import '../../entity/notice_Info_entity.dart';
 import '../../entity/user_info_entity.dart';
 import '../../style/layout.dart';
 import '../../utils/store/user/user.dart';
-import '../htmlPage/html.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -58,12 +58,10 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
     try {
       privacyData =
           (await Api.noticeInfo({"page": 1, "size": 1, "type": 642})).data?.list
-              as List<NoticeInfoDataList> ??
-          [];
+              as List<NoticeInfoDataList>;
       serviceData =
           (await Api.noticeInfo({"page": 1, "size": 1, "type": 641})).data?.list
-              as List<NoticeInfoDataList> ??
-          [];
+              as List<NoticeInfoDataList>;
       setState(() {});
     } catch (e) {
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
@@ -448,18 +446,15 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
             ),
             recognizer:
                 TapGestureRecognizer()
-                  ..onTap = () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => HtmlPage(
-                              content: serviceData?[0].content ?? "",
-                              title: serviceData?[0].title ?? "",
-                            ),
-                      ),
-                    );
-                  },
+                  ..onTap =
+                      () =>
+                          () => Get.toNamed(
+                            "/html",
+                            arguments: {
+                              "title": privacyData?[1].title ?? "",
+                              "content": privacyData?[1].content ?? "",
+                            },
+                          ),
           ),
           const TextSpan(
             text: " 和 ",
@@ -473,18 +468,14 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
             ),
             recognizer:
                 TapGestureRecognizer()
-                  ..onTap = () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => HtmlPage(
-                              content: privacyData?[0].content ?? "",
-                              title: privacyData?[0].title ?? "",
-                            ),
+                  ..onTap =
+                      () => Get.toNamed(
+                        "/html",
+                        arguments: {
+                          "title": privacyData?[0].title ?? "",
+                          "content": privacyData?[0].content ?? "",
+                        },
                       ),
-                    );
-                  },
           ),
         ],
       ),

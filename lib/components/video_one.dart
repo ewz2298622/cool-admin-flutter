@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../entity/video_page_entity.dart';
 import '../utils/video.dart';
-import '../views/video_detail/detail.dart';
 
 class VideoItem extends StatelessWidget {
   final List<VideoPageDataList> videoData;
@@ -16,7 +16,12 @@ class VideoItem extends StatelessWidget {
       padding: const EdgeInsets.all(0),
       itemBuilder: (context, index) {
         return GestureDetector(
-          onTap: () => {_buildvideo_onClick(videoData[index].id ?? 0, context)},
+          onTap:
+              () => Get.toNamed(
+                "/video_detail",
+                arguments: {"id": videoData[index].id},
+              ),
+
           child: Container(
             padding: const EdgeInsets.only(left: 4, right: 4, bottom: 10),
             child: Row(
@@ -251,13 +256,6 @@ class VideoItem extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  void _buildvideo_onClick(int id, BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => Video_Detail(id: id)),
     );
   }
 

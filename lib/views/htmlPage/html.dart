@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 // 导入 webview_flutter 包，用于在 Flutter 应用中嵌入 WebView 来显示网页内容
 import 'package:webview_flutter/webview_flutter.dart';
 
 // 定义一个名为 HtmlPage 的有状态组件，用于展示一个包含 WebView 的页面
 class HtmlPage extends StatefulWidget {
-  // 构造函数，Key? key 是可选参数，用于在组件树中唯一标识该组件
-  final String content; // 内容
-  final String title;
-  const HtmlPage({Key? key, required this.content, required this.title});
+  const HtmlPage({super.key});
 
   // 创建该组件对应的状态类实例
   @override
@@ -20,6 +18,9 @@ class _HtmlPageState extends State<HtmlPage> {
   // 定义一个 WebViewController 类型的变量 controller，用于控制 WebView 的行为
   // late 关键字表示该变量会在使用前被初始化
   late WebViewController controller;
+
+  String title = Get.arguments["title"];
+  String content = Get.arguments["content"];
 
   // 组件状态初始化方法，在组件创建时调用
   @override
@@ -72,7 +73,7 @@ class _HtmlPageState extends State<HtmlPage> {
           )
           // 加载指定 URL 的网页
           // ..loadRequest(Uri.parse('https://www.geekailab.com'));
-          ..loadHtmlString(widget.content);
+          ..loadHtmlString(content);
   }
 
   // 在系统浏览器中打开链接
@@ -92,7 +93,7 @@ class _HtmlPageState extends State<HtmlPage> {
     return Scaffold(
       // 设置页面的顶部导航栏，显示标题为 'Flutter Simple Example'
       appBar: AppBar(
-        title: Text(widget.title, style: TextStyle(fontSize: 16)),
+        title: Text(title, style: TextStyle(fontSize: 16)),
         //返回
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, size: 20),

@@ -9,12 +9,21 @@ import 'package:flutter_app/utils/store/theme/theme.dart';
 import 'package:flutter_app/utils/store/user/user.dart';
 import 'package:flutter_app/views/environment_error/environment_error.dart';
 import 'package:flutter_app/views/home/home.dart';
+import 'package:flutter_app/views/htmlPage/html.dart';
+import 'package:flutter_app/views/login/login.dart';
 import 'package:flutter_app/views/my/my.dart';
+import 'package:flutter_app/views/notice/notice.dart';
 import 'package:flutter_app/views/ranking/ranking.dart';
+import 'package:flutter_app/views/search/result/search_result.dart';
+import 'package:flutter_app/views/search/search.dart';
 import 'package:flutter_app/views/service/service.dart';
+import 'package:flutter_app/views/short_drama/short_drama.dart';
 import 'package:flutter_app/views/splash_page/splash_page.dart';
+import 'package:flutter_app/views/video_detail/detail.dart';
 import 'package:flutter_app/views/video_filter/video_filter.dart';
+import 'package:flutter_app/views/week/week.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -41,7 +50,7 @@ class MyApp extends StatelessWidget {
     initSDK();
     return Consumer<ThemeChangeEvent>(
       builder: (context, themeManager, child) {
-        return MaterialApp(
+        return GetMaterialApp(
           darkTheme: ThemeData.dark(),
           themeMode: themeManager.themeMode,
           theme: ThemeData(
@@ -62,10 +71,18 @@ class MyApp extends StatelessWidget {
             ),
           ),
           initialRoute: '/',
-          routes: {
-            '/': (context) => SplashPage(),
-            '/main': (context) => MainPage(),
-          },
+          getPages: [
+            GetPage(name: '/', page: () => SplashPage()),
+            GetPage(name: '/main', page: () => const MainPage()),
+            GetPage(name: '/video_detail', page: () => Video_Detail()),
+            GetPage(name: '/short_drama', page: () => ShortDrama()),
+            GetPage(name: '/notice', page: () => Notice()),
+            GetPage(name: '/html', page: () => HtmlPage()),
+            GetPage(name: '/week', page: () => WeekPage()),
+            GetPage(name: '/search', page: () => VideoSearch()),
+            GetPage(name: '/search_result', page: () => SearchResult()),
+            GetPage(name: '/login', page: () => Login()),
+          ],
           navigatorKey: ContextManager.navigatorKey,
         );
       },

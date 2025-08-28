@@ -5,6 +5,7 @@ import 'dart:core';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swiper_null_safety/flutter_swiper_null_safety.dart';
+import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
@@ -21,8 +22,6 @@ import '../../entity/swiper_entity.dart';
 import '../../style/layout.dart';
 import '../album/album.dart';
 import '../notice/notice.dart';
-import '../search/search.dart';
-import '../week/week.dart';
 
 class GradientTabIndicator extends Decoration {
   final Gradient gradient;
@@ -381,23 +380,13 @@ class _HomePageState extends State<Home>
                 ],
               ),
             ),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => VideoSearch()),
-              );
-            },
+            onTap: () => Get.toNamed("/search"),
           ),
           Flexible(
             flex: 1,
             child: Center(
               child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => WeekPage()),
-                  );
-                },
+                onTap: () => Get.toNamed("/week"),
                 //渲染svg
                 // child: SvgPicture.asset('assets/images/zhou.svg'),
                 //设置SvgPicture宽高

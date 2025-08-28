@@ -17,13 +17,6 @@ class History extends StatefulWidget {
 }
 
 class HistoryState extends State<History> with SingleTickerProviderStateMixin {
-  // 提取常量
-  static const _gradientColors = [
-    Color.fromRGBO(255, 218, 112, 1),
-    Color.fromRGBO(255, 255, 255, 1),
-  ];
-  static const _gradientStops = [0.2, 0.8];
-
   var _futureBuilderFuture;
   String inputText = "";
   List<VideoPageDataList> videoPageData = [];

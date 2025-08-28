@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../utils/video.dart';
-import '../views/short_drama/short_drama.dart';
-import '../views/video_detail/detail.dart';
 
 class Video extends StatelessWidget {
   final dynamic videoData; // 使用 dynamic 类型
@@ -147,15 +146,9 @@ class Video extends StatelessWidget {
 
   void _buildvideo_onClick(dynamic item, BuildContext context) {
     if (item.categoryPid == 551) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => ShortDrama(id: item.id)),
-      );
+      Get.toNamed("/short_drama", arguments: {"id": item.id});
     } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => Video_Detail(id: item.id)),
-      );
+      Get.toNamed("/video_detail", arguments: {"id": item.id});
     }
   }
 }

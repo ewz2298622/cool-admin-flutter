@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../entity/video_page_entity.dart';
 import '../utils/video.dart';
-import '../views/video_detail/detail.dart';
 
 class VideoOneSmall extends StatelessWidget {
   final List<VideoPageDataList> videoPageData;
@@ -15,7 +15,11 @@ class VideoOneSmall extends StatelessWidget {
     return Column(
       children: List<Widget>.generate(videoPageData.length, (i) {
         return GestureDetector(
-          onTap: () => _buildvideo_onClick(videoPageData[i].id ?? 0, context),
+          onTap:
+              () => Get.toNamed(
+                "/video_detail",
+                arguments: {"id": videoPageData[i].id},
+              ),
           child: Container(
             height: 140,
             padding: const EdgeInsets.only(left: 4, right: 4, bottom: 15),
@@ -97,13 +101,6 @@ class VideoOneSmall extends StatelessWidget {
           ),
         );
       }),
-    );
-  }
-
-  void _buildvideo_onClick(int id, BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => Video_Detail(id: id)),
     );
   }
 

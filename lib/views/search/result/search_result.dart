@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/components/no_data.dart';
+import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../../api/api.dart';
@@ -9,8 +10,7 @@ import '../../../entity/video_page_entity.dart';
 
 class SearchResult extends StatefulWidget {
   //接受路由传递过来的props id
-  final String keyWord;
-  const SearchResult({super.key, required this.keyWord});
+  const SearchResult({super.key});
 
   @override
   SearchResultState createState() => SearchResultState();
@@ -25,6 +25,7 @@ class SearchResultState extends State<SearchResult>
   int currentPage = 1;
   bool disposed = false;
   final ScrollController _scrollController = ScrollController();
+  String keyWord = Get.arguments["keyWord"];
 
   Future<void> getVideoPages() async {
     try {
@@ -44,8 +45,8 @@ class SearchResultState extends State<SearchResult>
   Future<String> init() async {
     try {
       setState(() {
-        inputText = widget.keyWord;
-        searchController.text = widget.keyWord;
+        inputText = keyWord;
+        searchController.text = keyWord;
       });
       _scrollControllerAdd();
       await getVideoPages();

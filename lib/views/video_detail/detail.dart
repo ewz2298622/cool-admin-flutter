@@ -5,6 +5,7 @@ import 'package:dlna_dart/dlna.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:fplayer/fplayer.dart';
+import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
@@ -29,9 +30,7 @@ import '../feedback/feedback.dart';
 String TAG = 'Video_Detail';
 
 class Video_Detail extends StatefulWidget {
-  //接受路由传递过来的props id
-  final int id;
-  const Video_Detail({super.key, required this.id});
+  const Video_Detail({super.key});
 
   @override
   _Video_DetailState createState() => _Video_DetailState();
@@ -62,6 +61,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   List<TDTab> tabs = [];
   List<List<PlayLineDataList>> tabData = [];
   StateSetter? TVshowModalBottomSheetListSate;
+  final id = Get.arguments["id"];
 
   // 倍速列表
   final Map<String, double> speedList = {
@@ -76,8 +76,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
 
   Future<void> getVideoById() async {
     try {
-      videoData =
-          (await Api.getVideoById({"id": widget.id})).data as VideoDetailData;
+      videoData = (await Api.getVideoById({"id": id})).data as VideoDetailData;
     } catch (e) {
       // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
@@ -179,7 +178,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   Future<void> getVideoLinePages() async {
     try {
       videoLineData =
-          (await Api.getVideoLinePages({"video_id": widget.id})).data?.list
+          (await Api.getVideoLinePages({"video_id": id})).data?.list
               as List<VideoLineDataList>;
       for (var element in videoLineData) {
         tabs.add(TDTab(text: element.collectionName));
@@ -196,7 +195,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
       videoList.clear();
       playerLineData =
           (await Api.getPlayLinePages({
-                "video_id": widget.id,
+                "video_id": id,
                 "video_line_id": videoLineData[currentLine.value].id,
                 "size": 10000,
               })).data?.list
@@ -214,7 +213,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
         }
       });
       debugPrint(
-        'Initialization getPlayLinePages success "video_id": ${widget.id}"video_line_id": ${videoLineData[currentLine.value].id}',
+        'Initialization getPlayLinePages success "video_id": ${id}"video_line_id": ${videoLineData[currentLine.value].id}',
       );
       debugPrint(
         'Initialization getPlayLinePages success videoList: ${videoList.length}',
@@ -231,7 +230,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
       videoList.clear();
       playerLineData =
           (await Api.getPlayLinePages({
-                "video_id": widget.id,
+                "video_id": id,
                 // "video_line_id": videoLineData[currentLine.value].id,
                 "size": 10000,
               })).data?.list
@@ -380,19 +379,8 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   }
 
   @override
-  void didUpdateWidget(covariant Video_Detail oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.id != widget.id) {
-      // widget.id 发生变化，重新加载数据
-      _futureBuilderFuture = init();
-      setState(() {});
-    }
-  }
-
-  @override
   void didChangeDependencies() {
     routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute);
-    debugPrint('detailllll didChangeDependencies');
     super.didChangeDependencies();
   }
 

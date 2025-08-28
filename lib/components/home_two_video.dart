@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../entity/album_entity.dart';
 import '../utils/video.dart';
-import '../views/video_detail/detail.dart';
 
 class HomeTwoVideo extends StatelessWidget {
   final List<dynamic> videoPageData;
@@ -73,13 +73,6 @@ class HomeTwoVideo extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  void _buildAlbumItem_onClick(int id, BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => Video_Detail(id: id)),
     );
   }
 
@@ -262,9 +255,9 @@ class HomeTwoVideo extends StatelessWidget {
   Widget _buildAlbumItem(AlbumDataListList item, BuildContext context) {
     return GestureDetector(
       onTap:
-          () => _buildAlbumItem_onClick(
-            item.id ?? 0,
-            context,
+          () => Get.toNamed(
+            "/video_detail",
+            arguments: {"id": item.id},
           ), //写入方法名称就可以了，但是是无参的
       child: Container(
         decoration: BoxDecoration(

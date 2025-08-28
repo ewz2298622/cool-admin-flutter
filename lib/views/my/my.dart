@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app/utils/store/user/user.dart';
+import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -24,9 +25,7 @@ import '../../utils/ads.dart';
 import '../../utils/bus/bus.dart';
 import '../../utils/bus/constant.dart';
 import '../history/history.dart';
-import '../htmlPage/html.dart';
 import '../login/login.dart';
-import '../notice/notice.dart';
 import '../setting/setting.dart';
 
 class My extends StatefulWidget {
@@ -466,10 +465,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
     switch (label) {
       case "系统通知":
         //跳转Notice
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Notice()),
-        );
+        Get.toNamed("/notice");
         break;
       case "我的收藏":
         // 处理我的收藏点击事件
@@ -497,15 +493,12 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
           TDToast.showText('暂无数据', context: context);
           return;
         }
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) => HtmlPage(
-                  content: noticeInfoData[0].content ?? "",
-                  title: noticeInfoData[0].title ?? "",
-                ),
-          ),
+        Get.toNamed(
+          "/html",
+          arguments: {
+            "title": noticeInfoData[0].title ?? "",
+            "content": noticeInfoData[0].content ?? "",
+          },
         );
         break;
     }

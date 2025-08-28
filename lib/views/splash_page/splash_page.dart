@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_unionad/flutter_unionad.dart';
+import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 /// 描述：开屏广告页
@@ -22,7 +23,7 @@ class _SplashPageState extends State<SplashPage> {
 
   // 跳转到下一页
   void _navigateToNextPage() {
-    Navigator.pushReplacementNamed(context, '/main');
+    Get.offAllNamed('/main');
   }
 
   @override

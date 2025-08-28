@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../../api/api.dart';
@@ -6,7 +7,6 @@ import '../../../components/loading.dart';
 import '../../../entity/video_page_entity.dart';
 import '../../components/no_data.dart';
 import '../../entity/notice_Info_entity.dart';
-import '../htmlPage/html.dart';
 
 // 提取渐变配置为独立类
 class GradientConfig {
@@ -85,20 +85,6 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
       return;
     }
     setState(() {});
-  }
-
-  // 页面跳转逻辑分离
-  void _handleTap(int index) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => HtmlPage(
-              content: noticeInfoData[index].content ?? "",
-              title: noticeInfoData[index].title ?? "",
-            ),
-      ),
-    );
   }
 
   /// 返回一个Widget自动填充剩余高度 且可以滑动
@@ -180,9 +166,14 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
                             ),
                           ),
                         ),
-                        onTap: () {
-                          _handleTap(index);
-                        },
+                        onTap:
+                            () => Get.toNamed(
+                              "/html",
+                              arguments: {
+                                "title": noticeInfoData[index].title ?? "",
+                                "content": noticeInfoData[index].content ?? "",
+                              },
+                            ),
                       );
                     },
                   ),
