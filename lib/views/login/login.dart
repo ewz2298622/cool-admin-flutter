@@ -3,10 +3,12 @@ import 'dart:ui';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/api/api.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../components/bouncingBallsScreen.dart';
+import '../../components/loading.dart';
 import '../../db/entity/TokenEntity.dart';
 import '../../db/entity/UserEntity.dart';
 import '../../db/manager/TokenDatabaseHelper.dart';
@@ -27,6 +29,8 @@ class Login extends StatefulWidget {
 }
 
 class LoginState extends State<Login> with SingleTickerProviderStateMixin {
+  var _futureBuilderFuture;
+
   var controller = [
     TextEditingController(),
     TextEditingController(),
@@ -41,6 +45,7 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
     try {
       ///Todo: 获取验证码
       ///
+      getCaptcha();
       noticeInfo();
       return "init success";
     } catch (e) {
@@ -66,24 +71,36 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
   }
 
   Future<void> getCaptcha() async {
-    captchaData =
-        (await Api.getCaptcha({
-          'width': 100,
-          'height': 50,
-          "type": 1,
-          "color": "#ff5f01",
-        })).data;
+    captchaData = (await Api.getCaptcha({})).data;
     setState(() {});
   }
 
   @override
   void initState() {
+    _futureBuilderFuture = init();
     super.initState();
-    init();
+  }
+
+  Widget _buildContent(BuildContext context) {
+    return FutureBuilder<String>(
+      future: _futureBuilderFuture, // 异步操作
+      builder: (context, snapshot) {
+        debugPrint('snapshot: ${snapshot.hasData}');
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return PageLoading();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}'); // 显示错误信息
+        } else if (snapshot.hasData) {
+          return _buildForm(context);
+        } else {
+          return Text('No data available');
+        }
+      },
+    );
   }
 
   //获取用户信息
-  Widget _buildContent() {
+  Widget _buildForm(BuildContext context) {
     return SingleChildScrollView(
       physics: BouncingScrollPhysics(),
       child: Padding(
@@ -199,58 +216,66 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
                 },
               ),
             ),
-            // Container(
-            //   margin: const EdgeInsets.only(bottom: 10),
-            //   padding: EdgeInsets.only(left: 15, right: 15),
-            //   decoration: BoxDecoration(
-            //     color: Color.fromRGBO(238, 238, 238, 1),
-            //     border: Border.all(
-            //       color: Color.fromRGBO(238, 238, 238, 1),
-            //       width: 0.5,
-            //     ),
-            //     borderRadius: BorderRadius.circular((25.0)),
-            //   ),
-            //   child: Flex(
-            //     direction: Axis.horizontal,
-            //     mainAxisAlignment: MainAxisAlignment.center,
-            //     crossAxisAlignment: CrossAxisAlignment.center,
-            //     children: [
-            //       Flexible(
-            //         flex: 1,
-            //         child: TDInput(
-            //           size: TDInputSize.small,
-            //           leftIcon: TDImage(
-            //             width: 20,
-            //             height: 20,
-            //             assetUrl: "assets/images/code.png",
-            //           ),
-            //           controller: controller[2],
-            //           hintText: '请输入验证码',
-            //           onBtnTap: () {
-            //             TDToast.showText('点击右侧按钮', context: context);
-            //           },
-            //           onChanged: (text) {
-            //             setState(() {});
-            //           },
-            //           onClearTap: () {
-            //             controller[2].clear();
-            //             setState(() {});
-            //           },
-            //         ),
-            //       ),
-            //       GestureDetector(
-            //         child: SvgPicture.string(
-            //           captchaData?.data ?? "",
-            //           width: 100,
-            //         ),
-            //         onTap: () async {
-            //           getCaptcha();
-            //           setState(() {});
-            //         },
-            //       ),
-            //     ],
-            //   ),
-            // ),
+            Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: EdgeInsets.only(left: 15, right: 15),
+              decoration: BoxDecoration(
+                color: Color.fromRGBO(238, 238, 238, 1),
+                border: Border.all(
+                  color: Color.fromRGBO(238, 238, 238, 1),
+                  width: 0.5,
+                ),
+                borderRadius: BorderRadius.circular((25.0)),
+              ),
+              child: Flex(
+                direction: Axis.horizontal,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Flexible(
+                    flex: 1,
+                    child: TDInput(
+                      size: TDInputSize.small,
+                      leftIcon: TDImage(
+                        width: 20,
+                        height: 20,
+                        assetUrl: "assets/images/code.png",
+                      ),
+                      controller: controller[2],
+                      hintText: '请输入验证码',
+                      onBtnTap: () {
+                        TDToast.showText('点击右侧按钮', context: context);
+                      },
+                      onChanged: (text) {
+                        setState(() {});
+                      },
+                      onClearTap: () {
+                        controller[2].clear();
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                  GestureDetector(
+                    child: SvgPicture.string(
+                      captchaData?.svg ?? "",
+                      width: 150, // 与SVG中的width一致
+                      height: 50, // 与SVG中的height一致
+                      fit: BoxFit.contain,
+                      // 可选：添加颜色过滤器（如果SVG本身没有颜色）
+                      colorFilter: const ColorFilter.mode(
+                        Colors.blue,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+
+                    onTap: () async {
+                      await getCaptcha();
+                      setState(() {});
+                    },
+                  ),
+                ],
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.only(
                 left: Layout.paddingL,
@@ -274,16 +299,21 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
               onTap: () {
                 String phone = controller[0].text;
                 String password = controller[1].text;
-                String _ = controller[2].text;
+                String verifyCode = controller[2].text;
                 if (phone.isEmpty || password.isEmpty) {
                   TDToast.showText('账号或密码不能为空', context: context);
+                  return;
+                }
+                if (verifyCode.isEmpty) {
+                  TDToast.showText("请输入验证码", context: context);
+                  return;
+                }
+
+                if (isPhoneNumberValid(phone)) {
+                  // 处理登录逻辑
+                  _login();
                 } else {
-                  if (isPhoneNumberValid(phone)) {
-                    // 处理登录逻辑
-                    _login();
-                  } else {
-                    TDToast.showText('请输入合法手机号', context: context);
-                  }
+                  TDToast.showText('请输入合法手机号', context: context);
                 }
               },
             ),
@@ -394,7 +424,7 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
               child: Container(color: Colors.transparent),
             ),
           ),
-          _buildContent(),
+          _buildContent(context),
         ],
       ),
     );

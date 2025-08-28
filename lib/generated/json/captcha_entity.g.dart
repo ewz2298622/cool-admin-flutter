@@ -1,5 +1,5 @@
-import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 import 'package:flutter_app/entity/captcha_entity.dart';
+import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 
 CaptchaEntity $CaptchaEntityFromJson(Map<String, dynamic> json) {
   final CaptchaEntity captchaEntity = CaptchaEntity();
@@ -27,11 +27,7 @@ Map<String, dynamic> $CaptchaEntityToJson(CaptchaEntity entity) {
 }
 
 extension CaptchaEntityExtension on CaptchaEntity {
-  CaptchaEntity copyWith({
-    int? code,
-    String? message,
-    CaptchaData? data,
-  }) {
+  CaptchaEntity copyWith({int? code, String? message, CaptchaData? data}) {
     return CaptchaEntity()
       ..code = code ?? this.code
       ..message = message ?? this.message
@@ -49,6 +45,10 @@ CaptchaData $CaptchaDataFromJson(Map<String, dynamic> json) {
   if (data != null) {
     captchaData.data = data;
   }
+  final String? svg = jsonConvert.convert<String>(json['svg']);
+  if (svg != null) {
+    captchaData.svg = svg;
+  }
   return captchaData;
 }
 
@@ -56,16 +56,15 @@ Map<String, dynamic> $CaptchaDataToJson(CaptchaData entity) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['captchaId'] = entity.captchaId;
   data['data'] = entity.data;
+  data['svg'] = entity.svg;
   return data;
 }
 
 extension CaptchaDataExtension on CaptchaData {
-  CaptchaData copyWith({
-    String? captchaId,
-    String? data,
-  }) {
+  CaptchaData copyWith({String? captchaId, String? data, String? svg}) {
     return CaptchaData()
       ..captchaId = captchaId ?? this.captchaId
-      ..data = data ?? this.data;
+      ..data = data ?? this.data
+      ..svg = svg ?? this.svg;
   }
 }

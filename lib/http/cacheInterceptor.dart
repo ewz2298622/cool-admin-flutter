@@ -6,10 +6,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 class CacheInterceptor extends Interceptor {
   final Duration cacheDuration;
   final bool forceRefresh;
+  final List<String> whitelistPaths;
 
   CacheInterceptor({
     this.cacheDuration = const Duration(minutes: 10),
     this.forceRefresh = false,
+    this.whitelistPaths = const [],
   });
 
   // 生成更健壮的缓存键
@@ -24,6 +26,17 @@ class CacheInterceptor extends Interceptor {
   }
 
   int _getCurrentTimestamp() => DateTime.now().millisecondsSinceEpoch;
+
+  // 检查请求是否在白名单中
+  bool _isWhitelisted(RequestOptions options) {
+    if (whitelistPaths.isEmpty) return false;
+    
+    final uri = options.uri;
+    return whitelistPaths.any((path) => 
+      uri.path.contains(path) || 
+      uri.toString().contains(path)
+    );
+  }
 
   @override
   Future<void> onRequest(
@@ -44,6 +57,12 @@ class CacheInterceptor extends Interceptor {
 
     // 检查是否禁用缓存
     if (options.extra['noCache'] == true) {
+      handler.next(options);
+      return;
+    }
+
+    // 检查是否在白名单中，如果在白名单中则不使用缓存
+    if (_isWhitelisted(options)) {
       handler.next(options);
       return;
     }
@@ -93,7 +112,8 @@ class CacheInterceptor extends Interceptor {
   ) async {
     // 只缓存成功的响应
     if ((response.statusCode == 200 || response.statusCode == 201) &&
-        response.requestOptions.extra['noCache'] != true) {
+        response.requestOptions.extra['noCache'] != true &&
+        !_isWhitelisted(response.requestOptions)) {
       try {
         final prefs = await SharedPreferences.getInstance();
         final cacheKey = _generateCacheKey(response.requestOptions);

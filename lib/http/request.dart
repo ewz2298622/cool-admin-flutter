@@ -27,6 +27,7 @@ class DioHttp {
       CacheInterceptor(
         cacheDuration: const Duration(minutes: 5), // 设置5分钟缓存
         // forceRefresh: true, // 强制刷新时取消注释
+        whitelistPaths: ["/app/user/login/captcha"],
       ),
     );
     _dio.interceptors.add(TokenInterceptors()); //token

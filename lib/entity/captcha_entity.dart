@@ -28,6 +28,7 @@ class CaptchaEntity {
 class CaptchaData {
   String? captchaId;
   String? data;
+  String? svg;
 
   CaptchaData();
 
