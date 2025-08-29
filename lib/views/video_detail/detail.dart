@@ -25,7 +25,6 @@ import '../../utils/bus/bus.dart';
 import '../../utils/bus/constant.dart';
 import '../../utils/dict.dart';
 import '../../utils/video.dart';
-import '../feedback/feedback.dart';
 
 String TAG = 'Video_Detail';
 
@@ -36,7 +35,7 @@ class Video_Detail extends StatefulWidget {
   _Video_DetailState createState() => _Video_DetailState();
 }
 
-class _Video_DetailState extends State<Video_Detail> with RouteAware {
+class _Video_DetailState extends State<Video_Detail> {
   final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
   final ValueNotifier<int> currentLine = ValueNotifier<int>(0);
   final ValueNotifier<int> currentPlay = ValueNotifier<int>(0);
@@ -335,61 +334,21 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   }
 
   goFeedbackPage() {
-    player.stop();
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder:
-            (context) => FeedbackPage(
-              videoId: playerLineData[currentPlay.value].videoId ?? "0",
-              videoUrl: playerLineData[currentPlay.value].file ?? "",
-              videoName: videoData?.title ?? "",
-              playLineId: playerLineData[currentPlay.value].id ?? 0,
-            ),
-      ),
+    Get.toNamed(
+      "/feedback",
+      arguments: {
+        "videoId": playerLineData[currentPlay.value].videoId,
+        "videoUrl": playerLineData[currentPlay.value].file,
+        "videoName": videoData?.title,
+        "playLineId": playerLineData[currentPlay.value].id,
+      },
     );
   }
 
   @override
-  void didPop() {
-    ///从B退回到A的是调用
-    print("detailllll didPop");
-    super.didPop();
-  }
-
-  @override
-  void didPush() {
-    ///从A进入B的时候调用
-    print("detailllll didPush");
-
-    super.didPush();
-  }
-
-  @override
-  void didPopNext() {
-    ///从C回到B的时候调用
-    print("detailllll didPopNext");
-    super.didPopNext();
-  }
-
-  @override
-  void didPushNext() {
-    ///从B进入C的时候调用
-    print("detailllll didPushNext");
-    super.didPushNext();
-  }
-
-  @override
-  void didChangeDependencies() {
-    routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute);
-    super.didChangeDependencies();
-  }
-
-  @override
   void dispose() {
-    routeObserver.unsubscribe(this);
     super.dispose();
     removeVideo();
-    debugPrint('detailllll dispose');
     addViews();
   }
 

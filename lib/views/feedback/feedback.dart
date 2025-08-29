@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
@@ -7,18 +8,7 @@ import '../../entity/dict_data_entity.dart';
 
 // 定义一个名为 Setting 的有状态组件，用于展示一个包含 WebView 的页面
 class FeedbackPage extends StatefulWidget {
-  // 构造函数，Key? key 是可选参数，用于在组件树中唯一标识该组件
-  final String videoId;
-  final String videoName;
-  final int playLineId;
-  final String videoUrl;
-  const FeedbackPage({
-    super.key,
-    required this.videoId,
-    required this.videoName,
-    required this.playLineId,
-    required this.videoUrl,
-  });
+  const FeedbackPage({super.key});
 
   // 创建该组件对应的状态类实例
   @override
@@ -34,6 +24,10 @@ class _FeedbackState extends State<FeedbackPage> {
   final ValueNotifier<int> currentIndex = ValueNotifier<int>(0);
   List<DictDataDataFeedbackType> feedback_type = [];
   String content = "";
+  final videoId = Get.arguments["videoId"];
+  final videoName = Get.arguments["videoName"];
+  final playLineId = Get.arguments["playLineId"];
+  final videoUrl = Get.arguments["videoUrl"];
 
   // 添加防抖相关的变量
   DateTime? _lastSubmitTime;
@@ -147,10 +141,10 @@ class _FeedbackState extends State<FeedbackPage> {
 
     // 执行实际的提交逻辑
     await Api.addFeedback({
-      "videoId": widget.videoId,
-      "videoName": widget.videoName,
-      "playLineId": widget.playLineId,
-      "videoUrl": widget.videoUrl,
+      "videoId": videoId,
+      "videoName": videoName,
+      "playLineId": playLineId,
+      "videoUrl": videoUrl,
       "feedbackType": feedback_type[currentIndex.value].id,
       "content": content,
     });

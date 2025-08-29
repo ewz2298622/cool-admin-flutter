@@ -19,6 +19,7 @@ class VideoOneSmall extends StatelessWidget {
               () => Get.toNamed(
                 "/video_detail",
                 arguments: {"id": videoPageData[i].id},
+                preventDuplicates: false,
               ),
           child: Container(
             height: 140,

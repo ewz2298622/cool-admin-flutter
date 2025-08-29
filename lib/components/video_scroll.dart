@@ -22,6 +22,7 @@ class HorizontalVideoList extends StatelessWidget {
                   () => Get.toNamed(
                     "/video_detail",
                     arguments: {"id": videoPageData[i].id},
+                    preventDuplicates: false,
                   ),
               child: Container(
                 width: 120,

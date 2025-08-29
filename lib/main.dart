@@ -8,6 +8,7 @@ import 'package:flutter_app/utils/store/app/appState.dart';
 import 'package:flutter_app/utils/store/theme/theme.dart';
 import 'package:flutter_app/utils/store/user/user.dart';
 import 'package:flutter_app/views/environment_error/environment_error.dart';
+import 'package:flutter_app/views/feedback/feedback.dart';
 import 'package:flutter_app/views/home/home.dart';
 import 'package:flutter_app/views/htmlPage/html.dart';
 import 'package:flutter_app/views/login/login.dart';
@@ -82,6 +83,7 @@ class MyApp extends StatelessWidget {
             GetPage(name: '/search', page: () => VideoSearch()),
             GetPage(name: '/search_result', page: () => SearchResult()),
             GetPage(name: '/login', page: () => Login()),
+            GetPage(name: '/feedback', page: () => FeedbackPage()),
           ],
           navigatorKey: ContextManager.navigatorKey,
         );
