@@ -30,11 +30,10 @@ class CacheInterceptor extends Interceptor {
   // 检查请求是否在白名单中
   bool _isWhitelisted(RequestOptions options) {
     if (whitelistPaths.isEmpty) return false;
-    
+
     final uri = options.uri;
-    return whitelistPaths.any((path) => 
-      uri.path.contains(path) || 
-      uri.toString().contains(path)
+    return whitelistPaths.any(
+      (path) => uri.path.contains(path) || uri.toString().contains(path),
     );
   }
 
@@ -138,5 +137,12 @@ class CacheInterceptor extends Interceptor {
     ErrorInterceptorHandler handler,
   ) async {
     handler.next(err);
+  }
+
+  //删除所有数据
+  static Future<void> deleteAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    return;
   }
 }

@@ -83,6 +83,10 @@ class _LiveStreamPageState extends State<VideoService> {
       appBar: AppBar(
         toolbarHeight: 20,
         automaticallyImplyLeading: false, //设置为false
+        // 添加黑夜模式支持
+        backgroundColor: Theme.of(context).brightness == Brightness.dark 
+            ? Colors.grey[900] 
+            : Colors.transparent,
       ),
       resizeToAvoidBottomInset: false,
       body: RefreshIndicator(
@@ -145,6 +149,10 @@ class _LiveStreamPageState extends State<VideoService> {
     return SizedBox(
       width: 120,
       child: Card(
+        // 添加黑夜模式支持
+        color: Theme.of(context).brightness == Brightness.dark 
+            ? Colors.grey[850] 
+            : Colors.white,
         child: TDSideBar(
           style: TDSideBarStyle.normal,
           value: _selectedCategory,
@@ -203,6 +211,10 @@ class _LiveStreamPageState extends State<VideoService> {
         );
       },
       child: Card(
+        // 添加黑夜模式支持
+        color: Theme.of(context).brightness == Brightness.dark 
+            ? Colors.grey[850] 
+            : Colors.white,
         child: Row(
           spacing: 10,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -213,6 +225,12 @@ class _LiveStreamPageState extends State<VideoService> {
               item.title ?? "",
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              // 添加黑夜模式支持
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? Colors.white 
+                    : Colors.black,
+              ),
             ),
           ],
         ),

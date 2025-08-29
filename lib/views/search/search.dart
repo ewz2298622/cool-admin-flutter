@@ -159,26 +159,24 @@ class VideoSearchState extends State<VideoSearch>
   Widget _buildDefaultSearchBar() {
     return TDNavBar(
       useDefaultBack: true,
-      height: 36,
       screenAdaptation: false,
-
+      backgroundColor: Colors.transparent,
       titleMargin: 5,
+      height: 36,
       centerTitle: false,
       padding: EdgeInsets.only(left: 0, right: 0),
       titleWidget: TDSearchBar(
         backgroundColor: Colors.transparent,
-        placeHolder: '请输入剧名',
+        placeHolder: '',
         action: "搜索",
         style: TDSearchStyle.round,
-        padding: EdgeInsets.only(left: 0, right: 0, bottom: 0, top: 0),
+        padding: EdgeInsets.only(left: 0, right: 0, bottom: 2, top: 2),
         onTextChanged: (String text) {
           setState(() {
-            inputText = text.trim();
+            inputText = text;
           });
         },
-        onActionClick: (contexts) {
-          goToSearchResult();
-        },
+        onActionClick: (contexts) => goToSearchResult(),
       ),
     );
   }
@@ -277,7 +275,10 @@ class VideoSearchState extends State<VideoSearch>
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
-            unselectedLabelColor: Colors.black87,
+            unselectedLabelColor:
+                Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black87,
             labelStyle: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w800,
@@ -575,7 +576,6 @@ class VideoSearchState extends State<VideoSearch>
             children: [
               Icon(Icons.access_time, size: 24, color: Colors.grey[400]),
               Flexible(
-                flex: 1,
                 child: SizedBox(
                   height: 30,
                   child: ListView.separated(
@@ -588,7 +588,11 @@ class VideoSearchState extends State<VideoSearch>
                         child: Container(
                           padding: EdgeInsets.symmetric(horizontal: 12),
                           decoration: BoxDecoration(
-                            color: Color.fromRGBO(239, 239, 239, 1),
+                            // color: Color.fromRGBO(239, 239, 239, 1),
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Color.fromRGBO(51, 51, 51, 1)
+                                    : Color.fromRGBO(239, 239, 239, 1),
                             //设置圆角
                             borderRadius: BorderRadius.circular(15.0),
                           ),
@@ -596,7 +600,17 @@ class VideoSearchState extends State<VideoSearch>
                             mainAxisSize: MainAxisSize.min,
                             spacing: 5,
                             children: [
-                              Text(entity.query),
+                              Text(
+                                entity.query,
+                                style: TextStyle(
+                                  // 添加黑夜模式支持
+                                  color:
+                                      Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white
+                                          : Colors.black,
+                                ),
+                              ),
                               GestureDetector(
                                 child: Icon(
                                   Icons.close,
@@ -666,6 +680,8 @@ class VideoSearchState extends State<VideoSearch>
       appBar: AppBar(
         toolbarHeight: 20,
         automaticallyImplyLeading: false, //设置为false
+        // 添加黑夜模式支持
+        backgroundColor: Colors.transparent,
       ),
       resizeToAvoidBottomInset: false,
       body: _buildContent(),

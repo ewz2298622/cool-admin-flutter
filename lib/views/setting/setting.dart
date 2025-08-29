@@ -5,6 +5,7 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 import '../../db/entity/AldultEntity.dart';
 import '../../db/manager/AldultDatabaseHelper.dart';
 import '../../db/manager/helper.dart';
+import '../../http/cacheInterceptor.dart';
 import '../../utils/store/app/appState.dart';
 import '../../utils/store/theme/theme.dart';
 import '../../utils/store/user/user.dart';
@@ -148,6 +149,7 @@ class _SettingState extends State<Setting> {
     context.read<UserState>().deleteUserInfoData();
     final appState = Provider.of<AppState>(context, listen: false);
     appState.reset();
+    CacheInterceptor.deleteAll();
   }
 
   @override

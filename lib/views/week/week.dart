@@ -84,11 +84,11 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
         height: 150,
         margin: EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor, // 使用主题色适配黑夜模式
           borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Theme.of(context).shadowColor.withOpacity(0.1), // 使用主题阴影色
               blurRadius: 10,
               offset: Offset(0, 2),
             ),
@@ -123,6 +123,7 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
+                        color: Theme.of(context).textTheme.bodyLarge?.color, // 使用主题文字颜色
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -153,7 +154,10 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       VideoUtil.extractPlainText(item.introduce ?? ""),
-                      style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6), // 使用主题文字颜色并调整透明度
+                        fontSize: 12,
+                      ),
                     ),
                     // 底部时间信息
                     Row(
@@ -162,12 +166,12 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
                         Icon(
                           Icons.access_time,
                           size: 14,
-                          color: Colors.grey[400],
+                          color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6), // 使用主题图标颜色
                         ),
                         Text(
                           VideoUtil.formatTime(item.time ?? "00:00:00"),
                           style: TextStyle(
-                            color: Colors.grey[400],
+                            color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6), // 使用主题文字颜色
                             fontSize: 12,
                           ),
                         ),
@@ -278,14 +282,14 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
       children: [
         // 顶部Tab导航栏
         Container(
-          color: Colors.white,
+          color: Theme.of(context).appBarTheme.backgroundColor, // 使用主题背景色
           child: TabBar(
             tabAlignment: TabAlignment.center,
             controller: _tabController,
             indicatorColor: Color.fromRGBO(255, 153, 0, 1),
             indicatorWeight: 3.0,
             labelColor: Color.fromRGBO(255, 153, 0, 1),
-            unselectedLabelColor: Colors.black54,
+            unselectedLabelColor: Theme.of(context).textTheme.bodyMedium?.color, // 使用主题文字颜色
             labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             unselectedLabelStyle: TextStyle(fontSize: 16),
             tabs: week.map((e) => Tab(text: e.name)).toList(),
@@ -322,6 +326,7 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
         centerTitle: true,
         toolbarHeight: 40,
         automaticallyImplyLeading: false, //设置为false
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor, // 使用主题背景色
       ),
       body: _buildContent(context),
     );

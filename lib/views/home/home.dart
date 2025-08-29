@@ -477,7 +477,11 @@ class _HomePageState extends State<Home>
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
-                    unselectedLabelColor: Colors.black87,
+                    unselectedLabelColor:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black87,
+
                     labelStyle: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
