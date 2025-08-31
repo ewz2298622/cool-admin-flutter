@@ -27,7 +27,10 @@ class DioHttp {
       CacheInterceptor(
         cacheDuration: const Duration(minutes: 10), // 设置5分钟缓存
         // forceRefresh: true, // 强制刷新时取消注释
-        whitelistPaths: ["/app/user/login/captcha"],
+        whitelistPaths: [
+          "/app/user/login/captcha",
+          '/app/user/login/app_login',
+        ],
       ),
     );
     _dio.interceptors.add(TokenInterceptors()); //token
@@ -83,6 +86,7 @@ class DioHttp {
             ),
       );
     } on DioException catch (e) {
+      debugPrint('DioError: $e');
       // 处理 Dio 异常
       throw _handleDioError(e);
     } catch (e) {

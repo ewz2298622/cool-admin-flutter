@@ -373,22 +373,31 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
 
   //实现登录
   Future<void> _login() async {
-    LoginData? data =
-        (await Api.getLogin({
-          'phone': controller[0].text.replaceAll(' ', ''),
-          'password': controller[1].text.replaceAll(' ', ''),
-        })).data;
-    TokenDatabaseHelper tokenDatabaseHelper = TokenDatabaseHelper();
-    tokenDatabaseHelper.insert(
-      TokenEntity(
-        expire: data?.expire,
-        token: data?.token,
-        refreshExpire: data?.refreshExpire,
-        refreshToken: data?.refreshToken,
-      ),
-    );
+    try {
+      LoginData? data =
+          (await Api.getLogin({
+            'phone': controller[0].text.replaceAll(' ', ''),
+            'password': controller[1].text.replaceAll(' ', ''),
+            'code': controller[2].text.replaceAll(' ', ''),
+            'captchaId': captchaData?.captchaId,
+          })).data;
+      if (data != null) {
+        debugPrint("登录成功${data.toString()}");
+        TokenDatabaseHelper tokenDatabaseHelper = TokenDatabaseHelper();
+        tokenDatabaseHelper.insert(
+          TokenEntity(
+            expire: data.expire,
+            token: data.token,
+            refreshExpire: data.refreshExpire,
+            refreshToken: data.refreshToken,
+          ),
+        );
 
-    await getUserInfo();
+        await getUserInfo();
+      }
+    } catch (e) {
+      debugPrint("登录失败${e.toString()}");
+    }
     // EventBus().emit(Constant.UserBusId, null);
   }
 
