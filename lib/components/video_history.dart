@@ -43,6 +43,7 @@ class VideoHistory extends StatelessWidget {
               ),
           child: Container(
             height: 80,
+            width: MediaQuery.of(context).size.width,
             padding: const EdgeInsets.only(left: 4, right: 4, bottom: 15),
             child: Row(
               spacing: 10,
@@ -62,22 +63,24 @@ class VideoHistory extends StatelessWidget {
                     _buildVideoItemOverlay(videoPageData[i]),
                   ],
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      videoPageData[i].title ?? "",
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w500),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      "剩余${_formatDuration((videoPageData[i].duration ?? 0) - (videoPageData[i].viewingDuration ?? 0))}",
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ],
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        videoPageData[i].title ?? "",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        "剩余${_formatDuration((videoPageData[i].duration ?? 0) - (videoPageData[i].viewingDuration ?? 0))}",
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
