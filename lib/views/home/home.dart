@@ -435,8 +435,9 @@ class _HomePageState extends State<Home>
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color.fromRGBO(255, 232, 128, 1), // 顶部透明
-                Color.fromRGBO(255, 232, 128, 0), // 底部透明
+                Color.fromRGBO(252, 214, 67, 1.0), // 顶部透明
+                Color.fromRGBO(252, 214, 67, 0), // 顶部透明
+                Color.fromRGBO(252, 214, 67, 0), // 顶部透明
               ],
             ),
           ),
