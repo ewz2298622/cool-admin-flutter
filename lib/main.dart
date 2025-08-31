@@ -4,6 +4,7 @@ import 'package:flutter_app/utils/ads.dart';
 import 'package:flutter_app/utils/contacts.dart';
 import 'package:flutter_app/utils/context_manager.dart';
 import 'package:flutter_app/utils/device_info.dart';
+import 'package:flutter_app/utils/share_util.dart';
 import 'package:flutter_app/utils/store/app/appState.dart';
 import 'package:flutter_app/utils/store/theme/theme.dart';
 import 'package:flutter_app/utils/store/user/user.dart';
@@ -109,7 +110,6 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  var _futureBuilderFuture;
   Map<String, dynamic>? deviceInfo;
   final List<Widget> pages = [
     const Home(),
@@ -236,6 +236,7 @@ class _MainPageState extends State<MainPage> {
         ), // 放在microtask中执行，因为它是同步方法但需要返回Future
         DBManager.init(),
         initPlatformState(),
+        ShareUtil.prepareShareImage(),
       ]);
       //跳转到SplashPage组件
       return "init success";

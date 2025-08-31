@@ -238,7 +238,12 @@ class VideoSearchState extends State<VideoSearch>
       list.add(
         PagviewContent(
           searchType[i].name ?? "",
-          HexColor(searchType[i].color ?? "#77A1D3"),
+          HexColor(
+            (Theme.of(context).brightness == Brightness.dark
+                    ? "#242424"
+                    : searchType[i].color) ??
+                "#77A1D3",
+          ),
           searchTypeVideoPageDataList[i],
         ),
       );
@@ -418,16 +423,30 @@ class VideoSearchState extends State<VideoSearch>
         //圆角
         borderRadius: BorderRadius.circular(8),
         //边框色
-        border: Border.all(color: Color.fromRGBO(243, 241, 240, 1)),
+        border: Border.all(
+          // color: Color.fromRGBO(243, 241, 240, 1)
+          color:
+              Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Color.fromRGBO(243, 241, 240, 1),
+        ),
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
             color,
-            color.withAlpha(0),
-            color.withAlpha(0),
-            color.withAlpha(0),
-            color.withAlpha(0),
+            color.withAlpha(
+              Theme.of(context).brightness == Brightness.dark ? 1 : 0,
+            ),
+            color.withAlpha(
+              Theme.of(context).brightness == Brightness.dark ? 1 : 0,
+            ),
+            color.withAlpha(
+              Theme.of(context).brightness == Brightness.dark ? 1 : 0,
+            ),
+            color.withAlpha(
+              Theme.of(context).brightness == Brightness.dark ? 1 : 0,
+            ),
           ],
         ),
       ),
