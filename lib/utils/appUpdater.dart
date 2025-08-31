@@ -3,83 +3,55 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:open_file/open_file.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../api/api.dart';
+import '../entity/notice_Info_entity.dart';
+import 'context_manager.dart';
+
 /// 应用更新工具类
 class AppUpdater {
   /// 检查应用更新
-  /// [serverVersionUrl] 服务器版本信息API地址
-  /// [apkDownloadUrl] APK下载地址
-  /// [showUpdateDialog] 是否显示更新对话框
-  static Future<void> checkUpdate({
-    required String serverVersionUrl,
-    required String apkDownloadUrl,
-    bool showUpdateDialog = true,
-  }) async {
+  static Future<void> checkUpdate() async {
     try {
       // 获取当前应用信息
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
       String currentVersion = packageInfo.version;
+      List<NoticeInfoDataList> noticeInfoData =
+          (await Api.noticeInfo({"page": 1, "size": 1, "type": 636})).data?.list
+              as List<NoticeInfoDataList>;
 
-      // 获取服务器版本信息
-      final dio = Dio();
-      final response = await dio.get(serverVersionUrl);
-      final serverData = response.data;
-
-      // 假设服务器返回JSON格式: {"version": "1.0.1", "description": "更新内容", "forceUpdate": false}
-      String latestVersion = serverData['version'];
-      String description = serverData['description'] ?? '';
-      bool forceUpdate = serverData['forceUpdate'] ?? false;
+      // 假设服务器返回JSON格式: {"title": "版本更新通知", "content": "本次更新优化了性能并修复了已知问题...", "type": 1, "summary": "v2.0.0 版本更新公告", "status": 1, "appVersion": "2.0.0", "appUrl": "https://example.com/app/download"}
+      String latestVersion = noticeInfoData[0].appVersion ?? '';
+      String description = noticeInfoData[0].summary ?? '';
+      String downloadUrl = noticeInfoData[0].appUrl ?? '';
 
       // 比较版本 _compareVersions(currentVersion, latestVersion) < 0
-      if (_compareVersions(currentVersion, latestVersion) < 0) {
+      if (currentVersion != latestVersion) {
+        debugPrint('有新版本');
         // 有新版本
-        if (showUpdateDialog) {
-          _showUpdateDialog(
-            context: navigatorKey.currentContext!,
-            version: latestVersion,
-            description: description,
-            forceUpdate: forceUpdate,
-            onConfirm: () {
-              _downloadAndInstallApk(apkDownloadUrl);
-            },
-          );
-        } else {
-          _downloadAndInstallApk(apkDownloadUrl);
-        }
+        _showUpdateDialog(
+          context: ContextManager.getContext() as BuildContext,
+          version: latestVersion,
+          description: description,
+          forceUpdate: false, // 固定为false
+          onConfirm: () {
+            _downloadAndInstallApk(downloadUrl);
+          },
+        );
       } else {
-        if (showUpdateDialog) {
-          _showNoUpdateDialog(navigatorKey.currentContext!);
-        }
+        debugPrint('没有新版本');
+        _showNoUpdateDialog(ContextManager.getContext() as BuildContext);
       }
     } catch (e) {
-      if (showUpdateDialog) {
-        _showErrorDialog(navigatorKey.currentContext!, e.toString());
-      }
+      _showErrorDialog(
+        ContextManager.getContext() as BuildContext,
+        e.toString(),
+      );
     }
-  }
-
-  /// 比较版本号
-  static int _compareVersions(String version1, String version2) {
-    List<String> v1 = version1.split('.');
-    List<String> v2 = version2.split('.');
-
-    for (int i = 0; i < v1.length; i++) {
-      if (v2.length <= i) return 1; // v1 > v2
-
-      int num1 = int.tryParse(v1[i]) ?? 0;
-      int num2 = int.tryParse(v2[i]) ?? 0;
-
-      if (num1 > num2) return 1;
-      if (num1 < num2) return -1;
-    }
-
-    if (v2.length > v1.length) return -1; // v2 > v1
-
-    return 0; // 相等
   }
 
   /// 下载并安装APK
@@ -99,18 +71,14 @@ class AppUpdater {
       }
 
       String savePath = '${directory!.path}/app_update.apk';
-
+      debugPrint('保存路径: $savePath 下载url$apkUrl');
       // 下载文件
       final dio = Dio();
       await dio.download(
         apkUrl,
         savePath,
         onReceiveProgress: (count, total) {
-          // 可以在这里添加下载进度回调
-          if (total != -1) {
-            double progress = count / total;
-            print('下载进度: ${(progress * 100).toStringAsFixed(2)}%');
-          }
+          debugPrint('下载进度: ${(count / total * 100).toStringAsFixed(2)}%');
         },
       );
 
@@ -136,11 +104,14 @@ class AppUpdater {
   /// 安装APK
   static Future<void> _installApk(String apkPath) async {
     if (Platform.isAndroid) {
-      const methodChannel = MethodChannel('app_updater');
       try {
-        await methodChannel.invokeMethod('installApk', {'apkPath': apkPath});
-      } on PlatformException catch (e) {
-        throw Exception('安装APK失败: ${e.message}');
+        final result = await OpenFile.open(
+          apkPath,
+          type: 'application/vnd.android.package-archive',
+        );
+        print('安装结果: ${result.message}');
+      } catch (e) {
+        print('安装失败 path $apkPath: $e');
       }
     }
   }
@@ -273,10 +244,7 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                AppUpdater.checkUpdate(
-                  serverVersionUrl: 'https://your-server.com/version.json',
-                  apkDownloadUrl: 'https://your-server.com/app-release.apk',
-                );
+                AppUpdater.checkUpdate();
               },
               child: const Text('检查更新'),
             ),

@@ -1,5 +1,5 @@
-import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 import 'package:flutter_app/entity/notice_Info_entity.dart';
+import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 
 NoticeInfoEntity $NoticeInfoEntityFromJson(Map<String, dynamic> json) {
   final NoticeInfoEntity noticeInfoEntity = NoticeInfoEntity();
@@ -12,7 +12,8 @@ NoticeInfoEntity $NoticeInfoEntityFromJson(Map<String, dynamic> json) {
     noticeInfoEntity.message = message;
   }
   final NoticeInfoData? data = jsonConvert.convert<NoticeInfoData>(
-      json['data']);
+    json['data'],
+  );
   if (data != null) {
     noticeInfoEntity.data = data;
   }
@@ -42,16 +43,19 @@ extension NoticeInfoEntityExtension on NoticeInfoEntity {
 
 NoticeInfoData $NoticeInfoDataFromJson(Map<String, dynamic> json) {
   final NoticeInfoData noticeInfoData = NoticeInfoData();
-  final List<NoticeInfoDataList>? list = (json['list'] as List<dynamic>?)
-      ?.map(
-          (e) =>
-      jsonConvert.convert<NoticeInfoDataList>(e) as NoticeInfoDataList)
-      .toList();
+  final List<NoticeInfoDataList>? list =
+      (json['list'] as List<dynamic>?)
+          ?.map(
+            (e) =>
+                jsonConvert.convert<NoticeInfoDataList>(e)
+                    as NoticeInfoDataList,
+          )
+          .toList();
   if (list != null) {
     noticeInfoData.list = list;
   }
-  final NoticeInfoDataPagination? pagination = jsonConvert.convert<
-      NoticeInfoDataPagination>(json['pagination']);
+  final NoticeInfoDataPagination? pagination = jsonConvert
+      .convert<NoticeInfoDataPagination>(json['pagination']);
   if (pagination != null) {
     noticeInfoData.pagination = pagination;
   }
@@ -122,6 +126,14 @@ NoticeInfoDataList $NoticeInfoDataListFromJson(Map<String, dynamic> json) {
   if (summary != null) {
     noticeInfoDataList.summary = summary;
   }
+  final String? appVersion = jsonConvert.convert<String>(json['appVersion']);
+  if (appVersion != null) {
+    noticeInfoDataList.appVersion = appVersion;
+  }
+  final String? appUrl = jsonConvert.convert<String>(json['appUrl']);
+  if (appUrl != null) {
+    noticeInfoDataList.appUrl = appUrl;
+  }
   return noticeInfoDataList;
 }
 
@@ -138,6 +150,8 @@ Map<String, dynamic> $NoticeInfoDataListToJson(NoticeInfoDataList entity) {
   data['type'] = entity.type;
   data['status'] = entity.status;
   data['summary'] = entity.summary;
+  data['appVersion'] = entity.appVersion;
+  data['appUrl'] = entity.appUrl;
   return data;
 }
 
@@ -154,6 +168,8 @@ extension NoticeInfoDataListExtension on NoticeInfoDataList {
     int? type,
     int? status,
     String? summary,
+    String? appVersion,
+    String? appUrl,
   }) {
     return NoticeInfoDataList()
       ..id = id ?? this.id
@@ -166,13 +182,17 @@ extension NoticeInfoDataListExtension on NoticeInfoDataList {
       ..content = content ?? this.content
       ..type = type ?? this.type
       ..status = status ?? this.status
-      ..summary = summary ?? this.summary;
+      ..summary = summary ?? this.summary
+      ..appVersion = appVersion ?? this.appVersion
+      ..appUrl = appUrl ?? this.appUrl;
   }
 }
 
 NoticeInfoDataPagination $NoticeInfoDataPaginationFromJson(
-    Map<String, dynamic> json) {
-  final NoticeInfoDataPagination noticeInfoDataPagination = NoticeInfoDataPagination();
+  Map<String, dynamic> json,
+) {
+  final NoticeInfoDataPagination noticeInfoDataPagination =
+      NoticeInfoDataPagination();
   final int? page = jsonConvert.convert<int>(json['page']);
   if (page != null) {
     noticeInfoDataPagination.page = page;
@@ -189,7 +209,8 @@ NoticeInfoDataPagination $NoticeInfoDataPaginationFromJson(
 }
 
 Map<String, dynamic> $NoticeInfoDataPaginationToJson(
-    NoticeInfoDataPagination entity) {
+  NoticeInfoDataPagination entity,
+) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['page'] = entity.page;
   data['size'] = entity.size;
@@ -198,11 +219,7 @@ Map<String, dynamic> $NoticeInfoDataPaginationToJson(
 }
 
 extension NoticeInfoDataPaginationExtension on NoticeInfoDataPagination {
-  NoticeInfoDataPagination copyWith({
-    int? page,
-    int? size,
-    int? total,
-  }) {
+  NoticeInfoDataPagination copyWith({int? page, int? size, int? total}) {
     return NoticeInfoDataPagination()
       ..page = page ?? this.page
       ..size = size ?? this.size

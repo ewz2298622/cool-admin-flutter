@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/style/color_styles.dart';
 import 'package:flutter_app/utils/ads.dart';
+import 'package:flutter_app/utils/appUpdater.dart';
 import 'package:flutter_app/utils/contacts.dart';
 import 'package:flutter_app/utils/context_manager.dart';
 import 'package:flutter_app/utils/device_info.dart';
@@ -238,6 +239,8 @@ class _MainPageState extends State<MainPage> {
         initPlatformState(),
         ShareUtil.prepareShareImage(),
       ]);
+      AppUpdater.checkUpdate();
+
       //跳转到SplashPage组件
       return "init success";
     } catch (e) {
