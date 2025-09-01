@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/utils/requestMultiplePermissions.dart';
 import 'package:open_file/open_file.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -58,7 +59,9 @@ class AppUpdater {
   static Future<void> _downloadAndInstallApk(String apkUrl) async {
     try {
       // 请求存储权限
-      if (!await _requestStoragePermission()) {
+      if (!await RequestMultiplePermissions.checkPermissionGranted(
+        Permission.storage,
+      )) {
         throw Exception('存储权限被拒绝');
       }
 
@@ -89,18 +92,6 @@ class AppUpdater {
     }
   }
 
-  /// 请求存储权限
-  static Future<bool> _requestStoragePermission() async {
-    if (Platform.isAndroid) {
-      var status = await Permission.storage.status;
-      if (status.isDenied) {
-        status = await Permission.storage.request();
-      }
-      return status.isGranted;
-    }
-    return true;
-  }
-
   /// 安装APK
   static Future<void> _installApk(String apkPath) async {
     if (Platform.isAndroid) {
@@ -109,7 +100,7 @@ class AppUpdater {
           apkPath,
           type: 'application/vnd.android.package-archive',
         );
-        print('安装结果: ${result.message}');
+        print('安装成功 path $apkPath: ${result.message}');
       } catch (e) {
         print('安装失败 path $apkPath: $e');
       }

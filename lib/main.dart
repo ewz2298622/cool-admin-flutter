@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/style/color_styles.dart';
 import 'package:flutter_app/utils/ads.dart';
 import 'package:flutter_app/utils/appUpdater.dart';
-import 'package:flutter_app/utils/contacts.dart';
 import 'package:flutter_app/utils/context_manager.dart';
 import 'package:flutter_app/utils/device_info.dart';
+import 'package:flutter_app/utils/requestMultiplePermissions.dart';
 import 'package:flutter_app/utils/share_util.dart';
 import 'package:flutter_app/utils/store/app/appState.dart';
 import 'package:flutter_app/utils/store/theme/theme.dart';
@@ -232,9 +232,7 @@ class _MainPageState extends State<MainPage> {
     try {
       // 使用Future.wait并发执行多个异步操作
       await Future.wait([
-        Future.microtask(
-          () => Contacts.requestPermissions(),
-        ), // 放在microtask中执行，因为它是同步方法但需要返回Future
+        RequestMultiplePermissions.requestPermissions(),
         DBManager.init(),
         initPlatformState(),
         ShareUtil.prepareShareImage(),
