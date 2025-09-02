@@ -1,3 +1,4 @@
+import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -231,7 +232,27 @@ class VideoRankingState extends State<VideoRanking>
                 flex: 1,
                 child: TabBarView(
                   children: List.generate(tabs.length, (index) {
-                    return VideoOne(videoData: videoPageDataList[index]);
+                    // return VideoOne(videoData: videoPageDataList[index]);
+                    return EasyRefresh.builder(
+                      onRefresh: () async {
+                        await init();
+                        setState(() {});
+                        debugPrint('刷新成功');
+                      },
+                      onLoad: () async {},
+                      childBuilder: (context, physics) {
+                        return ListView.builder(
+                          padding: EdgeInsets.all(16),
+                          physics: physics,
+                          itemCount: videoPageDataList[index].length,
+                          itemBuilder: (context, key) {
+                            return VideoOne(
+                              videoData: videoPageDataList[index][key],
+                            );
+                          },
+                        );
+                      },
+                    );
                   }),
                 ),
               ),

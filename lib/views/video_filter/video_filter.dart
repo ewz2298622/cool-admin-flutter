@@ -1,3 +1,4 @@
+import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -45,12 +46,13 @@ class VideoFilterState extends State<VideoFilter>
   List<DictInfoListData> categoryDictList = [];
   List<DictInfoListData> areaDictList = [];
   List<DictInfoListData> categoryOriginalDictList = [];
-  final GlobalKey<RefreshIndicatorState> refreshKey = GlobalKey();
-  bool isLoading = true;
+  final EasyRefreshController _easyRefreshController = EasyRefreshController(
+    controlFinishRefresh: true,
+    controlFinishLoad: true,
+  );
 
   Future<void> getVideoPages() async {
     try {
-      isLoading = true;
       Map<String, dynamic>? data = {"page": currentPage};
       data = {
         "page": currentPage,
@@ -71,12 +73,9 @@ class VideoFilterState extends State<VideoFilter>
           (await Api.getVideoPages(data)).data?.list ??
           [] as List<VideoPageDataList>;
       videoPageData = [...videoPageData, ...list];
-      isLoading = false;
     } catch (e) {
       debugPrint('Initialization getVideoPages failed: $e');
-      isLoading = false;
     }
-    setState(() {});
   }
 
   Future<void> getVideoCategoryPages() async {
@@ -153,6 +152,7 @@ class VideoFilterState extends State<VideoFilter>
 
   @override
   void dispose() {
+    _easyRefreshController.dispose();
     disposed = true;
     super.dispose();
   }
@@ -524,7 +524,6 @@ class VideoFilterState extends State<VideoFilter>
     if (disposed) {
       return;
     }
-    setState(() {});
   }
 
   void listenCallback() {
@@ -546,13 +545,11 @@ class VideoFilterState extends State<VideoFilter>
   Future<void> loadMore() async {
     debugPrint('loadMore');
     currentPage++;
-    TDToast.showLoading(context: context, text: "加载中");
     await getVideoPages();
     TDToast.dismissLoading();
     if (disposed) {
       return;
     }
-    setState(() {});
   }
 
   /// 返回一个Widget自动填充剩余高度 且可以滑动
@@ -566,37 +563,53 @@ class VideoFilterState extends State<VideoFilter>
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}'); // 显示错误信息
         } else if (snapshot.hasData) {
-          return CustomScrollView(
-            controller: _scrollController,
-            slivers: <Widget>[
-              SliverToBoxAdapter(child: _buildDefaultSearchBar()),
-              SliverStickyHeader(
-                header: Container(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  padding: EdgeInsets.only(
-                    left: Layout.paddingL,
-                    right: Layout.paddingR,
-                    top: 5,
-                    bottom: Layout.paddingB,
-                  ),
-                  child: Visibility(
-                    visible: (categoryData.isNotEmpty),
-                    child: Column(
-                      spacing: 10,
-                      //左对齐
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildCategoryRow('全部分类', categoryData),
-                        _buildTagRow("全部标签", tagData),
-                        _buildAreaRow('全部地区', areaDictList),
-                        _buildYearRow("全部年份", years),
-                      ],
+          return EasyRefresh(
+            controller: _easyRefreshController,
+            onRefresh: () async {
+              await onRefresh();
+              if (mounted) {
+                _easyRefreshController.finishRefresh();
+                _easyRefreshController.resetFooter();
+                setState(() {});
+              }
+            },
+            onLoad: () async {
+              await loadMore();
+              _easyRefreshController.finishLoad(IndicatorResult.success);
+              setState(() {});
+            },
+            child: CustomScrollView(
+              controller: _scrollController,
+              slivers: <Widget>[
+                SliverToBoxAdapter(child: _buildDefaultSearchBar()),
+                SliverStickyHeader(
+                  header: Container(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    padding: EdgeInsets.only(
+                      left: Layout.paddingL,
+                      right: Layout.paddingR,
+                      top: 5,
+                      bottom: Layout.paddingB,
+                    ),
+                    child: Visibility(
+                      visible: (categoryData.isNotEmpty),
+                      child: Column(
+                        spacing: 10,
+                        //左对齐
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildCategoryRow('全部分类', categoryData),
+                          _buildTagRow("全部标签", tagData),
+                          _buildAreaRow('全部地区', areaDictList),
+                          _buildYearRow("全部年份", years),
+                        ],
+                      ),
                     ),
                   ),
+                  sliver: isShowContent(),
                 ),
-                sliver: isShowContent(),
-              ),
-            ],
+              ],
+            ),
           );
         } else {
           return Text('No data available');
@@ -606,9 +619,9 @@ class VideoFilterState extends State<VideoFilter>
   }
 
   Widget isShowContent() {
-    if (videoPageData.isEmpty && isLoading == false) {
+    if (videoPageData.isEmpty) {
       return SliverToBoxAdapter(child: Center(child: NoData()));
-    } else if (isLoading == false && videoPageData.isEmpty == false) {
+    } else {
       return SliverGrid(
         gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
           maxCrossAxisExtent: 150.0, // 每个 item 的最大宽度
@@ -624,22 +637,7 @@ class VideoFilterState extends State<VideoFilter>
           childCount: videoPageData.length,
         ),
       );
-    } else if (videoPageData.isEmpty && isLoading == true) {
-      return SliverToBoxAdapter(
-        child: TDLoading(
-          size: TDLoadingSize.small,
-          icon: TDLoadingIcon.point,
-          iconColor: const Color.fromRGBO(255, 162, 16, 1),
-        ),
-      );
     }
-    return SliverToBoxAdapter(
-      child: TDLoading(
-        size: TDLoadingSize.small,
-        icon: TDLoadingIcon.point,
-        iconColor: const Color.fromRGBO(255, 162, 16, 1),
-      ),
-    );
   }
 
   @override
@@ -655,13 +653,9 @@ class VideoFilterState extends State<VideoFilter>
         automaticallyImplyLeading: false, //设置为false
       ),
       resizeToAvoidBottomInset: false,
-      body: RefreshIndicator(
-        key: refreshKey,
-        onRefresh: onRefresh,
-        child: Padding(
-          padding: const EdgeInsets.only(left: 10, right: 10),
-          child: _buildContent(),
-        ),
+      body: Padding(
+        padding: const EdgeInsets.only(left: 10, right: 10),
+        child: _buildContent(),
       ),
     );
   }

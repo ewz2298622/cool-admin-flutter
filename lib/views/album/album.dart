@@ -1,3 +1,4 @@
+import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -22,6 +23,10 @@ class VideoAlbumState extends State<VideoAlbum>
   var _futureBuilderFuture;
   VideoAlbumData? albumInfoData;
   List<AlbumVideoListDataList>? videoPageData;
+  final EasyRefreshController _easyRefreshController = EasyRefreshController(
+    controlFinishRefresh: true,
+    controlFinishLoad: true,
+  );
 
   Future<void> getAlbumVideoList() async {
     try {
@@ -60,6 +65,16 @@ class VideoAlbumState extends State<VideoAlbum>
   void initState() {
     _futureBuilderFuture = init();
     super.initState();
+  }
+
+  // 添加刷新方法
+  Future<void> _onRefresh() async {
+    await getAlbumById();
+    await getAlbumVideoList();
+    if (mounted) {
+      setState(() {});
+      _easyRefreshController.finishRefresh();
+    }
   }
 
   Widget _buildContent() {
@@ -157,22 +172,30 @@ class VideoAlbumState extends State<VideoAlbum>
         //动态计算高度
         height: MediaQuery.of(context).size.height - 150,
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
-        child: SingleChildScrollView(
-          physics: BouncingScrollPhysics(),
-          // child: Container(child: VideoThree(videoPageData: videoPageData)),
-          //重构videoPageData数据将videos_id设置成id
-          child: VideoThree(
-            videoPageData:
-                videoPageData?.map((e) {
-                  String videosId = e.videosId ?? "";
-                  //将videos_id 转成int并设置成id
-                  e.id = int.parse(videosId);
-                  return e;
-                }).toList(),
+        child: EasyRefresh(
+          controller: _easyRefreshController,
+          // onRefresh: _onRefresh,
+          onRefresh: () async {
+            await init();
+            if (mounted) {
+              _easyRefreshController.finishRefresh();
+              _easyRefreshController.resetFooter();
+              setState(() {});
+            }
+          },
+          child: ListView(
+            padding: const EdgeInsets.only(top: 0),
+            children: [VideoThree(videoPageData: videoPageData)],
           ),
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _easyRefreshController.dispose();
+    super.dispose();
   }
 
   @override

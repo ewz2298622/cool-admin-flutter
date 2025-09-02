@@ -71,6 +71,7 @@ dependencies:
   get: ^4.7.2
   tdesign_flutter: ^0.2.4
   open_file: ^3.5.10
+  easy_refresh: ^3.4.0
 
 dev_dependencies:
   flutter_test:

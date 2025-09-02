@@ -1,3 +1,4 @@
+import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -123,7 +124,10 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Theme.of(context).textTheme.bodyLarge?.color, // 使用主题文字颜色
+                        color:
+                            Theme.of(
+                              context,
+                            ).textTheme.bodyLarge?.color, // 使用主题文字颜色
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -155,7 +159,8 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
                       overflow: TextOverflow.ellipsis,
                       VideoUtil.extractPlainText(item.introduce ?? ""),
                       style: TextStyle(
-                        color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6), // 使用主题文字颜色并调整透明度
+                        color: Theme.of(context).textTheme.bodyMedium?.color
+                            ?.withOpacity(0.6), // 使用主题文字颜色并调整透明度
                         fontSize: 12,
                       ),
                     ),
@@ -166,12 +171,14 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
                         Icon(
                           Icons.access_time,
                           size: 14,
-                          color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6), // 使用主题图标颜色
+                          color: Theme.of(context).textTheme.bodyMedium?.color
+                              ?.withOpacity(0.6), // 使用主题图标颜色
                         ),
                         Text(
                           VideoUtil.formatTime(item.time ?? "00:00:00"),
                           style: TextStyle(
-                            color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6), // 使用主题文字颜色
+                            color: Theme.of(context).textTheme.bodyMedium?.color
+                                ?.withOpacity(0.6), // 使用主题文字颜色
                             fontSize: 12,
                           ),
                         ),
@@ -289,7 +296,8 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
             indicatorColor: Color.fromRGBO(255, 153, 0, 1),
             indicatorWeight: 3.0,
             labelColor: Color.fromRGBO(255, 153, 0, 1),
-            unselectedLabelColor: Theme.of(context).textTheme.bodyMedium?.color, // 使用主题文字颜色
+            unselectedLabelColor:
+                Theme.of(context).textTheme.bodyMedium?.color, // 使用主题文字颜色
             labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             unselectedLabelStyle: TextStyle(fontSize: 16),
             tabs: week.map((e) => Tab(text: e.name)).toList(),
@@ -326,7 +334,8 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
         centerTitle: true,
         toolbarHeight: 40,
         automaticallyImplyLeading: false, //设置为false
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor, // 使用主题背景色
+        backgroundColor:
+            Theme.of(context).appBarTheme.backgroundColor, // 使用主题背景色
       ),
       body: _buildContent(context),
     );
@@ -341,12 +350,23 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
     if (day >= weekList.length) {
       return NoData();
     }
-
-    return ListView.builder(
-      padding: EdgeInsets.all(16),
-      itemCount: weekList[day].length,
-      itemBuilder: (context, index) {
-        return _buildWeekItem(weekList[day][index]);
+    return EasyRefresh.builder(
+      onRefresh: () async {
+        weekList.clear();
+        await init();
+        setState(() {});
+        debugPrint('刷新成功');
+      },
+      onLoad: () async {},
+      childBuilder: (context, physics) {
+        return ListView.builder(
+          padding: EdgeInsets.all(16),
+          physics: physics,
+          itemCount: weekList[day].length,
+          itemBuilder: (context, index) {
+            return _buildWeekItem(weekList[day][index]);
+          },
+        );
       },
     );
   }
