@@ -30,9 +30,9 @@ class GenericRowBuilder extends StatelessWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.only(left: 8),
-                  child: Center(child: Text(title ?? "")),
+                  child: Center(child: Text(title)),
                 ),
-                ...(items ?? [])
+                ...(items)
                     .map(
                       (item) => Padding(
                         padding: const EdgeInsets.only(left: 8),

@@ -34,10 +34,6 @@ class UserDatabaseHelper {
 
   // 插入记录
   void insert(UserEntity data) {
-    if (data == null) {
-      throw ArgumentError('UserEntity data cannot be null');
-    }
-
     final query = '''
     INSERT INTO user 
     (createTime, updateTime, unionid, avatarUrl, nickName, phone, gender, status, loginType, password, userId)

@@ -1,11 +1,11 @@
-// // second_page.dart
-//
+// second_page.dart
 import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swiper_null_safety/flutter_swiper_null_safety.dart';
 import 'package:get/get.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
@@ -20,6 +20,7 @@ import '../../entity/dict_info_list_entity.dart';
 import '../../entity/notice_Info_entity.dart';
 import '../../entity/swiper_entity.dart';
 import '../../style/layout.dart';
+import '../../utils/appUpdater.dart';
 import '../album/album.dart';
 import '../notice/notice.dart';
 
@@ -77,7 +78,6 @@ class _HomePageState extends State<Home>
   String inputText = '';
   List<TDTab> tabs = [];
   List<int> videoCategoryIds = [];
-  final GlobalKey<RefreshIndicatorState> refreshKey = GlobalKey();
   final PageController pageController = PageController(initialPage: 0);
   bool disposed = false;
   bool isLogin = false;
@@ -89,6 +89,7 @@ class _HomePageState extends State<Home>
   List<NoticeInfoDataList> noticeInfoData = [];
 
   List<DictDataDataVideoCategory> category = [];
+  List<RefreshController> tabRefreshController = [];
 
   // 添加 TabController
   late TabController _tabController;
@@ -96,6 +97,10 @@ class _HomePageState extends State<Home>
   // 添加滚动监听相关变量
   final ScrollController _scrollController = ScrollController();
   double _appBarOpacity = 0.0; // AppBar透明度
+
+  final RefreshController _refreshController = RefreshController(
+    initialRefresh: false,
+  );
 
   Future<void> getDictInfoPages() async {
     try {
@@ -142,6 +147,7 @@ class _HomePageState extends State<Home>
     _futureBuilderFuture = init();
     // 添加滚动监听器
     _scrollController.addListener(_onScroll);
+    AppUpdater.checkUpdate();
     super.initState();
   }
 
@@ -150,6 +156,7 @@ class _HomePageState extends State<Home>
     disposed = true;
     _tabController.dispose(); // 释放 TabController
     _scrollController.dispose(); // 释放 ScrollController
+    _refreshController.dispose(); // 释放 RefreshController
     super.dispose();
   }
 
@@ -255,21 +262,32 @@ class _HomePageState extends State<Home>
     );
   }
 
-  Future<void> onRefresh() async {
-    swiperMap.clear();
-    albumMap.clear();
-    tabs.clear();
-    await getDictInfoPages();
-    await getSwiperListByCategoryIds();
-    await getAlbumListByCategoryIds();
-    if (disposed) {
-      return;
+  Future<void> onRefresh(int index) async {
+    try {
+      // 只刷新当前分类的数据
+      final categoryId = videoCategoryIds[index];
+
+      // 清除当前分类的数据
+      swiperMap.remove(categoryId);
+      albumMap.remove(categoryId);
+
+      // 重新获取当前分类的数据
+      final swiperData = await Api.getSwiperListByCategoryIds([categoryId]);
+      final albumData = await Api.getAlbumListByCategoryIds([categoryId]);
+
+      if (disposed) {
+        return;
+      }
+
+      // 更新数据
+      swiperMap.addAll(swiperData);
+      albumMap.addAll(albumData);
+
+      setState(() {});
+      tabRefreshController[index].refreshCompleted();
+    } catch (e) {
+      tabRefreshController[index].refreshFailed();
     }
-    // 重新初始化 TabController
-    _tabController.dispose();
-    _tabController = TabController(length: tabs.length, vsync: this);
-    _tabController.addListener(_handleTabSelection);
-    setState(() {});
   }
 
   // 处理 Tab 选择事件
@@ -423,28 +441,24 @@ class _HomePageState extends State<Home>
   }
 
   Widget _buildTabs(BuildContext context) {
-    return Stack(
-      fit: StackFit.passthrough,
+    return Column(
       children: [
+        // 顶部搜索栏和TabBar部分 - 使用固定高度
         Container(
           width: double.infinity,
-          height: 250,
+          height: 120, // 改回固定高度，避免过大空白
           decoration: BoxDecoration(
             //从上到下的线性渐变
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color.fromRGBO(252, 214, 67, 1.0), // 顶部透明
-                Color.fromRGBO(252, 214, 67, 0), // 顶部透明
-                Color.fromRGBO(252, 214, 67, 0), // 顶部透明
+                Color.fromRGBO(252, 214, 67, 1.0), // 顶部颜色
+                Color.fromRGBO(252, 214, 67, 0.5), // 中间颜色
+                Color.fromRGBO(252, 214, 67, 0), // 底部透明
               ],
             ),
           ),
-        ),
-        contentIsEmpty(context),
-        SizedBox(
-          height: 120,
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(_appBarOpacity),
@@ -501,23 +515,40 @@ class _HomePageState extends State<Home>
             ),
           ),
         ),
+        // 内容区域
+        Expanded(child: contentIsEmpty(context)),
       ],
     );
   }
 
   //判断是否为空
   Widget contentIsEmpty(BuildContext context) {
-    if (tabs.isNotEmpty) {
-      return PageView(
-        controller: pageController,
-        onPageChanged: (index) {
-          _tabController.animateTo(index);
-        },
-        children: List.generate(tabs.length, (index) {
-          return ListView(
-            controller: _scrollController, // 添加控制器
+    if (tabs.isEmpty) {
+      return Center(child: NoData());
+    }
+
+    return PageView(
+      controller: pageController,
+      onPageChanged: (pageViewIndex) {
+        _tabController.animateTo(pageViewIndex);
+      },
+      children: List.generate(tabs.length, (index) {
+        // 确保每个tab都有对应的RefreshController
+        while (tabRefreshController.length <= index) {
+          tabRefreshController.add(RefreshController());
+        }
+
+        return SmartRefresher(
+          controller: tabRefreshController[index],
+          enablePullDown: true,
+          enablePullUp: false,
+          onRefresh: () async {
+            debugPrint('onRefresh: $index');
+            await onRefresh(index);
+          },
+          child: ListView(
             padding: EdgeInsets.only(
-              top: 120,
+              top: 10, // 减小顶部padding
               left: Layout.paddingL,
               right: Layout.paddingL,
             ),
@@ -535,11 +566,10 @@ class _HomePageState extends State<Home>
                 ),
               ),
             ],
-          );
-        }),
-      );
-    }
-    return Padding(padding: const EdgeInsets.only(top: 120), child: NoData());
+          ),
+        );
+      }),
+    );
   }
 
   @override
