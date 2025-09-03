@@ -47,8 +47,8 @@ class VideoItem extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width - 250,
+                        Flexible(
+                          flex: 1,
                           child: Text(
                             videoData.title ?? "",
                             maxLines: 1,
@@ -56,21 +56,28 @@ class VideoItem extends StatelessWidget {
                             style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                         ),
-                        Row(
-                          children: [
-                            Text(
-                              "${videoData.up ?? 0}",
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: Color.fromRGBO(255, 101, 39, 1),
+                        SizedBox(
+                          width: 60,
+                          child: Row(
+                            //右对齐
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                formatString("${videoData.up ?? 0}"),
+                                //最长四个 字
+                                maxLines: 1,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: Color.fromRGBO(255, 101, 39, 1),
+                                ),
                               ),
-                            ),
-                            SvgPicture.asset(
-                              'assets/images/hot_surface.svg',
-                              width: 20,
-                              height: 20,
-                            ),
-                          ],
+                              SvgPicture.asset(
+                                'assets/images/hot_surface.svg',
+                                width: 20,
+                                height: 20,
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -149,6 +156,11 @@ class VideoItem extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  //实现一个字符串格式化函数 最长截取四个字
+  String formatString(String str) {
+    return str.length > 4 ? str.substring(0, 4) : str;
   }
 
   Widget _buildVideoItemOverlay(VideoPageDataList item) {

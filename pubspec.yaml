@@ -66,12 +66,13 @@ dependencies:
   url_launcher: ^6.3.2
   flutter_launcher_icons: ^0.14.4
   package_info_plus: ^8.3.1
-  pull_to_refresh: ^2.0.0
   shared_preferences: ^2.5.3
   get: ^4.7.2
   tdesign_flutter: ^0.2.4
   open_file: ^3.5.10
   easy_refresh: ^3.4.0
+  pull_to_refresh_flutter3: ^2.0.2
+  pull_to_refresh: ^2.0.0
 
 dev_dependencies:
   flutter_test:

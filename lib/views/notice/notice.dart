@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../../api/api.dart';
@@ -33,6 +34,7 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
   bool disposed = false;
   final ScrollController _scrollController = ScrollController();
   List<NoticeInfoDataList> noticeInfoData = [];
+  final RefreshController _refreshController = RefreshController(initialRefresh: false);
 
   // 数据加载逻辑分离
   Future<void> noticeInfo() async {
@@ -78,13 +80,30 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
   Future<void> loadMore() async {
     debugPrint('loadMore');
     currentPage++;
-    TDToast.showLoading(context: context, text: "加载中");
     await noticeInfo();
-    TDToast.dismissLoading();
     if (disposed) {
       return;
     }
     setState(() {});
+  }
+
+  // 新增刷新方法
+  Future<void> _onRefresh() async {
+    currentPage = 1;
+    noticeInfoData.clear();
+    await noticeInfo();
+    _refreshController.refreshCompleted();
+    setState(() {});
+  }
+
+  // 新增加载更多方法
+  Future<void> _onLoading() async {
+    currentPage++;
+    await noticeInfo();
+    if (mounted) {
+      setState(() {});
+      _refreshController.loadComplete();
+    }
   }
 
   /// 返回一个Widget自动填充剩余高度 且可以滑动
@@ -97,11 +116,7 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else if (snapshot.hasData) {
-          return SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
-            controller: _scrollController,
-            child: contentIsEmpty(context),
-          );
+          return contentIsEmpty(context);
         } else {
           return Text('No data available');
         }
@@ -113,72 +128,64 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
     if (noticeInfoData.isEmpty) {
       return NoData();
     } else {
-      return SingleChildScrollView(
-        child: Container(
-          height: MediaQuery.of(context).size.height,
-          padding: EdgeInsets.only(left: 10, right: 10),
-          child: Column(
-            children: [
-              noticeInfoData.isEmpty
-                  ? Container()
-                  : ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: noticeInfoData.length ?? 0,
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        child: Card(
-                          child: Container(
-                            margin: const EdgeInsets.only(top: 10),
-                            padding: const EdgeInsets.only(left: 10, right: 10),
-                            decoration: const BoxDecoration(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(10),
-                              ),
+      return SmartRefresher(
+        controller: _refreshController,
+        onRefresh: _onRefresh,
+        onLoading: _onLoading,
+        enablePullUp: true,
+        child: ListView.builder(
+          itemCount: noticeInfoData.length ?? 0,
+          itemBuilder: (context, index) {
+            return GestureDetector(
+              child: Card(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 10),
+                  padding: const EdgeInsets.only(left: 10, right: 10),
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(10),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Column(
+                      spacing: 10,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment:
+                              CrossAxisAlignment.center,
+                          children: [
+                            _buildTitle(
+                              noticeInfoData[index].title ?? "",
                             ),
-                            child: Padding(
-                              padding: EdgeInsets.all(10),
-                              child: Column(
-                                spacing: 10,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      _buildTitle(
-                                        noticeInfoData[index].title ?? "",
-                                      ),
-                                    ],
-                                  ),
-                                  Text(
-                                    noticeInfoData[index].summary ?? "",
-                                    maxLines: 3,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  Divider(height: 0.5),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [Text("查看详情")],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                          ],
                         ),
-                        onTap:
-                            () => Get.toNamed(
-                              "/html",
-                              arguments: {
-                                "title": noticeInfoData[index].title ?? "",
-                                "content": noticeInfoData[index].content ?? "",
-                              },
-                            ),
-                      );
+                        Text(
+                          noticeInfoData[index].summary ?? "",
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Divider(height: 0.5),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [Text("查看详情")],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              onTap:
+                  () => Get.toNamed(
+                    "/html",
+                    arguments: {
+                      "title": noticeInfoData[index].title ?? "",
+                      "content": noticeInfoData[index].content ?? "",
                     },
                   ),
-            ],
-          ),
+            );
+          },
         ),
       );
     }

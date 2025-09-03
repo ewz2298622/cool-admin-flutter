@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/components/no_data.dart';
 import 'package:get/get.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../../api/api.dart';
@@ -24,7 +25,9 @@ class SearchResultState extends State<SearchResult>
   TextEditingController searchController = TextEditingController();
   int currentPage = 1;
   bool disposed = false;
-  final ScrollController _scrollController = ScrollController();
+  final RefreshController _refreshController = RefreshController(
+    initialRefresh: false,
+  );
   String keyWord = Get.arguments["keyWord"];
 
   Future<void> getVideoPages() async {
@@ -48,7 +51,6 @@ class SearchResultState extends State<SearchResult>
         inputText = keyWord;
         searchController.text = keyWord;
       });
-      _scrollControllerAdd();
       await getVideoPages();
       return "init success";
     } catch (e) {
@@ -64,24 +66,12 @@ class SearchResultState extends State<SearchResult>
     super.initState();
   }
 
-  _scrollControllerAdd() {
-    _scrollController.addListener(listenLoadMoreCallback);
-  }
-
-  void listenLoadMoreCallback() {
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
-      // 滚动到底部时触发
-      loadMore();
-    }
-  }
-
   Future<void> loadMore() async {
     debugPrint('loadMore');
     currentPage++;
-    TDToast.showLoading(context: context, text: "加载中");
+    // TDToast.showLoading(context: context, text: "加载中");
     await getVideoPages();
-    TDToast.dismissLoading();
+    // TDToast.dismissLoading();
     if (disposed) {
       return;
     }
@@ -114,32 +104,68 @@ class SearchResultState extends State<SearchResult>
     );
   }
 
-  Widget isShowContent() {
-    if (videoPageData.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.only(top: 10),
-        width: double.infinity,
-        child: NoData(),
-      );
-    } else {
-      return Container(
-        padding: const EdgeInsets.only(top: 10),
-        width: double.infinity,
-        child: Column(children: [VideoOneSmall(videoPageData: videoPageData)]),
-      );
-    }
-  }
-
   Future<void> search() async {
     currentPage = 1;
     videoPageData.clear();
-    TDToast.showLoading(context: context, text: "加载中");
+    // TDToast.showLoading(context: context, text: "加载中");
     await getVideoPages();
-    TDToast.dismissLoading();
+    // TDToast.dismissLoading();
     if (disposed) {
       return;
     }
     setState(() {});
+    // 刷新完成
+    _refreshController.refreshCompleted();
+  }
+
+  // 添加刷新方法
+  Future<void> _onRefresh() async {
+    currentPage = 1;
+    videoPageData.clear();
+    await getVideoPages();
+    if (disposed) return;
+    setState(() {});
+    _refreshController.refreshCompleted();
+  }
+
+  // 添加加载更多方法
+  Future<void> _onLoading() async {
+    currentPage++;
+    await getVideoPages();
+    if (disposed) return;
+    setState(() {});
+
+    // 判断是否还有更多数据
+    if (videoPageData.length < currentPage * 10) {
+      // 假设每页10条数据
+      _refreshController.loadNoData();
+    } else {
+      _refreshController.loadComplete();
+    }
+  }
+
+  Widget isShowContent() {
+    // 使用 SmartRefresher 包装内容，始终使用SmartRefresher
+    return SmartRefresher(
+      controller: _refreshController,
+      enablePullUp: true,
+      onRefresh: _onRefresh,
+      onLoading: _onLoading, child: videoPageData.isEmpty
+          ? NoData()
+          : CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Container(
+                    padding: const EdgeInsets.only(top: 10),
+                    width: double.infinity,
+                    child: Column(
+                      children: [VideoOneSmall(videoPageData: videoPageData)],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+    );
   }
 
   /// 返回一个Widget自动填充剩余高度 且可以滑动
@@ -157,29 +183,26 @@ class SearchResultState extends State<SearchResult>
             children: [
               _buildDefaultSearchBar(),
               Expanded(
-                child: SingleChildScrollView(
-                  physics: BouncingScrollPhysics(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          left: 10,
-                          right: 10,
-                          top: 10,
-                        ),
-                        child: Text(
-                          '搜索结果',
-                          textAlign: TextAlign.left,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 10,
+                        right: 10,
+                        top: 10,
+                      ),
+                      child: Text(
+                        '搜索结果',
+                        textAlign: TextAlign.left,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      isShowContent(),
-                    ],
-                  ),
+                    ),
+                    Expanded(child: isShowContent()),
+                  ],
                 ),
               ),
             ],
@@ -200,5 +223,12 @@ class SearchResultState extends State<SearchResult>
       ),
       body: Container(child: _buildContent()),
     );
+  }
+
+  @override
+  void dispose() {
+    // 释放 RefreshController 资源
+    _refreshController.dispose();
+    super.dispose();
   }
 }

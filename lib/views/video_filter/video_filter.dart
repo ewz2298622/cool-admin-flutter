@@ -1,5 +1,6 @@
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
@@ -73,6 +74,7 @@ class VideoFilterState extends State<VideoFilter>
           (await Api.getVideoPages(data)).data?.list ??
           [] as List<VideoPageDataList>;
       videoPageData = [...videoPageData, ...list];
+      setState(() {});
     } catch (e) {
       debugPrint('Initialization getVideoPages failed: $e');
     }
@@ -543,7 +545,6 @@ class VideoFilterState extends State<VideoFilter>
   }
 
   Future<void> loadMore() async {
-    debugPrint('loadMore');
     currentPage++;
     await getVideoPages();
     TDToast.dismissLoading();
@@ -551,6 +552,8 @@ class VideoFilterState extends State<VideoFilter>
       return;
     }
   }
+
+  final RefreshController _refreshController = RefreshController();
 
   /// 返回一个Widget自动填充剩余高度 且可以滑动
   Widget _buildContent() {
@@ -563,21 +566,18 @@ class VideoFilterState extends State<VideoFilter>
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}'); // 显示错误信息
         } else if (snapshot.hasData) {
-          return EasyRefresh(
-            controller: _easyRefreshController,
+          return SmartRefresher(
             onRefresh: () async {
               await onRefresh();
-              if (mounted) {
-                _easyRefreshController.finishRefresh();
-                _easyRefreshController.resetFooter();
-                setState(() {});
-              }
+              _refreshController.refreshCompleted();
             },
-            onLoad: () async {
+            onLoading: () async {
               await loadMore();
-              _easyRefreshController.finishLoad(IndicatorResult.success);
-              setState(() {});
+              _refreshController.loadComplete();
             },
+            enablePullDown: true,
+            enablePullUp: true,
+            controller: _refreshController,
             child: CustomScrollView(
               controller: _scrollController,
               slivers: <Widget>[

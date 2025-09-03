@@ -28,8 +28,10 @@ import 'package:flutter_app/views/week/week.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
+import 'components/loading.dart';
 import 'db/manager/DBManager.dart';
 
 void main() {
@@ -53,41 +55,63 @@ class MyApp extends StatelessWidget {
     initSDK();
     return Consumer<ThemeChangeEvent>(
       builder: (context, themeManager, child) {
-        return GetMaterialApp(
-          darkTheme: ThemeData.dark(),
-          themeMode: themeManager.themeMode,
-          theme: ThemeData(
-            primaryColor: const Color(0xFFFFFFFF),
-            primaryColorDark: const Color(0xFFFFFFFF),
-            primaryColorLight: const Color(0x33000000),
-            scaffoldBackgroundColor: const Color(0xFFFFFFFF),
-            textButtonTheme: TextButtonThemeData(
-              style: ButtonStyle(
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                overlayColor: MaterialStateProperty.all(Colors.transparent),
+        return RefreshConfiguration(
+          springDescription: SpringDescription(
+            stiffness: 170,
+            damping: 16,
+            mass: 0.1,
+          ),
+          headerBuilder:
+              () => WaterDropHeader(
+                refresh: PageLoading(),
+                complete: Text(''),
+                failed: Text(''),
+              ),
+          footerBuilder:
+              () => ClassicFooter(
+                loadingText: '',
+                loadingIcon: PageLoading(),
+                idleText: '',
+                noDataText: '',
+                failedText: '',
+                canLoadingText: '',
+              ),
+          child: GetMaterialApp(
+            darkTheme: ThemeData.dark(),
+            themeMode: themeManager.themeMode,
+            theme: ThemeData(
+              primaryColor: const Color(0xFFFFFFFF),
+              primaryColorDark: const Color(0xFFFFFFFF),
+              primaryColorLight: const Color(0x33000000),
+              scaffoldBackgroundColor: const Color(0xFFFFFFFF),
+              textButtonTheme: TextButtonThemeData(
+                style: ButtonStyle(
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  overlayColor: MaterialStateProperty.all(Colors.transparent),
+                ),
+              ),
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Color(0xFFFFFFFF),
+                foregroundColor: Color(0xFF000000),
+                elevation: 0,
               ),
             ),
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xFFFFFFFF),
-              foregroundColor: Color(0xFF000000),
-              elevation: 0,
-            ),
+            initialRoute: '/',
+            getPages: [
+              GetPage(name: '/', page: () => SplashPage()),
+              GetPage(name: '/main', page: () => const MainPage()),
+              GetPage(name: '/video_detail', page: () => Video_Detail()),
+              GetPage(name: '/short_drama', page: () => ShortDrama()),
+              GetPage(name: '/notice', page: () => Notice()),
+              GetPage(name: '/html', page: () => HtmlPage()),
+              GetPage(name: '/week', page: () => WeekPage()),
+              GetPage(name: '/search', page: () => VideoSearch()),
+              GetPage(name: '/search_result', page: () => SearchResult()),
+              GetPage(name: '/login', page: () => Login()),
+              GetPage(name: '/feedback', page: () => FeedbackPage()),
+            ],
+            navigatorKey: ContextManager.navigatorKey,
           ),
-          initialRoute: '/',
-          getPages: [
-            GetPage(name: '/', page: () => SplashPage()),
-            GetPage(name: '/main', page: () => const MainPage()),
-            GetPage(name: '/video_detail', page: () => Video_Detail()),
-            GetPage(name: '/short_drama', page: () => ShortDrama()),
-            GetPage(name: '/notice', page: () => Notice()),
-            GetPage(name: '/html', page: () => HtmlPage()),
-            GetPage(name: '/week', page: () => WeekPage()),
-            GetPage(name: '/search', page: () => VideoSearch()),
-            GetPage(name: '/search_result', page: () => SearchResult()),
-            GetPage(name: '/login', page: () => Login()),
-            GetPage(name: '/feedback', page: () => FeedbackPage()),
-          ],
-          navigatorKey: ContextManager.navigatorKey,
         );
       },
     );

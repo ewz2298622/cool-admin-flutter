@@ -1,5 +1,6 @@
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
@@ -54,6 +55,7 @@ class VideoAlbumState extends State<VideoAlbum>
     try {
       await getAlbumById();
       await getAlbumVideoList();
+      setState(() {});
       return "init success";
     } catch (e) {
       print('Initialization failed: $e');
@@ -158,6 +160,8 @@ class VideoAlbumState extends State<VideoAlbum>
     );
   }
 
+  final RefreshController _refreshController = RefreshController();
+
   Widget _buildList() {
     return Card(
       margin: const EdgeInsets.only(top: 200),
@@ -172,17 +176,17 @@ class VideoAlbumState extends State<VideoAlbum>
         //动态计算高度
         height: MediaQuery.of(context).size.height - 150,
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
-        child: EasyRefresh(
-          controller: _easyRefreshController,
-          // onRefresh: _onRefresh,
+        child: SmartRefresher(
           onRefresh: () async {
             await init();
-            if (mounted) {
-              _easyRefreshController.finishRefresh();
-              _easyRefreshController.resetFooter();
-              setState(() {});
-            }
+            _refreshController.refreshCompleted();
           },
+          onLoading: () async {
+            _refreshController.loadComplete();
+          },
+          enablePullDown: true,
+          enablePullUp: true,
+          controller: _refreshController,
           child: ListView(
             padding: const EdgeInsets.only(top: 0),
             children: [VideoThree(videoPageData: videoPageData)],

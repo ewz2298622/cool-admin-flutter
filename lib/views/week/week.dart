@@ -1,6 +1,6 @@
-import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
@@ -29,6 +29,7 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
 
   /// 存储星期字典数据
   List<DictDataDataWeek> week = [];
+  List<RefreshController> tabRefreshController = [];
 
   /// 获取字典信息和对应的星期数据
   ///
@@ -318,6 +319,8 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
     );
   }
 
+  // 添加刷新控制器
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -350,24 +353,23 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
     if (day >= weekList.length) {
       return NoData();
     }
-    return EasyRefresh.builder(
+    debugPrint('weekList[day]: ${day}');
+    tabRefreshController.add(RefreshController());
+    return SmartRefresher(
+      controller: tabRefreshController[day],
       onRefresh: () async {
-        weekList.clear();
-        await init();
+        // 刷新当前tab的数据
+        await getWeekList(week[day].id ?? 0);
         setState(() {});
-        debugPrint('刷新成功');
+        tabRefreshController[day].refreshCompleted();
       },
-      onLoad: () async {},
-      childBuilder: (context, physics) {
-        return ListView.builder(
-          padding: EdgeInsets.all(16),
-          physics: physics,
-          itemCount: weekList[day].length,
-          itemBuilder: (context, index) {
-            return _buildWeekItem(weekList[day][index]);
-          },
-        );
-      },
+      child: ListView.builder(
+        padding: EdgeInsets.all(16),
+        itemCount: weekList[day].length,
+        itemBuilder: (context, index) {
+          return _buildWeekItem(weekList[day][index]);
+        },
+      ),
     );
   }
 }

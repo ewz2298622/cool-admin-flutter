@@ -1,5 +1,5 @@
-import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
@@ -25,6 +25,7 @@ class VideoRankingState extends State<VideoRanking>
   List<VideoPageDataList> popularity_sum = [];
   //定义一个二维数组储存List<VideoPageDataList>
   List<List<VideoPageDataList>> videoPageDataList = [];
+  List<RefreshController> tabRefreshController = [];
 
   var tabs = [
     const TDTab(text: '热片榜'),
@@ -42,47 +43,94 @@ class VideoRankingState extends State<VideoRanking>
     "popularity_month",
     "popularity_sum",
   ];
+  // 添加每个tab的当前页码
+  List<int> pageList = [1, 1, 1, 1];
+  // 添加每个tab是否还有更多数据的标记
+  List<bool> hasMoreList = [true, true, true, true];
+
+  // 新增共用函数，根据index添加不同分类的数据
+  Future<List<VideoPageDataList>> _fetchDataByIndex(
+    int index, {
+    int page = 1,
+  }) async {
+    // 如果没有更多数据，直接返回空列表
+    if (!hasMoreList[index]) {
+      return [];
+    }
+
+    VideoPageEntity response = await Api.getVideoSortPage({
+      "page": page,
+      "sort": sort[index],
+      "size": 10,
+    });
+
+    return response.data?.list ?? [] as List<VideoPageDataList>;
+  }
+
   Future<void> initRequest() async {
-    List<VideoPageDataList> popularity_day_list =
-        (await Api.getVideoSortPage({
-          "page": currentPage,
-          "sort": "popularity_day",
-          "size": 100,
-        })).data?.list ??
-        [] as List<VideoPageDataList>;
+    // 重置状态
+    pageList = [1, 1, 1, 1];
+    hasMoreList = [true, true, true, true];
 
-    popularity_day = [...popularity_day, ...popularity_day_list];
+    // 使用共用函数获取各分类数据
+    for (int i = 0; i < sort.length; i++) {
+      List<VideoPageDataList> dataList = await _fetchDataByIndex(i, page: 1);
+      switch (i) {
+        case 0:
+          popularity_day = dataList;
+          break;
+        case 1:
+          popularity_week = dataList;
+          break;
+        case 2:
+          popularity_month = dataList;
+          break;
+        case 3:
+          popularity_sum = dataList;
+          break;
+      }
+    }
 
-    List<VideoPageDataList> popularity_week_list =
-        (await Api.getVideoSortPage({
-          "page": currentPage,
-          "sort": "popularity_week",
-          "size": 100,
-        })).data?.list ??
-        [] as List<VideoPageDataList>;
-    popularity_week = [...popularity_week, ...popularity_week_list];
+    videoPageDataList = [
+      popularity_day,
+      popularity_week,
+      popularity_month,
+      popularity_sum,
+    ];
+  }
 
-    List<VideoPageDataList> popularity_month_list =
-        (await Api.getVideoSortPage({
-          "page": currentPage,
-          "sort": "popularity_month",
-          "size": 100,
-        })).data?.list ??
-        [] as List<VideoPageDataList>;
-    popularity_month = [...popularity_month, ...popularity_month_list];
+  // 新增加载更多数据的函数
+  Future<void> loadMoreData(int index) async {
+    if (!hasMoreList[index]) return;
 
-    List<VideoPageDataList> popularity_sum_list =
-        (await Api.getVideoSortPage({
-          "page": currentPage,
-          "sort": "popularity_sum",
-          "size": 100,
-        })).data?.list ??
-        [] as List<VideoPageDataList>;
-    popularity_sum = [...popularity_sum, ...popularity_sum_list];
-    videoPageDataList.add(popularity_day);
-    videoPageDataList.add(popularity_month);
-    videoPageDataList.add(popularity_sum);
-    videoPageDataList.add(popularity_week);
+    pageList[index]++;
+    List<VideoPageDataList> dataList = await _fetchDataByIndex(
+      index,
+      page: pageList[index],
+    );
+
+    setState(() {
+      switch (index) {
+        case 0:
+          popularity_day = [...popularity_day, ...dataList];
+          break;
+        case 1:
+          popularity_week = [...popularity_week, ...dataList];
+          break;
+        case 2:
+          popularity_month = [...popularity_month, ...dataList];
+          break;
+        case 3:
+          popularity_sum = [...popularity_sum, ...dataList];
+          break;
+      }
+      videoPageDataList = [
+        popularity_day,
+        popularity_week,
+        popularity_month,
+        popularity_sum,
+      ];
+    });
   }
 
   Future<String> init() async {
@@ -232,26 +280,66 @@ class VideoRankingState extends State<VideoRanking>
                 flex: 1,
                 child: TabBarView(
                   children: List.generate(tabs.length, (index) {
-                    // return VideoOne(videoData: videoPageDataList[index]);
-                    return EasyRefresh.builder(
+                    // 确保每个tab都有独立的RefreshController
+                    while (tabRefreshController.length <= index) {
+                      tabRefreshController.add(RefreshController());
+                    }
+                    return SmartRefresher(
+                      controller: tabRefreshController[index],
                       onRefresh: () async {
-                        await init();
+                        // 刷新当前tab的数据
+                        pageList[index] = 1;
+                        hasMoreList[index] = true;
+                        List<VideoPageDataList> dataList =
+                            await _fetchDataByIndex(index, page: 1);
+                        switch (index) {
+                          case 0:
+                            popularity_day = dataList;
+                            break;
+                          case 1:
+                            popularity_week = dataList;
+                            break;
+                          case 2:
+                            popularity_month = dataList;
+                            break;
+                          case 3:
+                            popularity_sum = dataList;
+                            break;
+                        }
+                        videoPageDataList = [
+                          popularity_day,
+                          popularity_week,
+                          popularity_month,
+                          popularity_sum,
+                        ];
                         setState(() {});
-                        debugPrint('刷新成功');
+                        tabRefreshController[index].refreshCompleted();
                       },
-                      onLoad: () async {},
-                      childBuilder: (context, physics) {
-                        return ListView.builder(
-                          padding: EdgeInsets.all(16),
-                          physics: physics,
-                          itemCount: videoPageDataList[index].length,
-                          itemBuilder: (context, key) {
-                            return VideoOne(
-                              videoData: videoPageDataList[index][key],
-                            );
-                          },
-                        );
+                      onLoading: () async {
+                        // 加载更多数据
+                        await loadMoreData(index);
+                        if (mounted) {
+                          setState(() {});
+                        }
+                        // 确保控制器存在且状态正确
+                        if (index < tabRefreshController.length) {
+                          if (hasMoreList[index]) {
+                            tabRefreshController[index].loadComplete();
+                          } else {
+                            tabRefreshController[index].loadNoData();
+                          }
+                        }
                       },
+                      enablePullUp: true,
+                      child: ListView.builder(
+                        padding: EdgeInsets.all(16),
+                        itemCount: videoPageDataList[index].length,
+                        itemBuilder: (context, key) {
+                          return VideoOne(
+                            videoData: videoPageDataList[index][key],
+                          );
+                        },
+                      ),
                     );
                   }),
                 ),
