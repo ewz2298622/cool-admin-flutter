@@ -548,7 +548,7 @@ class _HomePageState extends State<Home>
           },
           child: ListView(
             padding: EdgeInsets.only(
-              top: 10, // 减小顶部padding
+              top: 20, // 原始值20，保持适当间距
               left: Layout.paddingL,
               right: Layout.paddingL,
             ),
