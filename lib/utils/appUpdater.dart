@@ -74,7 +74,7 @@ class AppUpdater {
       }
 
       String savePath = '${directory!.path}/app_update.apk';
-      debugPrint('保存路径: $savePath 下载url$apkUrl');
+
       // 下载文件
       final dio = Dio();
       await dio.download(

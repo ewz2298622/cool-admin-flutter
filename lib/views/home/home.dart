@@ -426,7 +426,6 @@ class _HomePageState extends State<Home>
     return FutureBuilder<String>(
       future: _futureBuilderFuture, // 异步操作
       builder: (context, snapshot) {
-        debugPrint('snapshot: ${snapshot.hasData}');
         if (snapshot.connectionState == ConnectionState.waiting) {
           return PageLoading();
         } else if (snapshot.hasError) {

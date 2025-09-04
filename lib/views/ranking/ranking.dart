@@ -332,7 +332,7 @@ class VideoRankingState extends State<VideoRanking>
                       },
                       enablePullUp: true,
                       child: ListView.builder(
-                        padding: EdgeInsets.all(16),
+                        padding: const EdgeInsets.only(top: 0),
                         itemCount: videoPageDataList[index].length,
                         itemBuilder: (context, key) {
                           return VideoOne(
