@@ -65,7 +65,7 @@ class Video extends StatelessWidget {
       return Container();
     }
     return Container(
-      width: double.infinity,
+      width: 130,
       padding: const EdgeInsets.only(right: 4, bottom: 3),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(5),
@@ -83,28 +83,34 @@ class Video extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.end,
         spacing: 5,
         children: [
-          Text(
-            item?.remarks ?? '',
-            textAlign: TextAlign.right,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontFamily: 'PingFang SC',
-              fontWeight: FontWeight.w500,
-              fontSize: 11.0,
-              color: Colors.white,
+          Flexible(
+            flex: 1,
+            child: Text(
+              item?.remarks ?? '',
+              textAlign: TextAlign.right,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: 'PingFang SC',
+                fontWeight: FontWeight.w500,
+                fontSize: 11.0,
+                color: Colors.white,
+              ),
             ),
           ),
-          Text(
-            VideoUtil.formatScore(item?.doubanScore),
-            textAlign: TextAlign.right,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontFamily: 'PingFang SC',
-              fontWeight: FontWeight.w500,
-              fontSize: 11.0,
-              color: Color.fromRGBO(255, 102, 0, 1),
+          SizedBox(
+            width: 30,
+            child: Text(
+              VideoUtil.formatScore(item?.doubanScore),
+              textAlign: TextAlign.right,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontFamily: 'PingFang SC',
+                fontWeight: FontWeight.w500,
+                fontSize: 11.0,
+                color: Color.fromRGBO(255, 102, 0, 1),
+              ),
             ),
           ),
         ],
@@ -122,11 +128,11 @@ class Video extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(3),
             gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+              begin: Alignment.centerLeft, // 对应 90deg (从左到右)
+              end: Alignment.centerRight,
               colors: [
-                Color.fromRGBO(253, 221, 68, 0.80),
-                Color.fromRGBO(253, 221, 68, 0.80),
+                Color(0xFFFFA35C), // rgb(255, 163, 92)
+                Color(0xFFFF5821), // rgb(255, 88, 33)
               ],
             ),
           ),
@@ -135,7 +141,7 @@ class Video extends StatelessWidget {
             VideoUtil.formatTag(item?.pubdate ?? ""),
             style: TextStyle(
               fontSize: 11,
-              color: Colors.black87,
+              color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),

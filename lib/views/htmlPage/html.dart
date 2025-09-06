@@ -21,6 +21,10 @@ class _HtmlPageState extends State<HtmlPage> {
 
   String title = Get.arguments["title"];
   String content = Get.arguments["content"];
+  
+  // 缓存主题样式避免重复计算
+  String? _cachedDarkModeCSS;
+  String? _cachedLightModeCSS;
 
   // 组件状态初始化方法，在组件创建时调用
   @override
@@ -83,7 +87,7 @@ class _HtmlPageState extends State<HtmlPage> {
 
     if (isDarkMode) {
       // 黑夜模式CSS样式
-      final darkModeCSS = """
+      _cachedDarkModeCSS ??= """
         <style>
           p {
               background-color: #424242;
@@ -140,13 +144,13 @@ class _HtmlPageState extends State<HtmlPage> {
       controller.runJavaScript("""
         (function() {
           var style = document.createElement('style');
-          style.innerHTML = `$darkModeCSS`;
+          style.innerHTML = `${_cachedDarkModeCSS}`;
           document.head.appendChild(style);
         })();
       """);
     } else {
       // 白天模式CSS样式
-      final lightModeCSS = """
+      _cachedLightModeCSS ??= """
         <style>
           body {
             background-color: #ffffff;
@@ -197,7 +201,7 @@ class _HtmlPageState extends State<HtmlPage> {
       controller.runJavaScript("""
         (function() {
           var style = document.createElement('style');
-          style.innerHTML = `$lightModeCSS`;
+          style.innerHTML = `${_cachedLightModeCSS}`;
           document.head.appendChild(style);
         })();
       """);
@@ -223,10 +227,10 @@ class _HtmlPageState extends State<HtmlPage> {
     return Scaffold(
       // 设置页面的顶部导航栏，显示标题
       appBar: AppBar(
-        title: Text(title, style: TextStyle(fontSize: 16)),
+        title: Text(title, style: const TextStyle(fontSize: 16)),
         //返回按钮
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, size: 20),
+          icon: const Icon(Icons.arrow_back_ios, size: 20),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -238,13 +242,9 @@ class _HtmlPageState extends State<HtmlPage> {
         // AppBar背景色跟随主题
         backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
         foregroundColor: isDarkMode ? Colors.white : Colors.black,
-        iconTheme: IconThemeData(
-          color: isDarkMode ? Colors.white : Colors.black,
-        ),
       ),
       // 设置页面的主体内容，使用 WebViewWidget 组件来显示 WebView
-      body: Container(
-        // 背景色跟随主题
+      body: ColoredBox(
         color: isDarkMode ? Colors.black : Colors.white,
         child: WebViewWidget(controller: controller),
       ),

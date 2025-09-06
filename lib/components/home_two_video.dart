@@ -140,11 +140,11 @@ class HomeTwoVideo extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(3),
             gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+              begin: Alignment.centerLeft, // 对应 90deg (从左到右)
+              end: Alignment.centerRight,
               colors: [
-                Color.fromRGBO(253, 221, 68, 0.80),
-                Color.fromRGBO(253, 221, 68, 0.80),
+                Color(0xFFFFA35C), // rgb(255, 163, 92)
+                Color(0xFFFF5821), // rgb(255, 88, 33)
               ],
             ),
           ),
@@ -153,7 +153,7 @@ class HomeTwoVideo extends StatelessWidget {
             VideoUtil.formatTag(item.pubdate ?? ""),
             style: TextStyle(
               fontSize: 11,
-              color: Colors.black87,
+              color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),

@@ -81,7 +81,7 @@ class _HomePageState extends State<Home>
   final PageController pageController = PageController(initialPage: 0);
   bool disposed = false;
   bool isLogin = false;
-  var _futureBuilderFuture;
+  late Future<String> _futureBuilderFuture; // 修改为late变量
   List<DictInfoListData> dictInfoListData = [];
 
   Map<int, List<SwiperDataList>> swiperMap = {};
@@ -144,11 +144,11 @@ class _HomePageState extends State<Home>
 
   @override
   void initState() {
+    super.initState(); // 提前调用super.initState()
     _futureBuilderFuture = init();
     // 添加滚动监听器
     _scrollController.addListener(_onScroll);
     AppUpdater.checkUpdate();
-    super.initState();
   }
 
   @override
@@ -165,15 +165,17 @@ class _HomePageState extends State<Home>
       await getDictInfoPages();
       await getSwiperListByCategoryIds();
       await getAlbumListByCategoryIds();
-      noticeInfo();
+      await noticeInfo(); // 等待noticeInfo完成
       // 初始化 TabController
       _tabController = TabController(length: tabs.length, vsync: this);
       // 添加监听器以同步 PageView 和 TabBar
       _tabController.addListener(_handleTabSelection);
 
-      //判斷noticeInfoData是否有數據
+      //判断noticeInfoData是否有数据
       if (noticeInfoData.isNotEmpty) {
-        message();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          message(); // 在帧渲染后显示对话框
+        });
       }
       return "init success";
     } catch (e) {
@@ -309,57 +311,59 @@ class _HomePageState extends State<Home>
       autoplay: true,
       itemCount: (swiperMap[id]?.length) ?? 0,
       itemBuilder: (BuildContext context, int index) {
-        return Container(
-          decoration: BoxDecoration(
-            //5px圆角
-            borderRadius: BorderRadius.circular(5),
-          ),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              TDImage(
-                height: 158,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                imgUrl: swiperMap[id]?[index].image ?? '',
-                errorWidget: const TDImage(
-                  //宽度100%
+        return Card(
+          child: Container(
+            decoration: BoxDecoration(
+              //5px圆角
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                TDImage(
+                  height: 158,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  assetUrl: 'assets/images/loading.gif',
-                ),
-              ),
-              Container(
-                height: 158,
-                width: double.infinity,
-                //向下对其
-                alignment: Alignment.bottomLeft,
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5), // 添加圆角
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent, // 顶部透明
-                      Colors.black.withOpacity(0.6), // 底部黑色
-                    ],
+                  imgUrl: swiperMap[id]?[index].image ?? '',
+                  errorWidget: const TDImage(
+                    //宽度100%
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    assetUrl: 'assets/images/loading.gif',
                   ),
                 ),
-                child: Text(
-                  swiperMap[id]![index].title ?? "",
-                  maxLines: 1,
-                  //溢出省略号
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.left, // 改为左对齐
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                Container(
+                  height: 158,
+                  width: double.infinity,
+                  //向下对其
+                  alignment: Alignment.bottomLeft,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5), // 添加圆角
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent, // 顶部透明
+                        Colors.black.withOpacity(0.6), // 底部黑色
+                      ],
+                    ),
+                  ),
+                  child: Text(
+                    swiperMap[id]![index].title ?? "",
+                    maxLines: 1,
+                    //溢出省略号
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.left, // 改为左对齐
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -378,20 +382,23 @@ class _HomePageState extends State<Home>
               width: MediaQuery.of(context).size.width * 0.85,
               padding: const EdgeInsets.only(left: 10),
               decoration: BoxDecoration(
-                color: Color.fromRGBO(245, 244, 247, 1),
+                color: const Color.fromRGBO(245, 244, 247, 1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
                 spacing: 8,
                 children: [
-                  Icon(Icons.search, color: Color.fromRGBO(153, 153, 153, 1)),
+                  const Icon(
+                    Icons.search,
+                    color: Color.fromRGBO(153, 153, 153, 1),
+                  ),
                   Text(
                     '请输入关键字',
                     style: TextStyle(
                       fontFamily: 'PingFang SC', // iOS 默认支持，Android 需确保字体可用
                       fontWeight: FontWeight.w500, // 对应 500
                       fontSize: 14.0, // 14px
-                      color: Color(0xFF979797), // #979797
+                      color: const Color(0xFF979797), // #979797
                       fontStyle: FontStyle.normal, // 正常样式
                     ),
                   ),
@@ -423,17 +430,18 @@ class _HomePageState extends State<Home>
 
   /// 返回一个Widget自动填充剩余高度 且可以滑动
   Widget _buildContent(BuildContext context) {
+    super.build(context); // 必须调用 super.build
     return FutureBuilder<String>(
       future: _futureBuilderFuture, // 异步操作
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return PageLoading();
+          return const PageLoading();
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}'); // 显示错误信息
         } else if (snapshot.hasData) {
           return _buildTabs(context);
         } else {
-          return Text('No data available');
+          return const Text('No data available');
         }
       },
     );
@@ -523,7 +531,7 @@ class _HomePageState extends State<Home>
   //判断是否为空
   Widget contentIsEmpty(BuildContext context) {
     if (tabs.isEmpty) {
-      return Center(child: NoData());
+      return const Center(child: NoData());
     }
 
     return PageView(
@@ -546,7 +554,7 @@ class _HomePageState extends State<Home>
             await onRefresh(index);
           },
           child: ListView(
-            padding: EdgeInsets.only(
+            padding: const EdgeInsets.only(
               top: 20, // 原始值20，保持适当间距
               left: Layout.paddingL,
               right: Layout.paddingL,
@@ -583,14 +591,17 @@ class _HomePageState extends State<Home>
     return Scaffold(body: _buildContent(context));
   }
 
+  // 使用常量避免重复创建相同的Widget
+  static const Widget _spacingWidget = SizedBox(height: 16);
+
   List<Widget> _buildAlbumContentList(List<AlbumDataList> list) {
     return List<Widget>.generate(
       list.length,
       (index) => Column(
-        spacing: 16,
         children: [
           _buildAlbumHeader(list[index]),
           _buildAlbumItemWidgetType(list[index], index),
+          _spacingWidget, // 使用预定义的间距Widget
         ],
       ),
     );
