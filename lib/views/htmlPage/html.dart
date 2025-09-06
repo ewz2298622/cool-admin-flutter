@@ -39,7 +39,7 @@ class _HtmlPageState extends State<HtmlPage> {
           // 设置 JavaScript 模式为 unrestricted，表示允许在 WebView 中无限制地执行 JavaScript 代码
           ..setJavaScriptMode(JavaScriptMode.unrestricted)
           // 设置 WebView 的背景颜色为透明
-          ..setBackgroundColor(const Color(0x00000000))
+          ..setBackgroundColor(Colors.transparent)
           // 设置导航委托，用于监听 WebView 的各种导航事件
           ..setNavigationDelegate(
             NavigationDelegate(
@@ -52,8 +52,8 @@ class _HtmlPageState extends State<HtmlPage> {
               onPageStarted: (String url) {},
               // 当页面加载完成时调用该回调函数，参数 url 表示已加载完成的页面的 URL
               onPageFinished: (String url) {
-                // 页面加载完成后才能执行 js，当前代码中注释掉了具体执行逻辑
-                // _handleBackForbid();
+                // 页面加载完成后应用主题样式
+                _applyThemeToWebView();
               },
               // 当 Web 资源加载出错时调用该回调函数，参数 error 包含错误信息
               onWebResourceError: (WebResourceError error) {},
@@ -76,6 +76,134 @@ class _HtmlPageState extends State<HtmlPage> {
           ..loadHtmlString(content);
   }
 
+  // 应用主题到WebView
+  void _applyThemeToWebView() {
+    // 修改: 使用 Theme.of(context).brightness 替代 MediaQuery.platformBrightness
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    if (isDarkMode) {
+      // 黑夜模式CSS样式
+      final darkModeCSS = """
+        <style>
+          p {
+              background-color: #424242;
+            color: #ffffff; /* 强制文字为白色 */
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          }
+          body {
+            background-color: #424242;
+            color: #ffffff; /* 强制文字为白色 */
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          }
+          h1, h2, h3, h4, h5, h6 {
+            color: #e0e0e0;
+          }
+          a {
+            color: #bb86fc;
+          }
+          code {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+          }
+          pre {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+          }
+          blockquote {
+            border-left: 4px solid #bb86fc;
+            background-color: #1e1e1e;
+            padding: 10px;
+            margin: 10px 0;
+          }
+          table {
+            border-collapse: collapse;
+            width: 100%;
+          }
+          th, td {
+            border: 1px solid #444;
+            padding: 8px;
+            text-align: left;
+          }
+          th {
+            background-color: #2d2d2d;
+          }
+          tr:nth-child(even) {
+            background-color: #1e1e1e;
+          }
+        </style>
+      """;
+
+      // 注入CSS样式
+      controller.runJavaScript("""
+        (function() {
+          var style = document.createElement('style');
+          style.innerHTML = `$darkModeCSS`;
+          document.head.appendChild(style);
+        })();
+      """);
+    } else {
+      // 白天模式CSS样式
+      final lightModeCSS = """
+        <style>
+          body {
+            background-color: #ffffff;
+            color: #000000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          }
+          h1, h2, h3, h4, h5, h6 {
+            color: #333333;
+          }
+          a {
+            color: #1976d2;
+          }
+          code {
+            background-color: #f5f5f5;
+            color: #333333;
+          }
+          pre {
+            background-color: #f5f5f5;
+            color: #333333;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+          }
+          blockquote {
+            border-left: 4px solid #1976d2;
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin: 10px 0;
+          }
+          table {
+            border-collapse: collapse;
+            width: 100%;
+          }
+          th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+          }
+          th {
+            background-color: #f2f2f2;
+          }
+          tr:nth-child(even) {
+            background-color: #f9f9f9;
+          }
+        </style>
+      """;
+
+      controller.runJavaScript("""
+        (function() {
+          var style = document.createElement('style');
+          style.innerHTML = `$lightModeCSS`;
+          document.head.appendChild(style);
+        })();
+      """);
+    }
+  }
+
   // 在系统浏览器中打开链接
   Future<void> _launchURL(String url) async {
     final Uri uri = Uri.parse(url);
@@ -89,12 +217,14 @@ class _HtmlPageState extends State<HtmlPage> {
   // 构建组件的 UI 界面
   @override
   Widget build(BuildContext context) {
-    // 返回一个 Scaffold 组件，它是 Flutter 中常用的页面布局组件
+    // 修改: 使用 Theme.of(context).brightness 替代 MediaQuery.platformBrightness
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      // 设置页面的顶部导航栏，显示标题为 'Flutter Simple Example'
+      // 设置页面的顶部导航栏，显示标题
       appBar: AppBar(
         title: Text(title, style: TextStyle(fontSize: 16)),
-        //返回
+        //返回按钮
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, size: 20),
           onPressed: () {
@@ -104,11 +234,20 @@ class _HtmlPageState extends State<HtmlPage> {
         //标题居中
         centerTitle: true,
         toolbarHeight: 40,
-        automaticallyImplyLeading: false, //设置为false
+        automaticallyImplyLeading: false,
+        // AppBar背景色跟随主题
+        backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
+        foregroundColor: isDarkMode ? Colors.white : Colors.black,
+        iconTheme: IconThemeData(
+          color: isDarkMode ? Colors.white : Colors.black,
+        ),
       ),
       // 设置页面的主体内容，使用 WebViewWidget 组件来显示 WebView
-      // 将之前初始化好的 controller 传递给 WebViewWidget，用于控制 WebView 的行为
-      body: WebViewWidget(controller: controller),
+      body: Container(
+        // 背景色跟随主题
+        color: isDarkMode ? Colors.black : Colors.white,
+        child: WebViewWidget(controller: controller),
+      ),
     );
   }
 }

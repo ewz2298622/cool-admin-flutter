@@ -70,14 +70,6 @@ class VideoAlbumState extends State<VideoAlbum>
   }
 
   // 添加刷新方法
-  Future<void> _onRefresh() async {
-    await getAlbumById();
-    await getAlbumVideoList();
-    if (mounted) {
-      setState(() {});
-      _easyRefreshController.finishRefresh();
-    }
-  }
 
   Widget _buildContent() {
     return FutureBuilder<String>(
