@@ -288,7 +288,7 @@ class VideoFilterState extends State<VideoFilter>
                       onTap: () => _category_change(item),
                     ),
                   ),
-                ),
+                ).toList(), // 添加toList()以确保正确构建
               ],
             ),
           );
@@ -359,7 +359,7 @@ class VideoFilterState extends State<VideoFilter>
                       onTap: () => _tag_change(item),
                     ),
                   ),
-                ),
+                ).toList(), // 添加toList()以确保正确构建
               ],
             ),
           );
@@ -429,7 +429,7 @@ class VideoFilterState extends State<VideoFilter>
                       onTap: () => _area_change(item),
                     ),
                   ),
-                ),
+                ).toList(), // 添加toList()以确保正确构建
               ],
             ),
           );
@@ -496,7 +496,7 @@ class VideoFilterState extends State<VideoFilter>
                     onTap: () => _year_change(item),
                   ),
                 ),
-              ),
+              ).toList(), // 添加toList()以确保正确构建
             ],
           ),
         );
@@ -522,6 +522,8 @@ class VideoFilterState extends State<VideoFilter>
     currentPage = 1;
     categoryCurrent.value = 0;
     yearCurrent.value = 0;
+    tagCurrent.value = 0;
+    regionCurrent.value = 0;
     await getVideoPages();
     if (disposed) {
       return;

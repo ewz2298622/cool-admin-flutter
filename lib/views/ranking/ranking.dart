@@ -17,7 +17,6 @@ class VideoRanking extends StatefulWidget {
 
 class VideoRankingState extends State<VideoRanking>
     with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
-  var _futureBuilderFuture;
   List<VideoPageDataList> videoPageData = [];
   List<VideoPageDataList> popularity_day = [];
   List<VideoPageDataList> popularity_week = [];
@@ -37,6 +36,8 @@ class VideoRankingState extends State<VideoRanking>
   TabController? _tabController;
   int currentPage = 1;
   int currentIndex = 0;
+  // 添加一个变量来跟踪当前显示的背景图片索引，避免快速切换时的闪烁
+  int displayedBackgroundIndex = 0;
   List<String> sort = [
     "popularity_day",
     "popularity_week",
@@ -133,53 +134,62 @@ class VideoRankingState extends State<VideoRanking>
     });
   }
 
-  Future<String> init() async {
+  Future<void> _initData() async {
     try {
       _initTabController(0);
       await initRequest();
-      return "init success";
     } catch (e) {
-      return "init success";
+      // 错误处理
     }
   }
 
   @override
   void initState() {
-    _futureBuilderFuture = init();
     super.initState();
+    _initData().then((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   Widget _buildContent() {
-    return FutureBuilder<String>(
-      future: _futureBuilderFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return PageLoading();
-        } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        } else if (snapshot.hasData) {
-          return contentIsEmpty();
-        } else {
-          return Text('No data available');
-        }
-      },
-    );
+    // 直接构建内容，避免FutureBuilder
+    if (videoPageDataList.isEmpty) {
+      return PageLoading();
+    } else {
+      return contentIsEmpty();
+    }
   }
 
   Widget contentIsEmpty() {
-    if (videoPageDataList.isEmpty) {
+    if (videoPageDataList.isEmpty || videoPageDataList[0].isEmpty) {
       return Padding(padding: const EdgeInsets.only(top: 120), child: NoData());
     } else {
       return Stack(
         children: [
-          TDImage(
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: 200,
-            imgUrl: videoPageDataList[currentIndex][0].surfacePlot ?? "",
-            errorWidget: const TDImage(
-              width: 150,
-              assetUrl: 'assets/images/loading.gif',
+          // 修改背景图片显示逻辑，使用displayedBackgroundIndex而不是currentIndex
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (child, animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: child,
+              );
+            },
+            child: TDImage(
+              key: ValueKey(displayedBackgroundIndex),
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: 200,
+              imgUrl: videoPageDataList.length > displayedBackgroundIndex && 
+                      videoPageDataList[displayedBackgroundIndex].isNotEmpty
+                  ? videoPageDataList[displayedBackgroundIndex][0].surfacePlot ?? ""
+                  : "",
+              errorWidget: const TDImage(
+                width: 150,
+                assetUrl: 'assets/images/loading.gif',
+              ),
             ),
           ),
           Container(
@@ -231,123 +241,150 @@ class VideoRankingState extends State<VideoRanking>
       length: tabs.length,
       vsync: this,
     );
+    _tabController!.addListener(() {
+      // 修改监听逻辑，确保在任何tab变化时都更新currentIndex
+      if (_tabController!.index != currentIndex) {
+        setState(() {
+          currentIndex = _tabController!.index;
+          // 当点击tab时，同步更新PageView，使用动画过渡
+          pageController.animateToPage(
+            currentIndex,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+          // 点击tab时也需要更新背景图索引
+          Future.delayed(const Duration(milliseconds: 100), () {
+            if (mounted && displayedBackgroundIndex != currentIndex) {
+              setState(() {
+                displayedBackgroundIndex = currentIndex;
+              });
+            }
+          });
+        });
+      }
+    });
   }
 
   Widget _buildTabs() {
-    return DefaultTabController(
-      //清理下边框的样式
-      //会哦去当前索引
-      length: tabs.length,
-      child: Builder(
-        builder: (context) {
-          final tabController = DefaultTabController.of(context);
-          tabController.addListener(() {
-            currentIndex = tabController.index;
-            setState(() {});
-            print("New tab index: ${tabController.index}");
-          });
-          return Column(
-            children: [
-              Container(
-                margin: EdgeInsets.only(bottom: 0, top: 0),
-                child: TabBar(
-                  isScrollable: true,
-                  tabAlignment: TabAlignment.start,
-                  dividerHeight: 0,
-                  //移除下划线
-                  // 使用空的指示器来移除下划线
-                  indicator: UnderlineTabIndicator(
-                    borderSide: BorderSide(
-                      width: 0.0,
-                      color: Colors.transparent,
-                    ), // 将宽度设置为0来隐藏下划线
-                  ),
-                  //选中的字体颜色
-                  labelColor: const Color.fromRGBO(252, 119, 66, 1),
-                  unselectedLabelStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                  ),
-                  unselectedLabelColor: const Color.fromRGBO(102, 102, 102, 1),
-                  labelStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                  ),
-                  tabs: tabs,
-                ),
-              ),
-              Flexible(
-                flex: 1,
-                child: TabBarView(
-                  children: List.generate(tabs.length, (index) {
-                    // 确保每个tab都有独立的RefreshController
-                    while (tabRefreshController.length <= index) {
-                      tabRefreshController.add(RefreshController());
+    return Column(
+      children: [
+        Container(
+          margin: EdgeInsets.only(bottom: 0, top: 0),
+          child: TabBar(
+            controller: _tabController,
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            dividerHeight: 0,
+            //移除下划线
+            // 使用空的指示器来移除下划线
+            indicator: UnderlineTabIndicator(
+              borderSide: BorderSide(
+                width: 0.0,
+                color: Colors.transparent,
+              ), // 将宽度设置为0来隐藏下划线
+            ),
+            //选中的字体颜色
+            labelColor: const Color.fromRGBO(252, 119, 66, 1),
+            unselectedLabelStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+            ),
+            unselectedLabelColor: const Color.fromRGBO(102, 102, 102, 1),
+            labelStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+            ),
+            tabs: tabs,
+          ),
+        ),
+        // 修改TabBarView部分，使用PageView替代TabBarView实现页面滑动功能
+        Expanded(
+          child: PageView(
+            controller: pageController,
+            onPageChanged: (index) {
+              // 当页面滑动时同步更新currentIndex和tab控制器
+              if (index != currentIndex) {
+                setState(() {
+                  currentIndex = index;
+                  // 延迟更新显示的背景图片索引，避免快速切换时的闪烁
+                  Future.delayed(const Duration(milliseconds: 100), () {
+                    if (mounted && currentIndex == index) {
+                      setState(() {
+                        displayedBackgroundIndex = index;
+                      });
                     }
-                    return SmartRefresher(
-                      controller: tabRefreshController[index],
-                      onRefresh: () async {
-                        // 刷新当前tab的数据
-                        pageList[index] = 1;
-                        hasMoreList[index] = true;
-                        List<VideoPageDataList> dataList =
-                            await _fetchDataByIndex(index, page: 1);
-                        switch (index) {
-                          case 0:
-                            popularity_day = dataList;
-                            break;
-                          case 1:
-                            popularity_week = dataList;
-                            break;
-                          case 2:
-                            popularity_month = dataList;
-                            break;
-                          case 3:
-                            popularity_sum = dataList;
-                            break;
-                        }
-                        videoPageDataList = [
-                          popularity_day,
-                          popularity_week,
-                          popularity_month,
-                          popularity_sum,
-                        ];
-                        setState(() {});
-                        tabRefreshController[index].refreshCompleted();
-                      },
-                      onLoading: () async {
-                        // 加载更多数据
-                        await loadMoreData(index);
-                        if (mounted) {
-                          setState(() {});
-                        }
-                        // 确保控制器存在且状态正确
-                        if (index < tabRefreshController.length) {
-                          if (hasMoreList[index]) {
-                            tabRefreshController[index].loadComplete();
-                          } else {
-                            tabRefreshController[index].loadNoData();
-                          }
-                        }
-                      },
-                      enablePullUp: true,
-                      child: ListView.builder(
-                        padding: const EdgeInsets.only(top: 0),
-                        itemCount: videoPageDataList[index].length,
-                        itemBuilder: (context, key) {
-                          return VideoOne(
-                            videoData: videoPageDataList[index][key],
-                          );
-                        },
-                      ),
+                  });
+                  // 同步更新tab控制器的index
+                  _tabController?.animateTo(index);
+                });
+              }
+            },
+            children: List.generate(tabs.length, (index) {
+              // 确保每个tab都有独立的RefreshController
+              while (tabRefreshController.length <= index) {
+                tabRefreshController.add(RefreshController());
+              }
+              return SmartRefresher(
+                controller: tabRefreshController[index],
+                onRefresh: () async {
+                  // 刷新当前tab的数据
+                  pageList[index] = 1;
+                  hasMoreList[index] = true;
+                  List<VideoPageDataList> dataList =
+                      await _fetchDataByIndex(index, page: 1);
+                  switch (index) {
+                    case 0:
+                      popularity_day = dataList;
+                      break;
+                    case 1:
+                      popularity_week = dataList;
+                      break;
+                    case 2:
+                      popularity_month = dataList;
+                      break;
+                    case 3:
+                      popularity_sum = dataList;
+                      break;
+                  }
+                  videoPageDataList = [
+                    popularity_day,
+                    popularity_week,
+                    popularity_month,
+                    popularity_sum,
+                  ];
+                  setState(() {});
+                  tabRefreshController[index].refreshCompleted();
+                },
+                onLoading: () async {
+                  // 加载更多数据
+                  await loadMoreData(index);
+                  if (mounted) {
+                    setState(() {});
+                  }
+                  // 确保控制器存在且状态正确
+                  if (index < tabRefreshController.length) {
+                    if (hasMoreList[index]) {
+                      tabRefreshController[index].loadComplete();
+                    } else {
+                      tabRefreshController[index].loadNoData();
+                    }
+                  }
+                },
+                enablePullUp: true,
+                child: ListView.builder(
+                  padding: const EdgeInsets.only(top: 0),
+                  itemCount: videoPageDataList.length > index ? videoPageDataList[index].length : 0,
+                  itemBuilder: (context, key) {
+                    return VideoOne(
+                      videoData: videoPageDataList[index][key],
                     );
-                  }),
+                  },
                 ),
-              ),
-            ],
-          );
-        },
-      ),
+              );
+            }),
+          ),
+        ),
+      ],
     );
   }
 

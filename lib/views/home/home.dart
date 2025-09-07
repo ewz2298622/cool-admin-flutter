@@ -73,7 +73,7 @@ class Home extends StatefulWidget {
 
 class _HomePageState extends State<Home>
     with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
-  //定义swiperData
+  // 定义swiperData
   SwiperData? swiperData;
   String inputText = '';
   List<TDTab> tabs = [];
@@ -81,7 +81,6 @@ class _HomePageState extends State<Home>
   final PageController pageController = PageController(initialPage: 0);
   bool disposed = false;
   bool isLogin = false;
-  late Future<String> _futureBuilderFuture; // 修改为late变量
   List<DictInfoListData> dictInfoListData = [];
 
   Map<int, List<SwiperDataList>> swiperMap = {};
@@ -102,25 +101,87 @@ class _HomePageState extends State<Home>
     initialRefresh: false,
   );
 
-  Future<void> getDictInfoPages() async {
+  bool _isInitialized = false;
+  bool _showLoading = true;
+
+  // 缓存组件
+  final Map<int, Widget> _tabContentCache = {};
+  final Map<String, Widget> _swiperItemCache = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeData();
+    _scrollController.addListener(_onScroll);
+    //等待三秒后执行    AppUpdater.checkUpdate();
+    Future.delayed(const Duration(seconds: 3), () {
+      AppUpdater.checkUpdate();
+    });
+  }
+
+  @override
+  void dispose() {
+    disposed = true;
+    _tabController.dispose();
+    _scrollController.dispose();
+    _refreshController.dispose();
+    _tabContentCache.clear();
+    _swiperItemCache.clear();
+    super.dispose();
+  }
+
+  Future<void> _initializeData() async {
     try {
-      category =
-          ((await Api.getDictData({
-                    "types": ["video_category"],
-                  })).data
-                  as DictDataData)
-              .videoCategory!;
+      await getDictInfoPages();
+      await getSwiperListByCategoryIds();
+      await getAlbumListByCategoryIds();
+      await noticeInfo();
 
-      category = category.where((element) => element.parentId == null).toList();
+      _tabController = TabController(length: tabs.length, vsync: this);
+      _tabController.addListener(_handleTabSelection);
 
-      videoCategoryIds = category.map((e) => e.id ?? 0).toList();
-      tabs.clear();
-      for (var element in category) {
-        tabs.add(TDTab(text: element.name));
+      // 初始化 RefreshController
+      for (int i = 0; i < tabs.length; i++) {
+        tabRefreshController.add(RefreshController());
+      }
+
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+          _showLoading = false;
+        });
+
+        if (noticeInfoData.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {});
+        }
       }
     } catch (e) {
-      // 捕获并处理异常
-      print('获取视频分类数据失败: $e');
+      debugPrint('Initialization error: $e');
+      if (mounted) {
+        setState(() {
+          _showLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> getDictInfoPages() async {
+    try {
+      final response = await Api.getDictData({
+        "types": ["video_category"],
+      });
+      final dictData = response.data as DictDataData;
+
+      if (dictData.videoCategory != null) {
+        category =
+            dictData.videoCategory!
+                .where((element) => element.parentId == null)
+                .toList();
+        videoCategoryIds = category.map((e) => e.id ?? 0).toList();
+        tabs = category.map((e) => TDTab(text: e.name)).toList();
+      }
+    } catch (e) {
+      debugPrint('获取视频分类数据失败: $e');
     }
   }
 
@@ -128,8 +189,7 @@ class _HomePageState extends State<Home>
     try {
       swiperMap = await Api.getSwiperListByCategoryIds(videoCategoryIds);
     } catch (e) {
-      // 捕获并处理异常
-      print('Initialization failed: $e');
+      debugPrint('获取轮播图数据失败: $e');
     }
   }
 
@@ -137,126 +197,85 @@ class _HomePageState extends State<Home>
     try {
       albumMap = await Api.getAlbumListByCategoryIds(videoCategoryIds);
     } catch (e) {
-      // 捕获并处理异常
-      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+      debugPrint('获取专辑数据失败: $e');
     }
   }
 
-  @override
-  void initState() {
-    super.initState(); // 提前调用super.initState()
-    _futureBuilderFuture = init();
-    // 添加滚动监听器
-    _scrollController.addListener(_onScroll);
-    AppUpdater.checkUpdate();
-  }
-
-  @override
-  void dispose() {
-    disposed = true;
-    _tabController.dispose(); // 释放 TabController
-    _scrollController.dispose(); // 释放 ScrollController
-    _refreshController.dispose(); // 释放 RefreshController
-    super.dispose();
-  }
-
-  Future<String> init() async {
-    try {
-      await getDictInfoPages();
-      await getSwiperListByCategoryIds();
-      await getAlbumListByCategoryIds();
-      await noticeInfo(); // 等待noticeInfo完成
-      // 初始化 TabController
-      _tabController = TabController(length: tabs.length, vsync: this);
-      // 添加监听器以同步 PageView 和 TabBar
-      _tabController.addListener(_handleTabSelection);
-
-      //判断noticeInfoData是否有数据
-      if (noticeInfoData.isNotEmpty) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          message(); // 在帧渲染后显示对话框
-        });
-      }
-      return "init success";
-    } catch (e) {
-      return "init err";
-    }
-  }
-
-  // 数据加载逻辑分离
   Future<void> noticeInfo() async {
     try {
-      List<NoticeInfoDataList> list =
-          (await Api.noticeInfo({
-                "page": 1,
-                "size": 1,
-                "type": 637,
-                "status": 1,
-              })).data?.list
-              as List<NoticeInfoDataList>;
-      noticeInfoData = list;
+      final response = await Api.noticeInfo({
+        "page": 1,
+        "size": 1,
+        "type": 637,
+        "status": 1,
+      });
+      noticeInfoData = response.data?.list ?? [];
     } catch (e) {
-      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+      debugPrint('获取通知信息失败: $e');
     }
   }
 
-  message() {
+  void message() {
+    if (noticeInfoData.isEmpty) return;
+
     showDialog<Null>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.8, // 动态宽度
-            height: 250, // 固定高度
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  spacing: 10,
-                  children: [
-                    Text(noticeInfoData[0].title ?? ""),
-                    Text(
-                      noticeInfoData[0].summary ?? "",
-                      maxLines: 5,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: TDTheme.of(context).fontGyColor2,
+          backgroundColor: Colors.transparent, // 关键：设置背景透明
+          content: Card(
+            color: Colors.white,
+            child: Container(
+              // width: MediaQuery.of(context).size.width * 0.8,
+              padding: const EdgeInsets.all(10),
+              height: 350,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    children: [
+                      Text(noticeInfoData[0].title ?? ""),
+                      const SizedBox(height: 10),
+                      Text(
+                        noticeInfoData[0].summary ?? "",
+                        maxLines: 5,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: TDTheme.of(context).fontGyColor2,
+                        ),
                       ),
+                    ],
+                  ),
+                  TDButton(
+                    text: '我知道了',
+                    isBlock: true,
+                    size: TDButtonSize.large,
+                    type: TDButtonType.fill,
+                    shape: TDButtonShape.rectangle,
+                    theme: TDButtonTheme.defaultTheme,
+                    onTap: () => Navigator.of(context).pop(),
+                    style: TDButtonStyle(
+                      backgroundColor: const Color.fromRGBO(255, 95, 1, 1),
+                      textColor: Colors.white,
+                      radius: BorderRadius.circular(20),
                     ),
-                  ],
-                ),
-                TDButton(
-                  text: '我知道了',
-                  isBlock: true,
-                  size: TDButtonSize.large,
-                  type: TDButtonType.fill,
-                  shape: TDButtonShape.rectangle,
-                  theme: TDButtonTheme.defaultTheme,
-                  onTap: () {
-                    Navigator.of(context).pop(); //退出弹出框
-                  },
-                  style: TDButtonStyle(
-                    backgroundColor: Color.fromRGBO(255, 95, 1, 1),
-                    textColor: Colors.white,
-                    radius: BorderRadius.circular(20),
                   ),
-                ),
-                GestureDetector(
-                  child: Text(
-                    '查看更多',
-                    style: TextStyle(color: TDTheme.of(context).fontGyColor4),
+                  GestureDetector(
+                    onTap:
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => Notice()),
+                        ),
+                    child: Text(
+                      '查看更多',
+                      style: TextStyle(color: TDTheme.of(context).fontGyColor4),
+                    ),
                   ),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => Notice()),
-                    );
-                  },
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -266,35 +285,42 @@ class _HomePageState extends State<Home>
 
   Future<void> onRefresh(int index) async {
     try {
-      // 只刷新当前分类的数据
       final categoryId = videoCategoryIds[index];
 
-      // 清除当前分类的数据
-      swiperMap.remove(categoryId);
-      albumMap.remove(categoryId);
-
-      // 重新获取当前分类的数据
-      final swiperData = await Api.getSwiperListByCategoryIds([categoryId]);
-      final albumData = await Api.getAlbumListByCategoryIds([categoryId]);
-
-      if (disposed) {
-        return;
+      // 清除缓存
+      _tabContentCache.remove(categoryId);
+      for (final key in _swiperItemCache.keys.where(
+        (k) => k.startsWith('$categoryId-'),
+      )) {
+        _swiperItemCache.remove(key);
       }
 
-      // 更新数据
-      swiperMap.addAll(swiperData);
-      albumMap.addAll(albumData);
+      // 重新获取数据
+      final results = await Future.wait([
+        Api.getSwiperListByCategoryIds([categoryId]),
+        Api.getAlbumListByCategoryIds([categoryId]),
+      ]);
 
-      setState(() {});
+      final swiperResult = results[0] as Map<int, List<SwiperDataList>>;
+      final albumResult = results[1] as Map<int, List<AlbumDataList>>;
+
+      if (disposed) return;
+
+      setState(() {
+        swiperMap.remove(categoryId);
+        swiperMap.addAll(swiperResult);
+        albumMap.remove(categoryId);
+        albumMap.addAll(albumResult);
+      });
+
       tabRefreshController[index].refreshCompleted();
     } catch (e) {
       tabRefreshController[index].refreshFailed();
     }
   }
 
-  // 处理 Tab 选择事件
   void _handleTabSelection() {
-    if (_tabController.indexIsChanging) {
+    if (_tabController.indexIsChanging && mounted) {
       pageController.animateToPage(
         _tabController.index,
         duration: const Duration(milliseconds: 300),
@@ -303,124 +329,120 @@ class _HomePageState extends State<Home>
     }
   }
 
-  /// 轮播图视图
   Widget _buildDotsSwiper(int id) {
-    super.build(context); // 必须调用 super.build
+    final swiperList = swiperMap[id];
+    if (swiperList == null || swiperList.isEmpty) {
+      return SizedBox(
+        height: 158,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            color: Colors.grey[200],
+          ),
+        ),
+      );
+    }
+
     return Swiper(
       itemHeight: 158,
       autoplay: true,
-      itemCount: (swiperMap[id]?.length) ?? 0,
+      itemCount: swiperList.length,
       itemBuilder: (BuildContext context, int index) {
-        return Card(
-          child: Container(
-            decoration: BoxDecoration(
-              //5px圆角
-              borderRadius: BorderRadius.circular(5),
-            ),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                TDImage(
-                  height: 158,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  imgUrl: swiperMap[id]?[index].image ?? '',
-                  errorWidget: const TDImage(
-                    //宽度100%
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    assetUrl: 'assets/images/loading.gif',
-                  ),
-                ),
-                Container(
-                  height: 158,
-                  width: double.infinity,
-                  //向下对其
-                  alignment: Alignment.bottomLeft,
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(5), // 添加圆角
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent, // 顶部透明
-                        Colors.black.withOpacity(0.6), // 底部黑色
-                      ],
-                    ),
-                  ),
-                  child: Text(
-                    swiperMap[id]![index].title ?? "",
-                    maxLines: 1,
-                    //溢出省略号
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.left, // 改为左对齐
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+        final cacheKey = '$id-${swiperList[index].id}';
+        if (!_swiperItemCache.containsKey(cacheKey)) {
+          _swiperItemCache[cacheKey] = _buildSwiperItem(swiperList[index]);
+        }
+        return _swiperItemCache[cacheKey]!;
       },
+    );
+  }
+
+  Widget _buildSwiperItem(SwiperDataList item) {
+    return Card(
+      child: Container(
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            TDImage(
+              height: 158,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              imgUrl: item.image ?? '',
+              errorWidget: const TDImage(
+                width: double.infinity,
+                fit: BoxFit.cover,
+                assetUrl: 'assets/images/loading.gif',
+              ),
+            ),
+            Container(
+              alignment: Alignment.bottomLeft,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                gradient: const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Colors.black54],
+                ),
+              ),
+              child: Text(
+                item.title ?? "",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildDefaultSearchBar() {
     return Padding(
-      padding: const EdgeInsets.only(left: 10, right: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Row(
         children: [
-          GestureDetector(
-            child: Container(
-              height: 36,
-              //宽度设置成百分之80%
-              width: MediaQuery.of(context).size.width * 0.85,
-              padding: const EdgeInsets.only(left: 10),
-              decoration: BoxDecoration(
-                color: const Color.fromRGBO(245, 244, 247, 1),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                spacing: 8,
-                children: [
-                  const Icon(
-                    Icons.search,
-                    color: Color.fromRGBO(153, 153, 153, 1),
-                  ),
-                  Text(
-                    '请输入关键字',
-                    style: TextStyle(
-                      fontFamily: 'PingFang SC', // iOS 默认支持，Android 需确保字体可用
-                      fontWeight: FontWeight.w500, // 对应 500
-                      fontSize: 14.0, // 14px
-                      color: const Color(0xFF979797), // #979797
-                      fontStyle: FontStyle.normal, // 正常样式
+          Expanded(
+            flex: 5,
+            child: GestureDetector(
+              onTap: () => Get.toNamed("/search"),
+              child: Container(
+                height: 36,
+                padding: const EdgeInsets.only(left: 10),
+                decoration: BoxDecoration(
+                  color: const Color.fromRGBO(245, 244, 247, 1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.search, color: Color.fromRGBO(153, 153, 153, 1)),
+                    SizedBox(width: 8),
+                    Text(
+                      '请输入关键字',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14.0,
+                        color: Color(0xFF979797),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            onTap: () => Get.toNamed("/search"),
-          ),
-          Flexible(
-            flex: 1,
-            child: Center(
-              child: GestureDetector(
-                onTap: () => Get.toNamed("/week"),
-                //渲染svg
-                // child: SvgPicture.asset('assets/images/zhou.svg'),
-                //设置SvgPicture宽高
-                child: SvgPicture.asset(
-                  'assets/images/zhou.svg',
-                  width: 30,
-                  height: 30,
+                  ],
                 ),
               ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          GestureDetector(
+            onTap: () => Get.toNamed("/week"),
+            child: SvgPicture.asset(
+              'assets/images/zhou.svg',
+              width: 30,
+              height: 30,
             ),
           ),
         ],
@@ -428,41 +450,29 @@ class _HomePageState extends State<Home>
     );
   }
 
-  /// 返回一个Widget自动填充剩余高度 且可以滑动
-  Widget _buildContent(BuildContext context) {
-    super.build(context); // 必须调用 super.build
-    return FutureBuilder<String>(
-      future: _futureBuilderFuture, // 异步操作
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const PageLoading();
-        } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}'); // 显示错误信息
-        } else if (snapshot.hasData) {
-          return _buildTabs(context);
-        } else {
-          return const Text('No data available');
-        }
-      },
-    );
-  }
+  Widget _buildContent() {
+    if (_showLoading) {
+      return const PageLoading();
+    }
 
-  Widget _buildTabs(BuildContext context) {
+    if (!_isInitialized) {
+      return const Center(child: Text('初始化失败'));
+    }
+
     return Column(
       children: [
-        // 顶部搜索栏和TabBar部分 - 使用固定高度
+        // 顶部区域
         Container(
           width: double.infinity,
-          height: 120, // 改回固定高度，避免过大空白
-          decoration: BoxDecoration(
-            //从上到下的线性渐变
+          height: 120,
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color.fromRGBO(245, 224, 207, 1.0), // 顶部颜色
-                Color.fromRGBO(245, 224, 207, 0.5), // 中间颜色
-                Color.fromRGBO(245, 224, 207, 0), // 底部透明
+                Color.fromRGBO(245, 224, 207, 1.0),
+                Color.fromRGBO(245, 224, 207, 0.5),
+                Color.fromRGBO(245, 224, 207, 0),
               ],
             ),
           ),
@@ -472,28 +482,26 @@ class _HomePageState extends State<Home>
             ),
             child: Column(
               children: [
-                SizedBox(height: 40),
+                const SizedBox(height: 40),
                 _buildDefaultSearchBar(),
                 SizedBox(
                   height: 35,
                   child: TabBar(
-                    padding: EdgeInsets.only(top: 2),
-                    controller: _tabController, // 使用 controller
+                    padding: const EdgeInsets.only(top: 2),
+                    controller: _tabController,
                     isScrollable: true,
                     tabAlignment: TabAlignment.center,
-
                     dividerHeight: 0,
                     indicator: GradientTabIndicator(
-                      gradient: LinearGradient(
+                      gradient: const LinearGradient(
                         colors: [
-                          Color.fromRGBO(250, 165, 49, 1), // 完全不透明的橙色
-                          Color.fromRGBO(254, 210, 71, 0), // 完全透明（alpha=0）
+                          Color.fromRGBO(250, 165, 49, 1),
+                          Color.fromRGBO(254, 210, 71, 0),
                         ],
                       ),
-                      height: 3.0, // 指示器高度
-                      radius: 4.0, // 圆角
+                      height: 3.0,
+                      radius: 4.0,
                     ),
-                    //选中的字体颜色
                     labelColor: const Color.fromRGBO(252, 119, 66, 1),
                     unselectedLabelStyle: const TextStyle(
                       fontSize: 16,
@@ -503,7 +511,6 @@ class _HomePageState extends State<Home>
                         Theme.of(context).brightness == Brightness.dark
                             ? Colors.white
                             : Colors.black87,
-
                     labelStyle: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
@@ -523,13 +530,12 @@ class _HomePageState extends State<Home>
           ),
         ),
         // 内容区域
-        Expanded(child: contentIsEmpty(context)),
+        Flexible(flex: 1, child: _buildTabContent()),
       ],
     );
   }
 
-  //判断是否为空
-  Widget contentIsEmpty(BuildContext context) {
+  Widget _buildTabContent() {
     if (tabs.isEmpty) {
       return const Center(child: NoData());
     }
@@ -537,71 +543,63 @@ class _HomePageState extends State<Home>
     return PageView(
       controller: pageController,
       onPageChanged: (pageViewIndex) {
-        _tabController.animateTo(pageViewIndex);
+        if (_tabController.index != pageViewIndex) {
+          _tabController.animateTo(pageViewIndex);
+        }
       },
       children: List.generate(tabs.length, (index) {
-        // 确保每个tab都有对应的RefreshController
-        while (tabRefreshController.length <= index) {
-          tabRefreshController.add(RefreshController());
+        final categoryId = category[index].id ?? 0;
+
+        // 使用缓存
+        if (!_tabContentCache.containsKey(categoryId)) {
+          _tabContentCache[categoryId] = _buildTabPage(index);
         }
 
-        return SmartRefresher(
-          controller: tabRefreshController[index],
-          enablePullDown: true,
-          enablePullUp: false,
-          onRefresh: () async {
-            debugPrint('onRefresh: $index');
-            await onRefresh(index);
-          },
-          child: ListView(
-            padding: const EdgeInsets.only(
-              top: 20, // 原始值20，保持适当间距
-              left: Layout.paddingL,
-              right: Layout.paddingL,
-            ),
-            children: [
-              SizedBox(
-                height: 158,
-                child: _buildDotsSwiper(category[index].id ?? 0),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: Layout.paddingL),
-                child: Column(
-                  children: _buildAlbumContentList(
-                    albumMap[category[index].id] ?? [],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
+        return _tabContentCache[categoryId]!;
       }),
     );
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    FocusScope.of(context).unfocus(); // 移除焦点
-  }
+  Widget _buildTabPage(int index) {
+    final categoryId = category[index].id ?? 0;
 
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    return Scaffold(body: _buildContent(context));
-  }
+    // 确保有对应的RefreshController
+    if (tabRefreshController.length <= index) {
+      tabRefreshController.add(RefreshController());
+    }
 
-  // 使用常量避免重复创建相同的Widget
-  static const Widget _spacingWidget = SizedBox(height: 16);
+    return SmartRefresher(
+      controller: tabRefreshController[index],
+      enablePullDown: true,
+      enablePullUp: false,
+      onRefresh: () => onRefresh(index),
+      child: ListView(
+        padding: const EdgeInsets.only(
+          top: 0,
+          left: Layout.paddingL,
+          right: Layout.paddingL,
+        ),
+        children: [
+          SizedBox(height: 158, child: _buildDotsSwiper(categoryId)),
+          Padding(
+            padding: const EdgeInsets.only(top: Layout.paddingL),
+            child: Column(
+              children: _buildAlbumContentList(albumMap[categoryId] ?? []),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   List<Widget> _buildAlbumContentList(List<AlbumDataList> list) {
-    return List<Widget>.generate(
+    return List.generate(
       list.length,
       (index) => Column(
         children: [
           _buildAlbumHeader(list[index]),
           _buildAlbumItemWidgetType(list[index], index),
-          _spacingWidget, // 使用预定义的间距Widget
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -610,12 +608,12 @@ class _HomePageState extends State<Home>
   Widget _buildAlbumItemWidgetType(AlbumDataList item, int index) {
     if (index % 2 == 0) {
       return Padding(
-        padding: EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.only(bottom: 10),
         child: HomeTwoVideo(videoPageData: item.list as List<dynamic>),
       );
     } else {
       return Padding(
-        padding: EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.only(bottom: 10),
         child: HorizontalVideoList(videoPageData: item.list as List<dynamic>),
       );
     }
@@ -623,7 +621,7 @@ class _HomePageState extends State<Home>
 
   Widget _buildAlbumHeader(AlbumDataList album) {
     return SectionWithMore(
-      title: album.title ?? "", // 传入标题
+      title: album.title ?? "",
       onMorePressed: () {
         Navigator.push(
           context,
@@ -635,17 +633,23 @@ class _HomePageState extends State<Home>
     );
   }
 
-  // 处理滚动事件
   void _onScroll() {
-    final scrollOffset = _scrollController.offset;
-    // 根据滚动位置计算透明度 (0-0.8)
-    final newOpacity = (scrollOffset / 100).clamp(0.0, 0.8);
+    if (!_scrollController.hasClients) return;
 
-    if (_appBarOpacity != newOpacity) {
+    final scrollOffset = _scrollController.offset;
+    final newOpacity = (scrollOffset / 100).clamp(0.0, 0.8).toDouble();
+
+    if (_appBarOpacity != newOpacity && mounted) {
       setState(() {
         _appBarOpacity = newOpacity;
       });
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return Scaffold(body: _buildContent());
   }
 
   @override
