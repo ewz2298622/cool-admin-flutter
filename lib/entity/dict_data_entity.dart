@@ -44,6 +44,8 @@ class DictDataData {
   List<DictDataDataSearchType>? searchType;
   @JSONField(name: 'video_tag')
   List<DictDataDataVideoTag>? videoTag;
+  @JSONField(name: 'ads_page')
+  List<DictDataDataAdsPage>? adsPage;
 
   DictDataData();
 
@@ -326,6 +328,31 @@ class DictDataDataVideoTag {
       $DictDataDataVideoTagFromJson(json);
 
   Map<String, dynamic> toJson() => $DictDataDataVideoTagToJson(this);
+
+  @override
+  String toString() {
+    return jsonEncode(this);
+  }
+}
+
+@JsonSerializable()
+class DictDataDataAdsPage {
+  int? id;
+  int? typeId;
+  String? name;
+  dynamic value;
+  int? orderNum;
+  int? status;
+  dynamic color;
+  dynamic remark;
+  dynamic parentId;
+
+  DictDataDataAdsPage();
+
+  factory DictDataDataAdsPage.fromJson(Map<String, dynamic> json) =>
+      $DictDataDataAdsPageFromJson(json);
+
+  Map<String, dynamic> toJson() => $DictDataDataAdsPageToJson(this);
 
   @override
   String toString() {

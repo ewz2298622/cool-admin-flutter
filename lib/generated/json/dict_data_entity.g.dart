@@ -154,6 +154,17 @@ DictDataData $DictDataDataFromJson(Map<String, dynamic> json) {
   if (videoTag != null) {
     dictDataData.videoTag = videoTag;
   }
+  final List<DictDataDataAdsPage>? adsPage =
+      (json['ads_page'] as List<dynamic>?)
+          ?.map(
+            (e) =>
+                jsonConvert.convert<DictDataDataAdsPage>(e)
+                    as DictDataDataAdsPage,
+          )
+          .toList();
+  if (adsPage != null) {
+    dictDataData.adsPage = adsPage;
+  }
   return dictDataData;
 }
 
@@ -171,6 +182,7 @@ Map<String, dynamic> $DictDataDataToJson(DictDataData entity) {
   data['ads_type'] = entity.adsType?.map((v) => v.toJson()).toList();
   data['search_type'] = entity.searchType?.map((v) => v.toJson()).toList();
   data['video_tag'] = entity.videoTag?.map((v) => v.toJson()).toList();
+  data['ads_page'] = entity.adsPage?.map((v) => v.toJson()).toList();
   return data;
 }
 
@@ -187,6 +199,7 @@ extension DictDataDataExtension on DictDataData {
     List<DictDataDataAdsType>? adsType,
     List<DictDataDataSearchType>? searchType,
     List<DictDataDataVideoTag>? videoTag,
+    List<DictDataDataAdsPage>? adsPage,
   }) {
     return DictDataData()
       ..liveCategory = liveCategory ?? this.liveCategory
@@ -199,7 +212,8 @@ extension DictDataDataExtension on DictDataData {
       ..feedbackType = feedbackType ?? this.feedbackType
       ..adsType = adsType ?? this.adsType
       ..searchType = searchType ?? this.searchType
-      ..videoTag = videoTag ?? this.videoTag;
+      ..videoTag = videoTag ?? this.videoTag
+      ..adsPage = adsPage ?? this.adsPage;
   }
 }
 
@@ -1096,6 +1110,86 @@ extension DictDataDataVideoTagExtension on DictDataDataVideoTag {
     dynamic parentId,
   }) {
     return DictDataDataVideoTag()
+      ..id = id ?? this.id
+      ..typeId = typeId ?? this.typeId
+      ..name = name ?? this.name
+      ..value = value ?? this.value
+      ..orderNum = orderNum ?? this.orderNum
+      ..status = status ?? this.status
+      ..color = color ?? this.color
+      ..remark = remark ?? this.remark
+      ..parentId = parentId ?? this.parentId;
+  }
+}
+
+DictDataDataAdsPage $DictDataDataAdsPageFromJson(Map<String, dynamic> json) {
+  final DictDataDataAdsPage dictDataDataAdsPage = DictDataDataAdsPage();
+  final int? id = jsonConvert.convert<int>(json['id']);
+  if (id != null) {
+    dictDataDataAdsPage.id = id;
+  }
+  final int? typeId = jsonConvert.convert<int>(json['typeId']);
+  if (typeId != null) {
+    dictDataDataAdsPage.typeId = typeId;
+  }
+  final String? name = jsonConvert.convert<String>(json['name']);
+  if (name != null) {
+    dictDataDataAdsPage.name = name;
+  }
+  final dynamic value = json['value'];
+  if (value != null) {
+    dictDataDataAdsPage.value = value;
+  }
+  final int? orderNum = jsonConvert.convert<int>(json['orderNum']);
+  if (orderNum != null) {
+    dictDataDataAdsPage.orderNum = orderNum;
+  }
+  final int? status = jsonConvert.convert<int>(json['status']);
+  if (status != null) {
+    dictDataDataAdsPage.status = status;
+  }
+  final dynamic color = json['color'];
+  if (color != null) {
+    dictDataDataAdsPage.color = color;
+  }
+  final dynamic remark = json['remark'];
+  if (remark != null) {
+    dictDataDataAdsPage.remark = remark;
+  }
+  final dynamic parentId = json['parentId'];
+  if (parentId != null) {
+    dictDataDataAdsPage.parentId = parentId;
+  }
+  return dictDataDataAdsPage;
+}
+
+Map<String, dynamic> $DictDataDataAdsPageToJson(DictDataDataAdsPage entity) {
+  final Map<String, dynamic> data = <String, dynamic>{};
+  data['id'] = entity.id;
+  data['typeId'] = entity.typeId;
+  data['name'] = entity.name;
+  data['value'] = entity.value;
+  data['orderNum'] = entity.orderNum;
+  data['status'] = entity.status;
+  data['color'] = entity.color;
+  data['remark'] = entity.remark;
+  data['parentId'] = entity.parentId;
+  return data;
+}
+
+extension DictDataDataAdsPageExtension on DictDataDataAdsPage {
+  DictDataDataAdsPage copyWith({
+    int? id,
+    int? typeId,
+    String? name,
+    dynamic value,
+    int? orderNum,
+    int? status,
+    dynamic color,
+    dynamic remark,
+    dynamic parentId,
+  }) {
+    return DictDataDataAdsPage()
       ..id = id ?? this.id
       ..typeId = typeId ?? this.typeId
       ..name = name ?? this.name

@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart' show debugPrint;
 import 'package:flutter_app/entity/album_entity.dart';
 import 'package:flutter_app/entity/album_video_list_entity.dart';
+import 'package:flutter_app/entity/app_ads_entity.dart';
 import 'package:flutter_app/entity/captcha_entity.dart';
 import 'package:flutter_app/entity/dict_data_entity.dart';
 import 'package:flutter_app/entity/dict_info_list_entity.dart';
@@ -244,6 +245,38 @@ class JsonConvert {
               .toList()
           as M;
     }
+    if (<AppAdsEntity>[] is M) {
+      return data
+              .map<AppAdsEntity>(
+                (Map<String, dynamic> e) => AppAdsEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<AppAdsData>[] is M) {
+      return data
+              .map<AppAdsData>(
+                (Map<String, dynamic> e) => AppAdsData.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<AppAdsDataList>[] is M) {
+      return data
+              .map<AppAdsDataList>(
+                (Map<String, dynamic> e) => AppAdsDataList.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<AppAdsDataPagination>[] is M) {
+      return data
+              .map<AppAdsDataPagination>(
+                (Map<String, dynamic> e) => AppAdsDataPagination.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
     if (<CaptchaEntity>[] is M) {
       return data
               .map<CaptchaEntity>(
@@ -363,6 +396,14 @@ class JsonConvert {
       return data
               .map<DictDataDataVideoTag>(
                 (Map<String, dynamic> e) => DictDataDataVideoTag.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<DictDataDataAdsPage>[] is M) {
+      return data
+              .map<DictDataDataAdsPage>(
+                (Map<String, dynamic> e) => DictDataDataAdsPage.fromJson(e),
               )
               .toList()
           as M;
@@ -836,6 +877,10 @@ class JsonConvertClassCollection {
     (AlbumVideoListDataList).toString(): AlbumVideoListDataList.fromJson,
     (AlbumVideoListDataPagination).toString():
         AlbumVideoListDataPagination.fromJson,
+    (AppAdsEntity).toString(): AppAdsEntity.fromJson,
+    (AppAdsData).toString(): AppAdsData.fromJson,
+    (AppAdsDataList).toString(): AppAdsDataList.fromJson,
+    (AppAdsDataPagination).toString(): AppAdsDataPagination.fromJson,
     (CaptchaEntity).toString(): CaptchaEntity.fromJson,
     (CaptchaData).toString(): CaptchaData.fromJson,
     (DictDataEntity).toString(): DictDataEntity.fromJson,
@@ -851,6 +896,7 @@ class JsonConvertClassCollection {
     (DictDataDataAdsType).toString(): DictDataDataAdsType.fromJson,
     (DictDataDataSearchType).toString(): DictDataDataSearchType.fromJson,
     (DictDataDataVideoTag).toString(): DictDataDataVideoTag.fromJson,
+    (DictDataDataAdsPage).toString(): DictDataDataAdsPage.fromJson,
     (DictInfoListEntity).toString(): DictInfoListEntity.fromJson,
     (DictInfoListData).toString(): DictInfoListData.fromJson,
     (HotKeyWordEntity).toString(): HotKeyWordEntity.fromJson,

@@ -32,26 +32,23 @@ class GenericRowBuilder extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 8),
                   child: Center(child: Text(title)),
                 ),
-                ...(items)
-                    .map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: TDButton(
-                          text: item.name ?? "",
-                          size: TDButtonSize.small,
-                          style: TDButtonStyle(
-                            backgroundColor:
-                                key == item.id
-                                    ? const Color.fromRGBO(249, 174, 61, 1)
-                                    : Colors.transparent,
-                            textColor:
-                                key == item.id ? Colors.white : Colors.black,
-                          ),
-                          onTap: () => onItemTap(item),
-                        ),
+                ...(items).map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: TDButton(
+                      text: item.name ?? "",
+                      size: TDButtonSize.small,
+                      style: TDButtonStyle(
+                        backgroundColor:
+                            key == item.id
+                                ? const Color.fromRGBO(249, 174, 61, 1)
+                                : Colors.transparent,
+                        textColor: key == item.id ? Colors.white : Colors.black,
                       ),
-                    )
-                    .toList(),
+                      onTap: () => onItemTap(item),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
