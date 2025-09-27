@@ -4,6 +4,7 @@ import 'package:flutter_app/entity/login_entity.dart';
 
 import '../entity/album_entity.dart';
 import '../entity/album_video_list_entity.dart';
+import '../entity/app_ads_entity.dart';
 import '../entity/captcha_entity.dart';
 import '../entity/dict_info_list_entity.dart';
 import '../entity/hot_keyWord_entity.dart';
@@ -561,6 +562,28 @@ class Api {
         data: data,
       ); // 添加注释说明 ONE 的含义});
       return HotKeyWordEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  static Future<AppAdsEntity> getAdsList(Map<String, dynamic>? data) async {
+    try {
+      final response = await server.post(
+        "/app/application/ads/page",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
+      return AppAdsEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  static Future<void> addScore(Map<String, dynamic>? data) async {
+    try {
+      await server.post("/app/user/score/add", data: data); // 添加注释说明 ONE 的含义});
     } catch (error) {
       // 重新抛出异常以便上层处理
       rethrow;

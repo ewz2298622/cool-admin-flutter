@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/style/color_styles.dart';
 import 'package:flutter_app/utils/ads.dart';
+import 'package:flutter_app/utils/ads_cache_util.dart';
 import 'package:flutter_app/utils/context_manager.dart';
 import 'package:flutter_app/utils/device_info.dart';
 import 'package:flutter_app/utils/requestMultiplePermissions.dart';
@@ -30,8 +31,10 @@ import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
+import 'api/api.dart';
 import 'components/loading.dart';
 import 'db/manager/DBManager.dart';
+import 'entity/app_ads_entity.dart';
 
 void main() {
   runApp(
@@ -259,6 +262,7 @@ class _MainPageState extends State<MainPage> {
         DBManager.init(),
         initPlatformState(),
         ShareUtil.prepareShareImage(),
+        getAd(),
       ]);
 
       //跳转到SplashPage组件
@@ -267,6 +271,18 @@ class _MainPageState extends State<MainPage> {
       // 注意：Future.wait会在任意一个Future失败时立即抛出异常
       // 如果需要收集所有错误，需要更复杂的处理
       return "init fail: ${e.toString()}";
+    }
+  }
+
+  //获取广告
+  Future<void> getAd() async {
+    try {
+      List<AppAdsDataList> list =
+          (await Api.getAdsList({})).data?.list ?? [] as List<AppAdsDataList>;
+      AdsCacheUtil.saveAdsData(list);
+      debugPrint('获取广告成功: $list');
+    } catch (e) {
+      debugPrint('获取广告失败: $e');
     }
   }
 

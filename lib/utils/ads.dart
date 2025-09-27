@@ -1,22 +1,37 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_app/api/api.dart';
 import 'package:flutter_unionad/flutter_unionad.dart';
+
+import '../db/entity/UserEntity.dart';
+import '../db/manager/UserDatabaseHelper.dart';
+import '../entity/app_ads_entity.dart';
+import 'ads_cache_util.dart';
+import 'ads_config.dart';
 
 class Ads {
   static bool? _init;
   static String SDKVersion = "";
   static StreamSubscription? _adViewStream;
+  static final UserDatabaseHelper userDatabaseHelper = UserDatabaseHelper();
+  static UserEntity? user;
+  //积分
+  static int score = 0;
+
+  static String REWARD_VIDEO_AD_ANDROID =
+      AdsConfig.FULL_SCREEN_VIDEO_AD_ANDROID;
+  static String REWARD_VIDEO_AD_IOS = AdsConfig.REWARD_VIDEO_AD_IOS;
   //注册
   static initRegister() async {
     try {
       _init = await FlutterUnionad.register(
         //穿山甲广告 Android appid 必填
-        androidAppId: "5730751",
+        androidAppId: AdsConfig.APP_ID_ANDROID,
         //穿山甲广告 ios appid 必填
-        iosAppId: "5730751",
+        iosAppId: AdsConfig.APP_ID_IOS,
         //appname 必填
-        appName: "com.example.flutter_app",
+        appName: AdsConfig.APP_NAME,
         //使用聚合功能一定要打开此开关，否则不会请求聚合广告，默认这个值为false
         //true使用GroMore下的广告位
         //false使用广告变现下的广告位
@@ -127,9 +142,9 @@ class Ads {
     try {
       await FlutterUnionad.loadFullScreenVideoAdInteraction(
         //android 全屏广告id 必填
-        androidCodeId: "969380338",
+        androidCodeId: AdsConfig.FULL_SCREEN_VIDEO_AD_ANDROID,
         //ios 全屏广告id 必填
-        iosCodeId: "969380338",
+        iosCodeId: AdsConfig.FULL_SCREEN_VIDEO_AD_IOS,
         //视屏方向 选填
         orientation: FlutterUnionadOrientation.VERTICAL,
       );
@@ -138,20 +153,61 @@ class Ads {
     }
   }
 
+  //广告加载
+  static Future<void> _loadAd() async {
+    bool hasCache = await AdsCacheUtil.hasCachedAdsData();
+    if (hasCache) {
+      List<AppAdsDataList>? cachedAds = await AdsCacheUtil.getAdsData();
+      if (cachedAds != null && cachedAds.isNotEmpty) {
+        //筛选cachedAds数组中adsPage="896"且type=680的数据
+        List<AppAdsDataList> filteredAds =
+            cachedAds.where((adsData) {
+              return adsData.adsPage == 898 && adsData.type == 683;
+            }).toList();
+        if (filteredAds.isNotEmpty) {
+          AppAdsDataList adsData = filteredAds[0];
+          score = filteredAds[0].score ?? 0;
+          // setState(() {
+          //   androidCodeId = adsData.adsId ?? androidCodeId;
+          //   iosCodeId = adsData.adsId ?? iosCodeId;
+          // });
+          REWARD_VIDEO_AD_ANDROID = adsData.adsId ?? REWARD_VIDEO_AD_ANDROID;
+          REWARD_VIDEO_AD_IOS = adsData.adsId ?? REWARD_VIDEO_AD_IOS;
+
+          debugPrint("_loadAd激励广告数据:$filteredAds");
+        }
+      }
+    }
+  }
+
+  static Future<void> getUserInfo() async {
+    try {
+      Iterable<UserEntity> list = userDatabaseHelper.list();
+      if (list.isNotEmpty) {
+        // 修改：取第一个用户，或者根据业务逻辑选择合适的用户
+        user = list.first;
+      }
+    } catch (e) {
+      // 捕获并处理异常
+      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+    }
+  }
+
   //预加载激励广告
   static Future<void> loadRewardVideoAd() async {
     try {
+      await _loadAd();
       await FlutterUnionad.loadRewardVideoAd(
         //是否个性化 选填
-        androidCodeId: "969412287",
+        androidCodeId: REWARD_VIDEO_AD_ANDROID,
         //Android 激励视频广告id  必填
-        iosCodeId: "969412287",
+        iosCodeId: REWARD_VIDEO_AD_IOS,
         //ios 激励视频广告id  必填
-        rewardName: "200金币",
+        rewardName: AdsConfig.REWARD_NAME,
         //奖励名称 选填
-        rewardAmount: 200,
+        rewardAmount: score,
         //奖励数量 选填
-        userID: "123",
+        userID: user?.id.toString() ?? '',
         //  用户id 选填
         orientation: FlutterUnionadOrientation.VERTICAL,
         //视屏方向 选填
@@ -287,6 +343,7 @@ class Ads {
             "阶段激励广告奖励  验证结果=$rewardVerify 奖励类型<FlutterUnionadRewardType>=$rewardType 奖励=$rewardAmount"
             "奖励名称$rewardName 错误码=$errorCode 错误$error 建议奖励$propose",
           );
+          Api.addScore({"score": score, "type": 1});
         },
         onEcpm: (info) {
           print("激励广告 ecpm: $info");

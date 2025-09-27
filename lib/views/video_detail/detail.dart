@@ -15,12 +15,15 @@ import '../../components/loading.dart';
 import '../../components/sectionWithMore.dart';
 import '../../components/select_option_detail.dart';
 import '../../components/video_scroll.dart';
+import '../../entity/app_ads_entity.dart';
 import '../../entity/dict_data_entity.dart';
 import '../../entity/play_line_entity.dart';
 import '../../entity/video_detail_entity.dart';
 import '../../entity/video_line_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../style/layout.dart';
+import '../../utils/ads_cache_util.dart';
+import '../../utils/ads_config.dart';
 import '../../utils/bus/bus.dart';
 import '../../utils/bus/constant.dart';
 import '../../utils/dict.dart';
@@ -61,7 +64,8 @@ class _Video_DetailState extends State<Video_Detail> {
   List<List<PlayLineDataList>> tabData = [];
   StateSetter? TVshowModalBottomSheetListSate;
   final id = Get.arguments["id"];
-
+  String androidCodeId = AdsConfig.INTERSTITIAL_AD_ANDROID;
+  String iosCodeId = AdsConfig.INTERSTITIAL_AD_IOS;
   // 倍速列表
   final Map<String, double> speedList = {
     "2.0": 2.0,
@@ -294,10 +298,34 @@ class _Video_DetailState extends State<Video_Detail> {
       ]);
       _errorListener();
       setVideoUrl(playerLineData[currentPlay.value].file ?? "");
+      await _loadAd();
       return "init success";
     } catch (e) {
       // 捕获并处理异常
       return "init success";
+    }
+  }
+
+  //广告加载
+  Future<void> _loadAd() async {
+    bool hasCache = await AdsCacheUtil.hasCachedAdsData();
+    if (hasCache) {
+      List<AppAdsDataList>? cachedAds = await AdsCacheUtil.getAdsData();
+      if (cachedAds != null && cachedAds.isNotEmpty) {
+        //筛选cachedAds数组中adsPage="896"且type=680的数据
+        List<AppAdsDataList> filteredAds =
+            cachedAds.where((adsData) {
+              return adsData.adsPage == 897 && adsData.type == 680;
+            }).toList();
+        if (filteredAds.isNotEmpty) {
+          AppAdsDataList adsData = filteredAds[0];
+          setState(() {
+            androidCodeId = adsData.adsId ?? androidCodeId;
+            iosCodeId = adsData.adsId ?? iosCodeId;
+          });
+          debugPrint("_loadAd开屏广告数据:$filteredAds");
+        }
+      }
     }
   }
 
@@ -777,7 +805,7 @@ class _Video_DetailState extends State<Video_Detail> {
         right: Layout.paddingR,
       ),
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
-      child: BannerAds(androidCodeId: "969380337", iosCodeId: "969380337"),
+      child: BannerAds(androidCodeId: androidCodeId, iosCodeId: iosCodeId),
     );
   }
 

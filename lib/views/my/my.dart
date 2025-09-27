@@ -13,11 +13,14 @@ import '../../components/sectionWithMore.dart';
 import '../../components/video_view.dart';
 import '../../db/entity/UserEntity.dart';
 import '../../db/manager/UserDatabaseHelper.dart';
+import '../../entity/app_ads_entity.dart';
 import '../../entity/notice_Info_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../entity/views_entity.dart';
 import '../../style/layout.dart';
 import '../../utils/ads.dart';
+import '../../utils/ads_cache_util.dart';
+import '../../utils/ads_config.dart';
 import '../../utils/bus/bus.dart';
 import '../../utils/bus/constant.dart';
 import '../../utils/share_util.dart';
@@ -43,6 +46,9 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
 
   List<NoticeInfoDataList> noticeInfoData = [];
   StreamSubscription? subscription;
+
+  String androidCodeId = AdsConfig.BANNER_AD_ANDROID;
+  String iosCodeId = AdsConfig.BANNER_AD_IOS;
 
   void didPopNext() {
     // 从目标页面返回时调用
@@ -70,6 +76,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
 
   Future<String> init() async {
     try {
+      await _loadAd();
       await getVideoPages();
       await getUserInfo();
       await getViews();
@@ -79,6 +86,29 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
       return "init success";
     } catch (e) {
       return "init success";
+    }
+  }
+
+  //广告加载
+  Future<void> _loadAd() async {
+    bool hasCache = await AdsCacheUtil.hasCachedAdsData();
+    if (hasCache) {
+      List<AppAdsDataList>? cachedAds = await AdsCacheUtil.getAdsData();
+      if (cachedAds != null && cachedAds.isNotEmpty) {
+        //筛选cachedAds数组中adsPage="896"且type=680的数据
+        List<AppAdsDataList> filteredAds =
+            cachedAds.where((adsData) {
+              return adsData.adsPage == 898 && adsData.type == 680;
+            }).toList();
+        if (filteredAds.isNotEmpty) {
+          AppAdsDataList adsData = filteredAds[0];
+          setState(() {
+            androidCodeId = adsData.adsId ?? androidCodeId;
+            iosCodeId = adsData.adsId ?? iosCodeId;
+          });
+          debugPrint("_loadAd开屏广告数据:$filteredAds");
+        }
+      }
     }
   }
 
@@ -253,107 +283,114 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Flexible(
-          flex: 2,
-          child: Card(
-            child: Container(
-              padding: EdgeInsets.only(
-                right: 25,
-                left: 25,
-                top: 15,
-                bottom: 15,
-              ),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(3.0), // 圆角边框
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '首3月每月6元',
-                        style: TextStyle(
-                          color: Colors.brown,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        '限时专享',
-                        style: TextStyle(color: Colors.brown, fontSize: 12),
-                      ),
-                    ],
-                  ),
-
-                  Container(
-                    height: 30,
-                    width: 1,
-                    margin: EdgeInsets.only(right: 12, left: 12),
-                    //设置背景色
-                    decoration: BoxDecoration(
-                      color: Color.fromRGBO(225, 225, 225, 1.0),
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '年卡6折',
-                        style: TextStyle(
-                          color: Colors.brown,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        '限时专享',
-                        style: TextStyle(color: Colors.brown, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        Flexible(
-          flex: 1,
-          child: Card(
-            child: Container(
-              padding: EdgeInsets.only(top: 15, bottom: 15),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(3.0), // 圆角边框
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '首3月每月6元',
-                        style: TextStyle(
-                          color: Colors.brown,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        '限时专享',
-                        style: TextStyle(color: Colors.brown, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
+        // Flexible(
+        //   flex: 2,
+        //   child: Card(
+        //     child: Container(
+        //       padding: EdgeInsets.only(
+        //         right: 25,
+        //         left: 25,
+        //         top: 15,
+        //         bottom: 15,
+        //       ),
+        //       decoration: BoxDecoration(
+        //         borderRadius: BorderRadius.circular(3.0), // 圆角边框
+        //       ),
+        //       child: Row(
+        //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //         children: [
+        //           Column(
+        //             crossAxisAlignment: CrossAxisAlignment.center,
+        //             mainAxisAlignment: MainAxisAlignment.center,
+        //             children: [
+        //               Text(
+        //                 '首3月每月6元',
+        //                 style: TextStyle(
+        //                   color: Colors.brown,
+        //                   fontSize: 14,
+        //                   fontWeight: FontWeight.w500,
+        //                 ),
+        //               ),
+        //               Text(
+        //                 '限时专享',
+        //                 style: TextStyle(color: Colors.brown, fontSize: 12),
+        //               ),
+        //             ],
+        //           ),
+        //
+        //           Container(
+        //             height: 30,
+        //             width: 1,
+        //             margin: EdgeInsets.only(right: 12, left: 12),
+        //             //设置背景色
+        //             decoration: BoxDecoration(
+        //               color: Color.fromRGBO(225, 225, 225, 1.0),
+        //             ),
+        //           ),
+        //           Column(
+        //             crossAxisAlignment: CrossAxisAlignment.center,
+        //             mainAxisAlignment: MainAxisAlignment.center,
+        //             children: [
+        //               Text(
+        //                 '年卡6折',
+        //                 style: TextStyle(
+        //                   color: Colors.brown,
+        //                   fontSize: 14,
+        //                   fontWeight: FontWeight.w500,
+        //                 ),
+        //               ),
+        //               Text(
+        //                 '限时专享',
+        //                 style: TextStyle(color: Colors.brown, fontSize: 12),
+        //               ),
+        //             ],
+        //           ),
+        //         ],
+        //       ),
+        //     ),
+        //   ),
+        // ),
+        // Flexible(
+        //   flex: 1,
+        //   child: Card(
+        //     child: Container(
+        //       padding: EdgeInsets.only(top: 15, bottom: 15),
+        //       decoration: BoxDecoration(
+        //         borderRadius: BorderRadius.circular(3.0), // 圆角边框
+        //       ),
+        //       child: Row(
+        //         crossAxisAlignment: CrossAxisAlignment.center,
+        //         mainAxisAlignment: MainAxisAlignment.center,
+        //         children: [
+        //           Column(
+        //             crossAxisAlignment: CrossAxisAlignment.center,
+        //             mainAxisAlignment: MainAxisAlignment.center,
+        //             children: [
+        //               Text(
+        //                 '首3月每月6元',
+        //                 style: TextStyle(
+        //                   color: Colors.brown,
+        //                   fontSize: 14,
+        //                   fontWeight: FontWeight.w500,
+        //                 ),
+        //               ),
+        //               Text(
+        //                 '限时专享',
+        //                 style: TextStyle(color: Colors.brown, fontSize: 12),
+        //               ),
+        //             ],
+        //           ),
+        //         ],
+        //       ),
+        //     ),
+        //   ),
+        // ),
+        TDImage(
+          assetUrl: 'assets/images/adsbanner.png',
+          width: MediaQuery.of(context).size.width - 20,
+          //宽度100%
+          height: 100,
+          fit: BoxFit.cover,
         ),
       ],
     );
@@ -488,7 +525,6 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
                         GestureDetector(
                           onTap: () async {
                             await Ads.loadRewardVideoAd();
-
                             Ads.showRewardVideoAd();
                           },
                           child: buildPricingLayout(),
@@ -496,8 +532,8 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
                         _buildRecommendations(data),
                         _buildModelList(),
                         BannerAds(
-                          androidCodeId: "969380339",
-                          iosCodeId: "969380339",
+                          androidCodeId: androidCodeId,
+                          iosCodeId: iosCodeId,
                         ),
                       ],
                     ),

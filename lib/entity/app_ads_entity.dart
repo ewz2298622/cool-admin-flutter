@@ -54,7 +54,8 @@ class AppAdsDataList {
   String? adsId;
   int? type;
   int? status;
-  dynamic adsPage;
+  int? adsPage;
+  int? score;
 
   AppAdsDataList();
 

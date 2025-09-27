@@ -112,9 +112,13 @@ AppAdsDataList $AppAdsDataListFromJson(Map<String, dynamic> json) {
   if (status != null) {
     appAdsDataList.status = status;
   }
-  final dynamic adsPage = json['adsPage'];
+  final int? adsPage = jsonConvert.convert<int>(json['adsPage']);
   if (adsPage != null) {
     appAdsDataList.adsPage = adsPage;
+  }
+  final int? score = jsonConvert.convert<int>(json['score']);
+  if (score != null) {
+    appAdsDataList.score = score;
   }
   return appAdsDataList;
 }
@@ -132,6 +136,7 @@ Map<String, dynamic> $AppAdsDataListToJson(AppAdsDataList entity) {
   data['type'] = entity.type;
   data['status'] = entity.status;
   data['adsPage'] = entity.adsPage;
+  data['score'] = entity.score;
   return data;
 }
 
@@ -147,7 +152,8 @@ extension AppAdsDataListExtension on AppAdsDataList {
     String? adsId,
     int? type,
     int? status,
-    dynamic adsPage,
+    int? adsPage,
+    int? score,
   }) {
     return AppAdsDataList()
       ..id = id ?? this.id
@@ -160,7 +166,8 @@ extension AppAdsDataListExtension on AppAdsDataList {
       ..adsId = adsId ?? this.adsId
       ..type = type ?? this.type
       ..status = status ?? this.status
-      ..adsPage = adsPage ?? this.adsPage;
+      ..adsPage = adsPage ?? this.adsPage
+      ..score = score ?? this.score;
   }
 }
 
