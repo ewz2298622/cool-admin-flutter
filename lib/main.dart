@@ -17,6 +17,7 @@ import 'package:flutter_app/views/login/login.dart';
 import 'package:flutter_app/views/my/my.dart';
 import 'package:flutter_app/views/notice/notice.dart';
 import 'package:flutter_app/views/ranking/ranking.dart';
+import 'package:flutter_app/views/score/score.dart';
 import 'package:flutter_app/views/search/result/search_result.dart';
 import 'package:flutter_app/views/search/search.dart';
 import 'package:flutter_app/views/service/service.dart';
@@ -111,6 +112,7 @@ class MyApp extends StatelessWidget {
               GetPage(name: '/search_result', page: () => SearchResult()),
               GetPage(name: '/login', page: () => Login()),
               GetPage(name: '/feedback', page: () => FeedbackPage()),
+              GetPage(name: '/score', page: () => ScoreCenterPage()),
             ],
             navigatorKey: ContextManager.navigatorKey,
           ),

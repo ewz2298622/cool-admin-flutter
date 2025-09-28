@@ -583,7 +583,37 @@ class Api {
 
   static Future<void> addScore(Map<String, dynamic>? data) async {
     try {
-      await server.post("/app/user/score/add", data: data); // 添加注释说明 ONE 的含义});
+      await server.post(
+        "/app/member/score/add",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  static Future<void> memberExchangeConfigPage(
+    Map<String, dynamic>? data,
+  ) async {
+    try {
+      await server.post(
+        "/app/member/memberExchangeConfig/page",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //查询用户积分
+  static Future<void> getMemberScore(Map<String, dynamic>? data) async {
+    try {
+      final response = await server.post(
+        "/app/member/score/total",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
     } catch (error) {
       // 重新抛出异常以便上层处理
       rethrow;

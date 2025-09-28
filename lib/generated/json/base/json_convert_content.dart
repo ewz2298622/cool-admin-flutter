@@ -13,6 +13,7 @@ import 'package:flutter_app/entity/dict_info_list_entity.dart';
 import 'package:flutter_app/entity/hot_keyWord_entity.dart';
 import 'package:flutter_app/entity/live_info_entity.dart';
 import 'package:flutter_app/entity/login_entity.dart';
+import 'package:flutter_app/entity/member_exchange_config_entity.dart';
 import 'package:flutter_app/entity/notice_Info_entity.dart';
 import 'package:flutter_app/entity/play_line_entity.dart';
 import 'package:flutter_app/entity/swiper_entity.dart';
@@ -487,6 +488,42 @@ class JsonConvert {
               .toList()
           as M;
     }
+    if (<MemberExchangeConfigEntity>[] is M) {
+      return data
+              .map<MemberExchangeConfigEntity>(
+                (Map<String, dynamic> e) =>
+                    MemberExchangeConfigEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<MemberExchangeConfigData>[] is M) {
+      return data
+              .map<MemberExchangeConfigData>(
+                (Map<String, dynamic> e) =>
+                    MemberExchangeConfigData.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<MemberExchangeConfigDataList>[] is M) {
+      return data
+              .map<MemberExchangeConfigDataList>(
+                (Map<String, dynamic> e) =>
+                    MemberExchangeConfigDataList.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<MemberExchangeConfigDataPagination>[] is M) {
+      return data
+              .map<MemberExchangeConfigDataPagination>(
+                (Map<String, dynamic> e) =>
+                    MemberExchangeConfigDataPagination.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
     if (<NoticeInfoEntity>[] is M) {
       return data
               .map<NoticeInfoEntity>(
@@ -907,6 +944,13 @@ class JsonConvertClassCollection {
     (LiveInfoData).toString(): LiveInfoData.fromJson,
     (LoginEntity).toString(): LoginEntity.fromJson,
     (LoginData).toString(): LoginData.fromJson,
+    (MemberExchangeConfigEntity).toString():
+        MemberExchangeConfigEntity.fromJson,
+    (MemberExchangeConfigData).toString(): MemberExchangeConfigData.fromJson,
+    (MemberExchangeConfigDataList).toString():
+        MemberExchangeConfigDataList.fromJson,
+    (MemberExchangeConfigDataPagination).toString():
+        MemberExchangeConfigDataPagination.fromJson,
     (NoticeInfoEntity).toString(): NoticeInfoEntity.fromJson,
     (NoticeInfoData).toString(): NoticeInfoData.fromJson,
     (NoticeInfoDataList).toString(): NoticeInfoDataList.fromJson,
