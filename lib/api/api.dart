@@ -11,6 +11,7 @@ import '../entity/hot_keyWord_entity.dart';
 import '../entity/live_info_entity.dart';
 import '../entity/notice_Info_entity.dart';
 import '../entity/play_line_entity.dart';
+import '../entity/score_total_entity.dart';
 import '../entity/swiper_entity.dart';
 import '../entity/user_info_entity.dart';
 import '../entity/video_album_entity.dart';
@@ -608,12 +609,12 @@ class Api {
   }
 
   //查询用户积分
-  static Future<void> getMemberScore(Map<String, dynamic>? data) async {
+  static Future<ScoreTotalEntity> getUserScore(
+    Map<String, dynamic>? data,
+  ) async {
     try {
-      final response = await server.post(
-        "/app/member/score/total",
-        data: data,
-      ); // 添加注释说明 ONE 的含义});
+      final response = await server.post("/app/member/score/total", data: data);
+      return ScoreTotalEntity.fromJson(response.data);
     } catch (error) {
       // 重新抛出异常以便上层处理
       rethrow;

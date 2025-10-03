@@ -1,396 +1,840 @@
 import 'package:flutter/material.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
+import 'package:flutter_svg/svg.dart';
 
-class ScoreCenterPage extends StatelessWidget {
-  const ScoreCenterPage({super.key});
+import '../../api/api.dart';
+
+class TaskCenterPage extends StatefulWidget {
+  const TaskCenterPage({super.key});
+
+  @override
+  TaskCenterPageState createState() => TaskCenterPageState();
+}
+
+class TaskCenterPageState extends State<TaskCenterPage> {
+  var _futureBuilderFuture;
+  bool _isDailyTaskExpanded = true; // 控制日常任务区域是否展开
+  bool _isSignTaskExpanded = true; // 控制签到任务区域是否展开
+  int score = 0;
+
+  // 天气图标列表
+  final List<IconData> weatherIcons = [
+    Icons.wb_sunny, // 晴天
+    Icons.cloud, // 多云
+    Icons.grain, // 雨天
+    Icons.ac_unit, // 雪天
+    Icons.thunderstorm, // 雷暴
+    Icons.foggy, // 雾天
+    Icons.nightlight, // 月亮（备用）
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _futureBuilderFuture = init();
+  }
+
+  //获取积分
+  Future<void> getScore() async {
+    score = (await Api.getUserScore({})).data ?? 0;
+  }
+
+  Future<String> init() async {
+    try {
+      // 在这里添加数据初始化逻辑
+      // 例如加载用户积分信息、任务完成状态等
+      await getScore(); // 模拟网络请求
+      debugPrint("TaskCenterPage init success");
+      return "init success";
+    } catch (e) {
+      debugPrint("TaskCenterPage init failed: $e");
+      return "init failed";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      appBar: AppBar(title: Text('积分中心'), centerTitle: true, elevation: 0),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // 我的资产区域
-            _buildAssetSection(),
+      backgroundColor: Colors.grey[50],
+      body: SafeArea(
+        child: FutureBuilder<String>(
+          future: _futureBuilderFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else {
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // 顶部栏
+                    _buildTopBar(screenWidth),
 
-            // 主要兑换区
-            _buildExchangeSection(),
+                    // 金币与会员兑换区
+                    _buildCoinVipArea(screenWidth),
 
-            // 限时活动
-            _buildLimitedTimeActivity(),
+                    // 会员分类兑换区
+                    _buildVipExchangeArea(screenWidth),
 
-            // 每日签到
-            _buildDailyCheckIn(),
+                    // 签到任务区
+                    _buildSignTaskArea(screenWidth),
 
-            // 日常任务
-            _buildDailyTasks(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// 我的资产区域
-  Widget _buildAssetSection() {
-    return Container(
-      margin: EdgeInsets.all(16),
-      padding: EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF6A11CB), Color(0xFF2575FC)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue.withOpacity(0.3),
-            blurRadius: 10,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Text(
-            '我的资产',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '404',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 48,
-                  fontWeight: FontWeight.bold,
+                    // 日常任务区
+                    _buildDailyTaskArea(screenWidth),
+                  ],
                 ),
-              ),
-              SizedBox(width: 8),
-              Text('积分', style: TextStyle(color: Colors.white70, fontSize: 16)),
-            ],
-          ),
-          SizedBox(height: 16),
-          TDButton(
-            text: '积分明细',
-            size: TDButtonSize.large,
-            type: TDButtonType.outline,
-            theme: TDButtonTheme.primary,
-            onTap: () {},
-          ),
-        ],
+              );
+            }
+          },
+        ),
       ),
     );
   }
 
-  /// 主要兑换区
-  Widget _buildExchangeSection() {
+  // 顶部栏
+  Widget _buildTopBar(double screenWidth) {
     return Container(
-      margin: EdgeInsets.fromLTRB(16, 0, 16, 16),
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '主要兑换区',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 20),
-          Row(
-            children: [
-              _buildExchangeCard(
-                '少量积分\n兑换',
-                Icons.card_giftcard_outlined,
-                Color(0xFFFF9A9E),
-              ),
-              SizedBox(width: 16),
-              _buildExchangeCard(
-                '大量积分\n兑换',
-                Icons.workspace_premium_outlined,
-                Color(0xFFA1C4FD),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 兑换卡片
-  Widget _buildExchangeCard(String title, IconData icon, Color color) {
-    return Expanded(
-      child: Container(
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.3)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, size: 36, color: color),
-            SizedBox(height: 12),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// 限时活动
-  Widget _buildLimitedTimeActivity() {
-    return Container(
-      margin: EdgeInsets.fromLTRB(16, 0, 16, 16),
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.red.withOpacity(0.3),
-            blurRadius: 10,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
+      width: screenWidth,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      color: Colors.white,
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          const Text(
+            "任务中心",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          TextButton(
+            onPressed: () {},
+            style: TextButton.styleFrom(padding: EdgeInsets.zero),
+            child: const Text("规则", style: TextStyle(color: Colors.black)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 金币与会员兑换区
+  Widget _buildCoinVipArea(double screenWidth) {
+    return Container(
+      width: screenWidth,
+      color: Colors.white,
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(top: 1),
+      child: Column(
+        children: [
+          // 我的金币
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(top: 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF7D00),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '限时活动',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "我的金币",
+                      style: TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      score.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFFFF7D00),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20), // 添加圆角
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                   ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  '看10秒，领会员',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
-                SizedBox(height: 16),
-                TDButton(
-                  text: '立即参与',
-                  size: TDButtonSize.large,
-                  type: TDButtonType.fill,
-                  theme: TDButtonTheme.light,
-                  onTap: () {},
+                  onPressed: () {},
+                  child: const Text("兑换会员", style: TextStyle(fontSize: 14)),
                 ),
               ],
             ),
           ),
-          Icon(Icons.local_fire_department, color: Colors.white, size: 60),
+
+          // 看10秒领会员按钮
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(top: 16),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF3B30),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20), // 添加圆角
+                ),
+              ),
+              onPressed: () {},
+              child: const Text(
+                "看10秒 领会员 限时参与",
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  /// 每日签到
-  Widget _buildDailyCheckIn() {
+  // 签到任务区
+  Widget _buildSignTaskArea(double screenWidth) {
     return Container(
-      margin: EdgeInsets.fromLTRB(16, 0, 16, 16),
-      padding: EdgeInsets.all(20),
+      width: screenWidth,
+      color: Colors.white,
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "今日签到领 188金币",
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              ),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _isSignTaskExpanded = !_isSignTaskExpanded;
+                  });
+                },
+                style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                child: Text(
+                  _isSignTaskExpanded ? "收起" : "展开",
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+
+          if (_isSignTaskExpanded) ...[
+            // 连续签到进度
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              height: 80,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  _buildSignCard("签到", "188", true),
+                  _buildSignCard("第2天", "888", false),
+                  _buildSignCard("第3天", "288", false),
+                  _buildSignCard("第4天", "388", false),
+                  _buildSignCard("第5天", "888", false),
+                  _buildSignCard("第6天", "588", false),
+                  _buildSignCard("第7天", "1888", false),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // 签到卡片组件
+  Widget _buildSignCard(String day, String coin, bool isActive) {
+    return Container(
+      width: 60,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: isActive ? const Color(0xFFFF3B30) : Colors.white,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: isActive ? const Color(0xFFFF3B30) : Colors.grey[200]!,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SvgPicture.asset(
+            'assets/images/gole.svg',
+            width: 20,
+            height: 20,
+          ), // 使用奖章图标代替金币图标
+          Text(
+            coin,
+            style: TextStyle(
+              color: isActive ? Colors.white : Colors.black,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            day,
+            style: TextStyle(
+              color: isActive ? Colors.white70 : Colors.grey,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 日常任务区
+  Widget _buildDailyTaskArea(double screenWidth) {
+    return Container(
+      width: screenWidth,
+      color: Colors.white,
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _isDailyTaskExpanded = !_isDailyTaskExpanded;
+              });
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "日常任务",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Icon(
+                  _isDailyTaskExpanded ? Icons.expand_less : Icons.expand_more,
+                  color: Colors.grey,
+                ),
+              ],
+            ),
+          ),
+          if (_isDailyTaskExpanded) ...[
+            // 任务列表
+            _buildTaskItem(
+              "允许安装应用",
+              "1888 (0/2)",
+              "版本3.0.6 权限 隐私 介绍 武汉易雅科...",
+              Icons.download,
+              "去下载",
+              Colors.red[100]!,
+              Colors.red,
+            ),
+            _buildTaskItem(
+              "允许存储权限",
+              "588 已完成 (0/10)",
+              "",
+              Icons.video_collection,
+              "去体验",
+              Colors.blue[100]!,
+              Colors.blue,
+            ),
+            _buildTaskItem(
+              "看广告赚金币",
+              "288 最高得2880金币",
+              "",
+              Icons.ad_units,
+              "领福利",
+              Colors.green[100]!,
+              Colors.green,
+            ),
+            _buildTaskItem(
+              "添加到桌面",
+              "200 添加到桌面快捷方式，立领奖励",
+              "",
+              Icons.desktop_windows,
+              "去添加",
+              Colors.purple[100]!,
+              Colors.purple,
+            ),
+
+            // 视频任务
+            _buildVideoTask(
+              "看短剧任务",
+              "再看30秒，可得10金币",
+              Icons.movie,
+              "去观看",
+              Colors.pink[100]!,
+              Colors.pink,
+            ),
+            _buildVideoTask(
+              "看短视频任务",
+              "再看30秒，可得10金币",
+              Icons.video_camera_back,
+              "去观看",
+              Colors.blue[100]!,
+              Colors.blue,
+            ),
+            _buildVideoTask(
+              "看影视视频任务",
+              "再看30秒，可得10金币",
+              Icons.play_circle,
+              "去观看",
+              Colors.green[100]!,
+              Colors.green,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // 普通任务项组件
+  Widget _buildTaskItem(
+    String title,
+    String subTitle,
+    String desc,
+    IconData icon,
+    String buttonText,
+    Color iconBgColor,
+    Color iconColor,
+  ) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[100]!),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: Offset(0, 5),
+            color: Colors.grey[100]!,
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: iconBgColor,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subTitle,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                if (desc.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    desc,
+                    style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 100),
+
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF7D00),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 0,
+                ),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20), // 添加圆角
+                ),
+                textStyle: const TextStyle(fontSize: 12),
+              ),
+              onPressed: () {},
+              child: Text(buttonText),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 视频任务项组件
+  Widget _buildVideoTask(
+    String title,
+    String subTitle,
+    IconData icon,
+    String buttonText,
+    Color iconBgColor,
+    Color iconColor,
+  ) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[100]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey[100]!,
+            blurRadius: 2,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '每日签到',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 16),
-          Text(
-            '连续签到7天可获得递增的金币奖励',
-            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-          ),
-          SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildCheckInDay('第1天\n10金币', true),
-              _buildCheckInDay('第2天\n30金币', true),
-              _buildCheckInDay('第3天\n50金币', true),
-              _buildCheckInDay('第4天\n80金币', true),
-              _buildCheckInDay('第5天\n120金币', true),
-              _buildCheckInDay('第6天\n150金币', false),
-              _buildCheckInDay('第7天\n188金币', false),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: iconBgColor,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(icon, color: iconColor, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subTitle,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 100),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF7D00),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 0,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20), // 添加圆角
+                    ),
+                    textStyle: const TextStyle(fontSize: 12),
+                  ),
+                  onPressed: () {},
+                  child: Text(buttonText),
+                ),
+              ),
             ],
           ),
-          SizedBox(height: 16),
-          TDButton(
-            text: '今日签到领取188金币',
-            size: TDButtonSize.large,
-            type: TDButtonType.fill,
-            theme: TDButtonTheme.primary,
-            onTap: () {},
+
+          // 时长-金币进度
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildTimeCoinItem("10金币", "30秒"),
+                _buildTimeCoinItem("10金币", "1分钟"),
+                _buildTimeCoinItem("20金币", "2分钟"),
+                _buildTimeCoinItem("60金币", "5分钟"),
+                _buildTimeCoinItem("100金币", "10分钟"),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  /// 签到日期组件
-  Widget _buildCheckInDay(String text, bool isChecked) {
-    List<String> parts = text.split('\n');
+  // 时长-金币项
+  Widget _buildTimeCoinItem(String coin, String time) {
     return Column(
       children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: isChecked ? Color(0xFF4CAF50) : Colors.grey[300],
-            shape: BoxShape.circle,
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            parts[0].replaceAll('第', '').replaceAll('天', ''),
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-        ),
-        SizedBox(height: 8),
         Text(
-          parts[1],
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 12,
-            color: isChecked ? Color(0xFF4CAF50) : Colors.grey,
-          ),
+          coin,
+          style: const TextStyle(fontSize: 10, color: Color(0xFFFF7D00)),
         ),
+        const SizedBox(height: 4),
+        Text(time, style: const TextStyle(fontSize: 10, color: Colors.grey)),
       ],
     );
   }
 
-  /// 日常任务
-  Widget _buildDailyTasks(BuildContext context) {
-    List<Map<String, dynamic>> tasks = [
-      {'title': '下载"得物"App', 'points': 1888, 'icon': Icons.download_outlined},
-      {
-        'title': '访问"快手极速版"',
-        'points': 588,
-        'icon': Icons.open_in_browser_outlined,
-      },
-      {'title': '看广告赚积分', 'points': 2880, 'icon': Icons.video_library_outlined},
-    ];
-
+  // 会员分类兑换区
+  Widget _buildVipExchangeArea(double screenWidth) {
     return Container(
-      margin: EdgeInsets.fromLTRB(16, 0, 16, 16),
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
+      width: screenWidth,
+      color: Colors.white,
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.all(16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '日常任务',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          // 视频7天卡分类
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 10,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(top: 16, bottom: 8),
+                child: Text(
+                  "视频7天卡多选一：7天内只能兑换1个",
+                  style: TextStyle(fontSize: 10, color: Colors.grey),
+                ),
+              ),
+              _buildVipCard(),
+              _buildVipCard(),
+            ],
           ),
-          SizedBox(height: 16),
-          ...tasks.map((task) => _buildTaskItem(task, context)).toList(),
         ],
       ),
     );
   }
 
-  /// 任务项
-  Widget _buildTaskItem(Map<String, dynamic> task, BuildContext context) {
+  //会员卡片
+  Widget _buildVipCard() {
     return Container(
-      margin: EdgeInsets.only(bottom: 16),
-      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        //从左到右紫色渐变
+        gradient: LinearGradient(
+          colors: [
+            Color(0xFFE0E0FF).withOpacity(0.9), // 浅淡紫色
+            Color(0xFFE0E0FF), // 淡紫色
+          ],
+        ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.withOpacity(0.2)),
       ),
+      padding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       child: Row(
         children: [
-          Container(
-            padding: EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(task['icon'], color: Theme.of(context).primaryColor),
+          Icon(
+            Icons.nightlight_round, // 月亮图标，可以用其他图标包或自定义图标替代
+            color: Colors.white,
+            size: 44,
           ),
-          SizedBox(width: 16),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  task['title'],
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  '7天会员',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
                 SizedBox(height: 4),
                 Text(
-                  '+${task['points']}积分',
+                  '剩余: 1积分',
                   style: TextStyle(
-                    color: Colors.orange,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.orange[300], // 橙色文字
                   ),
                 ),
               ],
             ),
           ),
-          TDButton(
-            text: '去完成',
-            size: TDButtonSize.small,
-            type: TDButtonType.outline,
-            theme: TDButtonTheme.primary,
-            onTap: () {},
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange, // 按钮背景色
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                onPressed: () {
+                  // 按钮点击事件
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Text(
+                    '立即兑换',
+                    style: TextStyle(fontSize: 12, color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 分类标签组件
+  Widget _buildTab(String text, bool isActive) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: isActive ? const Color(0xFFFFF3E0) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isActive ? const Color(0xFFFF7D00) : Colors.grey[200]!,
+          width: 1,
+        ),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: isActive ? const Color(0xFFFF7D00) : Colors.grey,
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+
+  // 会员兑换卡片组件
+  Widget _buildVipExchangeCard(
+    String name,
+    String price,
+    String status,
+    String tag,
+    Color color,
+    bool isSoldOut,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[100]!, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 标签+会员图标
+          Row(
+            children: [
+              if (tag.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 1,
+                  ),
+                  decoration: BoxDecoration(
+                    color:
+                        tag == "特价"
+                            ? const Color(0xFFFF7D00)
+                            : tag == "0点抢"
+                            ? const Color(0xFFFF3B30)
+                            : tag == "上新"
+                            ? const Color(0xFFFF3B30)
+                            : tag == "限量"
+                            ? const Color(0xFF2E91E5)
+                            : Colors.transparent,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                  child: Text(
+                    tag,
+                    style: const TextStyle(color: Colors.white, fontSize: 10),
+                  ),
+                ),
+              const Spacer(),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Center(
+                  child: Text(
+                    "7天",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            name,
+            style: const TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 13,
+              overflow: TextOverflow.ellipsis,
+            ),
+            maxLines: 2,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            price,
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Center(
+              child: Text(
+                isSoldOut ? "售罄" : status,
+                style: TextStyle(
+                  color: isSoldOut ? Colors.grey[400] : Colors.grey,
+                  fontSize: 12,
+                ),
+              ),
+            ),
           ),
         ],
       ),

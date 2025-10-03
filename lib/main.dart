@@ -112,7 +112,7 @@ class MyApp extends StatelessWidget {
               GetPage(name: '/search_result', page: () => SearchResult()),
               GetPage(name: '/login', page: () => Login()),
               GetPage(name: '/feedback', page: () => FeedbackPage()),
-              GetPage(name: '/score', page: () => ScoreCenterPage()),
+              GetPage(name: '/score', page: () => TaskCenterPage()),
             ],
             navigatorKey: ContextManager.navigatorKey,
           ),

@@ -16,6 +16,7 @@ import 'package:flutter_app/entity/login_entity.dart';
 import 'package:flutter_app/entity/member_exchange_config_entity.dart';
 import 'package:flutter_app/entity/notice_Info_entity.dart';
 import 'package:flutter_app/entity/play_line_entity.dart';
+import 'package:flutter_app/entity/score_total_entity.dart';
 import 'package:flutter_app/entity/swiper_entity.dart';
 import 'package:flutter_app/entity/user_info_entity.dart';
 import 'package:flutter_app/entity/video_album_entity.dart';
@@ -581,6 +582,14 @@ class JsonConvert {
               .toList()
           as M;
     }
+    if (<ScoreTotalEntity>[] is M) {
+      return data
+              .map<ScoreTotalEntity>(
+                (Map<String, dynamic> e) => ScoreTotalEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
     if (<SwiperEntity>[] is M) {
       return data
               .map<SwiperEntity>(
@@ -958,6 +967,7 @@ class JsonConvertClassCollection {
     (PlayLineEntity).toString(): PlayLineEntity.fromJson,
     (PlayLineData).toString(): PlayLineData.fromJson,
     (PlayLineDataList).toString(): PlayLineDataList.fromJson,
+    (ScoreTotalEntity).toString(): ScoreTotalEntity.fromJson,
     (SwiperEntity).toString(): SwiperEntity.fromJson,
     (SwiperData).toString(): SwiperData.fromJson,
     (SwiperDataList).toString(): SwiperDataList.fromJson,

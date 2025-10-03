@@ -25,6 +25,7 @@ import '../../utils/ads_config.dart';
 import '../../utils/bus/bus.dart';
 import '../../utils/bus/constant.dart';
 import '../../utils/share_util.dart';
+import '../../utils/user.dart';
 import '../history/history.dart';
 import '../login/login.dart';
 import '../setting/setting.dart';
@@ -270,34 +271,37 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
   }
 
   Widget _buildHead(BuildContext context, UserEntity? userInfoData) {
-    // return Row(
-    //   crossAxisAlignment: CrossAxisAlignment.center,
-    //   mainAxisAlignment: MainAxisAlignment.start,
-    //   children: [
-    //     TDImage(
-    //       imgUrl: userInfoData?.avatarUrl ?? "",
-    //       width: 50,
-    //       height: 50,
-    //       type: TDImageType.circle,
-    //       errorWidget: TDImage(
-    //         width: 80,
-    //         height: 80,
-    //         type: TDImageType.circle,
-    //         assetUrl: 'assets/images/user.png',
-    //       ),
-    //     ),
-    //     SizedBox(height: 16.0),
-    //     Padding(
-    //       padding: EdgeInsets.only(left: 15),
-    //       child: _buildLogin(context, userInfoData),
-    //     ),
-    //
-    //     // 用户姓名
-    //     SizedBox(height: 8.0),
-    //     // 用户电子邮件
-    //     // 你可以继续添加更多信息
-    //   ],
-    // );
+    if (userInfoData?.userId == null) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          TDImage(
+            imgUrl: userInfoData?.avatarUrl ?? "",
+            width: 50,
+            height: 50,
+            type: TDImageType.circle,
+            errorWidget: TDImage(
+              width: 80,
+              height: 80,
+              type: TDImageType.circle,
+              assetUrl: 'assets/images/user.png',
+            ),
+          ),
+          SizedBox(height: 16.0),
+          Padding(
+            padding: EdgeInsets.only(left: 15),
+            child: _buildLogin(context, userInfoData),
+          ),
+
+          // 用户姓名
+          SizedBox(height: 8.0),
+          // 用户电子邮件
+          // 你可以继续添加更多信息
+        ],
+      );
+    }
+
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -678,8 +682,10 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
                         _buildHead(context, data),
                         GestureDetector(
                           onTap: () async {
-                            await Ads.loadRewardVideoAd();
-                            Ads.showRewardVideoAd();
+                            if (User.isUserLoginView(context)) {
+                              await Ads.loadRewardVideoAd();
+                              Ads.showRewardVideoAd();
+                            }
                           },
                           child: buildPricingLayout(),
                         ),
