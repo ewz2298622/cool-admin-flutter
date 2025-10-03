@@ -4,7 +4,6 @@ import 'package:flutter_app/utils/ads.dart';
 import 'package:flutter_app/utils/ads_cache_util.dart';
 import 'package:flutter_app/utils/context_manager.dart';
 import 'package:flutter_app/utils/device_info.dart';
-import 'package:flutter_app/utils/requestMultiplePermissions.dart';
 import 'package:flutter_app/utils/share_util.dart';
 import 'package:flutter_app/utils/store/app/appState.dart';
 import 'package:flutter_app/utils/store/theme/theme.dart';
@@ -260,7 +259,6 @@ class _MainPageState extends State<MainPage> {
     try {
       // 使用Future.wait并发执行多个异步操作
       await Future.wait([
-        RequestMultiplePermissions.requestPermissions(),
         DBManager.init(),
         initPlatformState(),
         ShareUtil.prepareShareImage(),

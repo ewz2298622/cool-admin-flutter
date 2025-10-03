@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
+import '../../components/loading.dart';
+import '../../entity/member_exchange_config_entity.dart';
+import '../../utils/ads.dart';
+import '../../utils/requestMultiplePermissions.dart';
 
 class TaskCenterPage extends StatefulWidget {
   const TaskCenterPage({super.key});
@@ -15,6 +21,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
   bool _isDailyTaskExpanded = true; // 控制日常任务区域是否展开
   bool _isSignTaskExpanded = true; // 控制签到任务区域是否展开
   int score = 0;
+  List<MemberExchangeConfigDataList> memberExchangeConfigDataList = [];
 
   // 天气图标列表
   final List<IconData> weatherIcons = [
@@ -33,6 +40,13 @@ class TaskCenterPageState extends State<TaskCenterPage> {
     _futureBuilderFuture = init();
   }
 
+  //获取会员配置
+  Future<void> getMemberConfig() async {
+    memberExchangeConfigDataList =
+        (await Api.getMemberConfig({})).data?.list ??
+        [] as List<MemberExchangeConfigDataList>;
+  }
+
   //获取积分
   Future<void> getScore() async {
     score = (await Api.getUserScore({})).data ?? 0;
@@ -42,7 +56,8 @@ class TaskCenterPageState extends State<TaskCenterPage> {
     try {
       // 在这里添加数据初始化逻辑
       // 例如加载用户积分信息、任务完成状态等
-      await getScore(); // 模拟网络请求
+      await getScore(); // 获取用户积分
+      await getMemberConfig(); // 获取会员配置信息
       debugPrint("TaskCenterPage init success");
       return "init success";
     } catch (e) {
@@ -53,42 +68,56 @@ class TaskCenterPageState extends State<TaskCenterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: SafeArea(
-        child: FutureBuilder<String>(
-          future: _futureBuilderFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else {
-              return SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // 顶部栏
-                    _buildTopBar(screenWidth),
-
-                    // 金币与会员兑换区
-                    _buildCoinVipArea(screenWidth),
-
-                    // 会员分类兑换区
-                    _buildVipExchangeArea(screenWidth),
-
-                    // 签到任务区
-                    _buildSignTaskArea(screenWidth),
-
-                    // 日常任务区
-                    _buildDailyTaskArea(screenWidth),
-                  ],
-                ),
-              );
-            }
+      appBar: AppBar(
+        title: Text("任务中心", style: TextStyle(fontSize: 16)),
+        //返回按钮
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, size: 20),
+          onPressed: () {
+            Navigator.pop(context);
           },
         ),
+        //标题居中
+        centerTitle: true,
+        toolbarHeight: 40,
+        automaticallyImplyLeading: false, //设置为false
+        backgroundColor:
+            Theme.of(context).appBarTheme.backgroundColor, // 使用主题背景色
       ),
+      body: _buildContent(context),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    return FutureBuilder<String>(
+      future: _futureBuilderFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return PageLoading();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}'); // 显示错误信息
+        } else {
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                // 金币与会员兑换区
+                _buildCoinVipArea(screenWidth),
+
+                // 会员分类兑换区
+                _buildVipExchangeArea(screenWidth),
+
+                // 签到任务区
+                _buildSignTaskArea(screenWidth),
+
+                // 日常任务区
+                _buildDailyTaskArea(screenWidth),
+              ],
+            ),
+          );
+        }
+      },
     );
   }
 
@@ -170,27 +199,6 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                   child: const Text("兑换会员", style: TextStyle(fontSize: 14)),
                 ),
               ],
-            ),
-          ),
-
-          // 看10秒领会员按钮
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.only(top: 16),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF3B30),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20), // 添加圆角
-                ),
-              ),
-              onPressed: () {},
-              child: const Text(
-                "看10秒 领会员 限时参与",
-                style: TextStyle(fontSize: 16),
-              ),
             ),
           ),
         ],
@@ -329,66 +337,63 @@ class TaskCenterPageState extends State<TaskCenterPage> {
             // 任务列表
             _buildTaskItem(
               "允许安装应用",
-              "1888 (0/2)",
-              "版本3.0.6 权限 隐私 介绍 武汉易雅科...",
+              "可在应用内直接更新",
+              "",
               Icons.download,
-              "去下载",
+              "去授权",
               Colors.red[100]!,
               Colors.red,
+              () async {
+                if (await RequestMultiplePermissions.checkPermissionGranted(
+                  Permission.requestInstallPackages,
+                )) {
+                  return TDToast.showText('已授权，请勿重复授权', context: context);
+                }
+                RequestMultiplePermissions.requestPermissions(
+                  Permission.requestInstallPackages,
+                );
+              },
             ),
             _buildTaskItem(
               "允许存储权限",
-              "588 已完成 (0/10)",
+              "可在应用内直接更新",
               "",
               Icons.video_collection,
-              "去体验",
+              "去授权",
               Colors.blue[100]!,
               Colors.blue,
+              () async {
+                if (await RequestMultiplePermissions.checkPermissionGranted(
+                  Permission.storage,
+                )) {
+                  return TDToast.showText('已授权，请勿重复授权', context: context);
+                }
+                RequestMultiplePermissions.requestPermissions(
+                  Permission.storage,
+                );
+              },
             ),
             _buildTaskItem(
               "看广告赚金币",
-              "288 最高得2880金币",
+              "最高得2880金币",
               "",
               Icons.ad_units,
               "领福利",
               Colors.green[100]!,
               Colors.green,
+              () async {
+                await Ads.loadRewardVideoAd();
+                Ads.showRewardVideoAd();
+              },
             ),
-            _buildTaskItem(
-              "添加到桌面",
-              "200 添加到桌面快捷方式，立领奖励",
-              "",
-              Icons.desktop_windows,
-              "去添加",
-              Colors.purple[100]!,
-              Colors.purple,
-            ),
-
-            // 视频任务
-            _buildVideoTask(
-              "看短剧任务",
-              "再看30秒，可得10金币",
-              Icons.movie,
-              "去观看",
-              Colors.pink[100]!,
-              Colors.pink,
-            ),
-            _buildVideoTask(
-              "看短视频任务",
-              "再看30秒，可得10金币",
-              Icons.video_camera_back,
-              "去观看",
-              Colors.blue[100]!,
-              Colors.blue,
-            ),
-            _buildVideoTask(
-              "看影视视频任务",
-              "再看30秒，可得10金币",
-              Icons.play_circle,
-              "去观看",
-              Colors.green[100]!,
-              Colors.green,
-            ),
+            // _buildVideoTask(
+            //   "看短视频任务",
+            //   "再看30秒，可得10金币",
+            //   Icons.video_camera_back,
+            //   "去观看",
+            //   Colors.blue[100]!,
+            //   Colors.blue,
+            // ),
           ],
         ],
       ),
@@ -404,6 +409,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
     String buttonText,
     Color iconBgColor,
     Color iconColor,
+    VoidCallback onButtonPressed, // 添加按钮点击回调函数参数
   ) {
     return Container(
       width: double.infinity,
@@ -480,7 +486,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                 ),
                 textStyle: const TextStyle(fontSize: 12),
               ),
-              onPressed: () {},
+              onPressed: onButtonPressed, // 使用传入的回调函数
               child: Text(buttonText),
             ),
           ),
@@ -497,6 +503,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
     String buttonText,
     Color iconBgColor,
     Color iconColor,
+    VoidCallback onButtonPressed, // 添加按钮点击回调函数参数
   ) {
     return Container(
       width: double.infinity,
@@ -565,7 +572,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                     ),
                     textStyle: const TextStyle(fontSize: 12),
                   ),
-                  onPressed: () {},
+                  onPressed: onButtonPressed, // 使用传入的回调函数
                   child: Text(buttonText),
                 ),
               ),
@@ -620,14 +627,16 @@ class TaskCenterPageState extends State<TaskCenterPage> {
             spacing: 10,
             children: [
               const Padding(
-                padding: EdgeInsets.only(top: 16, bottom: 8),
+                padding: EdgeInsets.only(top: 0, bottom: 8),
                 child: Text(
-                  "视频7天卡多选一：7天内只能兑换1个",
+                  "领取视频卡可免费观影",
                   style: TextStyle(fontSize: 10, color: Colors.grey),
                 ),
               ),
-              _buildVipCard(),
-              _buildVipCard(),
+              // 使用ListView.builder根据memberExchangeConfigDataList动态创建会员卡片
+              ...memberExchangeConfigDataList
+                  .map((item) => _buildVipCard(item))
+                  .toList(),
             ],
           ),
         ],
@@ -636,7 +645,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
   }
 
   //会员卡片
-  Widget _buildVipCard() {
+  Widget _buildVipCard(MemberExchangeConfigDataList item) {
     return Container(
       decoration: BoxDecoration(
         //从左到右紫色渐变
@@ -651,18 +660,14 @@ class TaskCenterPageState extends State<TaskCenterPage> {
       padding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       child: Row(
         children: [
-          Icon(
-            Icons.nightlight_round, // 月亮图标，可以用其他图标包或自定义图标替代
-            color: Colors.white,
-            size: 44,
-          ),
+          SvgPicture.asset('assets/images/vip.svg', width: 50, height: 50),
           SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '7天会员',
+                  '${item.days}天会员',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -671,7 +676,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  '剩余: 1积分',
+                  '剩余: ${item.requiredScore}积分',
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.orange[300], // 橙色文字
@@ -693,6 +698,10 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                 ),
                 onPressed: () {
                   // 按钮点击事件
+                  Api.memberExchange({"userMmemberExchangeId": item.id});
+                  getScore();
+                  setState(() {});
+                  debugPrint('点击了会员兑换按钮');
                 },
                 child: Padding(
                   padding: const EdgeInsets.symmetric(

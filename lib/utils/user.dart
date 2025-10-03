@@ -44,4 +44,9 @@ class User {
     userDatabaseHelper.deleteAll();
     tokenDatabaseHelper.deleteAll();
   }
+
+  //实现一个对手机号脱敏的函数
+  static String getPhoneNumber(String phoneNumber) {
+    return phoneNumber.replaceRange(3, phoneNumber.length - 4, "****");
+  }
 }

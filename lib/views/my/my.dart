@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_app/utils/store/user/user.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -302,138 +301,88 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
       );
     }
 
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(5.0),
-        child: Column(
-          children: [
-            Row(
-              spacing: 10,
-              children: [
-                TDImage(
-                  imgUrl: userInfoData?.avatarUrl ?? "",
-                  width: 90,
-                  height: 90,
-                  type: TDImageType.circle,
-                  errorWidget: TDImage(
+    return GestureDetector(
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(5.0),
+          child: Column(
+            children: [
+              Row(
+                spacing: 10,
+                children: [
+                  TDImage(
+                    imgUrl: userInfoData?.avatarUrl ?? "",
                     width: 80,
                     height: 80,
                     type: TDImageType.circle,
-                    assetUrl: 'assets/images/user.png',
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 用户ID
-                    Text(
-                      'tb226868836',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
-                      ),
+                    errorWidget: TDImage(
+                      width: 80,
+                      height: 80,
+                      type: TDImageType.circle,
+                      assetUrl: 'assets/images/user.png',
                     ),
-                    SizedBox(height: 6),
-                    // 虚拟货币数量
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Color.fromRGBO(242, 240, 241, 1),
-                        borderRadius: BorderRadius.circular(12),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 用户ID
+                      Text(
+                        User.getPhoneNumber(
+                          userInfoData?.phone.toString() ?? "",
+                        ),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
                       ),
-                      child: Row(
-                        children: [
-                          SvgPicture.asset(
-                            'assets/images/gole.svg',
-                            width: 25,
-                            height: 25,
-                          ), // 使用奖章图标代替金币图标
-                          SizedBox(width: 4),
-                          Text(
-                            '酷金币: 10',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
+                      SizedBox(height: 6),
+                      // 虚拟货币数量
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: Color.fromRGBO(242, 240, 241, 1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          spacing: 5,
+                          children: [
+                            Text(
+                              'VIP会员:',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Color.fromRGBO(245, 164, 33, 1),
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 12),
-
-                    // 特惠信息
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(width: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '老朋友专享特惠',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color.fromRGBO(245, 164, 33, 1),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      '首3月9.9元/月，加享电视端特权',
-                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                    ),
-                  ],
-                ),
-                // 开通按钮
-                GestureDetector(
-                  onTap: () async {
-                    Get.toNamed("/score");
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Color.fromRGBO(254, 218, 142, 1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: DecoratedBox(
-                      //从左到右渐变
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Color.fromRGBO(255, 209, 123, 1),
-                            Color.fromRGBO(253, 222, 158, 1),
+                            Text(
+                              '已过期',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Color.fromRGBO(190, 190, 190, 1.0),
+                              ),
+                            ),
                           ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.topRight,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        child: Text(
-                          '立即开通',
-                          style: TextStyle(
-                            color: Color.fromRGBO(73, 37, 0, 1),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                          ),
                         ),
                       ),
-                    ),
+                      SizedBox(height: 12),
+
+                      // 特惠信息
+                    ],
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
+      onTap: () {
+        //跳转/score
+        Get.toNamed("/score");
+      },
     );
   }
 

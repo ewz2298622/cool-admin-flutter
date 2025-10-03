@@ -98,14 +98,6 @@ MemberExchangeConfigDataList $MemberExchangeConfigDataListFromJson(
   if (id != null) {
     memberExchangeConfigDataList.id = id;
   }
-  final String? createTime = jsonConvert.convert<String>(json['createTime']);
-  if (createTime != null) {
-    memberExchangeConfigDataList.createTime = createTime;
-  }
-  final String? updateTime = jsonConvert.convert<String>(json['updateTime']);
-  if (updateTime != null) {
-    memberExchangeConfigDataList.updateTime = updateTime;
-  }
   final dynamic tenantId = json['tenantId'];
   if (tenantId != null) {
     memberExchangeConfigDataList.tenantId = tenantId;
@@ -136,6 +128,22 @@ MemberExchangeConfigDataList $MemberExchangeConfigDataListFromJson(
   if (enabled != null) {
     memberExchangeConfigDataList.enabled = enabled;
   }
+  final int? createUserId = jsonConvert.convert<int>(json['createUserId']);
+  if (createUserId != null) {
+    memberExchangeConfigDataList.createUserId = createUserId;
+  }
+  final int? updateUserId = jsonConvert.convert<int>(json['updateUserId']);
+  if (updateUserId != null) {
+    memberExchangeConfigDataList.updateUserId = updateUserId;
+  }
+  final String? createTime = jsonConvert.convert<String>(json['createTime']);
+  if (createTime != null) {
+    memberExchangeConfigDataList.createTime = createTime;
+  }
+  final String? updateTime = jsonConvert.convert<String>(json['updateTime']);
+  if (updateTime != null) {
+    memberExchangeConfigDataList.updateTime = updateTime;
+  }
   return memberExchangeConfigDataList;
 }
 
@@ -144,8 +152,6 @@ Map<String, dynamic> $MemberExchangeConfigDataListToJson(
 ) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
-  data['createTime'] = entity.createTime;
-  data['updateTime'] = entity.updateTime;
   data['tenantId'] = entity.tenantId;
   data['exchangeName'] = entity.exchangeName;
   data['requiredScore'] = entity.requiredScore;
@@ -153,6 +159,10 @@ Map<String, dynamic> $MemberExchangeConfigDataListToJson(
   data['sort'] = entity.sort;
   data['remark'] = entity.remark;
   data['enabled'] = entity.enabled;
+  data['createUserId'] = entity.createUserId;
+  data['updateUserId'] = entity.updateUserId;
+  data['createTime'] = entity.createTime;
+  data['updateTime'] = entity.updateTime;
   return data;
 }
 
@@ -160,8 +170,6 @@ extension MemberExchangeConfigDataListExtension
     on MemberExchangeConfigDataList {
   MemberExchangeConfigDataList copyWith({
     int? id,
-    String? createTime,
-    String? updateTime,
     dynamic tenantId,
     String? exchangeName,
     int? requiredScore,
@@ -169,18 +177,24 @@ extension MemberExchangeConfigDataListExtension
     int? sort,
     dynamic remark,
     int? enabled,
+    int? createUserId,
+    int? updateUserId,
+    String? createTime,
+    String? updateTime,
   }) {
     return MemberExchangeConfigDataList()
       ..id = id ?? this.id
-      ..createTime = createTime ?? this.createTime
-      ..updateTime = updateTime ?? this.updateTime
       ..tenantId = tenantId ?? this.tenantId
       ..exchangeName = exchangeName ?? this.exchangeName
       ..requiredScore = requiredScore ?? this.requiredScore
       ..days = days ?? this.days
       ..sort = sort ?? this.sort
       ..remark = remark ?? this.remark
-      ..enabled = enabled ?? this.enabled;
+      ..enabled = enabled ?? this.enabled
+      ..createUserId = createUserId ?? this.createUserId
+      ..updateUserId = updateUserId ?? this.updateUserId
+      ..createTime = createTime ?? this.createTime
+      ..updateTime = updateTime ?? this.updateTime;
   }
 }
 
