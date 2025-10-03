@@ -4,6 +4,7 @@ import 'package:flutter_app/http/print_log_interceptor.dart';
 import 'package:flutter_app/http/requestConfig.dart';
 import 'package:flutter_app/http/responseInterceptor.dart';
 import 'package:flutter_app/http/tokenInterceptors.dart';
+import 'package:flutter_app/http/whitelistPaths.dart';
 
 import 'cacheInterceptor.dart';
 import 'errorInterceptor.dart';
@@ -27,12 +28,7 @@ class DioHttp {
       CacheInterceptor(
         cacheDuration: const Duration(minutes: 10), // 设置5分钟缓存
         // forceRefresh: true, // 强制刷新时取消注释
-        whitelistPaths: [
-          "/app/user/login/captcha",
-          '/app/user/login/app_login',
-          '/app/member/member/exchangeByScore',
-          '/app/member/score/total',
-        ],
+        whitelistPaths: whitelistPaths,
       ),
     );
     _dio.interceptors.add(TokenInterceptors()); //token

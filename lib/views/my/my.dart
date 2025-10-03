@@ -51,6 +51,8 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
   String androidCodeId = AdsConfig.BANNER_AD_ANDROID;
   String iosCodeId = AdsConfig.BANNER_AD_IOS;
 
+  bool isValidMember = false;
+
   void didPopNext() {
     // 从目标页面返回时调用
     debugPrint('main dart didPopNext');
@@ -82,12 +84,19 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
       await getUserInfo();
       await getViews();
       await noticeInfo();
+      await checkMember();
       didChangeAppLifecycleState();
       debugPrint("init success");
       return "init success";
     } catch (e) {
       return "init success";
     }
+  }
+
+  //检查会员是否可用
+  Future<void> checkMember() async {
+    isValidMember = (await Api.checkMember({})).data!.isValidMember ?? false;
+    setState(() {});
   }
 
   //广告加载
@@ -359,7 +368,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
                               ),
                             ),
                             Text(
-                              '已过期',
+                              isValidMember == false ? '已过期' : '正常',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Color.fromRGBO(190, 190, 190, 1.0),
@@ -382,6 +391,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
       onTap: () {
         //跳转/score
         Get.toNamed("/score");
+        checkMember();
       },
     );
   }

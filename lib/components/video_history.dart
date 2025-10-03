@@ -9,6 +9,19 @@ class VideoHistory extends StatelessWidget {
 
   const VideoHistory({super.key, required this.videoPageData});
 
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: videoPageData.map((item) => VideoHistoryItem(videoData: item)).toList(),
+    );
+  }
+}
+
+class VideoHistoryItem extends StatelessWidget {
+  final ViewsDataList videoData;
+
+  const VideoHistoryItem({super.key, required this.videoData});
+
   //实现一个毫秒转00:00:00格式
   String _formatDuration(int milliseconds) {
     final int seconds = milliseconds ~/ 1000;
@@ -33,60 +46,55 @@ class VideoHistory extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: List<Widget>.generate(videoPageData.length, (i) {
-        return GestureDetector(
-          onTap:
-              () => Get.toNamed(
-                "/video_detail",
-                arguments: {"id": videoPageData[i].id},
-              ),
-          child: Container(
-            height: 80,
-            width: MediaQuery.of(context).size.width,
-            padding: const EdgeInsets.only(left: 4, right: 4, bottom: 15),
-            child: Row(
-              spacing: 10,
+    return GestureDetector(
+      onTap: () => Get.toNamed(
+        "/video_detail",
+        arguments: {"id": videoData.id},
+      ),
+      child: Container(
+        height: 80,
+        width: MediaQuery.of(context).size.width,
+        padding: const EdgeInsets.only(left: 4, right: 4, bottom: 15),
+        child: Row(
+          spacing: 10,
+          children: [
+            Stack(
               children: [
-                Stack(
-                  children: [
-                    TDImage(
-                      fit: BoxFit.cover,
-                      width: 150,
-                      height: 80,
-                      imgUrl: videoPageData[i].cover ?? "",
-                      errorWidget: const TDImage(
-                        width: 150,
-                        assetUrl: 'assets/images/loading.gif',
-                      ),
-                    ),
-                    _buildVideoItemOverlay(videoPageData[i]),
-                  ],
-                ),
-                Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        videoPageData[i].title ?? "",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        "剩余${_formatDuration((videoPageData[i].duration ?? 0) - (videoPageData[i].viewingDuration ?? 0))}",
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    ],
+                TDImage(
+                  fit: BoxFit.cover,
+                  width: 150,
+                  height: 80,
+                  imgUrl: videoData.cover ?? "",
+                  errorWidget: const TDImage(
+                    width: 150,
+                    assetUrl: 'assets/images/loading.gif',
                   ),
                 ),
+                _buildVideoItemOverlay(videoData),
               ],
             ),
-          ),
-        );
-      }),
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    videoData.title ?? "",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    "剩余${_formatDuration((videoData.duration ?? 0) - (videoData.viewingDuration ?? 0))}",
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

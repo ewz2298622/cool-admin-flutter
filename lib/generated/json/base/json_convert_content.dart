@@ -11,6 +11,7 @@ import 'package:flutter_app/entity/captcha_entity.dart';
 import 'package:flutter_app/entity/dict_data_entity.dart';
 import 'package:flutter_app/entity/dict_info_list_entity.dart';
 import 'package:flutter_app/entity/hot_keyWord_entity.dart';
+import 'package:flutter_app/entity/is_valid_member_entity.dart';
 import 'package:flutter_app/entity/live_info_entity.dart';
 import 'package:flutter_app/entity/login_entity.dart';
 import 'package:flutter_app/entity/member_exchange_config_entity.dart';
@@ -455,6 +456,22 @@ class JsonConvert {
               .map<HotKeyWordDataPagination>(
                 (Map<String, dynamic> e) =>
                     HotKeyWordDataPagination.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<IsValidMemberEntity>[] is M) {
+      return data
+              .map<IsValidMemberEntity>(
+                (Map<String, dynamic> e) => IsValidMemberEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<IsValidMemberData>[] is M) {
+      return data
+              .map<IsValidMemberData>(
+                (Map<String, dynamic> e) => IsValidMemberData.fromJson(e),
               )
               .toList()
           as M;
@@ -949,6 +966,8 @@ class JsonConvertClassCollection {
     (HotKeyWordData).toString(): HotKeyWordData.fromJson,
     (HotKeyWordDataList).toString(): HotKeyWordDataList.fromJson,
     (HotKeyWordDataPagination).toString(): HotKeyWordDataPagination.fromJson,
+    (IsValidMemberEntity).toString(): IsValidMemberEntity.fromJson,
+    (IsValidMemberData).toString(): IsValidMemberData.fromJson,
     (LiveInfoEntity).toString(): LiveInfoEntity.fromJson,
     (LiveInfoData).toString(): LiveInfoData.fromJson,
     (LoginEntity).toString(): LoginEntity.fromJson,

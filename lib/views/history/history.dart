@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../../components/loading.dart';
 import '../../../entity/video_page_entity.dart';
@@ -27,12 +27,6 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
   int currentPage = 1;
   bool disposed = false;
   final ScrollController _scrollController = ScrollController();
-  Future<void> noticeInfo() async {
-    try {} catch (e) {
-      // 捕获并处理异常
-      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
-    }
-  }
 
   Future<void> getUserInfo() async {
     try {
@@ -68,8 +62,6 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
     try {
       await getUserInfo();
       await getViews();
-      _scrollControllerAdd();
-      await noticeInfo();
       return "init success";
     } catch (e) {
       // 捕获并处理异常
@@ -84,29 +76,16 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
     super.initState();
   }
 
-  _scrollControllerAdd() {
-    _scrollController.addListener(listenLoadMoreCallback);
-  }
-
-  void listenLoadMoreCallback() {
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
-      // 滚动到底部时触发
-      loadMore();
-    }
-  }
-
   Future<void> loadMore() async {
     debugPrint('loadMore');
     currentPage++;
-    TDToast.showLoading(context: context, text: "加载中");
-    await noticeInfo();
-    TDToast.dismissLoading();
     if (disposed) {
       return;
     }
     setState(() {});
   }
+
+  final RefreshController _refreshController = RefreshController();
 
   /// 返回一个Widget自动填充剩余高度 且可以滑动
   Widget _buildContent() {
@@ -119,18 +98,27 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}'); // 显示错误信息
         } else if (snapshot.hasData) {
-          return SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
-            controller: _scrollController,
-            child: Column(
-              children: [
-                Container(
-                  //设置背景色
-                  height: MediaQuery.of(context).size.height,
-                  padding: EdgeInsets.only(left: 10, right: 10, top: 10),
-                  child: VideoHistory(videoPageData: viewsData),
-                ),
-              ],
+          return SmartRefresher(
+            onRefresh: () async {
+              await init();
+              _refreshController.refreshCompleted();
+            },
+            onLoading: () async {
+              loadMore();
+              _refreshController.loadComplete();
+            },
+            enablePullDown: true,
+            enablePullUp: true,
+            controller: _refreshController,
+            // child: ListView(
+            //   padding: const EdgeInsets.only(top: 0),
+            //   children: [VideoHistory(videoPageData: viewsData)],
+            // ),
+            child: ListView.builder(
+              itemCount: viewsData.length,
+              itemBuilder: (context, index) {
+                return VideoHistoryItem(videoData: viewsData[index]);
+              },
             ),
           );
         } else {
