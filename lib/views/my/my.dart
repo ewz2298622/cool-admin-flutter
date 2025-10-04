@@ -368,7 +368,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
                               ),
                             ),
                             Text(
-                              isValidMember == false ? '已过期' : '正常',
+                              isValidMember == false ? '已过期' : '续期',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Color.fromRGBO(190, 190, 190, 1.0),

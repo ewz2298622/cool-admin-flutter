@@ -181,11 +181,12 @@ class VideoFilterState extends State<VideoFilter>
       categoryCurrent.value = 0;
     }
     videoPageData.clear();
+    setState(() {});
     currentPage = 1;
     await getVideoPages();
-    setState(() {});
     _year_change(0);
     _area_change(null);
+    setState(() {});
   }
 
   Future<void> _tag_change(DictDataDataVideoTag? item) async {
@@ -195,18 +196,19 @@ class VideoFilterState extends State<VideoFilter>
       tagCurrent.value = 0;
     }
     videoPageData.clear();
+    setState(() {});
     currentPage = 1;
     await getVideoPages();
-    setState(() {});
     _year_change(0);
     _area_change(null);
+    setState(() {});
   }
 
   Future<void> _year_change(int item) async {
     yearCurrent.value = item;
     videoPageData.clear();
+    setState(() {});
     currentPage = 1;
-
     await getVideoPages();
     setState(() {});
   }
@@ -218,9 +220,9 @@ class VideoFilterState extends State<VideoFilter>
       regionCurrent.value = 0;
     }
     videoPageData.clear();
+    setState(() {});
     currentPage = 1;
     await getVideoPages();
-    setState(() {});
   }
 
   Widget _buildCategoryRow(
@@ -262,33 +264,37 @@ class VideoFilterState extends State<VideoFilter>
                   },
                 ),
 
-                ...(items).map(
-                  (item) => Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: GestureDetector(
-                      child: TDTag(
-                        item.name ?? "",
-                        shape: TDTagShape.round,
-                        isLight: true,
-                        size: TDTagSize.large,
-                        textColor:
-                            key == item.id
-                                ? const Color.fromRGBO(255, 122, 27, 1)
-                                : Theme.of(context).textTheme.titleLarge?.color,
-                        backgroundColor:
-                            key == item.id
-                                ? const Color.fromRGBO(244, 244, 244, 1)
-                                : Colors.transparent,
-                        isOutline: true,
-                        style: TDTagStyle(
-                          borderColor: Colors.transparent,
-                          borderRadius: BorderRadius.circular(15),
+                ...(items)
+                    .map(
+                      (item) => Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: GestureDetector(
+                          child: TDTag(
+                            item.name ?? "",
+                            shape: TDTagShape.round,
+                            isLight: true,
+                            size: TDTagSize.large,
+                            textColor:
+                                key == item.id
+                                    ? const Color.fromRGBO(255, 122, 27, 1)
+                                    : Theme.of(
+                                      context,
+                                    ).textTheme.titleLarge?.color,
+                            backgroundColor:
+                                key == item.id
+                                    ? const Color.fromRGBO(244, 244, 244, 1)
+                                    : Colors.transparent,
+                            isOutline: true,
+                            style: TDTagStyle(
+                              borderColor: Colors.transparent,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                          ),
+                          onTap: () => _category_change(item),
                         ),
                       ),
-                      onTap: () => _category_change(item),
-                    ),
-                  ),
-                ).toList(), // 添加toList()以确保正确构建
+                    )
+                    .toList(), // 添加toList()以确保正确构建
               ],
             ),
           );
@@ -333,33 +339,37 @@ class VideoFilterState extends State<VideoFilter>
                   },
                 ),
 
-                ...(items).map(
-                  (item) => Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: GestureDetector(
-                      child: TDTag(
-                        item.name ?? "",
-                        shape: TDTagShape.round,
-                        isLight: true,
-                        size: TDTagSize.large,
-                        textColor:
-                            key == item.id
-                                ? const Color.fromRGBO(255, 122, 27, 1)
-                                : Theme.of(context).textTheme.titleLarge?.color,
-                        backgroundColor:
-                            key == item.id
-                                ? const Color.fromRGBO(244, 244, 244, 1)
-                                : Colors.transparent,
-                        isOutline: true,
-                        style: TDTagStyle(
-                          borderColor: Colors.transparent,
-                          borderRadius: BorderRadius.circular(15),
+                ...(items)
+                    .map(
+                      (item) => Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: GestureDetector(
+                          child: TDTag(
+                            item.name ?? "",
+                            shape: TDTagShape.round,
+                            isLight: true,
+                            size: TDTagSize.large,
+                            textColor:
+                                key == item.id
+                                    ? const Color.fromRGBO(255, 122, 27, 1)
+                                    : Theme.of(
+                                      context,
+                                    ).textTheme.titleLarge?.color,
+                            backgroundColor:
+                                key == item.id
+                                    ? const Color.fromRGBO(244, 244, 244, 1)
+                                    : Colors.transparent,
+                            isOutline: true,
+                            style: TDTagStyle(
+                              borderColor: Colors.transparent,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                          ),
+                          onTap: () => _tag_change(item),
                         ),
                       ),
-                      onTap: () => _tag_change(item),
-                    ),
-                  ),
-                ).toList(), // 添加toList()以确保正确构建
+                    )
+                    .toList(), // 添加toList()以确保正确构建
               ],
             ),
           );
@@ -403,33 +413,37 @@ class VideoFilterState extends State<VideoFilter>
                     _area_change(null);
                   },
                 ),
-                ...(items).map(
-                  (item) => Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: GestureDetector(
-                      child: TDTag(
-                        item.name ?? "",
-                        shape: TDTagShape.round,
-                        size: TDTagSize.large,
-                        isLight: true,
-                        textColor:
-                            key == item.id
-                                ? const Color.fromRGBO(255, 122, 27, 1)
-                                : Theme.of(context).textTheme.titleLarge?.color,
-                        backgroundColor:
-                            key == item.id
-                                ? const Color.fromRGBO(244, 244, 244, 1)
-                                : Colors.transparent,
-                        isOutline: true,
-                        style: TDTagStyle(
-                          borderColor: Colors.transparent,
-                          borderRadius: BorderRadius.circular(15),
+                ...(items)
+                    .map(
+                      (item) => Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: GestureDetector(
+                          child: TDTag(
+                            item.name ?? "",
+                            shape: TDTagShape.round,
+                            size: TDTagSize.large,
+                            isLight: true,
+                            textColor:
+                                key == item.id
+                                    ? const Color.fromRGBO(255, 122, 27, 1)
+                                    : Theme.of(
+                                      context,
+                                    ).textTheme.titleLarge?.color,
+                            backgroundColor:
+                                key == item.id
+                                    ? const Color.fromRGBO(244, 244, 244, 1)
+                                    : Colors.transparent,
+                            isOutline: true,
+                            style: TDTagStyle(
+                              borderColor: Colors.transparent,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                          ),
+                          onTap: () => _area_change(item),
                         ),
                       ),
-                      onTap: () => _area_change(item),
-                    ),
-                  ),
-                ).toList(), // 添加toList()以确保正确构建
+                    )
+                    .toList(), // 添加toList()以确保正确构建
               ],
             ),
           );
@@ -470,33 +484,37 @@ class VideoFilterState extends State<VideoFilter>
                   _year_change(0);
                 },
               ),
-              ...(items).map(
-                (item) => Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: GestureDetector(
-                    child: TDTag(
-                      item.toString(),
-                      isLight: true,
-                      textColor:
-                          key == item
-                              ? const Color.fromRGBO(255, 122, 27, 1)
-                              : Theme.of(context).textTheme.titleLarge?.color,
-                      backgroundColor:
-                          key == item
-                              ? const Color.fromRGBO(244, 244, 244, 1)
-                              : Colors.transparent,
-                      shape: TDTagShape.round,
-                      size: TDTagSize.large,
-                      isOutline: true,
-                      style: TDTagStyle(
-                        borderColor: Colors.transparent,
-                        borderRadius: BorderRadius.circular(15),
+              ...(items)
+                  .map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: GestureDetector(
+                        child: TDTag(
+                          item.toString(),
+                          isLight: true,
+                          textColor:
+                              key == item
+                                  ? const Color.fromRGBO(255, 122, 27, 1)
+                                  : Theme.of(
+                                    context,
+                                  ).textTheme.titleLarge?.color,
+                          backgroundColor:
+                              key == item
+                                  ? const Color.fromRGBO(244, 244, 244, 1)
+                                  : Colors.transparent,
+                          shape: TDTagShape.round,
+                          size: TDTagSize.large,
+                          isOutline: true,
+                          style: TDTagStyle(
+                            borderColor: Colors.transparent,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                        onTap: () => _year_change(item),
                       ),
                     ),
-                    onTap: () => _year_change(item),
-                  ),
-                ),
-              ).toList(), // 添加toList()以确保正确构建
+                  )
+                  .toList(), // 添加toList()以确保正确构建
             ],
           ),
         );
@@ -519,6 +537,7 @@ class VideoFilterState extends State<VideoFilter>
 
   Future<void> onRefresh() async {
     videoPageData.clear();
+    setState(() {});
     currentPage = 1;
     categoryCurrent.value = 0;
     yearCurrent.value = 0;
