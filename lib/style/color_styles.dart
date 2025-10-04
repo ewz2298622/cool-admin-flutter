@@ -28,4 +28,8 @@ class ColorStyles {
 
   static const Color color_388E3C = Color(0xFF388E3C);
   static const Color color_2E7D32 = Color(0xFF2E7D32);
+
+  static const Color colorPrimary = Color(0xFFF9A825);
+
+  static const Color colorTextSecondary = Color(0xFFF57F17);
 }

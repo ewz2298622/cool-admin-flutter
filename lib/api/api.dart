@@ -463,6 +463,19 @@ class Api {
     }
   }
 
+  //获取浏览记录
+  static Future<void> delViews(Map<String, dynamic>? data) async {
+    try {
+      await server.post(
+        "/app/user/views/delete",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
   //添加浏览记录
   static Future<void> addViews(Map<String, dynamic>? data) async {
     try {

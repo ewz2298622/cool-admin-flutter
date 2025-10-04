@@ -101,7 +101,7 @@ class MyApp extends StatelessWidget {
             initialRoute: '/',
             getPages: [
               GetPage(name: '/', page: () => SplashPage()),
-              GetPage(name: '/main', page: () => const MainPage()),
+              GetPage(name: '/main', page: () => MainPage()),
               GetPage(name: '/video_detail', page: () => Video_Detail()),
               GetPage(name: '/short_drama', page: () => ShortDrama()),
               GetPage(name: '/notice', page: () => Notice()),
@@ -114,6 +114,7 @@ class MyApp extends StatelessWidget {
               GetPage(name: '/score', page: () => TaskCenterPage()),
             ],
             navigatorKey: ContextManager.navigatorKey,
+            navigatorObservers: [routeObserver], // 添加路由观察者
           ),
         );
       },
@@ -129,6 +130,9 @@ class MyApp extends StatelessWidget {
     }
   }
 }
+
+// 创建全局的 RouteObserver
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -199,7 +203,7 @@ class _MainPageState extends State<MainPage> {
                 width: 25,
                 height: 25,
               ),
-              label: '频道',
+              label: '首页',
             ),
             BottomNavigationBarItem(
               activeIcon: SvgPicture.asset(
@@ -225,7 +229,7 @@ class _MainPageState extends State<MainPage> {
                 width: 25,
                 height: 25,
               ),
-              label: '服务',
+              label: '客服',
             ),
             BottomNavigationBarItem(
               activeIcon: SvgPicture.asset(
@@ -241,9 +245,9 @@ class _MainPageState extends State<MainPage> {
               label: '我的',
             ),
           ],
+          type: BottomNavigationBarType.fixed,
           currentIndex: _selectedIndex,
           onTap: onTap,
-          type: BottomNavigationBarType.fixed,
           backgroundColor:
               Theme.of(context).bottomNavigationBarTheme.backgroundColor,
           unselectedItemColor: ColorStyles.color_1E88E5,

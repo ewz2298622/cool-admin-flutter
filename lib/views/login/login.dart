@@ -330,36 +330,42 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
     UserDatabaseHelper userDatabaseHelper = UserDatabaseHelper();
     UserInfoData? userInfoData = (await Api.getUserInfo({})).data;
     if (userInfoData != null) {
-      userDatabaseHelper.insert(
-        UserEntity(
-          unionid: userInfoData.unionid,
-          avatarUrl: userInfoData.avatarUrl,
-          nickName: userInfoData.nickName,
-          phone: userInfoData.phone,
-          gender: userInfoData.gender,
-          status: userInfoData.status,
-          loginType: userInfoData.loginType,
-          password: userInfoData.password,
-          userId: userInfoData.id,
-        ),
-      );
-      TDToast.showText('登录成功', context: context);
-      _context?.read<UserState>().updateUserInfoData(
-        UserEntity(
-          unionid: userInfoData.unionid,
-          avatarUrl: userInfoData.avatarUrl,
-          nickName: userInfoData.nickName,
-          phone: userInfoData.phone,
-          gender: userInfoData.gender,
-          status: userInfoData.status,
-          loginType: userInfoData.loginType,
-          password: userInfoData.password,
-          userId: userInfoData.id,
-        ),
-      );
-      //等待500ms
-      await Future.delayed(Duration(milliseconds: 500));
-      Navigator.of(context).pushReplacementNamed('/');
+      try {
+        userDatabaseHelper.insert(
+          UserEntity(
+            unionid: userInfoData.unionid,
+            avatarUrl: userInfoData.avatarUrl,
+            nickName: userInfoData.nickName,
+            phone: userInfoData.phone,
+            gender: userInfoData.gender,
+            status: userInfoData.status,
+            loginType: userInfoData.loginType,
+            password: userInfoData.password,
+            userId: userInfoData.id,
+          ),
+        );
+        TDToast.showText('登录成功', context: context);
+        _context?.read<UserState>().updateUserInfoData(
+          UserEntity(
+            unionid: userInfoData.unionid,
+            avatarUrl: userInfoData.avatarUrl,
+            nickName: userInfoData.nickName,
+            phone: userInfoData.phone,
+            gender: userInfoData.gender,
+            status: userInfoData.status,
+            loginType: userInfoData.loginType,
+            password: userInfoData.password,
+            userId: userInfoData.id,
+          ),
+        );
+        //等待500ms
+        await Future.delayed(Duration(milliseconds: 500));
+        Navigator.of(context).pushReplacementNamed('/');
+      } catch (e) {
+        debugPrint("登录失败${e.toString()}");
+        getCaptcha();
+        TDToast.showText('登录失败', context: context);
+      }
     }
   }
 
@@ -394,8 +400,11 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
         );
 
         await getUserInfo();
+      } else {
+        getCaptcha();
       }
     } catch (e) {
+      getCaptcha();
       debugPrint("登录失败${e.toString()}");
     }
     // EventBus().emit(Constant.UserBusId, null);
