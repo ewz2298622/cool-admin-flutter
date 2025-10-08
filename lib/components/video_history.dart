@@ -12,7 +12,10 @@ class VideoHistory extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: videoPageData.map((item) => VideoHistoryItem(videoData: item)).toList(),
+      children:
+          videoPageData
+              .map((item) => VideoHistoryItem(videoData: item))
+              .toList(),
     );
   }
 }
@@ -47,10 +50,11 @@ class VideoHistoryItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Get.toNamed(
-        "/video_detail",
-        arguments: {"id": videoData.id},
-      ),
+      onTap:
+          () => Get.toNamed(
+            "/video_detail",
+            arguments: {"id": videoData.associationId},
+          ),
       child: Container(
         height: 80,
         width: MediaQuery.of(context).size.width,

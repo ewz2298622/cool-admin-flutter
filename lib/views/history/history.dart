@@ -5,6 +5,7 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 import '../../../components/loading.dart';
 import '../../../entity/video_page_entity.dart';
 import '../../api/api.dart';
+import '../../components/no_data.dart';
 import '../../components/video_history.dart';
 import '../../db/entity/UserEntity.dart';
 import '../../db/manager/UserDatabaseHelper.dart';
@@ -51,10 +52,6 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
 
         if (response.data?.list != null) {
           viewsData = response.data!.list as List<ViewsDataList>;
-          //重构数据将associationId赋值给id
-          for (var element in viewsData) {
-            element.id = element.associationId;
-          }
         }
         setState(() {});
       }
@@ -142,6 +139,9 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
               itemCount: viewsData.length,
               itemBuilder: (context, index) {
                 // return VideoHistoryItem(videoData: viewsData[index]);
+                if (viewsData.isEmpty) {
+                  return NoData();
+                }
                 return TDSwipeCell(
                   right: TDSwipeCellPanel(
                     children: [

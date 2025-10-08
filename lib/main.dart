@@ -8,6 +8,7 @@ import 'package:flutter_app/utils/share_util.dart';
 import 'package:flutter_app/utils/store/app/appState.dart';
 import 'package:flutter_app/utils/store/theme/theme.dart';
 import 'package:flutter_app/utils/store/user/user.dart';
+import 'package:flutter_app/utils/user.dart';
 import 'package:flutter_app/views/environment_error/environment_error.dart';
 import 'package:flutter_app/views/feedback/feedback.dart';
 import 'package:flutter_app/views/home/home.dart';
@@ -262,12 +263,16 @@ class _MainPageState extends State<MainPage> {
   Future<String> init() async {
     try {
       // 使用Future.wait并发执行多个异步操作
-      await Future.wait([
-        DBManager.init(),
-        initPlatformState(),
-        ShareUtil.prepareShareImage(),
-        getAd(),
-      ]);
+      await Future.wait(
+        [
+              DBManager.init(),
+              initPlatformState(),
+              ShareUtil.prepareShareImage(),
+              User.isLogin(),
+              getAd(),
+            ]
+            as Iterable<Future>,
+      );
 
       //跳转到SplashPage组件
       return "init success";

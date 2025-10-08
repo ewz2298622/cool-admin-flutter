@@ -21,6 +21,7 @@ import '../../entity/play_line_entity.dart';
 import '../../entity/video_detail_entity.dart';
 import '../../entity/video_line_entity.dart';
 import '../../entity/video_page_entity.dart';
+import '../../main.dart'; // 导入main.dart以访问routeObserver
 import '../../style/layout.dart';
 import '../../utils/ads_cache_util.dart';
 import '../../utils/ads_config.dart';
@@ -38,8 +39,7 @@ class Video_Detail extends StatefulWidget {
   _Video_DetailState createState() => _Video_DetailState();
 }
 
-class _Video_DetailState extends State<Video_Detail> {
-  final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+class _Video_DetailState extends State<Video_Detail> with RouteAware {
   final ValueNotifier<int> currentLine = ValueNotifier<int>(0);
   final ValueNotifier<int> currentPlay = ValueNotifier<int>(0);
   StateSetter? showModalBottomSheetListSate;
@@ -76,6 +76,31 @@ class _Video_DetailState extends State<Video_Detail> {
 
   // 模拟播放记录视频初始化完需要跳转的进度
   int seekTime = 100000;
+
+  // 添加一个变量来跟踪是否已经调用了addViews
+  bool _hasAddedViews = false;
+
+  // 添加一个定时器来定期更新播放进度
+  Timer? _positionTimer;
+
+  // 开始监听播放进度
+  void _startPositionListener() {
+    _positionTimer?.cancel();
+  }
+
+  // 停止监听播放进度
+  void _stopPositionListener() {
+    _positionTimer?.cancel();
+    _positionTimer = null;
+  }
+
+  // 在页面离开时调用addViews的方法
+  void _onPageLeave() {
+    if (!_hasAddedViews) {
+      addViews();
+      _hasAddedViews = true;
+    }
+  }
 
   Future<void> getVideoById() async {
     try {
@@ -159,9 +184,7 @@ class _Video_DetailState extends State<Video_Detail> {
 
   Future<void> addViews() async {
     try {
-      if (videoData?.duration == null) {
-        return;
-      }
+      debugPrint("addViews");
       await Api.addViews({
         "title": videoData?.title,
         "associationId": videoData?.id,
@@ -174,7 +197,7 @@ class _Video_DetailState extends State<Video_Detail> {
       eventBus.fire(RefreshViewEvent());
     } catch (e) {
       // 捕获并处理异常
-      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+      debugPrint('Initialization addViews failed: $e');
     }
   }
 
@@ -350,6 +373,8 @@ class _Video_DetailState extends State<Video_Detail> {
     try {
       await player.reset();
       player.setDataSource(url, autoPlay: true, showCover: true);
+      // 开始监听播放进度
+      _startPositionListener();
     } catch (error) {
       debugPrint('setVideoUrl error: $error');
     }
@@ -359,6 +384,39 @@ class _Video_DetailState extends State<Video_Detail> {
   void initState() {
     _futureBuilderFuture = init();
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 订阅路由变化
+    routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute);
+  }
+
+  @override
+  void dispose() {
+    // 在组件销毁前调用addViews
+    _onPageLeave();
+    // 停止监听播放进度
+    _stopPositionListener();
+    super.dispose();
+    removeVideo();
+    // 取消路由订阅
+    routeObserver.unsubscribe(this);
+  }
+
+  // 当页面被其他页面覆盖时调用
+  @override
+  void didPushNext() {
+    // 页面被其他页面覆盖时调用addViews
+    _onPageLeave();
+  }
+
+  // 当页面从导航栈中移除时调用
+  @override
+  void didPop() {
+    // 页面从导航栈中移除时调用addViews
+    _onPageLeave();
   }
 
   goFeedbackPage() {
@@ -373,14 +431,11 @@ class _Video_DetailState extends State<Video_Detail> {
     );
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    removeVideo();
-    addViews();
-  }
-
   removeVideo() {
+    // 在视频被销毁前调用addViews记录观看历史
+    _onPageLeave();
+    // 停止监听播放进度
+    _stopPositionListener();
     player.stop();
     player.reset();
     player.release();
@@ -1214,40 +1269,6 @@ class _Video_DetailState extends State<Video_Detail> {
             // 右上方按钮组开关
             isRightButton: true,
             // 右上方按钮组
-            // rightButtonList: [
-            //   InkWell(
-            //     onTap: () {},
-            //     child: Container(
-            //       padding: const EdgeInsets.all(10),
-            //       decoration: BoxDecoration(
-            //         color: Theme.of(context).primaryColorLight,
-            //         borderRadius: const BorderRadius.vertical(
-            //           top: Radius.circular(5),
-            //         ),
-            //       ),
-            //       child: Icon(
-            //         Icons.favorite,
-            //         color: Theme.of(context).primaryColor,
-            //       ),
-            //     ),
-            //   ),
-            //   InkWell(
-            //     onTap: () {},
-            //     child: Container(
-            //       padding: const EdgeInsets.all(10),
-            //       decoration: BoxDecoration(
-            //         color: Theme.of(context).primaryColorLight,
-            //         borderRadius: const BorderRadius.vertical(
-            //           bottom: Radius.circular(5),
-            //         ),
-            //       ),
-            //       child: Icon(
-            //         Icons.thumb_up,
-            //         color: Theme.of(context).primaryColor,
-            //       ),
-            //     ),
-            //   ),
-            // ],
             settingFun: () {
               tvDevice();
             },
@@ -1273,6 +1294,10 @@ class _Video_DetailState extends State<Video_Detail> {
             // 视频播放完成回调
             onVideoEnd: () async {
               var index = currentPlay.value + 1;
+              // 视频播放完成时记录观看历史
+              _onPageLeave();
+              // 停止监听播放进度
+              _stopPositionListener();
               if (index < videoList.length) {
                 await player.reset();
                 setState(() {
@@ -1280,6 +1305,13 @@ class _Video_DetailState extends State<Video_Detail> {
                 });
                 setVideoUrl(videoList[index].url);
               }
+            },
+            // 视频播放错误点击刷新回调
+            onError: () async {
+              await player.reset();
+            },
+            onVideoTimeChange: () {
+              // 视频时间变动则触发一次，可以保存视频历史
             },
           ),
         ),

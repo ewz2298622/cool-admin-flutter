@@ -6,4 +6,5 @@ final List<String> whitelistPaths = [
   '/app/member/score/total',
   '/app/member/member/isValidMember',
   '/app/user/views/page',
+  '/app/user/views/delete',
 ];

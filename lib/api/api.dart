@@ -479,10 +479,7 @@ class Api {
   //添加浏览记录
   static Future<void> addViews(Map<String, dynamic>? data) async {
     try {
-      await server.post(
-        "/app/application/views/add",
-        data: data,
-      ); // 添加注释说明 ONE 的含义});
+      await server.post("/app/user/views/add", data: data); // 添加注释说明 ONE 的含义});
     } catch (error) {
       // 重新抛出异常以便上层处理
       rethrow;

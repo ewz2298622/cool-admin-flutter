@@ -6,6 +6,7 @@ import '../db/entity/UserEntity.dart';
 import '../db/manager/TokenDatabaseHelper.dart';
 import '../db/manager/UserDatabaseHelper.dart';
 import '../views/login/login.dart';
+import 'context_manager.dart';
 
 class User {
   static final UserDatabaseHelper userDatabaseHelper = UserDatabaseHelper();
@@ -18,6 +19,9 @@ class User {
         return false;
       } else {
         userInfoData = user.toList()[0] as UserEntity?;
+        (ContextManager.getContext() as BuildContext)
+            .read<UserState>()
+            .updateUserInfoData(userInfoData as UserEntity);
         return true;
       }
     } catch (error) {
@@ -34,7 +38,6 @@ class User {
       _modalBottomSheetMenu(context);
       return false;
     } else {
-      context.read<UserState>().updateUserInfoData(userInfoData as UserEntity);
       return true;
     }
   }

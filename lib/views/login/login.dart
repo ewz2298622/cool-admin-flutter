@@ -328,6 +328,7 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
 
   Future<void> getUserInfo() async {
     UserDatabaseHelper userDatabaseHelper = UserDatabaseHelper();
+    userDatabaseHelper.deleteAll();
     UserInfoData? userInfoData = (await Api.getUserInfo({})).data;
     if (userInfoData != null) {
       try {
@@ -390,6 +391,7 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
       if (data != null) {
         debugPrint("登录成功${data.toString()}");
         TokenDatabaseHelper tokenDatabaseHelper = TokenDatabaseHelper();
+        tokenDatabaseHelper.deleteAll();
         tokenDatabaseHelper.insert(
           TokenEntity(
             expire: data.expire,
