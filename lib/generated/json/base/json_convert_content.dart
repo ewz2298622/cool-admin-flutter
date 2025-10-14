@@ -22,6 +22,7 @@ import 'package:flutter_app/entity/swiper_entity.dart';
 import 'package:flutter_app/entity/user_info_entity.dart';
 import 'package:flutter_app/entity/video_album_entity.dart';
 import 'package:flutter_app/entity/video_category_entity.dart';
+import 'package:flutter_app/entity/video_detail_data_entity.dart';
 import 'package:flutter_app/entity/video_detail_entity.dart';
 import 'package:flutter_app/entity/video_line_entity.dart';
 import 'package:flutter_app/entity/video_live_entity.dart';
@@ -704,6 +705,49 @@ class JsonConvert {
               .toList()
           as M;
     }
+    if (<VideoDetailDataEntity>[] is M) {
+      return data
+              .map<VideoDetailDataEntity>(
+                (Map<String, dynamic> e) => VideoDetailDataEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<VideoDetailDataData>[] is M) {
+      return data
+              .map<VideoDetailDataData>(
+                (Map<String, dynamic> e) => VideoDetailDataData.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<VideoDetailDataDataVideo>[] is M) {
+      return data
+              .map<VideoDetailDataDataVideo>(
+                (Map<String, dynamic> e) =>
+                    VideoDetailDataDataVideo.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<VideoDetailDataDataLines>[] is M) {
+      return data
+              .map<VideoDetailDataDataLines>(
+                (Map<String, dynamic> e) =>
+                    VideoDetailDataDataLines.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<VideoDetailDataDataLinesPlayLines>[] is M) {
+      return data
+              .map<VideoDetailDataDataLinesPlayLines>(
+                (Map<String, dynamic> e) =>
+                    VideoDetailDataDataLinesPlayLines.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
     if (<VideoDetailEntity>[] is M) {
       return data
               .map<VideoDetailEntity>(
@@ -1000,6 +1044,12 @@ class JsonConvertClassCollection {
     (VideoCategoryDataList).toString(): VideoCategoryDataList.fromJson,
     (VideoCategoryDataPagination).toString():
         VideoCategoryDataPagination.fromJson,
+    (VideoDetailDataEntity).toString(): VideoDetailDataEntity.fromJson,
+    (VideoDetailDataData).toString(): VideoDetailDataData.fromJson,
+    (VideoDetailDataDataVideo).toString(): VideoDetailDataDataVideo.fromJson,
+    (VideoDetailDataDataLines).toString(): VideoDetailDataDataLines.fromJson,
+    (VideoDetailDataDataLinesPlayLines).toString():
+        VideoDetailDataDataLinesPlayLines.fromJson,
     (VideoDetailEntity).toString(): VideoDetailEntity.fromJson,
     (VideoDetailData).toString(): VideoDetailData.fromJson,
     (VideoLineEntity).toString(): VideoLineEntity.fromJson,

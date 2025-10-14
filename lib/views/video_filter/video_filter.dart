@@ -47,6 +47,8 @@ class VideoFilterState extends State<VideoFilter>
   List<DictInfoListData> categoryDictList = [];
   List<DictInfoListData> areaDictList = [];
   List<DictInfoListData> categoryOriginalDictList = [];
+  // 添加加载状态标志
+  bool _isLoading = false;
   final EasyRefreshController _easyRefreshController = EasyRefreshController(
     controlFinishRefresh: true,
     controlFinishLoad: true,
@@ -76,6 +78,8 @@ class VideoFilterState extends State<VideoFilter>
       videoPageData = [...videoPageData, ...list];
       setState(() {});
     } catch (e) {
+      _isLoading = false; // 发生错误时取消加载状态
+      setState(() {});
       debugPrint('Initialization getVideoPages failed: $e');
     }
   }
@@ -132,15 +136,21 @@ class VideoFilterState extends State<VideoFilter>
 
   Future<String> init() async {
     try {
+      _isLoading = true; // 设置初始加载状态
+      setState(() {});
       await Future.wait([
         getVideoPages(),
         getVideoCategoryPages(),
         getVideoAreaPages(),
         getVideoTagPages(),
       ]);
+      _isLoading = false; // 取消初始加载状态
+      setState(() {});
       _scrollControllerAdd();
       return "init success";
     } catch (e) {
+      _isLoading = false; // 发生错误时取消加载状态
+      setState(() {});
       // 捕获并处理异常
       return "init success";
     }
@@ -181,9 +191,11 @@ class VideoFilterState extends State<VideoFilter>
       categoryCurrent.value = 0;
     }
     videoPageData.clear();
+    _isLoading = true; // 设置加载状态
     setState(() {});
     currentPage = 1;
     await getVideoPages();
+    _isLoading = false; // 取消加载状态
     _year_change(0);
     _area_change(null);
     setState(() {});
@@ -196,9 +208,11 @@ class VideoFilterState extends State<VideoFilter>
       tagCurrent.value = 0;
     }
     videoPageData.clear();
+    _isLoading = true; // 设置加载状态
     setState(() {});
     currentPage = 1;
     await getVideoPages();
+    _isLoading = false; // 取消加载状态
     _year_change(0);
     _area_change(null);
     setState(() {});
@@ -207,9 +221,11 @@ class VideoFilterState extends State<VideoFilter>
   Future<void> _year_change(int item) async {
     yearCurrent.value = item;
     videoPageData.clear();
+    _isLoading = true; // 设置加载状态
     setState(() {});
     currentPage = 1;
     await getVideoPages();
+    _isLoading = false; // 取消加载状态
     setState(() {});
   }
 
@@ -220,9 +236,11 @@ class VideoFilterState extends State<VideoFilter>
       regionCurrent.value = 0;
     }
     videoPageData.clear();
+    _isLoading = true; // 设置加载状态
     setState(() {});
     currentPage = 1;
     await getVideoPages();
+    _isLoading = false; // 取消加载状态
   }
 
   Widget _buildCategoryRow(
@@ -537,6 +555,7 @@ class VideoFilterState extends State<VideoFilter>
 
   Future<void> onRefresh() async {
     videoPageData.clear();
+    _isLoading = true; // 设置加载状态
     setState(() {});
     currentPage = 1;
     categoryCurrent.value = 0;
@@ -544,6 +563,8 @@ class VideoFilterState extends State<VideoFilter>
     tagCurrent.value = 0;
     regionCurrent.value = 0;
     await getVideoPages();
+    _isLoading = false; // 取消加载状态
+    setState(() {});
     if (disposed) {
       return;
     }
@@ -566,8 +587,11 @@ class VideoFilterState extends State<VideoFilter>
   }
 
   Future<void> loadMore() async {
+    setState(() {});
     currentPage++;
     await getVideoPages();
+    _isLoading = false; // 取消加载状态
+    setState(() {});
     TDToast.dismissLoading();
     if (disposed) {
       return;
@@ -640,7 +664,11 @@ class VideoFilterState extends State<VideoFilter>
   }
 
   Widget isShowContent() {
-    if (videoPageData.isEmpty) {
+    if (_isLoading) {
+      // 显示加载指示器
+      return SliverToBoxAdapter(child: Center(child: PageLoading()));
+    } else if (videoPageData.isEmpty) {
+      // 确认无数据时显示 NoData 组件
       return SliverToBoxAdapter(child: Center(child: NoData()));
     } else {
       return SliverGrid(

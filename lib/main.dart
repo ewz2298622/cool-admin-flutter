@@ -204,7 +204,7 @@ class _MainPageState extends State<MainPage> {
                 width: 25,
                 height: 25,
               ),
-              label: '首页',
+              label: '分类',
             ),
             BottomNavigationBarItem(
               activeIcon: SvgPicture.asset(

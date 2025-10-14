@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../entity/play_line_entity.dart';
-import '../entity/video_line_entity.dart';
+import '../entity/video_detail_data_entity.dart';
 
 class DetailTabsView extends StatefulWidget {
-  final List<List<PlayLineDataList>> tabData;
-  final List<VideoLineDataList> tabs;
+  final List<VideoDetailDataDataLines> tabData;
   // 添加回调函数参数，用于将选中的项目返回给父组件
   final Function(int tabIndex, Set<int> selectedIndices)? onSelectionChanged;
   // 添加默认选中项参数
@@ -14,7 +12,6 @@ class DetailTabsView extends StatefulWidget {
   const DetailTabsView({
     Key? key,
     required this.tabData,
-    required this.tabs,
     this.onSelectionChanged,
     this.defaultSelectedItems,
   }) : super(key: key);
@@ -33,7 +30,7 @@ class _DetailTabsViewState extends State<DetailTabsView>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: widget.tabs.length, vsync: this);
+    _tabController = TabController(length: widget.tabData.length, vsync: this);
 
     // 初始化默认选中项，只有第一个tab有默认选中项
     if (widget.defaultSelectedItems != null) {
@@ -51,8 +48,11 @@ class _DetailTabsViewState extends State<DetailTabsView>
   }
 
   // 生成网格视图
-  Widget _buildGridView(List<PlayLineDataList> entry) {
+  Widget _buildGridView(VideoDetailDataDataLines entry) {
     final int tabIndex = widget.tabData.indexOf(entry);
+    
+    // 获取当前tab的播放线路列表
+    final playLines = entry.playLines ?? [];
 
     return GridView.builder(
       padding: EdgeInsets.all(8.0),
@@ -62,9 +62,9 @@ class _DetailTabsViewState extends State<DetailTabsView>
         crossAxisSpacing: 8.0,
         mainAxisSpacing: 8.0,
       ),
-      itemCount: entry.length,
+      itemCount: playLines.length,
       itemBuilder: (context, index) {
-        final item = entry[index];
+        final item = playLines[index];
         final bool isSelected =
             _selectedItems.containsKey(tabIndex) &&
             _selectedItems[tabIndex]!.contains(index);
@@ -131,8 +131,9 @@ class _DetailTabsViewState extends State<DetailTabsView>
             fontWeight: FontWeight.w800,
           ),
           controller: _tabController,
-          tabs:
-              widget.tabs.map((tab) => Tab(text: tab.collectionName)).toList(),
+          tabs: widget.tabData
+              .map((tab) => Tab(text: tab.collectionName))
+              .toList(),
         ),
         Flexible(
           flex: 1,

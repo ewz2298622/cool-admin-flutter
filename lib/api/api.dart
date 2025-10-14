@@ -18,6 +18,7 @@ import '../entity/swiper_entity.dart';
 import '../entity/user_info_entity.dart';
 import '../entity/video_album_entity.dart';
 import '../entity/video_category_entity.dart';
+import '../entity/video_detail_data_entity.dart';
 import '../entity/video_detail_entity.dart';
 import '../entity/video_line_entity.dart';
 import '../entity/video_live_entity.dart';
@@ -228,6 +229,28 @@ class Api {
 
       // 将服务器返回的JSON数据解析为[VideoCategoryEntity]对象并返回
       return VideoDetailEntity.fromJson(response.data);
+    } catch (error) {
+      // 在开发模式下打印错误信息以便调试
+      debugPrint("error");
+
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //获取视频详情
+  static Future<VideoDetailDataEntity> getVideoDetail(
+    Map<String, dynamic>? param,
+  ) async {
+    try {
+      // 发送POST请求到服务器获取视频分类页面信息
+      final response = await server.get(
+        "/app/video/videos/detail",
+        param: param,
+      ); // 添加注释说明 ONE 的含义});
+
+      // 将服务器返回的JSON数据解析为[VideoCategoryEntity]对象并返回
+      return VideoDetailDataEntity.fromJson(response.data);
     } catch (error) {
       // 在开发模式下打印错误信息以便调试
       debugPrint("error");
