@@ -26,25 +26,17 @@ class VideoHistoryItem extends StatelessWidget {
   const VideoHistoryItem({super.key, required this.videoData});
 
   //实现一个毫秒转00:00:00格式
-  String _formatDuration(int milliseconds) {
-    final int seconds = milliseconds ~/ 1000;
-    final int minutes = seconds ~/ 60;
-    final int hours = minutes ~/ 60;
+  String formatSeconds(int seconds) {
+    final int hours = seconds ~/ 3600;
+    final int remainingSeconds = seconds % 3600;
+    final int minutes = remainingSeconds ~/ 60;
+    final int secs = remainingSeconds % 60;
 
-    final String twoDigitMinutes = minutes
-        .remainder(60)
-        .toString()
-        .padLeft(2, '0');
-    final String twoDigitSeconds = seconds
-        .remainder(60)
-        .toString()
-        .padLeft(2, '0');
+    final String twoDigitHours = hours.toString().padLeft(2, '0');
+    final String twoDigitMinutes = minutes.toString().padLeft(2, '0');
+    final String twoDigitSeconds = secs.toString().padLeft(2, '0');
 
-    if (hours > 0) {
-      return '$hours:$twoDigitMinutes:$twoDigitSeconds';
-    } else {
-      return '$twoDigitMinutes:$twoDigitSeconds';
-    }
+    return '$twoDigitHours:$twoDigitMinutes:$twoDigitSeconds';
   }
 
   @override
@@ -53,7 +45,10 @@ class VideoHistoryItem extends StatelessWidget {
       onTap:
           () => Get.toNamed(
             "/video_detail",
-            arguments: {"id": videoData.associationId},
+            arguments: {
+              "id": videoData.associationId,
+              "viewingDuration": videoData.viewingDuration,
+            },
           ),
       child: Container(
         height: 80,
@@ -90,7 +85,7 @@ class VideoHistoryItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    "剩余${_formatDuration((videoData.duration ?? 0) - (videoData.viewingDuration ?? 0))}",
+                    "剩余${formatSeconds((videoData.duration ?? 0) - (videoData.viewingDuration ?? 0))}",
                     style: const TextStyle(fontSize: 12),
                   ),
                 ],
@@ -112,7 +107,7 @@ class VideoHistoryItem extends StatelessWidget {
   }
 
   Widget _buildVideoItemHDTag(ViewsDataList item) {
-    String duration = _formatDuration(item.viewingDuration ?? 0);
+    String duration = formatSeconds(item.viewingDuration ?? 0);
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       crossAxisAlignment: CrossAxisAlignment.end,

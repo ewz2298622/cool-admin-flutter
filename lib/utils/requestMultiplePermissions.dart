@@ -1,5 +1,7 @@
 import 'package:permission_handler/permission_handler.dart';
 
+import '../api/api.dart';
+
 class RequestMultiplePermissions {
   /// 请求多个权限
   static Future<void> requestPermissions(Permission permission) async {
@@ -8,6 +10,7 @@ class RequestMultiplePermissions {
     statuses.forEach((permission, status) {
       if (status.isGranted) {
         print('$permission 权限已授予');
+        Api.addScore({"score": 10, "type": 1});
       } else {
         print('$permission 权限被拒绝');
       }

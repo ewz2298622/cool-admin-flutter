@@ -1,6 +1,6 @@
 import 'dart:async';
+import 'dart:math';
 
-import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:fplayer/fplayer.dart';
@@ -55,17 +55,21 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   List<DictDataDataArea>? area = [];
   List<DictDataDataVideoCategory>? videoCategory = [];
   List<DictDataDataLanguage>? language = [];
-  late ChewieController chewieController;
   final PageController pageController = PageController(initialPage: 0);
   final FPlayer player = FPlayer();
   List<dynamic> deviceList = [];
   StateSetter? TVshowModalBottomSheetListSate;
   final CastScreenManager _castScreenManager = CastScreenManager(); // 添加投屏管理器
   final id = Get.arguments["id"];
+  final viewingDuration = Get.arguments["viewingDuration"];
   String androidCodeId = AdsConfig.INTERSTITIAL_AD_ANDROID;
   String iosCodeId = AdsConfig.INTERSTITIAL_AD_IOS;
   VideoDetailDataData videoInfoData = VideoDetailDataData();
   List<TDTab> tabs = []; // 添加缺失的 tabs 变量定义
+  //定义进度
+  int progress = 0;
+  //定义视频总时长
+  int duration = 0;
   // 倍速列表
   final Map<String, double> speedList = {
     "2.0": 2.0,
@@ -183,10 +187,14 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
     try {
       List<VideoPageDataList> list =
           (await Api.getVideoPages({
-            "category_id": videoData?.categoryId ?? 0,
+            "category_id": videoInfoData.video?.categoryId ?? 0,
+            //page参数随机1-20整数
+            "page": Random().nextInt(20) + 1,
           })).data?.list ??
           [] as List<VideoPageDataList>;
-      videoPageData = list;
+      setState(() {
+        videoPageData = list;
+      });
     } catch (e) {
       // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
@@ -208,19 +216,27 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
     }
   }
 
+  //视频监听
+  void _videoListener() {
+    player.onCurrentPosUpdate.listen((pos) {
+      progress = pos.inSeconds;
+    });
+  }
+
   Future<void> addViews() async {
     try {
-      debugPrint("addViews");
-      await Api.addViews({
-        "title": videoData?.title,
-        "associationId": videoData?.id,
-        "viewingDuration": seekTime,
-        "duration": videoData?.duration,
-        "type": 19,
-        "cover": videoData?.surfacePlot,
-        "videoIndex": currentPlay.value + 1,
-      });
-      eventBus.fire(RefreshViewEvent());
+      if (videoInfoData.video?.id != null) {
+        await Api.addViews({
+          "title": videoInfoData.video?.title,
+          "associationId": videoInfoData.video?.id ?? 1,
+          "viewingDuration": progress,
+          "duration": player.value.duration.inMilliseconds ~/ 1000,
+          "type": 19,
+          "cover": videoInfoData.video?.surfacePlot ?? "",
+          "videoIndex": currentPlay.value,
+        });
+        eventBus.fire(RefreshViewEvent());
+      }
     } catch (e) {
       // 捕获并处理异常
       debugPrint('Initialization addViews failed: $e');
@@ -242,6 +258,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
       ]);
       _errorListener();
       await _loadAd();
+      _videoListener();
       return "init success";
     } catch (e) {
       // 捕获并处理异常
@@ -293,6 +310,9 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
     try {
       await player.reset();
       player.setDataSource(url, autoPlay: true, showCover: true);
+
+      // 如果存在观看历史记录，则跳转到指定位置
+
       // 开始监听播放进度
       _startPositionListener();
     } catch (error) {
@@ -322,6 +342,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
 
   @override
   void dispose() {
+    debugPrint('Video_Detail: dispose called');
     // 在组件销毁前调用addViews
     _onPageLeave();
     // 停止监听播放进度
@@ -337,6 +358,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   // 当页面被其他页面覆盖时调用
   @override
   void didPushNext() {
+    debugPrint('Video_Detail: didPushNext called - page is being covered');
     // 页面被其他页面覆盖时调用addViews
     _onPageLeave();
   }
@@ -344,6 +366,9 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   // 当页面从导航栈中移除时调用
   @override
   void didPop() {
+    debugPrint(
+      'Video_Detail: didPop called - page is being removed from stack',
+    );
     // 页面从导航栈中移除时调用addViews
     _onPageLeave();
   }
@@ -453,7 +478,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                       onPressed: goFeedbackPage,
                       icon: Icon(Icons.warning_rounded),
                     ),
-                    _buildPopFromBottomWithCloseAndLeftTitle(context),
+                    // _buildPopFromBottomWithCloseAndLeftTitle(context),
                   ],
                 ),
                 Expanded(
@@ -554,7 +579,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
           Row(
             children:
                 [
-                      Text(videoInfoData.video?.year.toString() ?? ""),
+                      Text(videoInfoData.video?.year.toString() ?? "暂无数据"),
                       Text(
                         Dict.getDictName(
                           videoInfoData.video?.region ?? 0,
@@ -577,7 +602,10 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                         style: TextStyle(color: Colors.grey),
                       ),
                       Text(
-                        videoInfoData.video?.videoTag ?? "",
+                        (videoInfoData.video?.videoTag ?? "暂无标签").replaceAll(
+                          ",",
+                          "/",
+                        ),
                         style: TextStyle(color: Colors.grey),
                       ),
                     ]
@@ -654,14 +682,17 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
         valueListenable: currentPlay,
         builder: (context, key, child) {
           return SizedBox(
-            height: 40,
+            height: 35,
+            //最小宽度
             child: ListView.builder(
               scrollDirection: Axis.horizontal, // 水平滚动
               itemCount: playLines.length, // 列表项数量
               itemBuilder: (context, index) {
                 final item = playLines[index]; // 获取当前项
-                return Padding(
-                  padding: const EdgeInsets.only(left: 8),
+                return Container(
+                  width: 80,
+                  margin: const EdgeInsets.only(right: 5),
+                  height: 35,
                   child: TextButton(
                     style: TextButton.styleFrom(
                       backgroundColor:
@@ -888,7 +919,8 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                             style: TextStyle(color: Colors.grey),
                           ),
                           Text(
-                            videoInfoData.video?.videoTag ?? "暂无标签",
+                            (videoInfoData.video?.videoTag ?? "暂无标签")
+                                .replaceAll(",", "/"),
                             style: TextStyle(color: Colors.grey),
                           ),
                         ],
@@ -1204,9 +1236,41 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
             // 右上方按钮组开关
             isRightButton: true,
             // 右上方按钮组
-            settingFun: () {
-              tvDevice();
-            },
+            rightButtonList: [
+              InkWell(
+                onTap: () {
+                  showModalBottomSheetList();
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColorLight,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(5),
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.playlist_play,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  tvDevice();
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColorLight,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(5),
+                    ),
+                  ),
+                  child: Icon(Icons.tv, color: Theme.of(context).primaryColor),
+                ),
+              ),
+            ],
             // 视频列表列表
             videoList:
                 videoList.isEmpty

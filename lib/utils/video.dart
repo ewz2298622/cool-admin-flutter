@@ -121,4 +121,34 @@ class VideoUtil {
     // 取前两部分（小时和分钟）
     return '${parts[0]}:${parts[1]}';
   }
+
+  static int formatTimeToSeconds(String timeStr) {
+    // 移除毫秒部分（点号后面的部分）
+    String timeWithoutMilliseconds = timeStr.split('.')[0];
+  
+    // 按冒号分割时间字符串
+    List<String> timeParts = timeWithoutMilliseconds.split(':');
+  
+    int hours = 0;
+    int minutes = 0;
+    int seconds = 0;
+  
+    // 根据时间格式处理（可能为 HH:mm:ss 或 mm:ss）
+    if (timeParts.length == 3) {
+      // 格式为 HH:mm:ss
+      hours = int.parse(timeParts[0]);
+      minutes = int.parse(timeParts[1]);
+      seconds = int.parse(timeParts[2]);
+    } else if (timeParts.length == 2) {
+      // 格式为 mm:ss
+      minutes = int.parse(timeParts[0]);
+      seconds = int.parse(timeParts[1]);
+    } else if (timeParts.length == 1) {
+      // 格式为 ss
+      seconds = int.parse(timeParts[0]);
+    }
+  
+    // 计算总秒数
+    return hours * 3600 + minutes * 60 + seconds;
+  }
 }

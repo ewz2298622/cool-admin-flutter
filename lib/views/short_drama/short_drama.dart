@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -228,7 +227,6 @@ class ShortVideoItemWidget extends StatefulWidget {
 
 class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
   VideoPlayerController? _videoPlayerController;
-  ChewieController? _chewieController;
   bool _isPlaying = false;
   double _playbackSpeed = 1.0;
 
@@ -251,26 +249,6 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
 
     await _videoPlayerController?.initialize();
 
-    _chewieController = ChewieController(
-      videoPlayerController: _videoPlayerController!,
-      aspectRatio:
-          MediaQuery.of(context).size.width /
-          MediaQuery.of(context).size.height, // 屏幕宽高比
-      autoPlay: widget.isActive,
-      looping: true,
-      allowedScreenSleep: false,
-      showControls: false,
-      playbackSpeeds: [0.5, 1.0, 1.5, 2.0],
-      errorBuilder: (context, errorMessage) {
-        return Center(
-          child: Text(
-            errorMessage,
-            style: const TextStyle(color: Colors.white),
-          ),
-        );
-      },
-    );
-
     _videoPlayerController?.addListener(_videoListener);
 
     if (widget.isActive) {
@@ -292,9 +270,7 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
     _videoPlayerController?.removeListener(_videoListener);
     _videoPlayerController?.pause();
     _videoPlayerController?.dispose();
-    _chewieController?.dispose();
     _videoPlayerController = null;
-    _chewieController = null;
   }
 
   void _startPlaying() {
@@ -349,17 +325,7 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
         children: [
           // 视频播放器
           Positioned.fill(
-            child:
-                _chewieController != null &&
-                        _chewieController!
-                            .videoPlayerController
-                            .value
-                            .isInitialized
-                    ? Chewie(controller: _chewieController!)
-                    : Image.network(
-                      widget.videoItem.coverUrl,
-                      fit: BoxFit.cover,
-                    ),
+            child: Image.network(widget.videoItem.coverUrl, fit: BoxFit.cover),
           ),
 
           // 渐变背景
@@ -489,21 +455,6 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
           // ),
 
           // 进度条和控制条
-          if (widget.showControls && _chewieController != null)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: VideoProgressIndicator(
-                _chewieController!.videoPlayerController,
-                allowScrubbing: true,
-                colors: VideoProgressColors(
-                  playedColor: Colors.white,
-                  bufferedColor: Colors.white.withOpacity(0.5),
-                  backgroundColor: Colors.white.withOpacity(0.2),
-                ),
-              ),
-            ),
 
           // 播放速度提示
           if (_playbackSpeed == 2.0 && widget.isActive)

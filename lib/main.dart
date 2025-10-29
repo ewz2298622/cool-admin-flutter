@@ -149,13 +149,21 @@ class _MainPageState extends State<MainPage> {
     const VideoFilter(),
     const VideoRanking(),
     const VideoService(),
-    const My(), // 确保每次切换时重新创建My页面
+    const My(), // 移除key，避免不必要的重建
   ];
   int _selectedIndex = 0;
+  final GlobalKey<MyState> _myPageKey =
+      GlobalKey<MyState>(); // 添加GlobalKey来访问My页面的状态
 
   void onTap(int index) {
     setState(() => _selectedIndex = index);
     TDToast.dismissLoading();
+
+    // 当切换到"我的"页面时，调用页面的刷新方法
+    if (index == 4) {
+      // "我的"页面索引为4
+      _myPageKey.currentState?.init();
+    }
   }
 
   @override
@@ -177,7 +185,16 @@ class _MainPageState extends State<MainPage> {
       return EnvironmentError();
     } else {
       return Scaffold(
-        body: IndexedStack(index: _selectedIndex, children: pages),
+        body: IndexedStack(
+          index: _selectedIndex,
+          children: [
+            const Home(),
+            const VideoFilter(),
+            const VideoRanking(),
+            const VideoService(),
+            My(key: _myPageKey), // 使用GlobalKey关联My页面
+          ],
+        ),
         bottomNavigationBar: BottomNavigationBar(
           items: [
             BottomNavigationBarItem(

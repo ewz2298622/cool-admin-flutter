@@ -47,56 +47,106 @@ class _DetailTabsViewState extends State<DetailTabsView>
     super.dispose();
   }
 
-  // 生成网格视图
-  Widget _buildGridView(VideoDetailDataDataLines entry) {
+  // 生成列表视图，每行元素数量根据父组件尺寸动态分配
+  Widget _buildListView(VideoDetailDataDataLines entry) {
     final int tabIndex = widget.tabData.indexOf(entry);
-    
+
     // 获取当前tab的播放线路列表
     final playLines = entry.playLines ?? [];
 
-    return GridView.builder(
-      padding: EdgeInsets.all(8.0),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        childAspectRatio: 2.5,
-        crossAxisSpacing: 8.0,
-        mainAxisSpacing: 8.0,
-      ),
-      itemCount: playLines.length,
-      itemBuilder: (context, index) {
-        final item = playLines[index];
-        final bool isSelected =
-            _selectedItems.containsKey(tabIndex) &&
-            _selectedItems[tabIndex]!.contains(index);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 计算每行可以容纳的元素数量
+        // 元素宽度80 + 间距10
+        final elementWidth = 80.0 + 0;
+        final crossAxisCount =
+            ((constraints.maxWidth - 16.0) / elementWidth).floor().toInt();
 
-        return TextButton(
-          style: TextButton.styleFrom(
-            backgroundColor:
-                isSelected
-                    ? const Color.fromRGBO(252, 119, 66, 1)
-                    : Color.fromRGBO(255, 255, 255, 1),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-          ),
-          onPressed: () {
-            setState(() {
-              // 清空所有tabs的选中项
-              _selectedItems.clear();
+        // 将播放线路分组，每组crossAxisCount个
+        final List<List<dynamic>> rows = [];
+        if (crossAxisCount > 0) {
+          for (int i = 0; i < playLines.length; i += crossAxisCount) {
+            int end =
+                (i + crossAxisCount < playLines.length)
+                    ? i + crossAxisCount
+                    : playLines.length;
+            rows.add(playLines.sublist(i, end));
+          }
+        }
 
-              // 为当前tab添加选中项
-              _selectedItems[tabIndex] = {index};
+        return Container(
+          padding: EdgeInsets.all(8.0),
+          child: ListView.builder(
+            itemCount: rows.length,
+            itemBuilder: (context, rowIndex) {
+              final rowItems = rows[rowIndex];
+              return Container(
+                margin: EdgeInsets.only(bottom: 6.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.max,
+                  children: List.generate(crossAxisCount, (index) {
+                    if (index < rowItems.length) {
+                      final item = rowItems[index];
+                      final bool isSelected =
+                          _selectedItems.containsKey(tabIndex) &&
+                          _selectedItems[tabIndex]!.contains(
+                            rowIndex * crossAxisCount + index,
+                          );
 
-              // 调用回调函数将选中项数据返回给父组件
-              widget.onSelectionChanged?.call(
-                tabIndex,
-                _selectedItems[tabIndex]!,
+                      return SizedBox(
+                        width: 80,
+                        height: 35,
+                        child: TextButton(
+                          style: TextButton.styleFrom(
+                            backgroundColor:
+                                isSelected
+                                    ? const Color.fromRGBO(252, 119, 66, 1)
+                                    : Color.fromRGBO(255, 255, 255, 1),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6.0),
+                            ),
+                            padding: EdgeInsets.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            minimumSize: Size(80, 35),
+                            maximumSize: Size(80, 35),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              // 清空所有tabs的选中项
+                              _selectedItems.clear();
+
+                              // 为当前tab添加选中项
+                              _selectedItems[tabIndex] = {
+                                rowIndex * crossAxisCount + index,
+                              };
+
+                              // 调用回调函数将选中项数据返回给父组件
+                              widget.onSelectionChanged?.call(
+                                tabIndex,
+                                _selectedItems[tabIndex]!,
+                              );
+                            });
+                          },
+                          child: Text(
+                            item.name ?? '',
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.black,
+                              fontSize: 12,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+                    } else {
+                      // 填充空位置
+                      return Container(width: 80, height: 35);
+                    }
+                  }),
+                ),
               );
-            });
-          },
-          child: Text(
-            item.name ?? '',
-            style: TextStyle(color: isSelected ? Colors.white : Colors.black),
+            },
           ),
         );
       },
@@ -131,16 +181,17 @@ class _DetailTabsViewState extends State<DetailTabsView>
             fontWeight: FontWeight.w800,
           ),
           controller: _tabController,
-          tabs: widget.tabData
-              .map((tab) => Tab(text: tab.collectionName))
-              .toList(),
+          tabs:
+              widget.tabData
+                  .map((tab) => Tab(text: tab.collectionName))
+                  .toList(),
         ),
         Flexible(
           flex: 1,
           child: TabBarView(
             controller: _tabController,
             children:
-                widget.tabData.map((entry) => _buildGridView(entry)).toList(),
+                widget.tabData.map((entry) => _buildListView(entry)).toList(),
           ),
         ),
       ],

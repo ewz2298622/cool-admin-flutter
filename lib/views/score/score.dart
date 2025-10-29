@@ -50,6 +50,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
   //获取积分
   Future<void> getScore() async {
     score = (await Api.getUserScore({})).data ?? 0;
+    setState(() {});
   }
 
   Future<String> init() async {
@@ -349,9 +350,10 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                 )) {
                   return TDToast.showText('已授权，请勿重复授权', context: context);
                 }
-                RequestMultiplePermissions.requestPermissions(
+                await RequestMultiplePermissions.requestPermissions(
                   Permission.requestInstallPackages,
                 );
+                getScore();
               },
             ),
             _buildTaskItem(
@@ -368,9 +370,10 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                 )) {
                   return TDToast.showText('已授权，请勿重复授权', context: context);
                 }
-                RequestMultiplePermissions.requestPermissions(
+                await RequestMultiplePermissions.requestPermissions(
                   Permission.storage,
                 );
+                getScore();
               },
             ),
             _buildTaskItem(
@@ -384,6 +387,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
               () async {
                 await Ads.loadRewardVideoAd();
                 Ads.showRewardVideoAd();
+                getScore();
               },
             ),
             // _buildVideoTask(
@@ -700,7 +704,6 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                   // 按钮点击事件
                   Api.memberExchange({"userMmemberExchangeId": item.id});
                   getScore();
-                  setState(() {});
                   debugPrint('点击了会员兑换按钮');
                 },
                 child: Padding(

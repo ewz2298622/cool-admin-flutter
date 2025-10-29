@@ -36,7 +36,8 @@ class My extends StatefulWidget {
   MyState createState() => MyState();
 }
 
-class MyState extends State<My> with SingleTickerProviderStateMixin {
+class MyState extends State<My>
+    with SingleTickerProviderStateMixin, RouteAware {
   var _futureBuilderFuture;
   static final UserDatabaseHelper userDatabaseHelper = UserDatabaseHelper();
   UserEntity? user;
@@ -52,12 +53,6 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
   String iosCodeId = AdsConfig.BANNER_AD_IOS;
 
   bool isValidMember = false;
-
-  void didPopNext() {
-    // 从目标页面返回时调用
-    debugPrint('main dart didPopNext');
-    setState(() {});
-  }
 
   @override
   void dispose() {
@@ -86,6 +81,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
       await noticeInfo();
       await checkMember();
       didChangeAppLifecycleState();
+      User.isLogin();
       debugPrint("init success");
       return "init success";
     } catch (e) {
@@ -183,9 +179,25 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
   }
 
   @override
-  Future<void> didChangeDependencies() async {
+  void didChangeDependencies() {
     super.didChangeDependencies();
+    // 订阅路由变化
     debugPrint("didChangeDependencies");
+  }
+
+  // 当页面从导航栈中返回时调用
+  @override
+  void didPopNext() {
+    // 从目标页面返回时刷新数据
+    debugPrint('从其他页面返回，刷新数据');
+    _refreshData();
+  }
+
+  // 刷新数据的方法，改为公开方法以便外部调用
+  void _refreshData() {
+    setState(() {
+      _futureBuilderFuture = init();
+    });
   }
 
   Widget _buildRecommendations(UserEntity? userInfoData) {
@@ -522,7 +534,7 @@ class MyState extends State<My> with SingleTickerProviderStateMixin {
           children: [
             Text(
               "常用功能",
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
             GridView(
               padding: EdgeInsets.zero,

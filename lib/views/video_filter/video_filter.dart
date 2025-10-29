@@ -1,4 +1,3 @@
-import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -49,10 +48,6 @@ class VideoFilterState extends State<VideoFilter>
   List<DictInfoListData> categoryOriginalDictList = [];
   // 添加加载状态标志
   bool _isLoading = false;
-  final EasyRefreshController _easyRefreshController = EasyRefreshController(
-    controlFinishRefresh: true,
-    controlFinishLoad: true,
-  );
 
   Future<void> getVideoPages() async {
     try {
@@ -164,7 +159,6 @@ class VideoFilterState extends State<VideoFilter>
 
   @override
   void dispose() {
-    _easyRefreshController.dispose();
     disposed = true;
     super.dispose();
   }

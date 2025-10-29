@@ -1,4 +1,3 @@
-import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -24,10 +23,6 @@ class VideoAlbumState extends State<VideoAlbum>
   var _futureBuilderFuture;
   VideoAlbumData? albumInfoData;
   List<AlbumVideoListDataList>? videoPageData;
-  final EasyRefreshController _easyRefreshController = EasyRefreshController(
-    controlFinishRefresh: true,
-    controlFinishLoad: true,
-  );
 
   Future<void> getAlbumVideoList() async {
     try {
@@ -186,12 +181,6 @@ class VideoAlbumState extends State<VideoAlbum>
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _easyRefreshController.dispose();
-    super.dispose();
   }
 
   @override
