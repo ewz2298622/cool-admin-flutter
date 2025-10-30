@@ -7,10 +7,9 @@ class RequestMultiplePermissions {
   static Future<void> requestPermissions(Permission permission) async {
     Map<Permission, PermissionStatus> statuses = await [permission].request();
 
-    statuses.forEach((permission, status) {
+    statuses.forEach((permission, status) async {
       if (status.isGranted) {
-        print('$permission 权限已授予');
-        Api.addScore({"score": 10, "type": 1});
+        await Api.addScore({"businessType": 3, "businessId": 0});
       } else {
         print('$permission 权限被拒绝');
       }

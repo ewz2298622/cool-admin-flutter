@@ -11,6 +11,7 @@ import '../entity/hot_keyWord_entity.dart';
 import '../entity/is_valid_member_entity.dart';
 import '../entity/live_info_entity.dart';
 import '../entity/member_exchange_config_entity.dart';
+import '../entity/monthly_checkinConfig_entity.dart';
 import '../entity/notice_Info_entity.dart';
 import '../entity/play_line_entity.dart';
 import '../entity/score_total_entity.dart';
@@ -620,7 +621,7 @@ class Api {
   static Future<void> addScore(Map<String, dynamic>? data) async {
     try {
       await server.post(
-        "/app/member/score/add",
+        "/app/member/score/addScore",
         data: data,
       ); // 添加注释说明 ONE 的含义});
     } catch (error) {
@@ -695,6 +696,22 @@ class Api {
         data: data,
       ); // 添加注释说明 ONE 的含义});
       return IsValidMemberEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //获取当月签到数据
+  static Future<MonthlyCheckinConfigEntity> getSignInData(
+    Map<String, dynamic>? data,
+  ) async {
+    try {
+      final response = await server.post(
+        "/app/member/monthlyCheckinConfig/getByMonth",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
+      return MonthlyCheckinConfigEntity.fromJson(response.data);
     } catch (error) {
       // 重新抛出异常以便上层处理
       rethrow;

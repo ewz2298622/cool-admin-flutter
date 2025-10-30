@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_app/api/api.dart';
 import 'package:flutter_unionad/flutter_unionad.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../db/entity/UserEntity.dart';
 import '../db/manager/UserDatabaseHelper.dart';
@@ -18,6 +19,7 @@ class Ads {
   static UserEntity? user;
   //积分
   static int score = 0;
+  static int adsId = 0;
 
   static String REWARD_VIDEO_AD_ANDROID =
       AdsConfig.FULL_SCREEN_VIDEO_AD_ANDROID;
@@ -167,6 +169,7 @@ class Ads {
         if (filteredAds.isNotEmpty) {
           AppAdsDataList adsData = filteredAds[0];
           score = filteredAds[0].score ?? 0;
+          adsId = filteredAds[0].id ?? 0;
           // setState(() {
           //   androidCodeId = adsData.adsId ?? androidCodeId;
           //   iosCodeId = adsData.adsId ?? iosCodeId;
@@ -338,12 +341,13 @@ class Ads {
           errorCode,
           error,
           propose,
-        ) {
+        ) async {
           print(
             "阶段激励广告奖励  验证结果=$rewardVerify 奖励类型<FlutterUnionadRewardType>=$rewardType 奖励=$rewardAmount"
             "奖励名称$rewardName 错误码=$errorCode 错误$error 建议奖励$propose",
           );
-          Api.addScore({"score": score, "type": 1});
+          await Api.addScore({"businessType": 0, "businessId": adsId});
+          Fluttertoast.showToast(msg: "奖励已发放", toastLength: Toast.LENGTH_SHORT);
         },
         onEcpm: (info) {
           print("激励广告 ecpm: $info");

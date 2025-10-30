@@ -26,7 +26,7 @@ class DioHttp {
     debugPrint('DioInstance init');
     _dio.interceptors.add(
       CacheInterceptor(
-        cacheDuration: const Duration(minutes: 10), // 设置5分钟缓存
+        cacheDuration: const Duration(minutes: 1), // 设置5分钟缓存
         // forceRefresh: true, // 强制刷新时取消注释
         whitelistPaths: whitelistPaths,
       ),

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
 import '../../components/loading.dart';
 import '../../entity/member_exchange_config_entity.dart';
+import '../../entity/monthly_checkinConfig_entity.dart';
 import '../../utils/ads.dart';
 import '../../utils/requestMultiplePermissions.dart';
 
@@ -22,6 +24,8 @@ class TaskCenterPageState extends State<TaskCenterPage> {
   bool _isSignTaskExpanded = true; // 控制签到任务区域是否展开
   int score = 0;
   List<MemberExchangeConfigDataList> memberExchangeConfigDataList = [];
+  //签到数据
+  List<MonthlyCheckinConfigDataList> signData = [];
 
   // 天气图标列表
   final List<IconData> weatherIcons = [
@@ -53,12 +57,20 @@ class TaskCenterPageState extends State<TaskCenterPage> {
     setState(() {});
   }
 
+  //获取当月签到数据
+  Future<void> getSignData() async {
+    signData = (await Api.getSignInData({})).data?.list ?? [];
+    setState(() {});
+  }
+
   Future<String> init() async {
     try {
-      // 在这里添加数据初始化逻辑
-      // 例如加载用户积分信息、任务完成状态等
-      await getScore(); // 获取用户积分
-      await getMemberConfig(); // 获取会员配置信息
+      //使用并发
+      await Future.wait([
+        getScore(), // 获取用户积分
+        getMemberConfig(), // 获取会员配置信息
+        getSignData(),
+      ]);
       debugPrint("TaskCenterPage init success");
       return "init success";
     } catch (e) {
@@ -197,7 +209,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                     ),
                   ),
                   onPressed: () {},
-                  child: const Text("兑换会员", style: TextStyle(fontSize: 14)),
+                  child: const Text("金币账单", style: TextStyle(fontSize: 14)),
                 ),
               ],
             ),
@@ -209,63 +221,111 @@ class TaskCenterPageState extends State<TaskCenterPage> {
 
   // 签到任务区
   Widget _buildSignTaskArea(double screenWidth) {
-    return Container(
-      width: screenWidth,
-      color: Colors.white,
-      margin: const EdgeInsets.only(top: 10),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                "今日签到领 188金币",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-              ),
-              TextButton(
-                onPressed: () {
-                  setState(() {
-                    _isSignTaskExpanded = !_isSignTaskExpanded;
-                  });
-                },
-                style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                child: Text(
-                  _isSignTaskExpanded ? "收起" : "展开",
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+    if (signData.isNotEmpty) {
+      final coin =
+          signData
+              .where((element) => element.day == DateTime.now().day)
+              .firstWhere(
+                (element) => element.day == DateTime.now().day,
+                orElse: () => MonthlyCheckinConfigDataList(),
+              )
+              .score ??
+          0;
+
+      return Container(
+        width: screenWidth,
+        color: Colors.white,
+        margin: const EdgeInsets.only(top: 10),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "今日签到领 $coin金币",
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _isSignTaskExpanded = !_isSignTaskExpanded;
+                    });
+                  },
+                  style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                  child: Text(
+                    _isSignTaskExpanded ? "收起" : "展开",
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+
+            if (_isSignTaskExpanded) ...[
+              // 连续签到进度
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                height: 80,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: List.generate(signData.length, (index) {
+                    return GestureDetector(
+                      onTap: () async {
+                        if (signData[index].isSigned == 3) {
+                          // 签到
+                          try {
+                            await Api.addScore({
+                              "businessType": 1,
+                              "businessId": signData[index].id,
+                            });
+                            Fluttertoast.showToast(
+                              msg: "签到成功",
+                              toastLength: Toast.LENGTH_SHORT,
+                            );
+                            getSignData();
+                            getScore();
+                          } catch (e) {
+                            Fluttertoast.showToast(
+                              msg: "签到失败",
+                              toastLength: Toast.LENGTH_SHORT,
+                            );
+                          }
+                        } else {
+                          Fluttertoast.showToast(
+                            msg: "当前无法签到",
+                            toastLength: Toast.LENGTH_SHORT,
+                          );
+                        }
+                      },
+                      child: _buildSignCard(
+                        signData[index].isSigned == 1
+                            ? "已签到"
+                            : signData[index].isSigned == 3
+                            ? "签到"
+                            : "未签到",
+                        "${(signData[index].score ?? 0)}",
+                        signData[index].isSigned == 3,
+                      ),
+                    );
+                  }),
                 ),
               ),
             ],
-          ),
-
-          if (_isSignTaskExpanded) ...[
-            // 连续签到进度
-            Container(
-              margin: const EdgeInsets.only(top: 12),
-              height: 80,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _buildSignCard("签到", "188", true),
-                  _buildSignCard("第2天", "888", false),
-                  _buildSignCard("第3天", "288", false),
-                  _buildSignCard("第4天", "388", false),
-                  _buildSignCard("第5天", "888", false),
-                  _buildSignCard("第6天", "588", false),
-                  _buildSignCard("第7天", "1888", false),
-                ],
-              ),
-            ),
           ],
-        ],
-      ),
-    );
+        ),
+      );
+    } else {
+      return Container();
+    }
   }
 
   // 签到卡片组件
   Widget _buildSignCard(String day, String coin, bool isActive) {
     return Container(
-      width: 60,
+      width: 70,
       margin: const EdgeInsets.symmetric(horizontal: 4),
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
@@ -700,10 +760,14 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                onPressed: () {
+                onPressed: () async {
                   // 按钮点击事件
-                  Api.memberExchange({"userMmemberExchangeId": item.id});
-                  getScore();
+                  await Api.memberExchange({"userMmemberExchangeId": item.id});
+                  await getScore();
+                  Fluttertoast.showToast(
+                    msg: "兑换成功",
+                    toastLength: Toast.LENGTH_SHORT,
+                  );
                   debugPrint('点击了会员兑换按钮');
                 },
                 child: Padding(

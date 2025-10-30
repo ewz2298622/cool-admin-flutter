@@ -15,6 +15,7 @@ import 'package:flutter_app/entity/is_valid_member_entity.dart';
 import 'package:flutter_app/entity/live_info_entity.dart';
 import 'package:flutter_app/entity/login_entity.dart';
 import 'package:flutter_app/entity/member_exchange_config_entity.dart';
+import 'package:flutter_app/entity/monthly_checkinConfig_entity.dart';
 import 'package:flutter_app/entity/notice_Info_entity.dart';
 import 'package:flutter_app/entity/play_line_entity.dart';
 import 'package:flutter_app/entity/score_total_entity.dart';
@@ -543,6 +544,33 @@ class JsonConvert {
               .toList()
           as M;
     }
+    if (<MonthlyCheckinConfigEntity>[] is M) {
+      return data
+              .map<MonthlyCheckinConfigEntity>(
+                (Map<String, dynamic> e) =>
+                    MonthlyCheckinConfigEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<MonthlyCheckinConfigData>[] is M) {
+      return data
+              .map<MonthlyCheckinConfigData>(
+                (Map<String, dynamic> e) =>
+                    MonthlyCheckinConfigData.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<MonthlyCheckinConfigDataList>[] is M) {
+      return data
+              .map<MonthlyCheckinConfigDataList>(
+                (Map<String, dynamic> e) =>
+                    MonthlyCheckinConfigDataList.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
     if (<NoticeInfoEntity>[] is M) {
       return data
               .map<NoticeInfoEntity>(
@@ -1023,6 +1051,11 @@ class JsonConvertClassCollection {
         MemberExchangeConfigDataList.fromJson,
     (MemberExchangeConfigDataPagination).toString():
         MemberExchangeConfigDataPagination.fromJson,
+    (MonthlyCheckinConfigEntity).toString():
+        MonthlyCheckinConfigEntity.fromJson,
+    (MonthlyCheckinConfigData).toString(): MonthlyCheckinConfigData.fromJson,
+    (MonthlyCheckinConfigDataList).toString():
+        MonthlyCheckinConfigDataList.fromJson,
     (NoticeInfoEntity).toString(): NoticeInfoEntity.fromJson,
     (NoticeInfoData).toString(): NoticeInfoData.fromJson,
     (NoticeInfoDataList).toString(): NoticeInfoDataList.fromJson,
