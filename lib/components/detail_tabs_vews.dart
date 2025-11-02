@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../entity/video_detail_data_entity.dart';
 
@@ -58,7 +59,7 @@ class _DetailTabsViewState extends State<DetailTabsView>
       builder: (context, constraints) {
         // 计算每行可以容纳的元素数量
         // 元素宽度80 + 间距10
-        final elementWidth = 80.0 + 0;
+        final elementWidth = 100.0 + 0;
         final crossAxisCount =
             ((constraints.maxWidth - 16.0) / elementWidth).floor().toInt();
 
@@ -94,54 +95,121 @@ class _DetailTabsViewState extends State<DetailTabsView>
                             rowIndex * crossAxisCount + index,
                           );
 
-                      return SizedBox(
-                        width: 80,
-                        height: 35,
-                        child: TextButton(
-                          style: TextButton.styleFrom(
-                            backgroundColor:
-                                isSelected
-                                    ? const Color.fromRGBO(252, 119, 66, 1)
-                                    : Color.fromRGBO(255, 255, 255, 1),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(6.0),
-                            ),
-                            padding: EdgeInsets.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            minimumSize: Size(80, 35),
-                            maximumSize: Size(80, 35),
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              // 清空所有tabs的选中项
-                              _selectedItems.clear();
+                      // return SizedBox(
+                      //   width: 100,
+                      //   height: 35,
+                      //   child: TextButton(
+                      //     style: TextButton.styleFrom(
+                      //       backgroundColor:
+                      //           isSelected
+                      //               ? const Color.fromRGBO(252, 119, 66, 1)
+                      //               : const Color.fromRGBO(246, 247, 248, 1),
+                      //       shape: RoundedRectangleBorder(
+                      //         borderRadius: BorderRadius.circular(6.0),
+                      //       ),
+                      //       padding: EdgeInsets.zero,
+                      //       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      //       minimumSize: Size(80, 35),
+                      //       maximumSize: Size(80, 35),
+                      //     ),
+                      //     onPressed: () {
+                      //       setState(() {
+                      //         // 清空所有tabs的选中项
+                      //         _selectedItems.clear();
+                      //
+                      //         // 为当前tab添加选中项
+                      //         _selectedItems[tabIndex] = {
+                      //           rowIndex * crossAxisCount + index,
+                      //         };
+                      //
+                      //         // 调用回调函数将选中项数据返回给父组件
+                      //         widget.onSelectionChanged?.call(
+                      //           tabIndex,
+                      //           _selectedItems[tabIndex]!,
+                      //         );
+                      //       });
+                      //     },
+                      //     child: Text(
+                      //       item.name ?? '',
+                      //       style: TextStyle(
+                      //         color: isSelected ? Colors.white : Colors.black,
+                      //         fontSize: 12,
+                      //       ),
+                      //       overflow: TextOverflow.ellipsis,
+                      //       textAlign: TextAlign.center,
+                      //     ),
+                      //   ),
+                      // );
 
-                              // 为当前tab添加选中项
-                              _selectedItems[tabIndex] = {
-                                rowIndex * crossAxisCount + index,
-                              };
+                      return Stack(
+                        alignment: Alignment.topRight,
+                        children: [
+                          SizedBox(
+                            width: 100,
+                            height: 35,
+                            child: TextButton(
+                              style: TextButton.styleFrom(
+                                backgroundColor:
+                                    isSelected
+                                        ? const Color.fromRGBO(252, 119, 66, 1)
+                                        : const Color.fromRGBO(
+                                          246,
+                                          247,
+                                          248,
+                                          1,
+                                        ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6.0),
+                                ),
+                                padding: EdgeInsets.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                minimumSize: Size(80, 35),
+                                maximumSize: Size(80, 35),
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  // 清空所有tabs的选中项
+                                  _selectedItems.clear();
 
-                              // 调用回调函数将选中项数据返回给父组件
-                              widget.onSelectionChanged?.call(
-                                tabIndex,
-                                _selectedItems[tabIndex]!,
-                              );
-                            });
-                          },
-                          child: Text(
-                            item.name ?? '',
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.black,
-                              fontSize: 12,
+                                  // 为当前tab添加选中项
+                                  _selectedItems[tabIndex] = {
+                                    rowIndex * crossAxisCount + index,
+                                  };
+
+                                  // 调用回调函数将选中项数据返回给父组件
+                                  widget.onSelectionChanged?.call(
+                                    tabIndex,
+                                    _selectedItems[tabIndex]!,
+                                  );
+                                });
+                              },
+                              child: Text(
+                                item.name ?? '',
+                                style: TextStyle(
+                                  color:
+                                      isSelected ? Colors.white : Colors.black,
+                                  fontSize: 12,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                              ),
                             ),
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
                           ),
-                        ),
+                          //VIP角标右上角位置
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: const TDBadge(
+                              TDBadgeType.subscript,
+                              size: TDBadgeSize.large,
+                              message: 'VIP',
+                            ),
+                          ),
+                        ],
                       );
                     } else {
                       // 填充空位置
-                      return Container(width: 80, height: 35);
+                      return SizedBox(width: 80, height: 35);
                     }
                   }),
                 ),

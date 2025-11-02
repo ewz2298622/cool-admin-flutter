@@ -14,6 +14,7 @@ import '../entity/member_exchange_config_entity.dart';
 import '../entity/monthly_checkinConfig_entity.dart';
 import '../entity/notice_Info_entity.dart';
 import '../entity/play_line_entity.dart';
+import '../entity/score_order_entity.dart';
 import '../entity/score_total_entity.dart';
 import '../entity/swiper_entity.dart';
 import '../entity/user_info_entity.dart';
@@ -296,10 +297,8 @@ class Api {
     }
   }
 
-  /**
-   * 获取视频线路更新
-   * @param data 请求参数
-   */
+  /// 获取视频线路更新
+  /// @param data 请求参数
   static VideoLineUpdate(Map<String, dynamic>? data) async {
     try {
       await server.post(
@@ -712,6 +711,22 @@ class Api {
         data: data,
       ); // 添加注释说明 ONE 的含义});
       return MonthlyCheckinConfigEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //获取积分订单
+  static Future<ScoreOrderEntity> getScoreOrder(
+    Map<String, dynamic>? data,
+  ) async {
+    try {
+      final response = await server.post(
+        "/app/member/score/page",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
+      return ScoreOrderEntity.fromJson(response.data);
     } catch (error) {
       // 重新抛出异常以便上层处理
       rethrow;

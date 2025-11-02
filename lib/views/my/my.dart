@@ -326,78 +326,93 @@ class MyState extends State<My>
       child: Card(
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(5.0),
-          child: Column(
-            children: [
-              Row(
-                spacing: 10,
+        child: Stack(
+          alignment: Alignment.topRight,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: Column(
                 children: [
-                  TDImage(
-                    imgUrl: userInfoData?.avatarUrl ?? "",
-                    width: 80,
-                    height: 80,
-                    type: TDImageType.circle,
-                    errorWidget: TDImage(
-                      width: 80,
-                      height: 80,
-                      type: TDImageType.circle,
-                      assetUrl: 'assets/images/user.png',
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
+                    spacing: 10,
                     children: [
-                      // 用户ID
-                      Text(
-                        User.getPhoneNumber(
-                          userInfoData?.phone.toString() ?? "",
-                        ),
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      SizedBox(height: 6),
-                      // 虚拟货币数量
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: Color.fromRGBO(242, 240, 241, 1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          spacing: 5,
-                          children: [
-                            Text(
-                              'VIP会员:',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Color.fromRGBO(245, 164, 33, 1),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              isValidMember == false ? '已过期' : '续期',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Color.fromRGBO(190, 190, 190, 1.0),
-                              ),
-                            ),
-                          ],
+                      TDImage(
+                        imgUrl: userInfoData?.avatarUrl ?? "",
+                        width: 80,
+                        height: 80,
+                        type: TDImageType.circle,
+                        errorWidget: TDImage(
+                          width: 80,
+                          height: 80,
+                          type: TDImageType.circle,
+                          assetUrl: 'assets/images/user.png',
                         ),
                       ),
-                      SizedBox(height: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 用户ID
+                          Text(
+                            User.getPhoneNumber(
+                              userInfoData?.phone.toString() ?? "",
+                            ),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(height: 6),
+                          // 虚拟货币数量
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: Color.fromRGBO(242, 240, 241, 1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.only(left: 8, right: 8),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                spacing: 5,
+                                children: [
+                                  Text(
+                                    'VIP会员:',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Color.fromRGBO(245, 164, 33, 1),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    isValidMember == false ? '已过期' : '续期',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Color.fromRGBO(190, 190, 190, 1.0),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 12),
 
-                      // 特惠信息
+                          // 特惠信息
+                        ],
+                      ),
                     ],
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+            if (isValidMember == true)
+              Positioned(
+                child: const TDBadge(
+                  TDBadgeType.subscript,
+                  message: 'VIP',
+                  size: TDBadgeSize.large,
+                ),
+              ),
+          ],
         ),
       ),
       onTap: () {

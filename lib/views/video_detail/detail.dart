@@ -138,10 +138,10 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
     try {
       videoInfoData =
           ((await Api.getVideoDetail({"id": id})).data as VideoDetailDataData);
-      //如果videoInfoData.lines存在 且不是空数组
+      // 添加容错处理：确保lines存在且不为空
       if (videoInfoData.lines != null && videoInfoData.lines!.isNotEmpty) {
         for (var element in videoInfoData.lines!) {
-          tabs.add(TDTab(text: element.collectionName));
+          tabs.add(TDTab(text: element.collectionName ?? '线路'));
         }
         // 修复类型错误，正确获取选中的播放链接
         final selectedLine = videoInfoData.lines?[currentLine.value];
@@ -162,10 +162,20 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
             );
           }
         }
+      } else {
+        // 如果lines不存在或为空，设置默认值
+        tabs = [TDTab(text: "默认线路")];
+        videoList = [
+          VideoItem(
+            title: videoInfoData.video?.title ?? "视频",
+            url: "",
+            subTitle: "暂无播放链接",
+          ),
+        ];
       }
     } catch (e) {
       // 捕获并处理异常
-      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+      debugPrint('Initialization getVideoDetail failed: $e');
     }
   }
 
@@ -299,17 +309,25 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
     FValue value = player.value;
     if (value.state == FState.error) {
       debugPrint("播放失败");
-      Api.VideoLineUpdate({
-        "id": videoInfoData.lines?[currentPlay.value].id,
-        "status": 0,
-      });
+      // 添加容错处理
+      if (videoInfoData.lines != null &&
+          videoInfoData.lines!.isNotEmpty &&
+          currentPlay.value < videoInfoData.lines!.length) {
+        Api.VideoLineUpdate({
+          "id": videoInfoData.lines?[currentPlay.value].id,
+          "status": 0,
+        });
+      }
     }
   }
 
   Future<void> setVideoUrl(String url) async {
     try {
       await player.reset();
-      player.setDataSource(url, autoPlay: true, showCover: true);
+      // 添加容错处理，如果url为空则不播放
+      if (url.isNotEmpty) {
+        player.setDataSource(url, autoPlay: true, showCover: true);
+      }
 
       // 如果存在观看历史记录，则跳转到指定位置
 
@@ -374,25 +392,31 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   }
 
   goFeedbackPage() {
+    // 添加容错处理
+    String? videoId;
+    String? videoUrl;
+    String? videoName;
+    int? playLineId;
+
+    if (videoInfoData.lines != null &&
+        videoInfoData.lines!.isNotEmpty &&
+        currentLine.value < videoInfoData.lines!.length) {
+      final selectedLine = videoInfoData.lines?[currentLine.value];
+      if (selectedLine?.playLines != null &&
+          currentPlay.value < (selectedLine?.playLines?.length ?? 0)) {
+        videoId = selectedLine?.playLines?[currentPlay.value].videoId;
+        videoUrl = selectedLine?.playLines?[currentPlay.value].file;
+        playLineId = selectedLine?.playLines?[currentPlay.value].id;
+      }
+    }
+
     Get.toNamed(
       "/feedback",
       arguments: {
-        "videoId":
-            videoInfoData
-                .lines![currentLine.value]
-                .playLines?[currentPlay.value]
-                .videoId,
-        "videoUrl":
-            videoInfoData
-                .lines![currentLine.value]
-                .playLines?[currentPlay.value]
-                .file,
+        "videoId": videoId,
+        "videoUrl": videoUrl,
         "videoName": videoData?.title,
-        "playLineId":
-            videoInfoData
-                .lines![currentLine.value]
-                .playLines?[currentPlay.value]
-                .id,
+        "playLineId": playLineId,
       },
     );
   }
@@ -583,21 +607,22 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                       Text(
                         Dict.getDictName(
                           videoInfoData.video?.region ?? 0,
-                          area as List<DictDataDataArea>,
+                          area as List<DictDataDataArea>? ?? [],
                         ),
                         style: TextStyle(color: Colors.grey),
                       ),
                       Text(
                         Dict.getDictName(
                           videoInfoData.video?.categoryId ?? 0,
-                          videoCategory as List<DictDataDataVideoCategory>,
+                          videoCategory as List<DictDataDataVideoCategory>? ??
+                              [],
                         ),
                         style: TextStyle(color: Colors.grey),
                       ),
                       Text(
                         Dict.getDictName(
                           videoInfoData.video?.language ?? 0,
-                          language as List<DictDataDataLanguage>,
+                          language as List<DictDataDataLanguage>? ?? [],
                         ),
                         style: TextStyle(color: Colors.grey),
                       ),
@@ -673,85 +698,117 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   }
 
   Widget _buildPlayer() {
+    // 添加容错处理：检查lines是否存在且不为空
     if (videoInfoData.lines != null && videoInfoData.lines!.isNotEmpty) {
       // 修复类型错误，正确获取选中的播放链接
       final selectedLine = videoInfoData.lines?[currentLine.value];
       final playLines = selectedLine?.playLines ?? [];
-
-      return ValueListenableBuilder<int>(
-        valueListenable: currentPlay,
-        builder: (context, key, child) {
-          return SizedBox(
-            height: 35,
-            //最小宽度
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal, // 水平滚动
-              itemCount: playLines.length, // 列表项数量
-              itemBuilder: (context, index) {
-                final item = playLines[index]; // 获取当前项
-                return Container(
-                  width: 80,
-                  margin: const EdgeInsets.only(right: 5),
-                  height: 35,
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                      backgroundColor:
-                          currentPlay.value == index
-                              ? const Color.fromRGBO(252, 119, 66, 1)
-                              : Theme.of(context).cardColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
+      if (playLines.isNotEmpty) {
+        return ValueListenableBuilder<int>(
+          valueListenable: currentPlay,
+          builder: (context, key, child) {
+            return SizedBox(
+              height: 40,
+              //最小宽度
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal, // 水平滚动
+                itemCount: playLines.length, // 列表项数量
+                itemBuilder: (context, index) {
+                  final item = playLines[index]; // 获取当前项
+                  return Container(
+                    margin: const EdgeInsets.only(right: 6),
+                    child: Stack(
+                      alignment: Alignment.topRight,
+                      children: [
+                        SizedBox(
+                          width: 100,
+                          height: 35,
+                          child: TextButton(
+                            style: TextButton.styleFrom(
+                              backgroundColor:
+                                  currentPlay.value == index
+                                      ? const Color.fromRGBO(252, 119, 66, 1)
+                                      : const Color.fromRGBO(246, 247, 248, 1),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ),
+                            onPressed: () {
+                              try {
+                                currentPlay.value = index;
+                                setVideoUrl(playLines[index].file ?? "");
+                              } catch (e) {
+                                debugPrint("切换选集：${e.toString()}");
+                              }
+                            },
+                            child: Text(
+                              item.name ?? '',
+                              style: TextStyle(
+                                color:
+                                    currentPlay.value == index
+                                        ? Colors.white
+                                        : Colors.black,
+                              ),
+                            ),
+                          ),
+                        ),
+                        //VIP角标右上角位置
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: const TDBadge(
+                            TDBadgeType.subscript,
+                            size: TDBadgeSize.large,
+                            message: 'VIP',
+                          ),
+                        ),
+                      ],
                     ),
-                    onPressed: () {
-                      try {
-                        currentPlay.value = index;
-                        setVideoUrl(playLines[index].file ?? "");
-                      } catch (e) {
-                        debugPrint("切换选集：${e.toString()}");
-                      }
-                    },
-                    child: Text(
-                      item.name ?? '',
-                      style: TextStyle(
-                        color:
-                            currentPlay.value == index
-                                ? Colors.white
-                                : Colors.black,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          );
-        },
-      );
-    } else {
-      return const Text("暂无数据");
-    }
-  }
-
-  Widget _buildPopFromBottomWithCloseAndLeftTitle(BuildContext context) {
-    return ValueListenableBuilder<int>(
-      valueListenable: currentPlay, // 确保绑定到正确的 ValueNotifier
-      builder: (context, key, child) {
-        return TDButton(
-          text: '切换线路',
-          size: TDButtonSize.small,
-          type: TDButtonType.fill,
-          shape: TDButtonShape.round,
-          theme: TDButtonTheme.primary,
-          style: TDButtonStyle(
-            backgroundColor: Colors.transparent,
-            textColor: const Color.fromRGBO(252, 119, 66, 1),
-          ),
-          onTap: () {
-            showModalBottomSheetList();
+                  );
+                },
+              ),
+            );
           },
         );
-      },
-    );
+      } else {
+        return Container(
+          height: 40,
+          alignment: Alignment.center,
+          //居中
+          child: GestureDetector(
+            onTap: () {
+              showModalBottomSheetList();
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                TDLink(
+                  linkClick: (url) {
+                    showModalBottomSheetList();
+                  },
+                  style: TDLinkStyle.primary,
+
+                  label: '当前线路暂无数据,建议切换线路',
+                  type: TDLinkType.withSuffixIcon,
+                  size: TDLinkSize.medium,
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+    } else {
+      // 当没有播放线路时显示提示信息
+      return Container(
+        height: 40,
+        alignment: Alignment.centerLeft,
+        child: Text(
+          "暂无播放线路",
+          style: TextStyle(color: Colors.grey, fontSize: 14),
+        ),
+      );
+    }
   }
 
   showModalBottomSheetList() {
@@ -800,20 +857,31 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                       Flexible(
                         flex: 1,
                         child: DetailTabsView(
+                          // 添加容错处理
                           tabData: videoInfoData.lines ?? [],
                           onSelectionChanged: (tabIndex, selectedIndices) {
                             try {
-                              // 修复类型错误，正确获取选中的播放链接
-                              final selectedLine =
-                                  videoInfoData.lines?[tabIndex];
-                              final selectedPlayLine =
-                                  selectedLine?.playLines?[selectedIndices
-                                      .first];
-                              setVideoUrl(selectedPlayLine?.file ?? "");
-                              setState(() {
-                                currentLine.value = tabIndex;
-                                currentPlay.value = selectedIndices.first;
-                              });
+                              // 添加容错处理
+                              if (videoInfoData.lines != null &&
+                                  tabIndex < videoInfoData.lines!.length) {
+                                // 修复类型错误，正确获取选中的播放链接
+                                final selectedLine =
+                                    videoInfoData.lines?[tabIndex];
+                                if (selectedLine?.playLines != null &&
+                                    selectedIndices.isNotEmpty &&
+                                    selectedIndices.first <
+                                        (selectedLine?.playLines?.length ??
+                                            0)) {
+                                  final selectedPlayLine =
+                                      selectedLine?.playLines?[selectedIndices
+                                          .first];
+                                  setVideoUrl(selectedPlayLine?.file ?? "");
+                                  setState(() {
+                                    currentLine.value = tabIndex;
+                                    currentPlay.value = selectedIndices.first;
+                                  });
+                                }
+                              }
                             } catch (e) {
                               debugPrint("切换选集错误：${e.toString()}");
                             }
@@ -941,7 +1009,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                           TDTag(
                             Dict.getDictName(
                               videoInfoData.video?.region ?? 0,
-                              area as List<DictDataDataArea>,
+                              area ?? [],
                             ),
                             isLight: true,
                             theme: TDTagTheme.success,
@@ -949,7 +1017,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                           TDTag(
                             Dict.getDictName(
                               videoInfoData.video?.categoryId ?? 0,
-                              videoCategory as List<DictDataDataVideoCategory>,
+                              videoCategory ?? [],
                             ),
                             isLight: true,
                             theme: TDTagTheme.success,
@@ -957,7 +1025,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                           TDTag(
                             Dict.getDictName(
                               videoInfoData.video?.language ?? 0,
-                              language as List<DictDataDataLanguage>,
+                              language as List<DictDataDataLanguage>? ?? [],
                             ),
                             isLight: true,
                             theme: TDTagTheme.success,
@@ -1193,17 +1261,27 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
               size: TDButtonSize.large,
               onTap: () {
                 try {
-                  // 修复类型错误，正确获取选中的播放链接
-                  final selectedLine = videoInfoData.lines?[currentLine.value];
-                  final selectedPlayLine =
-                      selectedLine?.playLines?[currentPlay.value];
-                  _castScreenManager.castToDevice(
-                    deviceList[index],
-                    selectedPlayLine?.file ?? "",
-                    "${videoInfoData.video?.title ?? ""}  ${selectedPlayLine?.name ?? ""} ",
-                  );
+                  // 添加容错处理
+                  if (videoInfoData.lines != null &&
+                      videoInfoData.lines!.isNotEmpty &&
+                      currentLine.value < videoInfoData.lines!.length) {
+                    // 修复类型错误，正确获取选中的播放链接
+                    final selectedLine =
+                        videoInfoData.lines?[currentLine.value];
+                    if (selectedLine?.playLines != null &&
+                        currentPlay.value <
+                            (selectedLine?.playLines?.length ?? 0)) {
+                      final selectedPlayLine =
+                          selectedLine?.playLines?[currentPlay.value];
+                      _castScreenManager.castToDevice(
+                        deviceList[index],
+                        selectedPlayLine?.file ?? "",
+                        "${videoInfoData.video?.title ?? ""}  ${selectedPlayLine?.name ?? ""} ",
+                      );
+                    }
+                  }
                 } catch (e) {
-                  debugPrint("切换选集错误：${e.toString()}");
+                  debugPrint("投屏错误：${e.toString()}");
                 }
               },
               type: TDButtonType.outline,
@@ -1217,12 +1295,28 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   }
 
   Widget _buildVideo() {
-    final selectedLine = videoInfoData.lines?[currentLine.value];
-    final selectedPlayLine = selectedLine?.playLines?[currentPlay.value];
+    // 添加容错处理
+    String videoUrl = "";
+    String videoTitle = videoInfoData.video?.title ?? "";
+    String videoName = "";
+
+    if (videoInfoData.lines != null &&
+        videoInfoData.lines!.isNotEmpty &&
+        currentLine.value < videoInfoData.lines!.length) {
+      final selectedLine = videoInfoData.lines?[currentLine.value];
+      if (selectedLine?.playLines != null &&
+          currentPlay.value < (selectedLine?.playLines?.length ?? 0)) {
+        final selectedPlayLine = selectedLine?.playLines?[currentPlay.value];
+        videoUrl = selectedPlayLine?.file ?? "";
+        videoName = selectedPlayLine?.name ?? "";
+      }
+    }
+
     return Column(
       children: [
         FView(
           player: player,
+
           width: double.infinity,
           height: 200, // 需自行设置，此处宽度/高度=16/9
           color: Colors.black,
@@ -1232,7 +1326,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
             // 视频列表开关
             isVideos: true,
             // 右下方截屏按钮
-            isSnapShot: true,
+            isSnapShot: false,
             // 右上方按钮组开关
             isRightButton: true,
             // 右上方按钮组
@@ -1287,7 +1381,11 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
             // 全屏模式下点击播放下一集视频回调
             playNextVideoFun: () {
               setState(() {
-                currentPlay.value += 1;
+                // 添加容错处理
+                if (videoList.isNotEmpty &&
+                    currentPlay.value < videoList.length - 1) {
+                  currentPlay.value += 1;
+                }
               });
             },
             // 视频播放完成回调
@@ -1297,6 +1395,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
               _onPageLeave();
               // 停止监听播放进度
               _stopPositionListener();
+              // 添加容错处理
               if (index < videoList.length) {
                 await player.reset();
                 setState(() {

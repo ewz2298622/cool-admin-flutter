@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -208,7 +209,9 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                       vertical: 8,
                     ),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    Get.toNamed("/score_order");
+                  },
                   child: const Text("金币账单", style: TextStyle(fontSize: 14)),
                 ),
               ],
@@ -782,135 +785,6 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                 ),
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 分类标签组件
-  Widget _buildTab(String text, bool isActive) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFFFFF3E0) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isActive ? const Color(0xFFFF7D00) : Colors.grey[200]!,
-          width: 1,
-        ),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: isActive ? const Color(0xFFFF7D00) : Colors.grey,
-          fontSize: 12,
-        ),
-      ),
-    );
-  }
-
-  // 会员兑换卡片组件
-  Widget _buildVipExchangeCard(
-    String name,
-    String price,
-    String status,
-    String tag,
-    Color color,
-    bool isSoldOut,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[100]!, width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 标签+会员图标
-          Row(
-            children: [
-              if (tag.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 1,
-                  ),
-                  decoration: BoxDecoration(
-                    color:
-                        tag == "特价"
-                            ? const Color(0xFFFF7D00)
-                            : tag == "0点抢"
-                            ? const Color(0xFFFF3B30)
-                            : tag == "上新"
-                            ? const Color(0xFFFF3B30)
-                            : tag == "限量"
-                            ? const Color(0xFF2E91E5)
-                            : Colors.transparent,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                  child: Text(
-                    tag,
-                    style: const TextStyle(color: Colors.white, fontSize: 10),
-                  ),
-                ),
-              const Spacer(),
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Center(
-                  child: Text(
-                    "7天",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            name,
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 13,
-              overflow: TextOverflow.ellipsis,
-            ),
-            maxLines: 2,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            price,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 8),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Center(
-              child: Text(
-                isSoldOut ? "售罄" : status,
-                style: TextStyle(
-                  color: isSoldOut ? Colors.grey[400] : Colors.grey,
-                  fontSize: 12,
-                ),
-              ),
-            ),
           ),
         ],
       ),

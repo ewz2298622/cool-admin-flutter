@@ -18,6 +18,7 @@ import 'package:flutter_app/entity/member_exchange_config_entity.dart';
 import 'package:flutter_app/entity/monthly_checkinConfig_entity.dart';
 import 'package:flutter_app/entity/notice_Info_entity.dart';
 import 'package:flutter_app/entity/play_line_entity.dart';
+import 'package:flutter_app/entity/score_order_entity.dart';
 import 'package:flutter_app/entity/score_total_entity.dart';
 import 'package:flutter_app/entity/swiper_entity.dart';
 import 'package:flutter_app/entity/user_info_entity.dart';
@@ -628,6 +629,39 @@ class JsonConvert {
               .toList()
           as M;
     }
+    if (<ScoreOrderEntity>[] is M) {
+      return data
+              .map<ScoreOrderEntity>(
+                (Map<String, dynamic> e) => ScoreOrderEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<ScoreOrderData>[] is M) {
+      return data
+              .map<ScoreOrderData>(
+                (Map<String, dynamic> e) => ScoreOrderData.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<ScoreOrderDataList>[] is M) {
+      return data
+              .map<ScoreOrderDataList>(
+                (Map<String, dynamic> e) => ScoreOrderDataList.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<ScoreOrderDataPagination>[] is M) {
+      return data
+              .map<ScoreOrderDataPagination>(
+                (Map<String, dynamic> e) =>
+                    ScoreOrderDataPagination.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
     if (<ScoreTotalEntity>[] is M) {
       return data
               .map<ScoreTotalEntity>(
@@ -1063,6 +1097,10 @@ class JsonConvertClassCollection {
     (PlayLineEntity).toString(): PlayLineEntity.fromJson,
     (PlayLineData).toString(): PlayLineData.fromJson,
     (PlayLineDataList).toString(): PlayLineDataList.fromJson,
+    (ScoreOrderEntity).toString(): ScoreOrderEntity.fromJson,
+    (ScoreOrderData).toString(): ScoreOrderData.fromJson,
+    (ScoreOrderDataList).toString(): ScoreOrderDataList.fromJson,
+    (ScoreOrderDataPagination).toString(): ScoreOrderDataPagination.fromJson,
     (ScoreTotalEntity).toString(): ScoreTotalEntity.fromJson,
     (SwiperEntity).toString(): SwiperEntity.fromJson,
     (SwiperData).toString(): SwiperData.fromJson,

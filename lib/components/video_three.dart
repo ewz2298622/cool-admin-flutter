@@ -90,7 +90,7 @@ class Video extends StatelessWidget {
               textAlign: TextAlign.right,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: 'PingFang SC',
                 fontWeight: FontWeight.w500,
                 fontSize: 11.0,
@@ -123,8 +123,8 @@ class Video extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-          margin: EdgeInsets.only(right: 4, top: 4), // 调整内边距
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          margin: const EdgeInsets.only(right: 4, top: 4), // 调整内边距
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(3),
             gradient: const LinearGradient(
@@ -139,7 +139,7 @@ class Video extends StatelessWidget {
           alignment: Alignment.center, // 关键：强制内容居中
           child: Text(
             VideoUtil.formatTag(item?.pubdate ?? ""),
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 11,
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -168,11 +168,10 @@ class VideoThree extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: 150.0, // 每个 item 的最大宽度
         crossAxisSpacing: 4.0,
         mainAxisSpacing: 4.0,
-        childAspectRatio: 0.7,
         mainAxisExtent: 205,
       ),
       itemBuilder:
@@ -182,7 +181,8 @@ class VideoThree extends StatelessWidget {
       itemCount: videoPageData.length,
       padding: EdgeInsets.zero, // 如果需要可以添加 padding
       shrinkWrap: true, // 如果需要在可滚动组件中使用
-      physics: NeverScrollableScrollPhysics(), // 如果需要禁用滚动
+      physics: const NeverScrollableScrollPhysics(), // 如果需要禁用滚动
+      cacheExtent: 1000, // 增加缓存区域
     );
   }
 }
