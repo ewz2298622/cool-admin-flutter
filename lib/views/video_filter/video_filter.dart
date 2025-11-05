@@ -46,11 +46,19 @@ class VideoFilterState extends State<VideoFilter>
   List<DictInfoListData> categoryOriginalDictList = [];
   // 添加加载状态标志
   bool _isLoading = false;
+  
+  // 添加组件缓存映射
+  final Map<int, Widget> _videoItemCache = {};
+  final Map<String, Widget> _categoryWidgetCache = {};
+  final Map<String, Widget> _tagWidgetCache = {};
+  final Map<String, Widget> _areaWidgetCache = {};
+  final Map<String, Widget> _yearWidgetCache = {};
+  
+  // 移除内容缓存，因为它会阻止下拉刷新功能
 
   Future<void> getVideoPages() async {
     try {
-      Map<String, dynamic>? data = {"page": currentPage};
-      data = {
+      final data = {
         "page": currentPage,
         "category_pid":
             categoryCurrent.value == 0 ? null : categoryCurrent.value,
@@ -65,9 +73,9 @@ class VideoFilterState extends State<VideoFilter>
         "region": regionCurrent.value == 0 ? null : regionCurrent.value,
       };
 
-      List<VideoPageDataList> list =
-          (await Api.getVideoPages(data)).data?.list ??
-          [] as List<VideoPageDataList>;
+      // 使用 Future.microtask 来避免阻塞UI线程
+      final response = await Future.microtask(() => Api.getVideoPages(data));
+      final list = response.data?.list ?? [] as List<VideoPageDataList>;
 
       // 使用 ListView.separated 或 GridView.builder 时，添加唯一键可以提高性能
       if (currentPage == 1) {
@@ -143,12 +151,17 @@ class VideoFilterState extends State<VideoFilter>
     try {
       _isLoading = true; // 设置初始加载状态
       setState(() {});
-      await Future.wait([
-        getVideoPages(),
-        getVideoCategoryPages(),
-        getVideoAreaPages(),
-        getVideoTagPages(),
-      ]);
+      
+      // 使用 Future.microtask 来避免阻塞UI线程
+      await Future.microtask(() async {
+        await Future.wait([
+          getVideoPages(),
+          getVideoCategoryPages(),
+          getVideoAreaPages(),
+          getVideoTagPages(),
+        ]);
+      });
+      
       _isLoading = false; // 取消初始加载状态
       setState(() {});
       return "init success";
@@ -193,12 +206,18 @@ class VideoFilterState extends State<VideoFilter>
     } else {
       categoryCurrent.value = 0;
     }
+    // 清除标签缓存
+    _clearTagCache();
+    // 清除视频项缓存
+    _videoItemCache.clear();
+    // 不再需要清除内容缓存
+    // _cachedContent = null;
     videoPageData.clear();
-    _isLoading = true; // 设置加载状态
+    _isLoading = true;
     setState(() {});
     currentPage = 1;
     await getVideoPages();
-    _isLoading = false; // 取消加载状态
+    _isLoading = false;
     _year_change(0);
     _area_change(null);
     setState(() {});
@@ -210,12 +229,18 @@ class VideoFilterState extends State<VideoFilter>
     } else {
       tagCurrent.value = 0;
     }
+    // 清除标签缓存
+    _clearTagCache();
+    // 清除视频项缓存
+    _videoItemCache.clear();
+    // 不再需要清除内容缓存
+    // _cachedContent = null;
     videoPageData.clear();
-    _isLoading = true; // 设置加载状态
+    _isLoading = true;
     setState(() {});
     currentPage = 1;
     await getVideoPages();
-    _isLoading = false; // 取消加载状态
+    _isLoading = false;
     _year_change(0);
     _area_change(null);
     setState(() {});
@@ -223,12 +248,18 @@ class VideoFilterState extends State<VideoFilter>
 
   Future<void> _year_change(int item) async {
     yearCurrent.value = item;
+    // 清除标签缓存
+    _clearTagCache();
+    // 清除视频项缓存
+    _videoItemCache.clear();
+    // 不再需要清除内容缓存
+    // _cachedContent = null;
     videoPageData.clear();
-    _isLoading = true; // 设置加载状态
+    _isLoading = true;
     setState(() {});
     currentPage = 1;
     await getVideoPages();
-    _isLoading = false; // 取消加载状态
+    _isLoading = false;
     setState(() {});
   }
 
@@ -238,12 +269,26 @@ class VideoFilterState extends State<VideoFilter>
     } else {
       regionCurrent.value = 0;
     }
+    // 清除标签缓存
+    _clearTagCache();
+    // 清除视频项缓存
+    _videoItemCache.clear();
+    // 不再需要清除内容缓存
+    // _cachedContent = null;
     videoPageData.clear();
-    _isLoading = true; // 设置加载状态
+    _isLoading = true;
     setState(() {});
     currentPage = 1;
     await getVideoPages();
-    _isLoading = false; // 取消加载状态
+    _isLoading = false;
+  }
+
+  // 添加清除缓存的方法
+  void _clearTagCache() {
+    _categoryWidgetCache.clear();
+    _tagWidgetCache.clear();
+    _areaWidgetCache.clear();
+    _yearWidgetCache.clear();
   }
 
   Widget _buildCategoryRow(
@@ -256,7 +301,15 @@ class VideoFilterState extends State<VideoFilter>
       return ValueListenableBuilder<int>(
         valueListenable: categoryCurrent,
         builder: (context, key, child) {
-          return SingleChildScrollView(
+          // 生成缓存键
+          final cacheKey = '$title-$key-${items.length}';
+          
+          // 检查缓存中是否已存在该组件
+          if (_categoryWidgetCache.containsKey(cacheKey)) {
+            return _categoryWidgetCache[cacheKey]!;
+          }
+          
+          final widget = SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
@@ -311,10 +364,14 @@ class VideoFilterState extends State<VideoFilter>
                       onTap: () => _category_change(item),
                     ),
                   ),
-                ), // 添加toList()以确保正确构建
+                ),
               ],
             ),
           );
+          
+          // 缓存组件
+          _categoryWidgetCache[cacheKey] = widget;
+          return widget;
         },
       );
     }
@@ -327,7 +384,15 @@ class VideoFilterState extends State<VideoFilter>
       return ValueListenableBuilder<int>(
         valueListenable: tagCurrent,
         builder: (context, key, child) {
-          return SingleChildScrollView(
+          // 生成缓存键
+          final cacheKey = '$title-$key-${items.length}';
+          
+          // 检查缓存中是否已存在该组件
+          if (_tagWidgetCache.containsKey(cacheKey)) {
+            return _tagWidgetCache[cacheKey]!;
+          }
+          
+          final widget = SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
@@ -382,10 +447,14 @@ class VideoFilterState extends State<VideoFilter>
                       onTap: () => _tag_change(item),
                     ),
                   ),
-                ), // 添加toList()以确保正确构建
+                ),
               ],
             ),
           );
+          
+          // 缓存组件
+          _tagWidgetCache[cacheKey] = widget;
+          return widget;
         },
       );
     }
@@ -398,7 +467,15 @@ class VideoFilterState extends State<VideoFilter>
       return ValueListenableBuilder<int>(
         valueListenable: regionCurrent,
         builder: (context, key, child) {
-          return SingleChildScrollView(
+          // 生成缓存键
+          final cacheKey = '$title-$key-${items.length}';
+          
+          // 检查缓存中是否已存在该组件
+          if (_areaWidgetCache.containsKey(cacheKey)) {
+            return _areaWidgetCache[cacheKey]!;
+          }
+          
+          final widget = SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
@@ -452,10 +529,14 @@ class VideoFilterState extends State<VideoFilter>
                       onTap: () => _area_change(item),
                     ),
                   ),
-                ), // 添加toList()以确保正确构建
+                ),
               ],
             ),
           );
+          
+          // 缓存组件
+          _areaWidgetCache[cacheKey] = widget;
+          return widget;
         },
       );
     }
@@ -465,7 +546,15 @@ class VideoFilterState extends State<VideoFilter>
     return ValueListenableBuilder<int>(
       valueListenable: yearCurrent,
       builder: (context, key, child) {
-        return SingleChildScrollView(
+        // 生成缓存键
+        final cacheKey = '$title-$key-${items.length}';
+        
+        // 检查缓存中是否已存在该组件
+        if (_yearWidgetCache.containsKey(cacheKey)) {
+          return _yearWidgetCache[cacheKey]!;
+        }
+        
+        final widget = SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
@@ -519,30 +608,34 @@ class VideoFilterState extends State<VideoFilter>
                     onTap: () => _year_change(item),
                   ),
                 ),
-              ), // 添加toList()以确保正确构建
+              ),
             ],
           ),
         );
+        
+        // 缓存组件
+        _yearWidgetCache[cacheKey] = widget;
+        return widget;
       },
     );
   }
 
   Future<void> onRefresh() async {
     videoPageData.clear();
+    // 清除所有缓存
+    _clearTagCache();
+    _videoItemCache.clear();
     _isLoading = true;
     if (mounted) {
       setState(() {});
     }
     currentPage = 1;
-    categoryCurrent.value = 0;
-    yearCurrent.value = 0;
-    tagCurrent.value = 0;
-    regionCurrent.value = 0;
     await getVideoPages();
     _isLoading = false;
     if (mounted) {
       setState(() {});
     }
+    // 不再在这里调用_refreshController.refreshCompleted()，因为它在SmartRefresher的回调中调用
   }
 
   Future<void> loadMore() async {
@@ -553,6 +646,7 @@ class VideoFilterState extends State<VideoFilter>
       setState(() {});
     }
     TDToast.dismissLoading();
+    // 不再在这里调用_refreshController.loadComplete()，因为它在SmartRefresher的回调中调用
   }
 
   final RefreshController _refreshController = RefreshController();
@@ -568,6 +662,8 @@ class VideoFilterState extends State<VideoFilter>
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}'); // 显示错误信息
         } else if (snapshot.hasData) {
+          // 注意：我们不再缓存整个内容，因为这会阻止下拉刷新和上拉加载更多功能
+          // 每次都需要重新构建内容以确保刷新功能正常工作
           return SmartRefresher(
             onRefresh: () async {
               await onRefresh();
@@ -581,7 +677,7 @@ class VideoFilterState extends State<VideoFilter>
             enablePullUp: true,
             controller: _refreshController,
             child: CustomScrollView(
-              cacheExtent: 1000, // 增加缓存区域提高滚动性能
+              cacheExtent: 2000, // 增加缓存区域提高滚动性能
               slivers: <Widget>[
                 SliverToBoxAdapter(child: _buildDefaultSearchBar()),
                 SliverStickyHeader(
@@ -628,6 +724,7 @@ class VideoFilterState extends State<VideoFilter>
       // 确认无数据时显示 NoData 组件
       return const SliverToBoxAdapter(child: Center(child: NoData()));
     } else {
+      // 使用预构建的组件列表来提高性能
       return SliverGrid(
         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
           maxCrossAxisExtent: 150.0,
@@ -638,10 +735,25 @@ class VideoFilterState extends State<VideoFilter>
         delegate: SliverChildBuilderDelegate(
           (context, i) {
             final videoItem = videoPageData[i];
-            return GridTile(
-              key: ValueKey(videoItem.id),
+            final id = videoItem.id;
+            
+            // 检查是否有缓存的组件
+            if (id != null && _videoItemCache.containsKey(id)) {
+              return _videoItemCache[id]!;
+            }
+            
+            // 创建新的组件并缓存
+            final widget = GridTile(
+              key: ValueKey(id),
               child: Center(child: Video(videoData: videoItem)),
             );
+            
+            // 缓存组件（仅对第一页的数据进行缓存以节省内存）
+            if (id != null && currentPage == 1) {
+              _videoItemCache[id] = widget;
+            }
+            
+            return widget;
           },
           childCount: videoPageData.length,
           addAutomaticKeepAlives: true,

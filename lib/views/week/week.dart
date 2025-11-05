@@ -52,13 +52,16 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
       for (var element in week) {
         tabs.add(TDTab(text: element.name));
         // 创建并行请求
-        futures.add(getWeekList(element.id ?? 0));
+        await getWeekList(element.id ?? 0);
       }
       // 等待所有请求完成
       await Future.wait(futures);
     } catch (e) {
       // 捕获并处理异常
       print('获取视频分类数据失败: $e');
+      // 清空数据以防止不一致
+      tabs.clear();
+      weekList.clear();
     }
   }
 
@@ -199,23 +202,42 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
 
   /// 获取指定星期的视频列表
   ///
-  /// [week] 星期ID，用于查询对应日期的视频
+  /// [weekId] 星期ID，用于查询对应日期的视频
   /// 从API获取视频列表并添加到weekList中
-  Future<void> getWeekList(int week) async {
+  Future<void> getWeekList(int weekId) async {
     try {
       List<WeekDataList> list =
           ((await Api.getWeek({
                 "page": 1,
                 "size": 100,
-                "week": week,
+                "week": weekId,
               })).data?.list
               as List<WeekDataList>);
-      weekList.add(list);
+
+      // 在初始化阶段添加新列表
+      if (weekList.length < week.length) {
+        weekList.add(list);
+      } else {
+        // 在刷新阶段更新对应的列表（通过weekId找到对应的索引）
+        final index = week.indexWhere((element) => element.id == weekId);
+        if (index != -1 && index < weekList.length) {
+          weekList[index] = list;
+        }
+      }
     } catch (e) {
       // 捕获并处理异常
       print('获取视频分类数据失败: $e');
-      // 添加空列表以防止索引越界
-      weekList.add([]);
+
+      // 在初始化阶段添加空列表
+      if (weekList.length < week.length) {
+        weekList.add([]);
+      } else {
+        // 在刷新阶段更新对应的空列表
+        final index = week.indexWhere((element) => element.id == weekId);
+        if (index != -1 && index < weekList.length) {
+          weekList[index] = [];
+        }
+      }
     }
   }
 
@@ -229,6 +251,11 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
       // 确保在有数据的情况下才初始化TabController
       if (tabs.isNotEmpty) {
         _tabController = TabController(length: tabs.length, vsync: this);
+        // 初始化tabRefreshController数组
+        tabRefreshController = List.generate(
+          tabs.length,
+          (index) => RefreshController(),
+        );
       }
       return "init success";
     } catch (e) {
@@ -246,6 +273,12 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
   void dispose() {
     // 释放TabController资源
     _tabController.dispose();
+
+    // 释放所有RefreshController资源
+    for (var controller in tabRefreshController) {
+      controller.dispose();
+    }
+
     super.dispose();
   }
 
@@ -353,14 +386,27 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
     if (day >= weekList.length) {
       return NoData();
     }
+
+    // 检查当前tab是否有数据，如果没有则显示NoData组件
+    if (weekList[day].isEmpty) {
+      return NoData();
+    }
+
     debugPrint('weekList[day]: ${day}');
-    tabRefreshController.add(RefreshController());
+
+    // 确保tabRefreshController数组有足够的元素
+    while (tabRefreshController.length <= day) {
+      tabRefreshController.add(RefreshController());
+    }
+
     return SmartRefresher(
       controller: tabRefreshController[day],
       onRefresh: () async {
         // 刷新当前tab的数据
         await getWeekList(week[day].id ?? 0);
-        setState(() {});
+        if (mounted) {
+          setState(() {});
+        }
         tabRefreshController[day].refreshCompleted();
       },
       child: ListView.builder(
