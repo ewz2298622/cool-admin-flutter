@@ -121,6 +121,10 @@ VideoDetailDataDataVideo $VideoDetailDataDataVideoFromJson(
   if (subTitle != null) {
     videoDetailDataDataVideo.subTitle = subTitle;
   }
+  final int? vip = jsonConvert.convert<int>(json['vip']);
+  if (vip != null) {
+    videoDetailDataDataVideo.vip = vip;
+  }
   final String? videoTag = jsonConvert.convert<String>(json['video_tag']);
   if (videoTag != null) {
     videoDetailDataDataVideo.videoTag = videoTag;
@@ -259,7 +263,7 @@ VideoDetailDataDataVideo $VideoDetailDataDataVideoFromJson(
   if (publish != null) {
     videoDetailDataDataVideo.publish = publish;
   }
-  final dynamic pubdate = json['pubdate'];
+  final String? pubdate = jsonConvert.convert<String>(json['pubdate']);
   if (pubdate != null) {
     videoDetailDataDataVideo.pubdate = pubdate;
   }
@@ -299,6 +303,10 @@ VideoDetailDataDataVideo $VideoDetailDataDataVideoFromJson(
   if (down != null) {
     videoDetailDataDataVideo.down = down;
   }
+  final int? vipNumber = jsonConvert.convert<int>(json['vipNumber']);
+  if (vipNumber != null) {
+    videoDetailDataDataVideo.vipNumber = vipNumber;
+  }
   final String? collectionName = jsonConvert.convert<String>(
     json['collection_name'],
   );
@@ -328,6 +336,7 @@ Map<String, dynamic> $VideoDetailDataDataVideoToJson(
   data['updateUserId'] = entity.updateUserId;
   data['title'] = entity.title;
   data['sub_title'] = entity.subTitle;
+  data['vip'] = entity.vip;
   data['video_tag'] = entity.videoTag;
   data['video_class'] = entity.videoClass;
   data['category_id'] = entity.categoryId;
@@ -369,6 +378,7 @@ Map<String, dynamic> $VideoDetailDataDataVideoToJson(
   data['collection_id'] = entity.collectionId;
   data['up'] = entity.up;
   data['down'] = entity.down;
+  data['vipNumber'] = entity.vipNumber;
   data['collection_name'] = entity.collectionName;
   data['searchRecommendType'] = entity.searchRecommendType;
   data['sort'] = entity.sort;
@@ -385,6 +395,7 @@ extension VideoDetailDataDataVideoExtension on VideoDetailDataDataVideo {
     dynamic updateUserId,
     String? title,
     String? subTitle,
+    int? vip,
     String? videoTag,
     String? videoClass,
     int? categoryId,
@@ -416,7 +427,7 @@ extension VideoDetailDataDataVideoExtension on VideoDetailDataDataVideo {
     String? remarks,
     dynamic verticalPoster,
     dynamic publish,
-    dynamic pubdate,
+    String? pubdate,
     dynamic serialNumber,
     dynamic screenshot,
     int? end,
@@ -426,6 +437,7 @@ extension VideoDetailDataDataVideoExtension on VideoDetailDataDataVideo {
     int? collectionId,
     int? up,
     int? down,
+    int? vipNumber,
     String? collectionName,
     dynamic searchRecommendType,
     int? sort,
@@ -439,6 +451,7 @@ extension VideoDetailDataDataVideoExtension on VideoDetailDataDataVideo {
       ..updateUserId = updateUserId ?? this.updateUserId
       ..title = title ?? this.title
       ..subTitle = subTitle ?? this.subTitle
+      ..vip = vip ?? this.vip
       ..videoTag = videoTag ?? this.videoTag
       ..videoClass = videoClass ?? this.videoClass
       ..categoryId = categoryId ?? this.categoryId
@@ -480,6 +493,7 @@ extension VideoDetailDataDataVideoExtension on VideoDetailDataDataVideo {
       ..collectionId = collectionId ?? this.collectionId
       ..up = up ?? this.up
       ..down = down ?? this.down
+      ..vipNumber = vipNumber ?? this.vipNumber
       ..collectionName = collectionName ?? this.collectionName
       ..searchRecommendType = searchRecommendType ?? this.searchRecommendType
       ..sort = sort ?? this.sort;
@@ -692,6 +706,10 @@ VideoDetailDataDataLinesPlayLines $VideoDetailDataDataLinesPlayLinesFromJson(
   if (tag != null) {
     videoDetailDataDataLinesPlayLines.tag = tag;
   }
+  final int? vip = jsonConvert.convert<int>(json['vip']);
+  if (vip != null) {
+    videoDetailDataDataLinesPlayLines.vip = vip;
+  }
   return videoDetailDataDataLinesPlayLines;
 }
 
@@ -716,6 +734,7 @@ Map<String, dynamic> $VideoDetailDataDataLinesPlayLinesToJson(
   data['status'] = entity.status;
   data['sort'] = entity.sort;
   data['tag'] = entity.tag;
+  data['vip'] = entity.vip;
   return data;
 }
 
@@ -739,6 +758,7 @@ extension VideoDetailDataDataLinesPlayLinesExtension
     int? status,
     int? sort,
     String? tag,
+    int? vip,
   }) {
     return VideoDetailDataDataLinesPlayLines()
       ..id = id ?? this.id
@@ -757,6 +777,7 @@ extension VideoDetailDataDataLinesPlayLinesExtension
       ..subTitle = subTitle ?? this.subTitle
       ..status = status ?? this.status
       ..sort = sort ?? this.sort
-      ..tag = tag ?? this.tag;
+      ..tag = tag ?? this.tag
+      ..vip = vip ?? this.vip;
   }
 }

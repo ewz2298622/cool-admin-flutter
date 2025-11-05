@@ -7,7 +7,14 @@ import '../utils/video.dart';
 class HorizontalVideoList extends StatelessWidget {
   final List<dynamic> videoPageData;
 
-  const HorizontalVideoList({super.key, required this.videoPageData});
+  //接受一个可选回调函数
+  final Function()? onTap;
+
+  const HorizontalVideoList({
+    super.key,
+    required this.videoPageData,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,12 +25,16 @@ class HorizontalVideoList extends StatelessWidget {
         itemCount: videoPageData.length,
         itemBuilder:
             (context, i) => GestureDetector(
-              onTap:
-                  () => Get.toNamed(
-                    "/video_detail",
-                    arguments: {"id": videoPageData[i].id},
-                    preventDuplicates: false,
-                  ),
+              onTap: () {
+                if (onTap != null) {
+                  onTap!();
+                }
+                Get.toNamed(
+                  "/video_detail",
+                  arguments: {"id": videoPageData[i].id},
+                  preventDuplicates: false,
+                );
+              },
               child: Container(
                 width: 120,
                 height: 160,

@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:fplayer/fplayer.dart';
 import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -409,7 +410,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
         playLineId = selectedLine?.playLines?[currentPlay.value].id;
       }
     }
-
+    removeVideo();
     Get.toNamed(
       "/feedback",
       arguments: {
@@ -607,22 +608,21 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                       Text(
                         Dict.getDictName(
                           videoInfoData.video?.region ?? 0,
-                          area as List<DictDataDataArea>? ?? [],
+                          area ?? [],
                         ),
                         style: TextStyle(color: Colors.grey),
                       ),
                       Text(
                         Dict.getDictName(
                           videoInfoData.video?.categoryId ?? 0,
-                          videoCategory as List<DictDataDataVideoCategory>? ??
-                              [],
+                          videoCategory ?? [],
                         ),
                         style: TextStyle(color: Colors.grey),
                       ),
                       Text(
                         Dict.getDictName(
                           videoInfoData.video?.language ?? 0,
-                          language as List<DictDataDataLanguage>? ?? [],
+                          language ?? [],
                         ),
                         style: TextStyle(color: Colors.grey),
                       ),
@@ -735,6 +735,14 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                             ),
                             onPressed: () {
                               try {
+                                if (item.vip == 1 &&
+                                    (item.file ?? "").isEmpty) {
+                                  Fluttertoast.showToast(
+                                    msg: "请开通VIP后重试",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                  );
+                                  return;
+                                }
                                 currentPlay.value = index;
                                 setVideoUrl(playLines[index].file ?? "");
                               } catch (e) {
@@ -753,15 +761,16 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                           ),
                         ),
                         //VIP角标右上角位置
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          child: const TDBadge(
-                            TDBadgeType.subscript,
-                            size: TDBadgeSize.large,
-                            message: 'VIP',
+                        if (item.vip == 1)
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: const TDBadge(
+                              TDBadgeType.subscript,
+                              size: TDBadgeSize.large,
+                              message: 'VIP',
+                            ),
                           ),
-                        ),
                       ],
                     ),
                   );
@@ -925,7 +934,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
         spacing: 16,
         children: [
           SectionWithMore(title: "猜你喜欢"),
-          HorizontalVideoList(videoPageData: videoPageData),
+          HorizontalVideoList(videoPageData: videoPageData, onTap: removeVideo),
         ],
       ),
     );

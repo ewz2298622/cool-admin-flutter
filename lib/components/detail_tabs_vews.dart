@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../entity/video_detail_data_entity.dart';
@@ -167,6 +168,14 @@ class _DetailTabsViewState extends State<DetailTabsView>
                                 maximumSize: Size(80, 35),
                               ),
                               onPressed: () {
+                                if (item.vip == 1 &&
+                                    (item.file ?? "").isEmpty) {
+                                  Fluttertoast.showToast(
+                                    msg: "请开通VIP后重试",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                  );
+                                  return;
+                                }
                                 setState(() {
                                   // 清空所有tabs的选中项
                                   _selectedItems.clear();
@@ -196,15 +205,16 @@ class _DetailTabsViewState extends State<DetailTabsView>
                             ),
                           ),
                           //VIP角标右上角位置
-                          Positioned(
-                            right: 0,
-                            top: 0,
-                            child: const TDBadge(
-                              TDBadgeType.subscript,
-                              size: TDBadgeSize.large,
-                              message: 'VIP',
+                          if (item.vip == 1)
+                            Positioned(
+                              right: 0,
+                              top: 0,
+                              child: const TDBadge(
+                                TDBadgeType.subscript,
+                                size: TDBadgeSize.large,
+                                message: 'VIP',
+                              ),
                             ),
-                          ),
                         ],
                       );
                     } else {
