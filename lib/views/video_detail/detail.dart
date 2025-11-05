@@ -57,7 +57,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   List<DictDataDataVideoCategory>? videoCategory = [];
   List<DictDataDataLanguage>? language = [];
   final PageController pageController = PageController(initialPage: 0);
-  final FPlayer player = FPlayer();
+  late FPlayer player = FPlayer();
   List<dynamic> deviceList = [];
   StateSetter? TVshowModalBottomSheetListSate;
   final CastScreenManager _castScreenManager = CastScreenManager(); // 添加投屏管理器
@@ -87,6 +87,10 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
 
   // 添加一个定时器来定期更新播放进度
   Timer? _positionTimer;
+
+  // 添加变量来跟踪播放器状态
+  bool _isPlayerInitialized = false;
+  bool _isPlayerReleased = false;
 
   // 开始监听播放进度
   void _startPositionListener() {
@@ -270,6 +274,8 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
       _errorListener();
       await _loadAd();
       _videoListener();
+      _isPlayerInitialized = true;
+      _isPlayerReleased = false;
       return "init success";
     } catch (e) {
       // 捕获并处理异常
@@ -324,16 +330,17 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
 
   Future<void> setVideoUrl(String url) async {
     try {
-      await player.reset();
+      // 如果播放器已被释放，重新初始化
+      if (_isPlayerReleased) {
+        _isPlayerReleased = false;
+      }
       // 添加容错处理，如果url为空则不播放
       if (url.isNotEmpty) {
         player.setDataSource(url, autoPlay: true, showCover: true);
       }
-
-      // 如果存在观看历史记录，则跳转到指定位置
-
       // 开始监听播放进度
       _startPositionListener();
+      setState(() {});
     } catch (error) {
       debugPrint('setVideoUrl error: $error');
     }
@@ -378,8 +385,8 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   @override
   void didPushNext() {
     debugPrint('Video_Detail: didPushNext called - page is being covered');
-    // 页面被其他页面覆盖时调用addViews
-    _onPageLeave();
+    // 页面被其他页面覆盖时不调用addViews，保持播放状态
+    // _onPageLeave();
   }
 
   // 当页面从导航栈中移除时调用
@@ -390,6 +397,31 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
     );
     // 页面从导航栈中移除时调用addViews
     _onPageLeave();
+  }
+
+  // 当页面重新变为可见时调用
+  @override
+  void didPopNext() {
+    debugPrint(
+      'Video_Detail: didPopNext called - page is becoming visible again',
+    );
+    // 页面重新变为可见时，如果播放器已被释放则重新初始化
+    if (_isPlayerReleased && _isPlayerInitialized) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // 重新设置当前视频URL
+        if (videoInfoData.lines != null &&
+            videoInfoData.lines!.isNotEmpty &&
+            currentLine.value < videoInfoData.lines!.length) {
+          final selectedLine = videoInfoData.lines?[currentLine.value];
+          if (selectedLine?.playLines != null &&
+              currentPlay.value < (selectedLine?.playLines?.length ?? 0)) {
+            final selectedPlayLine =
+                selectedLine?.playLines?[currentPlay.value];
+            setVideoUrl(selectedPlayLine?.file ?? "");
+          }
+        }
+      });
+    }
   }
 
   goFeedbackPage() {
@@ -427,9 +459,8 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
     _onPageLeave();
     // 停止监听播放进度
     _stopPositionListener();
-    player.stop();
     player.reset();
-    player.release();
+    _isPlayerReleased = true;
   }
 
   /// 返回一个Widget自动填充剩余高度 且可以滑动
