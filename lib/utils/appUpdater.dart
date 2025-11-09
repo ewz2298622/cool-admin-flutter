@@ -8,6 +8,7 @@ import 'package:open_file/open_file.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../api/api.dart';
 import '../entity/notice_Info_entity.dart';
@@ -115,41 +116,78 @@ class AppUpdater {
     required bool forceUpdate,
     required VoidCallback onConfirm,
   }) {
-    showDialog(
+    showDialog<void>(
       context: context,
       barrierDismissible: !forceUpdate,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('发现新版本 $version'),
-          content: SingleChildScrollView(
+      builder: (dialogContext) {
+        final theme = Theme.of(dialogContext);
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(description.isNotEmpty ? description : '优化体验，修复了一些问题'),
-                const SizedBox(height: 16),
-                const Text('请点击确认开始下载更新'),
+                Text(
+                  '发现新版本 $version',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  description.isNotEmpty ? description : '优化体验，修复了一些问题',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 10)
+                const Text(
+                  '请点击确认开始下载更新',
+                  style: TextStyle(fontSize: 14, height: 1.4),
+                ),
+                if (!forceUpdate)
+                  TDButton(
+                    text: '稍后再说',
+                    isBlock: true,
+                    size: TDButtonSize.large,
+                    theme: TDButtonTheme.defaultTheme,
+                    type: TDButtonType.outline,
+                    onTap: () => Navigator.of(dialogContext).pop(),
+                    style: TDButtonStyle(
+                      textColor: theme.primaryColor,
+                      radius: BorderRadius.circular(20),
+                    ),
+                  ),
+                if (!forceUpdate) const SizedBox(height: 12),
+                TDButton(
+                  text: '立即更新',
+                  isBlock: true,
+                  size: TDButtonSize.large,
+                  type: TDButtonType.fill,
+                  theme: TDButtonTheme.defaultTheme,
+                  onTap: () {
+                    Navigator.of(dialogContext).pop();
+                    onConfirm();
+                  },
+                  style: TDButtonStyle(
+                    backgroundColor: const Color.fromRGBO(255, 95, 1, 1),
+                    textColor: Colors.white,
+                    radius: BorderRadius.circular(20),
+                  ),
+                ),
               ],
             ),
           ),
-          actions:
-              forceUpdate
-                  ? [
-                    TextButton(onPressed: onConfirm, child: const Text('确认更新')),
-                  ]
-                  : [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('取消'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        onConfirm();
-                      },
-                      child: const Text('确认更新'),
-                    ),
-                  ],
         );
       },
     );
@@ -157,18 +195,51 @@ class AppUpdater {
 
   /// 显示无更新对话框
   static void _showNoUpdateDialog(BuildContext context) {
-    showDialog(
+    showDialog<void>(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('检查更新'),
-          content: const Text('当前已是最新版本'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('确定'),
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
             ),
-          ],
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '检查更新',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  '当前已是最新版本',
+                  style: TextStyle(fontSize: 14, height: 1.4),
+                ),
+                const SizedBox(height: 24),
+                TDButton(
+                  text: '确定',
+                  isBlock: true,
+                  size: TDButtonSize.large,
+                  type: TDButtonType.fill,
+                  theme: TDButtonTheme.defaultTheme,
+                  onTap: () => Navigator.of(dialogContext).pop(),
+                  style: TDButtonStyle(
+                    backgroundColor: const Color.fromRGBO(255, 95, 1, 1),
+                    textColor: Colors.white,
+                    radius: BorderRadius.circular(20),
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -176,18 +247,51 @@ class AppUpdater {
 
   /// 显示错误对话框
   static void _showErrorDialog(BuildContext context, String error) {
-    showDialog(
+    showDialog<void>(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('出错啦'),
-          content: Text('更新过程中发生错误: $error'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('确定'),
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
             ),
-          ],
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '出错啦',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '更新过程中发生错误: $error',
+                  style: const TextStyle(fontSize: 14, height: 1.4),
+                ),
+                const SizedBox(height: 24),
+                TDButton(
+                  text: '确定',
+                  isBlock: true,
+                  size: TDButtonSize.large,
+                  type: TDButtonType.fill,
+                  theme: TDButtonTheme.defaultTheme,
+                  onTap: () => Navigator.of(dialogContext).pop(),
+                  style: TDButtonStyle(
+                    backgroundColor: const Color.fromRGBO(255, 95, 1, 1),
+                    textColor: Colors.white,
+                    radius: BorderRadius.circular(20),
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );

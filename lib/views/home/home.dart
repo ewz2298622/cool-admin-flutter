@@ -262,64 +262,60 @@ class _HomePageState extends State<Home>
   void message() {
     if (noticeInfoData.isEmpty) return;
 
-    showDialog<Null>(
+    final notice = noticeInfoData.first;
+
+    showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.transparent, // 关键：设置背景透明
-          content: Card(
-            color: Colors.white,
-            child: Container(
-              // width: MediaQuery.of(context).size.width * 0.8,
-              padding: const EdgeInsets.all(10),
-              height: 350,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    children: [
-                      Text(noticeInfoData[0].title ?? ""),
-                      const SizedBox(height: 10),
-                      Text(
-                        noticeInfoData[0].summary ?? "",
-                        maxLines: 5,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: TDTheme.of(context).fontGyColor2,
-                        ),
-                      ),
-                    ],
+      builder: (dialogContext) {
+        final theme = TDTheme.of(dialogContext);
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  notice.title ?? '',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
                   ),
-                  TDButton(
-                    text: '我知道了',
-                    isBlock: true,
-                    size: TDButtonSize.large,
-                    type: TDButtonType.fill,
-                    shape: TDButtonShape.rectangle,
-                    theme: TDButtonTheme.defaultTheme,
-                    onTap: () => Navigator.of(context).pop(),
-                    style: TDButtonStyle(
-                      backgroundColor: const Color.fromRGBO(255, 95, 1, 1),
-                      textColor: Colors.white,
-                      radius: BorderRadius.circular(20),
-                    ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  notice.summary ?? '',
+                  maxLines: 5,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: theme.fontGyColor2,
+                    height: 1.4,
                   ),
-                  GestureDetector(
-                    onTap:
-                        () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => Notice()),
-                        ),
-                    child: Text(
-                      '查看更多',
-                      style: TextStyle(color: TDTheme.of(context).fontGyColor4),
-                    ),
+                ),
+                const SizedBox(height: 24),
+                TDButton(
+                  text: '我知道了',
+                  isBlock: true,
+                  size: TDButtonSize.large,
+                  type: TDButtonType.fill,
+                  shape: TDButtonShape.rectangle,
+                  theme: TDButtonTheme.defaultTheme,
+                  onTap: () => Navigator.of(dialogContext).pop(),
+                  style: TDButtonStyle(
+                    backgroundColor: const Color.fromRGBO(255, 95, 1, 1),
+                    textColor: Colors.white,
+                    radius: BorderRadius.circular(20),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );

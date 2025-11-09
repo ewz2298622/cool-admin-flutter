@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/style/color_styles.dart';
 import 'package:flutter_app/utils/ads.dart';
@@ -38,25 +40,56 @@ import 'components/loading.dart';
 import 'db/manager/DBManager.dart';
 import 'entity/app_ads_entity.dart';
 
-void main() {
-  runApp(
-    MultiProvider(
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const AppBootstrap());
+}
+
+class AppBootstrap extends StatelessWidget {
+  const AppBootstrap({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeChangeEvent()),
         ChangeNotifierProvider(create: (_) => UserState()),
         ChangeNotifierProvider(create: (_) => AppState()),
       ],
-      child: MyApp(),
-    ),
-  );
+      child: const MyApp(),
+    );
+  }
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  static bool _sdkInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!_sdkInitialized) {
+      _sdkInitialized = true;
+      scheduleMicrotask(_initSDK);
+    }
+  }
+
+  Future<void> _initSDK() async {
+    try {
+      await Ads.initRegister();
+    } catch (e) {
+      debugPrint('初始化失败: $e');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    initSDK();
     return Consumer<ThemeChangeEvent>(
       builder: (context, themeManager, child) {
         return RefreshConfiguration(
@@ -123,15 +156,6 @@ class MyApp extends StatelessWidget {
       },
     );
   }
-
-  /// 初始化SDK
-  Future<void> initSDK() async {
-    try {
-      await Ads.initRegister();
-    } catch (e) {
-      debugPrint('初始化失败: $e');
-    }
-  }
 }
 
 // 创建全局的 RouteObserver
@@ -146,13 +170,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   Map<String, dynamic>? deviceInfo;
-  final List<Widget> pages = [
-    const Home(),
-    const VideoFilter(),
-    const VideoRanking(),
-    const VideoService(),
-    const My(), // 移除key，避免不必要的重建
-  ];
+  late final List<Widget> _pages;
   int _selectedIndex = 0;
   final GlobalKey<MyState> _myPageKey =
       GlobalKey<MyState>(); // 添加GlobalKey来访问My页面的状态
@@ -189,13 +207,7 @@ class _MainPageState extends State<MainPage> {
       return Scaffold(
         body: IndexedStack(
           index: _selectedIndex,
-          children: [
-            const Home(),
-            const VideoFilter(),
-            const VideoRanking(),
-            const VideoService(),
-            My(key: _myPageKey), // 使用GlobalKey关联My页面
-          ],
+          children: _pages,
         ),
         bottomNavigationBar: BottomNavigationBar(
           items: [
@@ -282,16 +294,13 @@ class _MainPageState extends State<MainPage> {
   Future<String> init() async {
     try {
       // 使用Future.wait并发执行多个异步操作
-      await Future.wait(
-        [
-              DBManager.init(),
-              initPlatformState(),
-              ShareUtil.prepareShareImage(),
-              User.isLogin(),
-              getAd(),
-            ]
-            as Iterable<Future>,
-      );
+      await Future.wait<dynamic>([
+        DBManager.init(),
+        initPlatformState(),
+        ShareUtil.prepareShareImage(),
+        User.isLogin(),
+        getAd(),
+      ]);
 
       //跳转到SplashPage组件
       return "init success";
@@ -321,6 +330,13 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
+    _pages = <Widget>[
+      const Home(),
+      const VideoFilter(),
+      const VideoRanking(),
+      const VideoService(),
+      My(key: _myPageKey),
+    ];
     init();
   }
 }

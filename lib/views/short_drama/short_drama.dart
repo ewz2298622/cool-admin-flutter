@@ -23,12 +23,11 @@ class ShortDrama extends StatefulWidget {
 
 class _ShortDramaState extends State<ShortDrama>
     with SingleTickerProviderStateMixin {
-  var _futureBuilderFuture;
+  late final Future<String> _futureBuilderFuture;
   final PageController _pageController = PageController();
   VideoDetailData? videoData;
   List<VideoLineDataList> videoLineData = [];
   List<PlayLineDataList> playerLineData = [];
-  List<VideoItem> videoList = [];
   List<DictDataDataArea>? area = [];
   List<DictDataDataVideoCategory>? videoCategory = [];
   List<DictDataDataLanguage>? language = [];
@@ -40,7 +39,7 @@ class _ShortDramaState extends State<ShortDrama>
   int _currentIndex = 0;
   bool _isDragging = false;
   bool _showControls = false;
-  final Duration _controlHideDuration = const Duration(seconds: 2);
+  static const Duration _controlHideDuration = Duration(seconds: 2);
   Timer? _controlHideTimer;
 
   Future<void> getVideoById() async {
@@ -66,14 +65,34 @@ class _ShortDramaState extends State<ShortDrama>
   Future<void> getPlayLinePages() async {
     try {
       playerLineData.clear();
-      videoList.clear();
-      playerLineData =
-          (await Api.getPlayLinePages({
-                "video_id": id,
-                "video_line_id": videoLineData[currentLine.value].id,
-                "size": 10000,
-              })).data?.list
-              as List<PlayLineDataList>;
+      if (videoLineData.isEmpty) {
+        _videoList = [];
+        return;
+      }
+
+      final safeIndex = currentLine.value.clamp(0, videoLineData.length - 1);
+      final currentVideoLineId = videoLineData[safeIndex].id;
+      if (currentVideoLineId == null) {
+        _videoList = [];
+        return;
+      }
+
+      final response = await Api.getPlayLinePages({
+        "video_id": id,
+        "video_line_id": currentVideoLineId,
+        "size": 10000,
+      });
+
+      final rawList = response.data?.list;
+      if (rawList == null) {
+        playerLineData = [];
+      } else if (rawList is List<PlayLineDataList>) {
+        playerLineData = rawList;
+      } else if (rawList is List) {
+        playerLineData = rawList.whereType<PlayLineDataList>().toList();
+      } else {
+        playerLineData = [];
+      }
       _videoList = List.generate(
         playerLineData.length,
         (index) => VideoItem(
@@ -92,12 +111,14 @@ class _ShortDramaState extends State<ShortDrama>
 
   Future<String> init() async {
     try {
-      await getVideoById();
-      await getVideoLinePages();
+      await Future.wait([
+        getVideoById(),
+        getVideoLinePages(),
+      ]);
       await getPlayLinePages();
       return "init success";
     } catch (e) {
-      // 捕获并处理异常
+      debugPrint('ShortDrama init failed: $e');
       return "init success";
     }
   }
@@ -141,42 +162,46 @@ class _ShortDramaState extends State<ShortDrama>
           return PageLoading();
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}'); // 显示错误信息
-        } else if (snapshot.hasData) {
-          return PageView.builder(
-            controller: _pageController,
-            itemCount: playerLineData.length,
-            scrollDirection: Axis.vertical,
-            physics: const BouncingScrollPhysics(),
-            onPageChanged: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            itemBuilder: (context, index) {
-              final videoItem = _videoList[index];
-              return ShortVideoItemWidget(
-                videoItem: videoItem,
-                isActive: index == _currentIndex,
-                onLongPressStart: () {
-                  setState(() {
-                    _showControls = true;
-                    _isDragging = true;
-                  });
-                },
-                onLongPressEnd: () {
-                  setState(() {
-                    _isDragging = false;
-                  });
-                  _hideControlsAfterDelay();
-                },
-                showControls: _showControls,
-                videoData: videoData!,
-              );
-            },
-          );
-        } else {
+        } else if (!snapshot.hasData || _videoList.isEmpty) {
           return Text('No data available');
         }
+
+        return PageView.builder(
+          key: const PageStorageKey<String>('short_drama_page_view'),
+          controller: _pageController,
+          itemCount: _videoList.length,
+          scrollDirection: Axis.vertical,
+          physics: const BouncingScrollPhysics(),
+          onPageChanged: (index) {
+            if (_currentIndex == index) return;
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          itemBuilder: (context, index) {
+            final videoItem = _videoList[index];
+            return ShortVideoItemWidget(
+              videoItem: videoItem,
+              isActive: index == _currentIndex,
+              onLongPressStart: () {
+                if (_isDragging && _showControls) return;
+                setState(() {
+                  _showControls = true;
+                  _isDragging = true;
+                });
+              },
+              onLongPressEnd: () {
+                if (!_isDragging) return;
+                setState(() {
+                  _isDragging = false;
+                });
+                _hideControlsAfterDelay();
+              },
+              showControls: _showControls,
+              videoData: videoData!,
+            );
+          },
+        );
       },
     );
   }
@@ -243,10 +268,15 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
   }
 
   Future<void> _initializePlayer() async {
+    if (widget.videoItem.videoUrl.isEmpty) {
+      return;
+    }
+
     _videoPlayerController = VideoPlayerController.network(
       widget.videoItem.videoUrl,
     );
 
+    if (!mounted) return;
     await _videoPlayerController?.initialize();
 
     _videoPlayerController?.addListener(_videoListener);
@@ -255,7 +285,9 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
       _startPlaying();
     }
 
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _videoListener() {
@@ -303,7 +335,10 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
+    final mediaQuery = MediaQuery.of(context);
+    final screenSize = mediaQuery.size;
+    final screenHeight = screenSize.height;
+    final contentWidth = screenSize.width - 32;
 
     return GestureDetector(
       onLongPressStart: (_) {
@@ -357,7 +392,7 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 SizedBox(
-                  width: MediaQuery.of(context).size.width - 32,
+                  width: contentWidth,
                   child: Text(
                     widget.videoItem.title,
                     style: const TextStyle(
@@ -371,7 +406,7 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
                 ),
                 // 标题 - 处理溢出
                 SizedBox(
-                  width: MediaQuery.of(context).size.width - 32,
+                  width: contentWidth,
                   child: Text(
                     VideoUtil.extractPlainText(
                       widget.videoData.introduce ?? "",
