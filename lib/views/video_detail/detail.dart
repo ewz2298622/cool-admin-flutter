@@ -632,46 +632,49 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
               ),
             ],
           ),
-          Row(
-            children:
-                [
-                      Text(videoInfoData.video?.year.toString() ?? "暂无数据"),
-                      Text(
-                        Dict.getDictName(
-                          videoInfoData.video?.region ?? 0,
-                          area ?? [],
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children:
+                  [
+                        Text(videoInfoData.video?.year.toString() ?? "暂无数据"),
+                        Text(
+                          Dict.getDictName(
+                            videoInfoData.video?.region ?? 0,
+                            area ?? [],
+                          ),
+                          style: TextStyle(color: Colors.grey),
                         ),
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                      Text(
-                        Dict.getDictName(
-                          videoInfoData.video?.categoryId ?? 0,
-                          videoCategory ?? [],
+                        Text(
+                          Dict.getDictName(
+                            videoInfoData.video?.categoryId ?? 0,
+                            videoCategory ?? [],
+                          ),
+                          style: TextStyle(color: Colors.grey),
                         ),
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                      Text(
-                        Dict.getDictName(
-                          videoInfoData.video?.language ?? 0,
-                          language ?? [],
+                        Text(
+                          Dict.getDictName(
+                            videoInfoData.video?.language ?? 0,
+                            language ?? [],
+                          ),
+                          style: TextStyle(color: Colors.grey),
                         ),
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                      Text(
-                        (videoInfoData.video?.videoTag ?? "暂无标签").replaceAll(
-                          ",",
-                          "/",
+                        Text(
+                          (videoInfoData.video?.videoTag ?? "暂无标签").replaceAll(
+                            ",",
+                            "/",
+                          ),
+                          style: TextStyle(color: Colors.grey),
                         ),
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    ]
-                    .map(
-                      (e) => Padding(
-                        padding: EdgeInsets.only(right: Layout.paddingR),
-                        child: e,
-                      ),
-                    )
-                    .toList(),
+                      ]
+                      .map(
+                        (e) => Padding(
+                          padding: EdgeInsets.only(right: Layout.paddingR),
+                          child: e,
+                        ),
+                      )
+                      .toList(),
+            ),
           ),
           _buildSponsorBar(),
           _buildEpisodeList(),
@@ -694,30 +697,38 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                 '选集',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      showModalBottomSheetList();
-                    },
-                    child: Row(
-                      children: [
-                        Text(
-                          videoInfoData.video?.remarks ?? "暂无描述",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Color.fromRGBO(162, 162, 162, 1),
+              Flexible(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        showModalBottomSheetList();
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              videoInfoData.video?.remarks ?? "暂无描述",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Color.fromRGBO(162, 162, 162, 1),
+                              ),
+                            ),
                           ),
-                        ),
-                        Icon(
-                          Icons.arrow_forward_ios,
-                          size: 14,
-                          color: Color.fromRGBO(203, 203, 203, 1),
-                        ),
-                      ],
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            size: 14,
+                            color: Color.fromRGBO(203, 203, 203, 1),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),

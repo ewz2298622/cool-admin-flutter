@@ -73,6 +73,21 @@ class Home extends StatefulWidget {
 
 class _HomePageState extends State<Home>
     with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+  // 提取常量
+  static const double _swiperHeight = 158.0;
+  static const double _topBarHeight = 120.0;
+  static const double _tabBarHeight = 35.0;
+  static const double _searchBarHeight = 36.0;
+  static const double _borderRadius = 5.0;
+  static const double _searchBarBorderRadius = 20.0;
+  static const Duration _tabAnimationDuration = Duration(milliseconds: 300);
+  static const Duration _updateCheckDelay = Duration(seconds: 3);
+  static const Color _selectedTabColor = Color.fromRGBO(252, 119, 66, 1);
+  static const Color _searchBarBgColor = Color.fromRGBO(245, 244, 247, 1);
+  static const Color _searchIconColor = Color.fromRGBO(153, 153, 153, 1);
+  static const Color _searchTextColor = Color(0xFF979797);
+  static const Color _buttonColor = Color.fromRGBO(255, 95, 1, 1);
+
   // 定义swiperData
   SwiperData? swiperData;
   String inputText = '';
@@ -94,7 +109,6 @@ class _HomePageState extends State<Home>
   late TabController _tabController;
 
   // 添加滚动监听相关变量
-  final ScrollController _scrollController = ScrollController();
   double _appBarOpacity = 0.0; // AppBar透明度
 
   final RefreshController _refreshController = RefreshController(
@@ -112,10 +126,11 @@ class _HomePageState extends State<Home>
   void initState() {
     super.initState();
     _initializeData();
-    _scrollController.addListener(_onScroll);
-    //等待三秒后执行    AppUpdater.checkUpdate();
-    Future.delayed(const Duration(seconds: 3), () {
-      AppUpdater.checkUpdate();
+    // 延迟检查更新，避免影响初始化性能
+    Future.delayed(_updateCheckDelay, () {
+      if (mounted) {
+        AppUpdater.checkUpdate();
+      }
     });
   }
 
@@ -123,19 +138,42 @@ class _HomePageState extends State<Home>
   void dispose() {
     disposed = true;
     _tabController.dispose();
-    _scrollController.dispose();
+    pageController.dispose();
     _refreshController.dispose();
+    // 释放所有 RefreshController
+    for (final controller in tabRefreshController) {
+      controller.dispose();
+    }
+    tabRefreshController.clear();
     _tabContentCache.clear();
     _swiperItemCache.clear();
     super.dispose();
   }
 
   Future<void> _initializeData() async {
+    if (!mounted) return;
+    
     try {
+      // 先获取分类数据，因为后续操作依赖它
       await getDictInfoPages();
-      await getSwiperListByCategoryIds();
-      await getAlbumListByCategoryIds();
-      await noticeInfo();
+      
+      if (!mounted || videoCategoryIds.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _showLoading = false;
+          });
+        }
+        return;
+      }
+
+      // 并行加载其他数据，提高初始化速度
+      await Future.wait([
+        getSwiperListByCategoryIds(),
+        getAlbumListByCategoryIds(),
+        noticeInfo(),
+      ]);
+
+      if (!mounted) return;
 
       _tabController = TabController(length: tabs.length, vsync: this);
       _tabController.addListener(_handleTabSelection);
@@ -151,14 +189,20 @@ class _HomePageState extends State<Home>
           _showLoading = false;
         });
 
+        // 延迟显示通知，避免阻塞初始化
         if (noticeInfoData.isNotEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {});
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              message();
+            }
+          });
         }
       }
     } catch (e) {
       debugPrint('Initialization error: $e');
       if (mounted) {
         setState(() {
+          _isInitialized = false;
           _showLoading = false;
         });
       }
@@ -284,6 +328,13 @@ class _HomePageState extends State<Home>
   }
 
   Future<void> onRefresh(int index) async {
+    if (!mounted || index >= videoCategoryIds.length) {
+      if (index < tabRefreshController.length) {
+        tabRefreshController[index].refreshFailed();
+      }
+      return;
+    }
+
     try {
       final categoryId = videoCategoryIds[index];
 
@@ -295,16 +346,16 @@ class _HomePageState extends State<Home>
         _swiperItemCache.remove(key);
       }
 
-      // 重新获取数据
+      // 并行重新获取数据
       final results = await Future.wait([
         Api.getSwiperListByCategoryIds([categoryId]),
         Api.getAlbumListByCategoryIds([categoryId]),
       ]);
 
+      if (!mounted) return;
+
       final swiperResult = results[0] as Map<int, List<SwiperDataList>>;
       final albumResult = results[1] as Map<int, List<AlbumDataList>>;
-
-      if (disposed) return;
 
       setState(() {
         swiperMap.remove(categoryId);
@@ -313,139 +364,152 @@ class _HomePageState extends State<Home>
         albumMap.addAll(albumResult);
       });
 
-      tabRefreshController[index].refreshCompleted();
+      if (mounted && index < tabRefreshController.length) {
+        tabRefreshController[index].refreshCompleted();
+      }
     } catch (e) {
-      tabRefreshController[index].refreshFailed();
+      debugPrint('onRefresh failed for index $index: $e');
+      if (mounted && index < tabRefreshController.length) {
+        tabRefreshController[index].refreshFailed();
+      }
     }
   }
 
   void _handleTabSelection() {
-    if (_tabController.indexIsChanging && mounted) {
-      pageController.animateToPage(
-        _tabController.index,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.ease,
-      );
-    }
+    if (!mounted || !_tabController.indexIsChanging) return;
+    
+    pageController.animateToPage(
+      _tabController.index,
+      duration: _tabAnimationDuration,
+      curve: Curves.ease,
+    );
   }
 
   Widget _buildDotsSwiper(int id) {
     final swiperList = swiperMap[id];
     if (swiperList == null || swiperList.isEmpty) {
       return SizedBox(
-        height: 158,
+        height: _swiperHeight,
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
+            borderRadius: BorderRadius.circular(_borderRadius),
             color: Colors.grey[200],
           ),
         ),
       );
     }
 
-    return Swiper(
-      itemHeight: 158,
-      autoplay: true,
-      itemCount: swiperList.length,
-      itemBuilder: (BuildContext context, int index) {
-        final cacheKey = '$id-${swiperList[index].id}';
-        if (!_swiperItemCache.containsKey(cacheKey)) {
-          _swiperItemCache[cacheKey] = _buildSwiperItem(swiperList[index]);
-        }
-        return _swiperItemCache[cacheKey]!;
-      },
+    return RepaintBoundary(
+      child: Swiper(
+        itemHeight: _swiperHeight,
+        autoplay: true,
+        itemCount: swiperList.length,
+        itemBuilder: (BuildContext context, int index) {
+          final cacheKey = '$id-${swiperList[index].id}';
+          if (!_swiperItemCache.containsKey(cacheKey)) {
+            _swiperItemCache[cacheKey] = _buildSwiperItem(swiperList[index]);
+          }
+          return _swiperItemCache[cacheKey]!;
+        },
+      ),
     );
   }
 
   Widget _buildSwiperItem(SwiperDataList item) {
-    return Card(
-      child: Container(
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            TDImage(
-              height: 158,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              imgUrl: item.image ?? '',
-              errorWidget: const TDImage(
+    return RepaintBoundary(
+      child: Card(
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(_borderRadius),
+          ),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              TDImage(
+                height: _swiperHeight,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                assetUrl: 'assets/images/loading.gif',
-              ),
-            ),
-            Container(
-              alignment: Alignment.bottomLeft,
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
-                gradient: const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black54],
+                imgUrl: item.image ?? '',
+                errorWidget: const TDImage(
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  assetUrl: 'assets/images/loading.gif',
                 ),
               ),
-              child: Text(
-                item.title ?? "",
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+              Container(
+                alignment: Alignment.bottomLeft,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(_borderRadius),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black54],
+                  ),
+                ),
+                child: Text(
+                  item.title ?? "",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildDefaultSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 5,
-            child: GestureDetector(
-              onTap: () => Get.toNamed("/search"),
-              child: Container(
-                height: 36,
-                padding: const EdgeInsets.only(left: 10),
-                decoration: BoxDecoration(
-                  color: const Color.fromRGBO(245, 244, 247, 1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.search, color: Color.fromRGBO(153, 153, 153, 1)),
-                    SizedBox(width: 8),
-                    Text(
-                      '请输入关键字',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14.0,
-                        color: Color(0xFF979797),
+    return RepaintBoundary(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 5,
+              child: GestureDetector(
+                onTap: () => Get.toNamed("/search"),
+                child: Container(
+                  height: _searchBarHeight,
+                  padding: const EdgeInsets.only(left: 10),
+                  decoration: BoxDecoration(
+                    color: _searchBarBgColor,
+                    borderRadius: BorderRadius.circular(_searchBarBorderRadius),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.search, color: _searchIconColor),
+                      const SizedBox(width: 8),
+                      const Text(
+                        '请输入关键字',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14.0,
+                          color: _searchTextColor,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 10),
-          GestureDetector(
-            onTap: () => Get.toNamed("/week"),
-            child: SvgPicture.asset(
-              'assets/images/zhou.svg',
-              width: 30,
-              height: 30,
+            const SizedBox(width: 10),
+            GestureDetector(
+              onTap: () => Get.toNamed("/week"),
+              child: SvgPicture.asset(
+                'assets/images/zhou.svg',
+                width: 30,
+                height: 30,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -462,70 +526,72 @@ class _HomePageState extends State<Home>
     return Column(
       children: [
         // 顶部区域
-        Container(
-          width: double.infinity,
-          height: 120,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color.fromRGBO(245, 224, 207, 1.0),
-                Color.fromRGBO(245, 224, 207, 0.5),
-                Color.fromRGBO(245, 224, 207, 0),
-              ],
+        RepaintBoundary(
+          child: Container(
+            width: double.infinity,
+            height: _topBarHeight,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color.fromRGBO(245, 224, 207, 1.0),
+                  Color.fromRGBO(245, 224, 207, 0.5),
+                  Color.fromRGBO(245, 224, 207, 0),
+                ],
+              ),
             ),
-          ),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(_appBarOpacity),
-            ),
-            child: Column(
-              children: [
-                const SizedBox(height: 40),
-                _buildDefaultSearchBar(),
-                SizedBox(
-                  height: 35,
-                  child: TabBar(
-                    padding: const EdgeInsets.only(top: 2),
-                    controller: _tabController,
-                    isScrollable: true,
-                    tabAlignment: TabAlignment.center,
-                    dividerHeight: 0,
-                    indicator: GradientTabIndicator(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color.fromRGBO(250, 165, 49, 1),
-                          Color.fromRGBO(254, 210, 71, 0),
-                        ],
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(_appBarOpacity),
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 40),
+                  _buildDefaultSearchBar(),
+                  SizedBox(
+                    height: _tabBarHeight,
+                    child: TabBar(
+                      padding: const EdgeInsets.only(top: 2),
+                      controller: _tabController,
+                      isScrollable: true,
+                      tabAlignment: TabAlignment.center,
+                      dividerHeight: 0,
+                      indicator: GradientTabIndicator(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color.fromRGBO(250, 165, 49, 1),
+                            Color.fromRGBO(254, 210, 71, 0),
+                          ],
+                        ),
+                        height: 3.0,
+                        radius: 4.0,
                       ),
-                      height: 3.0,
-                      radius: 4.0,
+                      labelColor: _selectedTabColor,
+                      unselectedLabelStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      unselectedLabelColor:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black87,
+                      labelStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                      tabs: tabs,
+                      onTap: (index) {
+                        pageController.animateToPage(
+                          index,
+                          duration: _tabAnimationDuration,
+                          curve: Curves.ease,
+                        );
+                      },
                     ),
-                    labelColor: const Color.fromRGBO(252, 119, 66, 1),
-                    unselectedLabelStyle: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    unselectedLabelColor:
-                        Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black87,
-                    labelStyle: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                    ),
-                    tabs: tabs,
-                    onTap: (index) {
-                      pageController.animateToPage(
-                        index,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.ease,
-                      );
-                    },
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -568,39 +634,51 @@ class _HomePageState extends State<Home>
       tabRefreshController.add(RefreshController());
     }
 
+    final albumList = albumMap[categoryId] ?? [];
+
     return SmartRefresher(
       controller: tabRefreshController[index],
       enablePullDown: true,
       enablePullUp: false,
       onRefresh: () => onRefresh(index),
-      child: ListView(
+      child: ListView.builder(
         padding: const EdgeInsets.only(
           top: 0,
           left: Layout.paddingL,
           right: Layout.paddingL,
         ),
-        children: [
-          SizedBox(height: 158, child: _buildDotsSwiper(categoryId)),
-          Padding(
-            padding: const EdgeInsets.only(top: Layout.paddingL),
+        itemCount: albumList.length + 1, // +1 for swiper
+        itemBuilder: (context, itemIndex) {
+          if (itemIndex == 0) {
+            // 第一个是轮播图
+            return SizedBox(
+              height: _swiperHeight,
+              child: _buildDotsSwiper(categoryId),
+            );
+          }
+          
+          // 专辑内容
+          final albumIndex = itemIndex - 1;
+          final album = albumList[albumIndex];
+          
+          return RepaintBoundary(
+            key: ValueKey('album_${album.id}_$itemIndex'),
             child: Column(
-              children: _buildAlbumContentList(albumMap[categoryId] ?? []),
+              children: [
+                if (albumIndex > 0) 
+                  const SizedBox(height: Layout.paddingL)
+                else
+                  const SizedBox(height: Layout.paddingL),
+                _buildAlbumHeader(album),
+                _buildAlbumItemWidgetType(album, albumIndex),
+                const SizedBox(height: 16),
+              ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  List<Widget> _buildAlbumContentList(List<AlbumDataList> list) {
-    return List.generate(
-      list.length,
-      (index) => Column(
-        children: [
-          _buildAlbumHeader(list[index]),
-          _buildAlbumItemWidgetType(list[index], index),
-          const SizedBox(height: 16),
-        ],
+          );
+        },
+        addAutomaticKeepAlives: true,
+        addRepaintBoundaries: true,
+        addSemanticIndexes: false,
       ),
     );
   }
@@ -633,18 +711,6 @@ class _HomePageState extends State<Home>
     );
   }
 
-  void _onScroll() {
-    if (!_scrollController.hasClients) return;
-
-    final scrollOffset = _scrollController.offset;
-    final newOpacity = (scrollOffset / 100).clamp(0.0, 0.8).toDouble();
-
-    if (_appBarOpacity != newOpacity && mounted) {
-      setState(() {
-        _appBarOpacity = newOpacity;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

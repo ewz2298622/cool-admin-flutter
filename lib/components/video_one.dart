@@ -7,6 +7,31 @@ import '../entity/video_page_entity.dart';
 import '../utils/video.dart';
 
 class VideoItem extends StatelessWidget {
+  static const double _posterWidth = 130;
+  static const double _posterHeight = 180;
+  static const BorderRadius _posterBorderRadius = BorderRadius.all(Radius.circular(5));
+  static const BorderRadius _tagBorderRadius = BorderRadius.all(Radius.circular(15));
+  static const Color _tagTextColor = Color.fromRGBO(195, 161, 101, 1);
+  static const Color _tagBackgroundColor = Color.fromRGBO(195, 161, 101, 0.1);
+  static const double _hotIconSize = 20;
+  static const LinearGradient _hdTagGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      Color.fromRGBO(59, 101, 244, 1),
+      Color.fromRGBO(64, 177, 254, 1),
+    ],
+  );
+  static const LinearGradient _overlayGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      Colors.transparent,
+      Color.fromRGBO(0, 0, 0, 0.7),
+    ],
+  );
+  static const EdgeInsets _hdTagPadding = EdgeInsets.symmetric(horizontal: 4, vertical: 2);
+
   final VideoPageDataList videoData;
   const VideoItem({super.key, required this.videoData});
 
@@ -20,26 +45,34 @@ class VideoItem extends StatelessWidget {
         child: Row(
           spacing: 5,
           children: [
-            Stack(
-              children: [
-                TDImage(
-                  fit: BoxFit.cover,
-                  width: 130,
-                  height: 180,
-                  imgUrl: videoData.surfacePlot ?? "",
-                  errorWidget: const TDImage(
-                    width: 130,
-                    height: 180,
-                    assetUrl: 'assets/images/loading.gif',
-                  ),
+            ClipRRect(
+              borderRadius: _posterBorderRadius,
+              child: SizedBox(
+                width: _posterWidth,
+                height: _posterHeight,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    TDImage(
+                      fit: BoxFit.cover,
+                      width: _posterWidth,
+                      height: _posterHeight,
+                      imgUrl: videoData.surfacePlot ?? "",
+                      errorWidget: const TDImage(
+                        width: _posterWidth,
+                        height: _posterHeight,
+                        assetUrl: 'assets/images/loading.gif',
+                      ),
+                    ),
+                    _buildVideoItemOverlay(videoData),
+                  ],
                 ),
-                _buildVideoItemOverlay(videoData),
-              ],
+              ),
             ),
             Expanded(
               // 使用 Expanded 替代 SizedBox
               child: SizedBox(
-                height: 180,
+                height: _posterHeight,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -63,7 +96,7 @@ class VideoItem extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               Text(
-                                formatString("${videoData.up ?? 0}"),
+                                _formatCount((videoData.up ?? 0).toString()),
                                 //最长四个 字
                                 maxLines: 1,
                                 style: const TextStyle(
@@ -73,8 +106,8 @@ class VideoItem extends StatelessWidget {
                               ),
                               SvgPicture.asset(
                                 'assets/images/hot_surface.svg',
-                                width: 20,
-                                height: 20,
+                                width: _hotIconSize,
+                                height: _hotIconSize,
                               ),
                             ],
                           ),
@@ -125,25 +158,25 @@ class VideoItem extends StatelessWidget {
                         TDTag(
                           '${videoData.popularity ?? 0}万热度',
                           isLight: true,
-                          backgroundColor: Color.fromRGBO(195, 161, 101, 0.1),
-                          textColor: Color.fromRGBO(195, 161, 101, 1),
+                          backgroundColor: _tagBackgroundColor,
+                          textColor: _tagTextColor,
                           shape: TDTagShape.round,
                           isOutline: true,
                           style: TDTagStyle(
                             borderColor: Colors.transparent,
-                            borderRadius: BorderRadius.circular(15),
+                            borderRadius: _tagBorderRadius,
                           ),
                         ),
                         TDTag(
                           '${videoData.popularitySum ?? 0}万点赞',
                           isLight: true,
-                          backgroundColor: Color.fromRGBO(195, 161, 101, 0.1),
-                          textColor: Color.fromRGBO(195, 161, 101, 1),
+                          backgroundColor: _tagBackgroundColor,
+                          textColor: _tagTextColor,
                           shape: TDTagShape.round,
                           isOutline: true,
                           style: TDTagStyle(
                             borderColor: Colors.transparent,
-                            borderRadius: BorderRadius.circular(15),
+                            borderRadius: _tagBorderRadius,
                           ),
                         ),
                       ],
@@ -157,33 +190,21 @@ class VideoItem extends StatelessWidget {
       ),
     );
   }
-
   //实现一个字符串格式化函数 最长截取四个字
-  String formatString(String str) {
+  String _formatCount(String str) {
     return str.length > 4 ? str.substring(0, 4) : str;
   }
 
   Widget _buildVideoItemOverlay(VideoPageDataList item) {
-    return Container(
-      width: 130,
-      height: 175,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
+    return IgnorePointer(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildVideoItemHDTag(item),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent, // 顶部透明
-                  Colors.black.withOpacity(0.7), // 底部黑色
-                ],
-              ),
-              borderRadius: BorderRadius.circular(5),
+          Container(
+            decoration: const BoxDecoration(
+              gradient: _overlayGradient,
             ),
             child: _buildVideoItemNote(item),
           ),
@@ -193,51 +214,46 @@ class VideoItem extends StatelessWidget {
   }
 
   Widget _buildVideoItemNote(VideoPageDataList item) {
-    if (item.remarks == null) {
-      return Container();
+    final remarks = item.remarks?.trim();
+    if (remarks == null || remarks.isEmpty) {
+      return const SizedBox.shrink();
     }
-    return SizedBox(
-      width: double.infinity,
-      child: Padding(
-        padding: const EdgeInsets.only(right: 10, bottom: 5),
-        child: Text(
-          item.remarks ?? '',
-          textAlign: TextAlign.right,
-          //缩进
-          maxLines: 1, // 限制最大显示一行
-          overflow: TextOverflow.ellipsis, // 溢出时显示省略号
-          style: TextStyle(
-            fontSize: 10,
-            color: Colors.white,
-            fontWeight: FontWeight.w400,
-            //文字缩进
-          ),
+    return Padding(
+      padding: const EdgeInsets.only(right: 10, bottom: 5),
+      child: Text(
+        remarks,
+        textAlign: TextAlign.right,
+        //缩进
+        maxLines: 1, // 限制最大显示一行
+        overflow: TextOverflow.ellipsis, // 溢出时显示省略号
+        style: const TextStyle(
+          fontSize: 10,
+          color: Colors.white,
+          fontWeight: FontWeight.w400,
+          //文字缩进
         ),
       ),
     );
   }
 
   Widget _buildVideoItemHDTag(VideoPageDataList item) {
+    final tag = VideoUtil.formatTag(item.pubdate ?? "");
+    if (tag.isEmpty) {
+      return const SizedBox.shrink();
+    }
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Container(
           margin: const EdgeInsets.only(right: 10, top: 5),
-          padding: const EdgeInsets.only(top: 2, bottom: 2, left: 4, right: 4),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color.fromRGBO(59, 101, 244, 1),
-                Color.fromRGBO(64, 177, 254, 1),
-              ],
-            ),
+          padding: _hdTagPadding,
+          decoration: const BoxDecoration(
+            borderRadius: _posterBorderRadius,
+            gradient: _hdTagGradient,
           ),
           child: Text(
-            VideoUtil.formatTag(item.pubdate ?? ""),
-            style: TextStyle(
+            tag,
+            style: const TextStyle(
               fontSize: 11,
               color: Colors.white,
               fontWeight: FontWeight.w400,

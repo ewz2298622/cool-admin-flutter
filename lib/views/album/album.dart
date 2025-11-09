@@ -18,14 +18,27 @@ class VideoAlbum extends StatefulWidget {
   VideoAlbumState createState() => VideoAlbumState();
 }
 
-class VideoAlbumState extends State<VideoAlbum>
-    with SingleTickerProviderStateMixin {
-  var _futureBuilderFuture;
+class VideoAlbumState extends State<VideoAlbum> {
+  late Future<String> _futureBuilderFuture;
   VideoAlbumData? albumInfoData;
   List<AlbumVideoListDataList>? videoPageData;
+  final RefreshController _refreshController = RefreshController();
+
+  @override
+  void initState() {
+    super.initState();
+    _futureBuilderFuture = init();
+  }
+
+  @override
+  void dispose() {
+    _refreshController.dispose();
+    super.dispose();
+  }
 
   Future<void> getAlbumVideoList() async {
     try {
+      if (!mounted) return;
       videoPageData =
           (await Api.getAlbumVideoList({"album_id": widget.id})).data?.list ??
           [] as List<AlbumVideoListDataList>;
@@ -36,6 +49,7 @@ class VideoAlbumState extends State<VideoAlbum>
 
   Future<void> getAlbumById() async {
     try {
+      if (!mounted) return;
       albumInfoData =
           (await Api.getAlbumById({"id": widget.id})).data as VideoAlbumData;
       debugPrint(
@@ -48,35 +62,35 @@ class VideoAlbumState extends State<VideoAlbum>
 
   Future<String> init() async {
     try {
-      await getAlbumById();
-      await getAlbumVideoList();
-      setState(() {});
+      if (!mounted) return "init failed";
+      
+      // 并发执行所有异步操作，提升加载速度
+      await Future.wait([
+        getAlbumById(),
+        getAlbumVideoList(),
+      ]);
+      
+      if (mounted) {
+        setState(() {});
+      }
       return "init success";
     } catch (e) {
-      print('Initialization failed: $e');
+      debugPrint('Initialization failed: $e');
       return "init success";
     }
   }
-
-  @override
-  void initState() {
-    _futureBuilderFuture = init();
-    super.initState();
-  }
-
-  // 添加刷新方法
 
   Widget _buildContent() {
     return FutureBuilder<String>(
       future: _futureBuilderFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return PageLoading();
+          return const PageLoading();
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else if (snapshot.hasData) {
           return SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
+            physics: const BouncingScrollPhysics(),
             child: Column(
               children: [
                 Stack(
@@ -91,7 +105,6 @@ class VideoAlbumState extends State<VideoAlbum>
                         assetUrl: 'assets/images/loading.gif',
                       ),
                     ),
-
                     Container(
                       height: 300,
                       width: double.infinity,
@@ -141,13 +154,11 @@ class VideoAlbumState extends State<VideoAlbum>
             ),
           );
         } else {
-          return Text('No data available');
+          return const Text('No data available');
         }
       },
     );
   }
-
-  final RefreshController _refreshController = RefreshController();
 
   Widget _buildList() {
     return Card(
@@ -166,16 +177,21 @@ class VideoAlbumState extends State<VideoAlbum>
         child: SmartRefresher(
           onRefresh: () async {
             await init();
-            _refreshController.refreshCompleted();
+            if (mounted) {
+              _refreshController.refreshCompleted();
+            }
           },
           onLoading: () async {
-            _refreshController.loadComplete();
+            if (mounted) {
+              _refreshController.loadComplete();
+            }
           },
           enablePullDown: true,
           enablePullUp: true,
           controller: _refreshController,
           child: ListView(
             padding: const EdgeInsets.only(top: 0),
+            cacheExtent: 200,
             children: [VideoThree(videoPageData: videoPageData)],
           ),
         ),
@@ -190,7 +206,7 @@ class VideoAlbumState extends State<VideoAlbum>
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, size: 20, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios, size: 20, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },
