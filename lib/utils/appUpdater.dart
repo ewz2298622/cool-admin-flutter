@@ -150,7 +150,7 @@ class AppUpdater {
                     height: 1.4,
                   ),
                 ),
-                const SizedBox(height: 10)
+                const SizedBox(height: 10),
                 const Text(
                   '请点击确认开始下载更新',
                   style: TextStyle(fontSize: 14, height: 1.4),

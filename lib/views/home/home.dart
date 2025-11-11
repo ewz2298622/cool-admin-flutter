@@ -630,7 +630,15 @@ class _HomePageState extends State<Home>
       tabRefreshController.add(RefreshController());
     }
 
-    final albumList = albumMap[categoryId] ?? [];
+    final albumList = (albumMap[categoryId] ?? [])
+        .where((album) {
+          final data = album.list;
+          if (data == null) return false;
+          if (data is List) return data.isNotEmpty;
+          if (data is Iterable) return data.isNotEmpty;
+          return false;
+        })
+        .toList();
 
     return SmartRefresher(
       controller: tabRefreshController[index],
@@ -656,6 +664,14 @@ class _HomePageState extends State<Home>
           // 专辑内容
           final albumIndex = itemIndex - 1;
           final album = albumList[albumIndex];
+          final albumVideos = (album.list is List)
+              ? List<dynamic>.from(album.list as List)
+              : (album.list is Iterable)
+                  ? List<dynamic>.from(album.list as Iterable)
+                  : <dynamic>[];
+          if (albumVideos.isEmpty) {
+            return const SizedBox.shrink();
+          }
           
           return RepaintBoundary(
             key: ValueKey('album_${album.id}_$itemIndex'),
@@ -666,7 +682,7 @@ class _HomePageState extends State<Home>
                 else
                   const SizedBox(height: Layout.paddingL),
                 _buildAlbumHeader(album),
-                _buildAlbumItemWidgetType(album, albumIndex),
+                _buildAlbumItemWidgetType(albumVideos, albumIndex),
                 const SizedBox(height: 16),
               ],
             ),
@@ -679,16 +695,16 @@ class _HomePageState extends State<Home>
     );
   }
 
-  Widget _buildAlbumItemWidgetType(AlbumDataList item, int index) {
+  Widget _buildAlbumItemWidgetType(List<dynamic> videoList, int index) {
     if (index % 2 == 0) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 10),
-        child: HomeTwoVideo(videoPageData: item.list as List<dynamic>),
+        child: HomeTwoVideo(videoPageData: videoList),
       );
     } else {
       return Padding(
         padding: const EdgeInsets.only(bottom: 10),
-        child: HorizontalVideoList(videoPageData: item.list as List<dynamic>),
+        child: HorizontalVideoList(videoPageData: videoList),
       );
     }
   }

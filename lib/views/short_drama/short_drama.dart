@@ -254,6 +254,7 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
   VideoPlayerController? _videoPlayerController;
   bool _isPlaying = false;
   double _playbackSpeed = 1.0;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -269,8 +270,17 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
 
   Future<void> _initializePlayer() async {
     if (widget.videoItem.videoUrl.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
       return;
     }
+
+    setState(() {
+      _isLoading = true;
+    });
 
     _videoPlayerController = VideoPlayerController.network(
       widget.videoItem.videoUrl,
@@ -280,6 +290,12 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
     await _videoPlayerController?.initialize();
 
     _videoPlayerController?.addListener(_videoListener);
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
 
     if (widget.isActive) {
       _startPlaying();
@@ -303,6 +319,7 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
     _videoPlayerController?.pause();
     _videoPlayerController?.dispose();
     _videoPlayerController = null;
+    _isLoading = true;
   }
 
   void _startPlaying() {
@@ -360,7 +377,7 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
         children: [
           // 视频播放器
           Positioned.fill(
-            child: Image.network(widget.videoItem.coverUrl, fit: BoxFit.cover),
+            child: _buildVideoContent(),
           ),
 
           // 渐变背景
@@ -516,6 +533,46 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
             ),
         ],
       ),
+    );
+  }
+
+  Widget _buildVideoContent() {
+    final controller = _videoPlayerController;
+    if (controller != null && controller.value.isInitialized) {
+      return FittedBox(
+        fit: BoxFit.cover,
+        child: SizedBox(
+          width: controller.value.size.width,
+          height: controller.value.size.height,
+          child: VideoPlayer(controller),
+        ),
+      );
+    }
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.network(
+          widget.videoItem.coverUrl,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(color: Colors.black12);
+          },
+        ),
+        if (_isLoading)
+          Container(
+            color: Colors.black45,
+            child: const Center(
+              child: SizedBox(
+                width: 48,
+                height: 48,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
