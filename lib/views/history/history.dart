@@ -28,6 +28,7 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
   final int pageSize = 10;
   bool hasMore = true;
   bool _isLoading = false;
+  bool _initialFetchCompleted = false;
   final RefreshController _refreshController = RefreshController();
 
   Future<void> getUserInfo() async {
@@ -54,6 +55,9 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
       return;
     }
     _isLoading = true;
+    if (mounted) {
+      setState(() {});
+    }
     try {
       if (user == null) {
         await getUserInfo();
@@ -94,9 +98,6 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
         hasMore = false;
       }
 
-      if (mounted) {
-        setState(() {});
-      }
     } catch (e) {
       if (refresh) {
         viewsData = [];
@@ -105,14 +106,15 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
     } finally {
       _isLoading = false;
+      _initialFetchCompleted = true;
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 
   Future<void> getViews({bool refresh = false}) async {
     await _fetchViews(refresh: refresh);
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   Future<String> init() async {
@@ -153,7 +155,14 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
     _refreshData();
   }
 
-  Future<void> loadMore() async {
+  Future<void> _onRefresh() async {
+    await getViews(refresh: true);
+    _refreshController
+      ..refreshCompleted()
+      ..resetNoData();
+  }
+
+  Future<void> _onLoading() async {
     if (!hasMore) {
       _refreshController.loadNoData();
       return;
@@ -177,21 +186,17 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
         } else if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}')); // 显示错误信息
         } else if (snapshot.hasData && snapshot.data == "init success") {
+          if (!_initialFetchCompleted && _isLoading) {
+            return PageLoading();
+          }
           return SmartRefresher(
-            onRefresh: () async {
-              await getViews(refresh: true);
-              _refreshController
-                ..refreshCompleted()
-                ..resetNoData();
-            },
-            onLoading: () async {
-              await loadMore();
-            },
+            controller: _refreshController,
+            onRefresh: _onRefresh,
+            onLoading: _onLoading,
             enablePullDown: true,
             enablePullUp: true,
-            controller: _refreshController,
             child: viewsData.isEmpty
-                ? const NoData()
+                ? (_isLoading ? PageLoading() : const NoData())
                 : ListView.builder(
                     itemCount: viewsData.length,
                     itemBuilder: (context, index) {
