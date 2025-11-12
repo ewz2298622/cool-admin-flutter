@@ -9,6 +9,10 @@ import '../views/connection_error/connectionError.dart';
 String TAG = "ErrorInterceptor";
 
 class ErrorInterceptor extends InterceptorsWrapper {
+  static DateTime? _lastToastTime;
+  static String? _lastToastMessage;
+  static const Duration _toastCooldown = Duration(seconds: 2);
+
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (err.response?.data != null) {
@@ -20,18 +24,14 @@ class ErrorInterceptor extends InterceptorsWrapper {
         MaterialPageRoute(builder: (context) => ConnectionError()),
       );
     } else if (err.type == DioExceptionType.connectionTimeout) {
-      Fluttertoast.showToast(msg: "网络连接超时", toastLength: Toast.LENGTH_SHORT);
+      _showToast("网络连接超时");
     }
-    handler.next(err);
-    return super.onError(err, handler);
+    return handler.next(err);
   }
 
   //根据状态码做不同的处理业务
   void _handleError(DioException err, ErrorInterceptorHandler handler) {
-    Fluttertoast.showToast(
-      msg: err.response?.data['message'],
-      toastLength: Toast.LENGTH_SHORT,
-    );
+    _showToast(_extractMessage(err.response?.data));
     switch (err.response?.statusCode) {
       case 401:
         _handle401(err, handler);
@@ -43,10 +43,39 @@ class ErrorInterceptor extends InterceptorsWrapper {
 
   //401处理逻辑
   void _handle401(DioException err, ErrorInterceptorHandler handler) {
+    _showToast(_extractMessage(err.response?.data));
+    User.deleteUser();
+  }
+
+  void _showToast(String? message) {
+    final text = message?.trim();
+    if (text == null || text.isEmpty) {
+      return;
+    }
+    final now = DateTime.now();
+    if (_lastToastMessage == text &&
+        _lastToastTime != null &&
+        now.difference(_lastToastTime!) < _toastCooldown) {
+      return;
+    }
+    _lastToastMessage = text;
+    _lastToastTime = now;
     Fluttertoast.showToast(
-      msg: err.response?.data['message'],
+      msg: text,
       toastLength: Toast.LENGTH_SHORT,
     );
-    User.deleteUser();
+  }
+
+  String? _extractMessage(dynamic data) {
+    if (data is Map<String, dynamic>) {
+      final message = data['message'];
+      if (message is String) {
+        return message;
+      }
+    }
+    if (data is String) {
+      return data;
+    }
+    return null;
   }
 }

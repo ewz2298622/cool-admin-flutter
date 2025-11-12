@@ -75,13 +75,19 @@ class MyState extends State<My>
   Future<String> init() async {
     try {
       await _loadAd();
-      await getVideoPages();
-      await getUserInfo();
-      await getViews();
       await noticeInfo();
-      await checkMember();
-      didChangeAppLifecycleState();
-      User.isLogin();
+      await getUserInfo();
+      if (user != null) {
+        await getVideoPages();
+        await getViews();
+        await checkMember();
+        didChangeAppLifecycleState();
+        User.isLogin();
+      } else {
+        videoPageData.clear();
+        viewsData.clear();
+        isValidMember = false;
+      }
       debugPrint("init success");
       return "init success";
     } catch (e) {
@@ -141,17 +147,19 @@ class MyState extends State<My>
 
   Future<void> getViews() async {
     try {
-      if (user != null) {
-        viewsData =
-            (await Api.getViews({
-                  "createUserId": user?.userId,
-                  "type": 19,
-                })).data?.list
-                as List<ViewsDataList>;
-        //重构数据将associationId赋值给id
-        for (var element in viewsData) {
-          element.id = element.associationId;
-        }
+      if (user == null) {
+        viewsData = [];
+        return;
+      }
+      viewsData =
+          (await Api.getViews({
+                "createUserId": user?.userId,
+                "type": 19,
+              })).data?.list
+              as List<ViewsDataList>;
+      //重构数据将associationId赋值给id
+      for (var element in viewsData) {
+        element.id = element.associationId;
       }
       setState(() {});
     } catch (e) {

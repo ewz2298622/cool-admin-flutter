@@ -29,6 +29,7 @@ import '../../utils/bus/bus.dart';
 import '../../utils/bus/constant.dart';
 import '../../utils/cast_screen_manager.dart'; // 导入投屏管理类
 import '../../utils/dict.dart';
+import '../../utils/user.dart';
 import '../../utils/video.dart';
 
 String TAG = 'Video_Detail';
@@ -239,6 +240,9 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   }
 
   Future<void> addViews() async {
+    if (!User.isLogin()) {
+      return;
+    }
     try {
       if (videoInfoData.video?.id != null) {
         await Api.addViews({

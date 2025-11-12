@@ -3,7 +3,6 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../../components/loading.dart';
-import '../../../entity/video_page_entity.dart';
 import '../../api/api.dart';
 import '../../components/no_data.dart';
 import '../../components/video_history.dart';
@@ -21,14 +20,15 @@ class History extends StatefulWidget {
 class HistoryState extends State<History> with SingleTickerProviderStateMixin {
   var _futureBuilderFuture;
   String inputText = "";
-  List<VideoPageDataList> videoPageData = [];
   List<ViewsDataList> viewsData = [];
   TextEditingController searchController = TextEditingController();
   UserEntity? user;
   static final UserDatabaseHelper userDatabaseHelper = UserDatabaseHelper();
   int currentPage = 1;
-  bool disposed = false;
-  final ScrollController _scrollController = ScrollController();
+  final int pageSize = 10;
+  bool hasMore = true;
+  bool _isLoading = false;
+  final RefreshController _refreshController = RefreshController();
 
   Future<void> getUserInfo() async {
     try {
@@ -42,29 +42,83 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
     }
   }
 
-  Future<void> getViews() async {
+  Future<void> _fetchViews({bool refresh = false}) async {
+    if (_isLoading) {
+      return;
+    }
+    if (refresh) {
+      currentPage = 1;
+      hasMore = true;
+    }
+    if (!hasMore) {
+      return;
+    }
+    _isLoading = true;
     try {
+      if (user == null) {
+        await getUserInfo();
+      }
       if (user != null) {
-        var response = await Api.getViews({
+        final response = await Api.getViews({
           "createUserId": user?.userId,
           "type": 19,
+          "page": currentPage,
+          "size": pageSize,
         });
 
-        if (response.data?.list != null) {
-          viewsData = response.data!.list as List<ViewsDataList>;
+        final List<ViewsDataList> fetched =
+            List<ViewsDataList>.from(response.data?.list ?? <ViewsDataList>[]);
+
+        if (refresh) {
+          viewsData = fetched;
+        } else {
+          viewsData.addAll(fetched);
         }
+
+        final pagination = response.data?.pagination;
+        final requestPage = currentPage;
+
+        if (pagination != null && pagination.total != null) {
+          final total = pagination.total ?? 0;
+          final fetchedCount = requestPage * pageSize;
+          hasMore = fetchedCount < total;
+        } else {
+          hasMore = fetched.length == pageSize;
+        }
+
+        if (hasMore) {
+          currentPage = requestPage + 1;
+        }
+      } else {
+        viewsData = [];
+        hasMore = false;
+      }
+
+      if (mounted) {
         setState(() {});
       }
     } catch (e) {
-      // 捕获并处理异常
+      if (refresh) {
+        viewsData = [];
+      }
+      hasMore = false;
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+    } finally {
+      _isLoading = false;
+    }
+  }
+
+  Future<void> getViews({bool refresh = false}) async {
+    await _fetchViews(refresh: refresh);
+    if (mounted) {
+      setState(() {});
     }
   }
 
   Future<String> init() async {
     try {
       await getUserInfo();
-      await getViews();
+      await getViews(refresh: true);
       return "init success";
     } catch (e) {
       // 捕获并处理异常
@@ -81,8 +135,7 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
 
   @override
   void dispose() {
-    disposed = true;
-    _scrollController.dispose();
+    _refreshController.dispose();
     super.dispose();
   }
 
@@ -101,15 +154,17 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
   }
 
   Future<void> loadMore() async {
-    debugPrint('loadMore');
-    currentPage++;
-    if (disposed) {
+    if (!hasMore) {
+      _refreshController.loadNoData();
       return;
     }
-    setState(() {});
+    await getViews();
+    if (!hasMore) {
+      _refreshController.loadNoData();
+    } else {
+      _refreshController.loadComplete();
+    }
   }
-
-  final RefreshController _refreshController = RefreshController();
 
   /// 返回一个Widget自动填充剩余高度 且可以滑动
   Widget _buildContent() {
@@ -124,47 +179,46 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
         } else if (snapshot.hasData && snapshot.data == "init success") {
           return SmartRefresher(
             onRefresh: () async {
-              await init();
-              _refreshController.refreshCompleted();
-              setState(() {}); // 刷新UI
+              await getViews(refresh: true);
+              _refreshController
+                ..refreshCompleted()
+                ..resetNoData();
             },
             onLoading: () async {
               await loadMore();
-              _refreshController.loadComplete();
             },
             enablePullDown: true,
             enablePullUp: true,
             controller: _refreshController,
-            child: ListView.builder(
-              itemCount: viewsData.length,
-              itemBuilder: (context, index) {
-                // return VideoHistoryItem(videoData: viewsData[index]);
-                if (viewsData.isEmpty) {
-                  return NoData();
-                }
-                return TDSwipeCell(
-                  right: TDSwipeCellPanel(
-                    children: [
-                      TDSwipeCellAction(
-                        flex: 60,
-                        backgroundColor: TDTheme.of(context).errorColor6,
-                        label: '删除',
-                        onPressed: (context) async {
-                          TDSwipeCell.of(context);
-                          await Api.delViews({
-                            "ids": [viewsData[index].id],
-                          });
-                          getViews();
-                          viewsData.removeAt(index);
-                          setState(() {});
-                        },
-                      ),
-                    ],
+            child: viewsData.isEmpty
+                ? const NoData()
+                : ListView.builder(
+                    itemCount: viewsData.length,
+                    itemBuilder: (context, index) {
+                      return TDSwipeCell(
+                        right: TDSwipeCellPanel(
+                          children: [
+                            TDSwipeCellAction(
+                              flex: 60,
+                              backgroundColor: TDTheme.of(context).errorColor6,
+                              label: '删除',
+                              onPressed: (context) async {
+                                TDSwipeCell.of(context);
+                                await Api.delViews({
+                                  "ids": [viewsData[index].id],
+                                });
+                                viewsData.removeAt(index);
+                                if (mounted) {
+                                  setState(() {});
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                        cell: VideoHistoryItem(videoData: viewsData[index]),
+                      );
+                    },
                   ),
-                  cell: VideoHistoryItem(videoData: viewsData[index]),
-                );
-              },
-            ),
           );
         } else {
           return const Center(child: Text('暂无观看历史'));
