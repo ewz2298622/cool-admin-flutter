@@ -9,6 +9,7 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
+import '../../components/common/common_search_bar.dart';
 import '../../components/home_two_video.dart';
 import '../../components/loading.dart';
 import '../../components/no_data.dart';
@@ -75,17 +76,11 @@ class _HomePageState extends State<Home>
     with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   // 提取常量
   static const double _swiperHeight = 158.0;
-  static const double _topBarHeight = 120.0;
   static const double _tabBarHeight = 35.0;
-  static const double _searchBarHeight = 36.0;
   static const double _borderRadius = 5.0;
-  static const double _searchBarBorderRadius = 20.0;
   static const Duration _tabAnimationDuration = Duration(milliseconds: 300);
   static const Duration _updateCheckDelay = Duration(seconds: 3);
   static const Color _selectedTabColor = Color.fromRGBO(252, 119, 66, 1);
-  static const Color _searchBarBgColor = Color.fromRGBO(245, 244, 247, 1);
-  static const Color _searchIconColor = Color.fromRGBO(153, 153, 153, 1);
-  static const Color _searchTextColor = Color(0xFF979797);
   static const Color _buttonColor = Color.fromRGBO(255, 95, 1, 1);
 
   // 定义swiperData
@@ -469,30 +464,8 @@ class _HomePageState extends State<Home>
           children: [
             Expanded(
               flex: 5,
-              child: GestureDetector(
+              child: CommonSearchBar(
                 onTap: () => Get.toNamed("/search"),
-                child: Container(
-                  height: _searchBarHeight,
-                  padding: const EdgeInsets.only(left: 10),
-                  decoration: BoxDecoration(
-                    color: _searchBarBgColor,
-                    borderRadius: BorderRadius.circular(_searchBarBorderRadius),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.search, color: _searchIconColor),
-                      const SizedBox(width: 8),
-                      const Text(
-                        '请输入关键字',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14.0,
-                          color: _searchTextColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ),
             ),
             const SizedBox(width: 10),
@@ -511,6 +484,8 @@ class _HomePageState extends State<Home>
   }
 
   Widget _buildContent() {
+    final double statusBarHeight = MediaQuery.of(context).padding.top;
+
     if (_showLoading) {
       return const PageLoading();
     }
@@ -525,7 +500,6 @@ class _HomePageState extends State<Home>
         RepaintBoundary(
           child: Container(
             width: double.infinity,
-            height: _topBarHeight,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
@@ -543,8 +517,9 @@ class _HomePageState extends State<Home>
               ),
               child: Column(
                 children: [
-                  const SizedBox(height: 40),
+                  SizedBox(height: statusBarHeight + 8),
                   _buildDefaultSearchBar(),
+                  const SizedBox(height: 8),
                   SizedBox(
                     height: _tabBarHeight,
                     child: TabBar(

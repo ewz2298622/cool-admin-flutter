@@ -3,6 +3,8 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
+import '../../components/common/common_filter_bar.dart';
+import '../../components/common/common_search_bar.dart';
 import '../../components/loading.dart';
 import '../../components/no_data.dart';
 import '../../components/video_three.dart';
@@ -28,7 +30,10 @@ class VideoFilterState extends State<VideoFilter>
   static const Color _activeColor = Color.fromRGBO(255, 122, 27, 1);
   static const Color _activeBgColor = Color.fromRGBO(244, 244, 244, 1);
   static const double _tagBorderRadius = 15.0;
-  static const EdgeInsets _tagPadding = EdgeInsets.only(left: 8);
+  static const double _tagSpacing = 8.0;
+  static const double _tagListHeight = 40.0;
+  static const EdgeInsets _tagChipPadding =
+      EdgeInsets.symmetric(horizontal: 12, vertical: 6);
 
   //定义currentPage
   int currentPage = 1;
@@ -229,12 +234,8 @@ class VideoFilterState extends State<VideoFilter>
   }
 
   Widget _buildDefaultSearchBar() {
-    return TDSearchBar(
-      placeHolder: '',
-      backgroundColor: Colors.transparent,
-      readOnly: true,
-      style: TDSearchStyle.round,
-      onInputClick: () {
+    return CommonSearchBar(
+      onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const VideoSearch()),
@@ -365,7 +366,9 @@ class VideoFilterState extends State<VideoFilter>
       valueListenable: categoryCurrent,
       builder: (context, selectedId, child) {
         // 生成缓存键
-        final cacheKey = '$title-$selectedId-${items.length}';
+        final brightnessKey =
+            Theme.of(context).brightness == Brightness.dark ? 'dark' : 'light';
+        final cacheKey = '$title-$selectedId-${items.length}-$brightnessKey';
         
         // 检查缓存中是否已存在该组件
         if (_categoryWidgetCache.containsKey(cacheKey)) {
@@ -373,59 +376,62 @@ class VideoFilterState extends State<VideoFilter>
         }
         
         // 缓存 Theme 值，避免重复获取
-        final textColor = Theme.of(context).textTheme.titleLarge?.color;
-        
-        final widget = RepaintBoundary(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                GestureDetector(
-                  child: TDTag(
-                  title,
-                  shape: TDTagShape.round,
-                  isLight: true,
-                  size: TDTagSize.large,
-                  textColor: selectedId == 0 ? _activeColor : textColor,
-                  backgroundColor: selectedId == 0 ? _activeBgColor : Colors.transparent,
-                  isOutline: true,
-                  style: TDTagStyle(
-                    borderColor: Colors.transparent,
-                    borderRadius: BorderRadius.circular(_tagBorderRadius),
-                  ),
-                ),
-                  onTap: () => _category_change(null),
-                ),
-                ...items.map(
-                  (item) => Padding(
-                    padding: _tagPadding,
-                    child: GestureDetector(
-                      child: TDTag(
-                        item.name ?? "",
-                        shape: TDTagShape.round,
-                        isLight: true,
-                        size: TDTagSize.large,
-                        textColor: selectedId == item.id ? _activeColor : textColor,
-                        backgroundColor: selectedId == item.id ? _activeBgColor : Colors.transparent,
-                        isOutline: true,
-                        style: TDTagStyle(
-                          borderColor: Colors.transparent,
-                          borderRadius: BorderRadius.circular(_tagBorderRadius),
-                        ),
-                      ),
-                      onTap: () => _category_change(item),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+        final theme = TDTheme.of(context);
+        final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+        final Color unselectedColor =
+            isDarkMode ? Colors.white70 : theme.fontGyColor2;
+
+        final widget = CommonFilterBar<DictDataDataVideoCategory>(
+          items: items,
+          labelBuilder: (item) => item?.name ?? title,
+          isSelected: (item) => item == null
+              ? selectedId == 0
+              : (item.id ?? 0) == selectedId,
+          onTap: (item) => _category_change(item),
+          chipBuilder: (label, isSelected) => _buildTagChip(
+            text: label,
+            selected: isSelected,
+            selectedTextColor: _activeColor,
+            unselectedTextColor: unselectedColor,
+            selectedBgColor: _activeBgColor,
           ),
+          height: _tagListHeight,
+          spacing: _tagSpacing,
         );
         
         // 缓存组件
         _categoryWidgetCache[cacheKey] = widget;
         return widget;
       },
+    );
+  }
+
+  Widget _buildTagChip({
+    required String text,
+    required bool selected,
+    required Color selectedTextColor,
+    required Color unselectedTextColor,
+    required Color selectedBgColor,
+  }) {
+    final padding = EdgeInsets.symmetric(
+      horizontal: selected ? 14 : 12,
+      vertical: 6,
+    );
+    return Padding(
+      padding: padding,
+      child: TDTag(
+        text,
+        shape: TDTagShape.round,
+        isLight: true,
+        size: TDTagSize.large,
+        textColor: selected ? selectedTextColor : unselectedTextColor,
+        backgroundColor: selected ? selectedBgColor : Colors.transparent,
+        isOutline: true,
+        style: TDTagStyle(
+          borderColor: Colors.transparent,
+          borderRadius: BorderRadius.circular(_tagBorderRadius),
+        ),
+      ),
     );
   }
 
@@ -438,7 +444,9 @@ class VideoFilterState extends State<VideoFilter>
       valueListenable: tagCurrent,
       builder: (context, selectedId, child) {
         // 生成缓存键
-        final cacheKey = '$title-$selectedId-${items.length}';
+        final brightnessKey =
+            Theme.of(context).brightness == Brightness.dark ? 'dark' : 'light';
+        final cacheKey = '$title-$selectedId-${items.length}-$brightnessKey';
         
         // 检查缓存中是否已存在该组件
         if (_tagWidgetCache.containsKey(cacheKey)) {
@@ -446,53 +454,26 @@ class VideoFilterState extends State<VideoFilter>
         }
         
         // 缓存 Theme 值，避免重复获取
-        final textColor = Theme.of(context).textTheme.titleLarge?.color;
+        final theme = TDTheme.of(context);
+        final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+        final Color unselectedColor =
+            isDarkMode ? Colors.white70 : theme.fontGyColor2;
         
-        final widget = RepaintBoundary(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                GestureDetector(
-                  child: TDTag(
-                    title,
-                    shape: TDTagShape.round,
-                    isLight: true,
-                    size: TDTagSize.large,
-                    textColor: selectedId == 0 ? _activeColor : textColor,
-                    backgroundColor: selectedId == 0 ? _activeBgColor : Colors.transparent,
-                    isOutline: true,
-                    style: TDTagStyle(
-                      borderColor: Colors.transparent,
-                      borderRadius: BorderRadius.circular(_tagBorderRadius),
-                    ),
-                  ),
-                  onTap: () => _tag_change(null),
-                ),
-                ...items.map(
-                  (item) => Padding(
-                    padding: _tagPadding,
-                    child: GestureDetector(
-                      child: TDTag(
-                        item.name ?? "",
-                        shape: TDTagShape.round,
-                        isLight: true,
-                        size: TDTagSize.large,
-                        textColor: selectedId == item.id ? _activeColor : textColor,
-                        backgroundColor: selectedId == item.id ? _activeBgColor : Colors.transparent,
-                        isOutline: true,
-                        style: TDTagStyle(
-                          borderColor: Colors.transparent,
-                          borderRadius: BorderRadius.circular(_tagBorderRadius),
-                        ),
-                      ),
-                      onTap: () => _tag_change(item),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+        final widget = CommonFilterBar<DictDataDataVideoTag>(
+          items: items,
+          labelBuilder: (item) => item?.name ?? title,
+          isSelected: (item) =>
+              item == null ? selectedId == 0 : item.id == selectedId,
+          onTap: (item) => _tag_change(item),
+          chipBuilder: (label, isSelected) => _buildTagChip(
+            text: label,
+            selected: isSelected,
+            selectedTextColor: _activeColor,
+            unselectedTextColor: unselectedColor,
+            selectedBgColor: _activeBgColor,
           ),
+          height: _tagListHeight,
+          spacing: _tagSpacing,
         );
         
         // 缓存组件
@@ -511,7 +492,9 @@ class VideoFilterState extends State<VideoFilter>
       valueListenable: regionCurrent,
       builder: (context, selectedId, child) {
         // 生成缓存键
-        final cacheKey = '$title-$selectedId-${items.length}';
+        final brightnessKey =
+            Theme.of(context).brightness == Brightness.dark ? 'dark' : 'light';
+        final cacheKey = '$title-$selectedId-${items.length}-$brightnessKey';
         
         // 检查缓存中是否已存在该组件
         if (_areaWidgetCache.containsKey(cacheKey)) {
@@ -519,53 +502,26 @@ class VideoFilterState extends State<VideoFilter>
         }
         
         // 缓存 Theme 值，避免重复获取
-        final textColor = Theme.of(context).textTheme.titleLarge?.color;
-        
-        final widget = RepaintBoundary(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                GestureDetector(
-                  child: TDTag(
-                    title,
-                    isLight: true,
-                    textColor: selectedId == 0 ? _activeColor : textColor,
-                    backgroundColor: selectedId == 0 ? _activeBgColor : Colors.transparent,
-                    shape: TDTagShape.round,
-                    size: TDTagSize.large,
-                    isOutline: true,
-                    style: TDTagStyle(
-                      borderColor: Colors.transparent,
-                      borderRadius: BorderRadius.circular(_tagBorderRadius),
-                    ),
-                  ),
-                  onTap: () => _area_change(null),
-                ),
-                ...items.map(
-                  (item) => Padding(
-                    padding: _tagPadding,
-                    child: GestureDetector(
-                      child: TDTag(
-                        item.name ?? "",
-                        shape: TDTagShape.round,
-                        size: TDTagSize.large,
-                        isLight: true,
-                        textColor: selectedId == item.id ? _activeColor : textColor,
-                        backgroundColor: selectedId == item.id ? _activeBgColor : Colors.transparent,
-                        isOutline: true,
-                        style: TDTagStyle(
-                          borderColor: Colors.transparent,
-                          borderRadius: BorderRadius.circular(_tagBorderRadius),
-                        ),
-                      ),
-                      onTap: () => _area_change(item),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+        final theme = TDTheme.of(context);
+        final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+        final Color unselectedColor =
+            isDarkMode ? Colors.white70 : theme.fontGyColor2;
+
+        final widget = CommonFilterBar<DictInfoListData>(
+          items: items,
+          labelBuilder: (item) => item?.name ?? title,
+          isSelected: (item) =>
+              item == null ? selectedId == 0 : item.id == selectedId,
+          onTap: (item) => _area_change(item),
+          chipBuilder: (label, isSelected) => _buildTagChip(
+            text: label,
+            selected: isSelected,
+            selectedTextColor: _activeColor,
+            unselectedTextColor: unselectedColor,
+            selectedBgColor: _activeBgColor,
           ),
+          height: _tagListHeight,
+          spacing: _tagSpacing,
         );
         
         // 缓存组件
@@ -580,7 +536,9 @@ class VideoFilterState extends State<VideoFilter>
       valueListenable: yearCurrent,
       builder: (context, selectedYear, child) {
         // 生成缓存键
-        final cacheKey = '$title-$selectedYear-${items.length}';
+        final brightnessKey =
+            Theme.of(context).brightness == Brightness.dark ? 'dark' : 'light';
+        final cacheKey = '$title-$selectedYear-${items.length}-$brightnessKey';
         
         // 检查缓存中是否已存在该组件
         if (_yearWidgetCache.containsKey(cacheKey)) {
@@ -588,53 +546,28 @@ class VideoFilterState extends State<VideoFilter>
         }
         
         // 缓存 Theme 值，避免重复获取
-        final textColor = Theme.of(context).textTheme.titleLarge?.color;
-        
-        final widget = RepaintBoundary(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                GestureDetector(
-                  child: TDTag(
-                    title,
-                    isLight: true,
-                    textColor: selectedYear == 0 ? _activeColor : textColor,
-                    backgroundColor: selectedYear == 0 ? _activeBgColor : Colors.transparent,
-                    shape: TDTagShape.round,
-                    size: TDTagSize.large,
-                    isOutline: true,
-                    style: TDTagStyle(
-                      borderColor: Colors.transparent,
-                      borderRadius: BorderRadius.circular(_tagBorderRadius),
-                    ),
-                  ),
-                  onTap: () => _year_change(0),
-                ),
-                ...items.map(
-                  (item) => Padding(
-                    padding: _tagPadding,
-                    child: GestureDetector(
-                      child: TDTag(
-                        item.toString(),
-                        isLight: true,
-                        textColor: selectedYear == item ? _activeColor : textColor,
-                        backgroundColor: selectedYear == item ? _activeBgColor : Colors.transparent,
-                        shape: TDTagShape.round,
-                        size: TDTagSize.large,
-                        isOutline: true,
-                        style: TDTagStyle(
-                          borderColor: Colors.transparent,
-                          borderRadius: BorderRadius.circular(_tagBorderRadius),
-                        ),
-                      ),
-                      onTap: () => _year_change(item),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+        final theme = TDTheme.of(context);
+        final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+        final Color unselectedColor =
+            isDarkMode ? Colors.white70 : theme.fontGyColor2;
+
+        final widget = CommonFilterBar<int>(
+          items: items,
+          labelBuilder: (item) => item == null || item == 0
+              ? title
+              : item.toString(),
+          isSelected: (item) =>
+              (item == null || item == 0) ? selectedYear == 0 : selectedYear == item,
+          onTap: (item) => _year_change(item ?? 0),
+          chipBuilder: (label, isSelected) => _buildTagChip(
+            text: label,
+            selected: isSelected,
+            selectedTextColor: _activeColor,
+            unselectedTextColor: unselectedColor,
+            selectedBgColor: _activeBgColor,
           ),
+          height: _tagListHeight,
+          spacing: _tagSpacing,
         );
         
         // 缓存组件
@@ -724,7 +657,6 @@ class VideoFilterState extends State<VideoFilter>
                       child: Visibility(
                         visible: categoryData.isNotEmpty,
                         child: Column(
-                          spacing: 10,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _buildCategoryRow('全部分类', categoryData),

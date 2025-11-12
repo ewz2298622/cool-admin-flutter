@@ -252,7 +252,7 @@ class VideoSearchState extends State<VideoSearch>
       screenAdaptation: false,
       backgroundColor: Colors.transparent,
       titleMargin: 5,
-      height: 36,
+      height: 45,
       centerTitle: false,
       padding: const EdgeInsets.only(left: 0, right: 0),
       titleWidget: TDSearchBar(
