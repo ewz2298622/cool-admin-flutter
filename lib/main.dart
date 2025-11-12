@@ -40,6 +40,7 @@ import 'api/api.dart';
 import 'components/loading.dart';
 import 'db/manager/DBManager.dart';
 import 'entity/app_ads_entity.dart';
+import 'services/home_prefetch_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,6 +54,11 @@ Future<void> main() async {
     systemStatusBarContrastEnforced: false,
     systemNavigationBarContrastEnforced: false,
   ));
+  try {
+    await HomePrefetchService.instance.preload();
+  } catch (e) {
+    debugPrint('Home prefetch failed: $e');
+  }
   runApp(const AppBootstrap());
 }
 

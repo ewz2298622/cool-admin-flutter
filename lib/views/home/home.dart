@@ -22,6 +22,7 @@ import '../../entity/notice_Info_entity.dart';
 import '../../entity/swiper_entity.dart';
 import '../../style/layout.dart';
 import '../../utils/appUpdater.dart';
+import '../../services/home_prefetch_service.dart';
 import '../album/album.dart';
 import '../notice/notice.dart';
 
@@ -149,49 +150,37 @@ class _HomePageState extends State<Home>
     if (!mounted) return;
     
     try {
-      // 先获取分类数据，因为后续操作依赖它
-      await getDictInfoPages();
-      
-      if (!mounted || videoCategoryIds.isEmpty) {
-        if (mounted) {
-          setState(() {
-            _showLoading = false;
-          });
-        }
-        return;
-      }
+      HomePrefetchData? data =
+          HomePrefetchService.instance.cachedData;
 
-      // 并行加载其他数据，提高初始化速度
-      await Future.wait([
-        getSwiperListByCategoryIds(),
-        getAlbumListByCategoryIds(),
-        noticeInfo(),
-      ]);
+      if (data == null || !data.isValid) {
+        data = await HomePrefetchService.instance.preload();
+      }
 
       if (!mounted) return;
 
-      _tabController = TabController(length: tabs.length, vsync: this);
-      _tabController.addListener(_handleTabSelection);
-
-      // 初始化 RefreshController
-      for (int i = 0; i < tabs.length; i++) {
-        tabRefreshController.add(RefreshController());
-      }
-
-      if (mounted) {
+      if (data == null || !data.isValid) {
         setState(() {
-          _isInitialized = true;
+          _isInitialized = false;
           _showLoading = false;
         });
+        return;
+      }
 
-        // 延迟显示通知，避免阻塞初始化
-        if (noticeInfoData.isNotEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              message();
-            }
-          });
-        }
+      _applyPrefetchedData(data);
+      _setupTabInfrastructure();
+
+      setState(() {
+        _isInitialized = true;
+        _showLoading = false;
+      });
+
+      if (noticeInfoData.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            message();
+          }
+        });
       }
     } catch (e) {
       debugPrint('Initialization error: $e');
@@ -201,6 +190,36 @@ class _HomePageState extends State<Home>
           _showLoading = false;
         });
       }
+    }
+  }
+
+  void _applyPrefetchedData(HomePrefetchData data) {
+    category = data.categories;
+    videoCategoryIds = data.videoCategoryIds;
+    tabs =
+        category.map((e) => TDTab(text: e.name ?? '')).toList(growable: false);
+    swiperMap = Map<int, List<SwiperDataList>>.from(data.swiperMap);
+    albumMap = Map<int, List<AlbumDataList>>.from(data.albumMap);
+    noticeInfoData = List<NoticeInfoDataList>.from(data.noticeInfo);
+  }
+
+  void _setupTabInfrastructure() {
+    if (tabs.isEmpty) {
+      return;
+    }
+
+    if (tabRefreshController.isNotEmpty) {
+      for (final controller in tabRefreshController) {
+        controller.dispose();
+      }
+      tabRefreshController.clear();
+    }
+
+    _tabController = TabController(length: tabs.length, vsync: this);
+    _tabController.addListener(_handleTabSelection);
+
+    for (int i = 0; i < tabs.length; i++) {
+      tabRefreshController.add(RefreshController());
     }
   }
 
