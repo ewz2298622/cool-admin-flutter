@@ -278,7 +278,7 @@ class _MainPageState extends State<MainPage> {
                 width: 25,
                 height: 25,
               ),
-              label: '客服',
+              label: '服务',
             ),
             BottomNavigationBarItem(
               activeIcon: SvgPicture.asset(

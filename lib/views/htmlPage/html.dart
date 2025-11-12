@@ -89,6 +89,11 @@ class _HtmlPageState extends State<HtmlPage> {
       // 黑夜模式CSS样式
       _cachedDarkModeCSS ??= """
         <style>
+          body, p, div, span, li, td, th {
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            white-space: normal;
+          }
           p {
               background-color: #424242;
             color: #ffffff; /* 强制文字为白色 */
@@ -152,6 +157,11 @@ class _HtmlPageState extends State<HtmlPage> {
       // 白天模式CSS样式
       _cachedLightModeCSS ??= """
         <style>
+          body, p, div, span, li, td, th {
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            white-space: normal;
+          }
           body {
             background-color: #ffffff;
             color: #000000;
