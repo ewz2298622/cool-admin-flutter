@@ -149,7 +149,14 @@ class _LiveStreamPageState extends State<VideoService> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return PageLoading();
         } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}'); // 显示错误信息
+          return Text(
+            'Error: ${snapshot.error}',
+            style: TextStyle(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
+            ),
+          ); // 显示错误信息
         } else if (snapshot.hasData) {
           return Row(
             children: [
@@ -169,7 +176,14 @@ class _LiveStreamPageState extends State<VideoService> {
             ],
           );
         } else {
-          return Text('No data available');
+          return Text(
+            'No data available',
+            style: TextStyle(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
+            ),
+          );
         }
       },
     );
@@ -188,23 +202,34 @@ class _LiveStreamPageState extends State<VideoService> {
             Theme.of(context).brightness == Brightness.dark
                 ? Colors.grey[850]
                 : Colors.white,
-        child: TDSideBar(
-          style: TDSideBarStyle.normal,
-          value: _selectedCategory,
-          controller: _sideBarController,
-          unSelectedBgColor: Colors.transparent,
-          selectedBgColor: Colors.transparent,
-          selectedColor: Color.fromRGBO(255, 197, 6, 1),
-          children:
-              dictInfoListData
-                  .map(
-                    (ele) => TDSideBarItem(
-                      label: ele.name ?? '',
-                      value: ele.id ?? 0,
-                    ),
-                  )
-                  .toList(),
-          onSelected: onSelected,
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            textTheme: Theme.of(context).textTheme.copyWith(
+              bodyMedium: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
+              ),
+            ),
+          ),
+          child: TDSideBar(
+            style: TDSideBarStyle.normal,
+            value: _selectedCategory,
+            controller: _sideBarController,
+            unSelectedBgColor: Colors.transparent,
+            selectedBgColor: Colors.transparent,
+            selectedColor: Color.fromRGBO(255, 197, 6, 1),
+            children:
+                dictInfoListData
+                    .map(
+                      (ele) => TDSideBarItem(
+                        label: ele.name ?? '',
+                        value: ele.id ?? 0,
+                      ),
+                    )
+                    .toList(),
+            onSelected: onSelected,
+          ),
         ),
       ),
     );

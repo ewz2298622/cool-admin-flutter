@@ -506,8 +506,11 @@ class VideoSearchState extends State<VideoSearch>
     }
 
     return Container(
-      padding: const EdgeInsets.only(left: 5, right: 5, top: 10, bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       width: MediaQuery.of(context).size.width * _pageViewWidthRatio,
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width * _pageViewWidthRatio,
+      ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
@@ -562,10 +565,10 @@ class VideoSearchState extends State<VideoSearch>
   /// 构建视频项
   Widget _buildVideoItem(VideoPageDataList item, int index) {
     return GestureDetector(
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
         child: Row(
-          spacing: 10,
+          spacing: 8,
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -599,33 +602,37 @@ class VideoSearchState extends State<VideoSearch>
                 assetUrl: 'assets/images/loading.gif',
               ),
             ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 5,
-              children: [
-                SizedBox(
-                  width: _imageWidth,
-                  child: Text(
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 5,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
                     item.title ?? "",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 16),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
+                    ),
                   ),
-                ),
-                SizedBox(
-                  width: 100,
-                  child: Text(
+                  Text(
                     VideoUtil.extractPlainText(item.introduce ?? ""),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: _textGreyColor,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.grey[400]
+                          : _textGreyColor,
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
