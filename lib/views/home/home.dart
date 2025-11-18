@@ -677,7 +677,7 @@ class _HomePageState extends State<Home>
                   const SizedBox(height: Layout.paddingL),
                 _buildAlbumHeader(album),
                 _buildAlbumItemWidgetType(albumVideos, albumIndex),
-                const SizedBox(height: 16),
+                const SizedBox(height: 4),
               ],
             ),
           );

@@ -15,7 +15,7 @@ class SectionWithMore extends StatelessWidget {
     required this.title,
     this.onMorePressed,
     this.trailing,
-    this.padding = const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    this.padding = const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
     this.spacing = 8,
     this.titleStyle,
     this.semanticsLabel,
