@@ -6,20 +6,20 @@ class AdsConfig {
   static const String APP_NAME = "com.example.flutter_app";
 
   // 广告位 ID
-  static const String FULL_SCREEN_VIDEO_AD_ANDROID = "969380338";
-  static const String FULL_SCREEN_VIDEO_AD_IOS = "969380338";
-  static const String REWARD_VIDEO_AD_ANDROID = "969412287";
-  static const String REWARD_VIDEO_AD_IOS = "969412287";
+  static const String FULL_SCREEN_VIDEO_AD_ANDROID = "";
+  static const String FULL_SCREEN_VIDEO_AD_IOS = "";
+  static const String REWARD_VIDEO_AD_ANDROID = "";
+  static const String REWARD_VIDEO_AD_IOS = "";
   //barnner广告Id
-  static const String BANNER_AD_ANDROID = "969380337";
-  static const String BANNER_AD_IOS = "969380337";
+  static const String BANNER_AD_ANDROID = "";
+  static const String BANNER_AD_IOS = "";
   //barnner广告Id
-  static const String INTERSTITIAL_AD_ANDROID = "969380339";
-  static const String INTERSTITIAL_AD_IOS = "969380339";
+  static const String INTERSTITIAL_AD_ANDROID = "";
+  static const String INTERSTITIAL_AD_IOS = "";
 
   //开屏广告
-  static const String SPLASH_AD_ANDROID = "892349010";
-  static const String SPLASH_AD_IOS = "892349010";
+  static const String SPLASH_AD_ANDROID = "";
+  static const String SPLASH_AD_IOS = "";
 
   // 激励广告配置
   static const String REWARD_NAME = "积分";

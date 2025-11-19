@@ -8,7 +8,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import '../db/entity/UserEntity.dart';
 import '../db/manager/UserDatabaseHelper.dart';
 import '../entity/app_ads_entity.dart';
-import 'ads_cache_util.dart';
 import 'ads_config.dart';
 
 class Ads {
@@ -155,30 +154,66 @@ class Ads {
     }
   }
 
-  //广告加载
-  static Future<void> _loadAd() async {
-    bool hasCache = await AdsCacheUtil.hasCachedAdsData();
-    if (hasCache) {
-      List<AppAdsDataList>? cachedAds = await AdsCacheUtil.getAdsData();
-      if (cachedAds != null && cachedAds.isNotEmpty) {
-        //筛选cachedAds数组中adsPage="896"且type=680的数据
-        List<AppAdsDataList> filteredAds =
-            cachedAds.where((adsData) {
-              return adsData.adsPage == 898 && adsData.type == 683;
-            }).toList();
-        if (filteredAds.isNotEmpty) {
-          AppAdsDataList adsData = filteredAds[0];
-          score = filteredAds[0].score ?? 0;
-          adsId = filteredAds[0].id ?? 0;
-          // setState(() {
-          //   androidCodeId = adsData.adsId ?? androidCodeId;
-          //   iosCodeId = adsData.adsId ?? iosCodeId;
-          // });
-          REWARD_VIDEO_AD_ANDROID = adsData.adsId ?? REWARD_VIDEO_AD_ANDROID;
-          REWARD_VIDEO_AD_IOS = adsData.adsId ?? REWARD_VIDEO_AD_IOS;
+  // 广告数据缓存，避免重复请求
+  static List<AppAdsDataList>? _cachedAdsList;
+  static DateTime? _cacheTime;
+  static const Duration _cacheValidDuration = Duration(minutes: 5); // 缓存有效期 5 分钟
 
-          debugPrint("_loadAd激励广告数据:$filteredAds");
-        }
+  //广告加载（直接从 API 请求，带缓存机制）
+  static Future<void> _loadAd() async {
+    try {
+      // 检查缓存是否有效
+      if (_cachedAdsList != null && 
+          _cacheTime != null && 
+          DateTime.now().difference(_cacheTime!) < _cacheValidDuration) {
+        debugPrint("使用缓存的激励广告数据");
+        _updateRewardAdConfig(_cachedAdsList!);
+        return;
+      }
+
+      // 设置请求超时为 2 秒，避免长时间阻塞
+      AppAdsEntity response = await Api.getAdsList({'status':1})
+          .timeout(
+            const Duration(seconds: 2),
+            onTimeout: () {
+              debugPrint("激励广告请求超时");
+              throw TimeoutException("激励广告请求超时");
+            },
+          );
+      
+      List<AppAdsDataList> adsList = response.data?.list ?? [] as List<AppAdsDataList>;
+      
+      // 更新缓存
+      _cachedAdsList = adsList;
+      _cacheTime = DateTime.now();
+      
+      _updateRewardAdConfig(adsList);
+    } catch (e) {
+      debugPrint("_loadAd激励广告加载失败: $e");
+      // 如果请求失败但有缓存，使用缓存
+      if (_cachedAdsList != null) {
+        debugPrint("请求失败，使用缓存的激励广告数据");
+        _updateRewardAdConfig(_cachedAdsList!);
+      }
+    }
+  }
+
+  // 更新激励广告配置
+  static void _updateRewardAdConfig(List<AppAdsDataList> adsList) {
+    if (adsList.isNotEmpty) {
+      //筛选adsList数组中adsPage=898且type=683的数据
+      List<AppAdsDataList> filteredAds =
+          adsList.where((adsData) {
+            return adsData.adsPage == 898 && adsData.type == 683;
+          }).toList();
+      if (filteredAds.isNotEmpty) {
+        AppAdsDataList adsData = filteredAds[0];
+        score = filteredAds[0].score ?? 0;
+        adsId = filteredAds[0].id ?? 0;
+        REWARD_VIDEO_AD_ANDROID = adsData.adsId ?? REWARD_VIDEO_AD_ANDROID;
+        REWARD_VIDEO_AD_IOS = adsData.adsId ?? REWARD_VIDEO_AD_IOS;
+
+        debugPrint("_loadAd激励广告数据:$filteredAds");
       }
     }
   }
@@ -196,10 +231,26 @@ class Ads {
     }
   }
 
-  //预加载激励广告
+  //预加载激励广告（异步加载，不阻塞）
   static Future<void> loadRewardVideoAd() async {
     try {
-      await _loadAd();
+      // 异步加载广告配置，不阻塞广告预加载
+      _loadAd().catchError((e) {
+        debugPrint("加载广告配置失败，使用默认配置: $e");
+      });
+      
+      // 如果广告 ID 为空，等待一下配置加载完成（最多等待 500ms）
+      if (REWARD_VIDEO_AD_ANDROID.isEmpty || REWARD_VIDEO_AD_IOS.isEmpty) {
+        Fluttertoast.showToast(
+        msg: "广告服务未开通",
+        toastLength: Toast.LENGTH_SHORT,
+      );
+        await Future.any([
+          _loadAd(),
+          Future.delayed(const Duration(milliseconds: 500)),
+        ]);
+      }
+      
       await FlutterUnionad.loadRewardVideoAd(
         //是否个性化 选填
         androidCodeId: REWARD_VIDEO_AD_ANDROID,

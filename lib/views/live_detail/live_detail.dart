@@ -263,13 +263,13 @@ class Live_DetailState extends State<Live_Detail>
                 icon: Icons.live_tv_rounded,
                 label: _formatLiveStatus(live.status),
               ),
-              const SizedBox(width: 12),
-              if (live.categoryId != null)
-                _buildStatsChip(
-                  context,
-                  icon: Icons.category_outlined,
-                  label: '#${_formatLiveStatus(live.categoryId)}',
-                ),
+              // const SizedBox(width: 12),
+              // if (live.categoryId != null)
+              //   _buildStatsChip(
+              //     context,
+              //     icon: Icons.category_outlined,
+              //     label: '#${_formatLiveStatus(live.categoryId)}',
+              //   ),
               const SizedBox(width: 12),
               if (live.updateTime != null)
                 _buildStatsChip(
@@ -500,7 +500,7 @@ class Live_DetailState extends State<Live_Detail>
     if (status == 1) {
       return '直播中';
     }
-    if (status == 2) {
+    if (status == 0) {
       return '已结束';
     }
     return '未开播';

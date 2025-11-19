@@ -19,7 +19,7 @@ import '../../entity/video_page_entity.dart';
 import '../../entity/views_entity.dart';
 import '../../style/layout.dart';
 import '../../utils/ads.dart';
-import '../../utils/ads_cache_util.dart';
+import '../../api/api.dart';
 import '../../utils/ads_config.dart';
 import '../../utils/bus/bus.dart';
 import '../../utils/bus/constant.dart';
@@ -101,26 +101,42 @@ class MyState extends State<My>
     setState(() {});
   }
 
-  //广告加载
+  //广告加载（直接从 API 请求，带超时保护，不阻塞页面显示）
   Future<void> _loadAd() async {
-    bool hasCache = await AdsCacheUtil.hasCachedAdsData();
-    if (hasCache) {
-      List<AppAdsDataList>? cachedAds = await AdsCacheUtil.getAdsData();
-      if (cachedAds != null && cachedAds.isNotEmpty) {
-        //筛选cachedAds数组中adsPage="896"且type=680的数据
+    try {
+      // 设置请求超时为 2 秒，避免长时间阻塞
+      AppAdsEntity response = await Api.getAdsList({'status':1,'type':640})
+          .timeout(
+            const Duration(seconds: 2),
+            onTimeout: () {
+              debugPrint("Banner广告请求超时");
+              throw TimeoutException("Banner广告请求超时");
+            },
+          );
+      
+      List<AppAdsDataList> adsList = response.data?.list ?? [] as List<AppAdsDataList>;
+      
+      if (!mounted) return;
+      
+      if (adsList.isNotEmpty) {
+        //筛选adsList数组中adsPage=898且type=680的数据
         List<AppAdsDataList> filteredAds =
-            cachedAds.where((adsData) {
+            adsList.where((adsData) {
               return adsData.adsPage == 898 && adsData.type == 680;
             }).toList();
         if (filteredAds.isNotEmpty) {
           AppAdsDataList adsData = filteredAds[0];
-          setState(() {
-            androidCodeId = adsData.adsId ?? androidCodeId;
-            iosCodeId = adsData.adsId ?? iosCodeId;
-          });
-          debugPrint("_loadAd开屏广告数据:$filteredAds");
+          if (mounted) {
+            setState(() {
+              androidCodeId = adsData.adsId ?? androidCodeId;
+              iosCodeId = adsData.adsId ?? iosCodeId;
+            });
+            debugPrint("_loadAd Banner广告数据:$filteredAds");
+          }
         }
       }
+    } catch (e) {
+      debugPrint("_loadAd Banner广告加载失败: $e");
     }
   }
 

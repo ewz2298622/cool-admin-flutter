@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app/style/color_styles.dart';
 import 'package:flutter_app/utils/ads.dart';
-import 'package:flutter_app/utils/ads_cache_util.dart';
 import 'package:flutter_app/utils/context_manager.dart';
 import 'package:flutter_app/utils/device_info.dart';
 import 'package:flutter_app/utils/share_util.dart';
@@ -93,7 +92,12 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     if (!_sdkInitialized) {
       _sdkInitialized = true;
-      scheduleMicrotask(_initSDK);
+      // 延迟初始化 SDK，不阻塞应用启动
+      // 使用 scheduleMicrotask 确保在下一帧执行，不阻塞当前帧
+      scheduleMicrotask(() {
+        // 进一步延迟，让应用先完成初始渲染
+        Future.delayed(const Duration(milliseconds: 100), _initSDK);
+      });
     }
   }
 
@@ -310,14 +314,16 @@ class _MainPageState extends State<MainPage> {
 
   Future<String> init() async {
     try {
-      // 使用Future.wait并发执行多个异步操作
+      // 使用Future.wait并发执行多个异步操作（移除广告加载，改为后台异步加载）
       await Future.wait<dynamic>([
         DBManager.init(),
         initPlatformState(),
         ShareUtil.prepareShareImage(),
         User.isLogin(),
-        getAd(),
       ]);
+
+      // 广告加载改为后台异步执行，不阻塞应用启动
+      getAd(); // 不等待，后台执行
 
       //跳转到SplashPage组件
       return "init success";
@@ -328,12 +334,11 @@ class _MainPageState extends State<MainPage> {
     }
   }
 
-  //获取广告
+  //获取广告（不再缓存，直接请求，后台异步执行，不阻塞启动）
   Future<void> getAd() async {
     try {
       List<AppAdsDataList> list =
-          (await Api.getAdsList({})).data?.list ?? [] as List<AppAdsDataList>;
-      AdsCacheUtil.saveAdsData(list);
+          (await Api.getAdsList({'status':1})).data?.list ?? [] as List<AppAdsDataList>;
       debugPrint('获取广告成功: $list');
     } catch (e) {
       debugPrint('获取广告失败: $e');

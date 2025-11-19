@@ -17,7 +17,11 @@ import 'context_manager.dart';
 /// 应用更新工具类
 class AppUpdater {
   /// 检查应用更新
-  static Future<void> checkUpdate() async {
+  /// 
+  /// [showNoUpdateDialog] 可选参数，默认为 false
+  /// - false: 没有新版本时不执行任何操作（不显示对话框）
+  /// - true: 没有新版本时显示"当前已是最新版本"对话框
+  static Future<void> checkUpdate({bool showNoUpdateDialog = false}) async {
     try {
       // 获取当前应用信息
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -32,6 +36,8 @@ class AppUpdater {
       String downloadUrl = noticeInfoData[0].appUrl ?? '';
 
       // 比较版本 _compareVersions(currentVersion, latestVersion) < 0
+      debugPrint('AppUpdatercurrentVersion: $currentVersion') ;
+      debugPrint('AppUpdaterlatestVersion: $latestVersion');
       if (currentVersion != latestVersion) {
         debugPrint('有新版本');
         // 有新版本
@@ -46,7 +52,10 @@ class AppUpdater {
         );
       } else {
         debugPrint('没有新版本');
-        _showNoUpdateDialog(ContextManager.getContext() as BuildContext);
+        // 只有当 showNoUpdateDialog 为 true 时才显示"没有新版本"对话框
+        if (showNoUpdateDialog) {
+          _showNoUpdateDialog(ContextManager.getContext() as BuildContext);
+        }
       }
     } catch (e) {
       _showErrorDialog(

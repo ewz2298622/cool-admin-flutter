@@ -80,7 +80,7 @@ class _HomePageState extends State<Home>
   static const double _tabBarHeight = 35.0;
   static const double _borderRadius = 5.0;
   static const Duration _tabAnimationDuration = Duration(milliseconds: 300);
-  static const Duration _updateCheckDelay = Duration(seconds: 3);
+  static const Duration _updateCheckDelay = Duration(seconds: 10);
   static const Color _selectedTabColor = Color.fromRGBO(252, 119, 66, 1);
   static const Color _buttonColor = Color.fromRGBO(255, 95, 1, 1);
 
