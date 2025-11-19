@@ -157,14 +157,16 @@ class Ads {
   // 广告数据缓存，避免重复请求
   static List<AppAdsDataList>? _cachedAdsList;
   static DateTime? _cacheTime;
-  static const Duration _cacheValidDuration = Duration(minutes: 5); // 缓存有效期 5 分钟
+  static const Duration _cacheValidDuration = Duration(
+    minutes: 5,
+  ); // 缓存有效期 5 分钟
 
   //广告加载（直接从 API 请求，带缓存机制）
   static Future<void> _loadAd() async {
     try {
       // 检查缓存是否有效
-      if (_cachedAdsList != null && 
-          _cacheTime != null && 
+      if (_cachedAdsList != null &&
+          _cacheTime != null &&
           DateTime.now().difference(_cacheTime!) < _cacheValidDuration) {
         debugPrint("使用缓存的激励广告数据");
         _updateRewardAdConfig(_cachedAdsList!);
@@ -172,21 +174,25 @@ class Ads {
       }
 
       // 设置请求超时为 2 秒，避免长时间阻塞
-      AppAdsEntity response = await Api.getAdsList({'status':1})
-          .timeout(
-            const Duration(seconds: 2),
-            onTimeout: () {
-              debugPrint("激励广告请求超时");
-              throw TimeoutException("激励广告请求超时");
-            },
-          );
-      
-      List<AppAdsDataList> adsList = response.data?.list ?? [] as List<AppAdsDataList>;
-      
+      AppAdsEntity response = await Api.getAdsList({
+        'status': 1,
+        "adsPage": 898,
+        'type': 683,
+      }).timeout(
+        const Duration(seconds: 2),
+        onTimeout: () {
+          debugPrint("激励广告请求超时");
+          throw TimeoutException("激励广告请求超时");
+        },
+      );
+
+      List<AppAdsDataList> adsList =
+          response.data?.list ?? [] as List<AppAdsDataList>;
+
       // 更新缓存
       _cachedAdsList = adsList;
       _cacheTime = DateTime.now();
-      
+
       _updateRewardAdConfig(adsList);
     } catch (e) {
       debugPrint("_loadAd激励广告加载失败: $e");
@@ -238,19 +244,18 @@ class Ads {
       _loadAd().catchError((e) {
         debugPrint("加载广告配置失败，使用默认配置: $e");
       });
-      
+
       // 如果广告 ID 为空，等待一下配置加载完成（最多等待 500ms）
       if (REWARD_VIDEO_AD_ANDROID.isEmpty || REWARD_VIDEO_AD_IOS.isEmpty) {
-        Fluttertoast.showToast(
-        msg: "广告服务未开通",
-        toastLength: Toast.LENGTH_SHORT,
-      );
         await Future.any([
           _loadAd(),
           Future.delayed(const Duration(milliseconds: 500)),
         ]);
+        if(REWARD_VIDEO_AD_ANDROID.isEmpty || REWARD_VIDEO_AD_IOS.isEmpty){
+            Fluttertoast.showToast(msg: "广告服务未开通", toastLength: Toast.LENGTH_SHORT);
+        }
       }
-      
+
       await FlutterUnionad.loadRewardVideoAd(
         //是否个性化 选填
         androidCodeId: REWARD_VIDEO_AD_ANDROID,

@@ -23,7 +23,6 @@ import '../../entity/video_detail_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../main.dart'; // 导入main.dart以访问routeObserver
 import '../../style/layout.dart';
-import '../../api/api.dart';
 import '../../utils/ads_config.dart';
 import '../../utils/bus/bus.dart';
 import '../../utils/bus/constant.dart';
@@ -291,19 +290,23 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   Future<void> _loadAd() async {
     try {
       // 设置请求超时为 2 秒，避免长时间阻塞
-      AppAdsEntity response = await Api.getAdsList({'status':1})
-          .timeout(
-            const Duration(seconds: 2),
-            onTimeout: () {
-              debugPrint("Banner广告请求超时");
-              throw TimeoutException("Banner广告请求超时");
-            },
-          );
-      
-      List<AppAdsDataList> adsList = response.data?.list ?? [] as List<AppAdsDataList>;
-      
+      AppAdsEntity response = await Api.getAdsList({
+        'status': 1,
+        "adsPage": 897,
+        'type': 680,
+      }).timeout(
+        const Duration(seconds: 2),
+        onTimeout: () {
+          debugPrint("Banner广告请求超时");
+          throw TimeoutException("Banner广告请求超时");
+        },
+      );
+
+      List<AppAdsDataList> adsList =
+          response.data?.list ?? [] as List<AppAdsDataList>;
+
       if (!mounted) return;
-      
+
       if (adsList.isNotEmpty) {
         //筛选adsList数组中adsPage=897且type=680的数据
         List<AppAdsDataList> filteredAds =

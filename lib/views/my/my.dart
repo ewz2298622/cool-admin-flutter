@@ -19,7 +19,6 @@ import '../../entity/video_page_entity.dart';
 import '../../entity/views_entity.dart';
 import '../../style/layout.dart';
 import '../../utils/ads.dart';
-import '../../api/api.dart';
 import '../../utils/ads_config.dart';
 import '../../utils/bus/bus.dart';
 import '../../utils/bus/constant.dart';
@@ -105,19 +104,23 @@ class MyState extends State<My>
   Future<void> _loadAd() async {
     try {
       // 设置请求超时为 2 秒，避免长时间阻塞
-      AppAdsEntity response = await Api.getAdsList({'status':1,'type':640})
-          .timeout(
-            const Duration(seconds: 2),
-            onTimeout: () {
-              debugPrint("Banner广告请求超时");
-              throw TimeoutException("Banner广告请求超时");
-            },
-          );
-      
-      List<AppAdsDataList> adsList = response.data?.list ?? [] as List<AppAdsDataList>;
-      
+      AppAdsEntity response = await Api.getAdsList({
+        'status': 1,
+        "adsPage": 898,
+        'type': 680,
+      }).timeout(
+        const Duration(seconds: 2),
+        onTimeout: () {
+          debugPrint("Banner广告请求超时");
+          throw TimeoutException("Banner广告请求超时");
+        },
+      );
+
+      List<AppAdsDataList> adsList =
+          response.data?.list ?? [] as List<AppAdsDataList>;
+
       if (!mounted) return;
-      
+
       if (adsList.isNotEmpty) {
         //筛选adsList数组中adsPage=898且type=680的数据
         List<AppAdsDataList> filteredAds =

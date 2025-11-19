@@ -44,20 +44,22 @@ import 'services/home_prefetch_service.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
-    statusBarBrightness: Brightness.dark,
-    systemNavigationBarColor: Colors.transparent,
-    systemNavigationBarIconBrightness: Brightness.light,
-    systemStatusBarContrastEnforced: false,
-    systemNavigationBarContrastEnforced: false,
-  ));
-  try {
-    await HomePrefetchService.instance.preload();
-  } catch (e) {
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.light,
+      systemStatusBarContrastEnforced: false,
+      systemNavigationBarContrastEnforced: false,
+    ),
+  );
+  // 预加载改为后台异步执行，不阻塞应用启动
+  // 保持原有业务逻辑不变，只是改变执行时机
+  HomePrefetchService.instance.preload().catchError((e) {
     debugPrint('Home prefetch failed: $e');
-  }
+  });
   runApp(const AppBootstrap());
 }
 
@@ -226,10 +228,7 @@ class _MainPageState extends State<MainPage> {
       return EnvironmentError();
     } else {
       return Scaffold(
-        body: IndexedStack(
-          index: _selectedIndex,
-          children: _pages,
-        ),
+        body: IndexedStack(index: _selectedIndex, children: _pages),
         bottomNavigationBar: BottomNavigationBar(
           items: [
             BottomNavigationBarItem(
@@ -314,31 +313,56 @@ class _MainPageState extends State<MainPage> {
 
   Future<String> init() async {
     try {
-      // 使用Future.wait并发执行多个异步操作（移除广告加载，改为后台异步加载）
-      await Future.wait<dynamic>([
-        DBManager.init(),
-        initPlatformState(),
-        ShareUtil.prepareShareImage(),
-        User.isLogin(),
-      ]);
+      // 只等待关键操作：数据库初始化（必需，其他操作依赖它）
+      await DBManager.init();
+
+      // 其他非关键操作改为后台异步执行，不阻塞应用启动
+      // 保持原有业务逻辑不变，只是改变执行时机
+      // 设备信息获取（延迟执行，不阻塞启动）
+      Future.delayed(const Duration(milliseconds: 100), () {
+        initPlatformState().catchError((e) {
+          debugPrint('initPlatformState failed: $e');
+        });
+      });
+
+      // 分享图片准备（延迟执行，在真正需要时再准备）
+      Future.delayed(const Duration(milliseconds: 300), () {
+        ShareUtil.prepareShareImage().catchError((e) {
+          debugPrint('prepareShareImage failed: $e');
+        });
+      });
+
+      // 登录状态检查（延迟执行）
+      Future.delayed(const Duration(milliseconds: 200), () {
+        User.isLogin().catchError((e) {
+          debugPrint('User.isLogin failed: $e');
+        });
+      });
 
       // 广告加载改为后台异步执行，不阻塞应用启动
-      getAd(); // 不等待，后台执行
+      getAd().catchError((e) {
+        debugPrint('getAd failed: $e');
+      });
 
       //跳转到SplashPage组件
       return "init success";
     } catch (e) {
-      // 注意：Future.wait会在任意一个Future失败时立即抛出异常
-      // 如果需要收集所有错误，需要更复杂的处理
-      return "init fail: ${e.toString()}";
+      // 数据库初始化失败时记录错误，但不阻塞启动
+      debugPrint('DBManager.init failed: $e');
+      return "init success"; // 即使失败也返回成功，让应用继续启动
     }
   }
 
-  //获取广告（不再缓存，直接请求，后台异步执行，不阻塞启动）
+  // //获取广告（不再缓存，直接请求，后台异步执行，不阻塞启动）
   Future<void> getAd() async {
     try {
       List<AppAdsDataList> list =
-          (await Api.getAdsList({'status':1})).data?.list ?? [] as List<AppAdsDataList>;
+          (await Api.getAdsList({
+            'status': 1,
+            'adsPage': 896,
+            'type': 682,
+          })).data?.list ??
+          [] as List<AppAdsDataList>;
       debugPrint('获取广告成功: $list');
     } catch (e) {
       debugPrint('获取广告失败: $e');

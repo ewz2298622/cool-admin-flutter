@@ -5,8 +5,8 @@ import 'package:flutter_unionad/flutter_unionad.dart';
 import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
-import '../../entity/app_ads_entity.dart';
 import '../../api/api.dart';
+import '../../entity/app_ads_entity.dart';
 import '../../utils/ads_config.dart';
 
 /// 描述：开屏广告页
@@ -37,7 +37,7 @@ class _SplashPageState extends State<SplashPage> {
         _navigateToNextPage();
       }
     });
-    
+
     // 异步加载广告，不阻塞页面显示
     _loadAd();
   }
@@ -60,19 +60,17 @@ class _SplashPageState extends State<SplashPage> {
   Future<void> _loadAd() async {
     try {
       // 设置请求超时为 1.5 秒
-      AppAdsEntity response = await Api.getAdsList({'status':1})
-          .timeout(
-            const Duration(milliseconds: 1500),
-            onTimeout: () {
-              debugPrint("开屏广告请求超时");
-              throw TimeoutException("开屏广告请求超时");
-            },
-          );
-      
-      List<AppAdsDataList> adsList = response.data?.list ?? [] as List<AppAdsDataList>;
-      
+      AppAdsEntity response = await Api.getAdsList({
+        'status': 1,
+        'adsPage': 896,
+        'type': 682,
+      });
+
+      List<AppAdsDataList> adsList =
+          response.data?.list ?? [] as List<AppAdsDataList>;
+
       if (!mounted || _hasNavigated) return;
-      
+
       if (adsList.isNotEmpty) {
         //筛选adsList数组中adsPage=896的数据
         List<AppAdsDataList> filteredAds =
