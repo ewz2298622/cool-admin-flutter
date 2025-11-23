@@ -26,6 +26,7 @@ class DeviceInfoUtils {
   }
 
   Future<Map<String, dynamic>> requestDeviceInfo() async {
+    // 开启禁止屏幕截图功能
     await ProtectApp().turnOffScreenshots();
     // 如果已经获取过设备信息，则直接返回
     if (deviceInfo != null) {
