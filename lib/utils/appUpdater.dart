@@ -17,7 +17,7 @@ import 'context_manager.dart';
 /// 应用更新工具类
 class AppUpdater {
   /// 检查应用更新
-  /// 
+  ///
   /// [showNoUpdateDialog] 可选参数，默认为 false
   /// - false: 没有新版本时不执行任何操作（不显示对话框）
   /// - true: 没有新版本时显示"当前已是最新版本"对话框
@@ -36,7 +36,7 @@ class AppUpdater {
       String downloadUrl = noticeInfoData[0].appUrl ?? '';
 
       // 比较版本 _compareVersions(currentVersion, latestVersion) < 0
-      debugPrint('AppUpdatercurrentVersion: $currentVersion') ;
+      debugPrint('AppUpdatercurrentVersion: $currentVersion');
       debugPrint('AppUpdaterlatestVersion: $latestVersion');
       if (currentVersion != latestVersion) {
         debugPrint('有新版本');
@@ -58,10 +58,11 @@ class AppUpdater {
         }
       }
     } catch (e) {
-      _showErrorDialog(
-        ContextManager.getContext() as BuildContext,
-        e.toString(),
-      );
+      debugPrint('请求新版本失败');
+      // _showErrorDialog(
+      //   ContextManager.getContext() as BuildContext,
+      //   e.toString(),
+      // );
     }
   }
 
@@ -222,10 +223,7 @@ class AppUpdater {
               children: [
                 const Text(
                   '检查更新',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 12),
                 const Text(
@@ -274,10 +272,7 @@ class AppUpdater {
               children: [
                 const Text(
                   '出错啦',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 12),
                 Text(

@@ -20,11 +20,10 @@ import '../../entity/dict_data_entity.dart';
 import '../../entity/dict_info_list_entity.dart';
 import '../../entity/notice_Info_entity.dart';
 import '../../entity/swiper_entity.dart';
+import '../../services/home_prefetch_service.dart';
 import '../../style/layout.dart';
 import '../../utils/appUpdater.dart';
-import '../../services/home_prefetch_service.dart';
 import '../album/album.dart';
-import '../notice/notice.dart';
 
 class GradientTabIndicator extends Decoration {
   final Gradient gradient;
@@ -148,10 +147,9 @@ class _HomePageState extends State<Home>
 
   Future<void> _initializeData() async {
     if (!mounted) return;
-    
+
     try {
-      HomePrefetchData? data =
-          HomePrefetchService.instance.cachedData;
+      HomePrefetchData? data = HomePrefetchService.instance.cachedData;
 
       if (data == null || !data.isValid) {
         data = await HomePrefetchService.instance.preload();
@@ -196,8 +194,9 @@ class _HomePageState extends State<Home>
   void _applyPrefetchedData(HomePrefetchData data) {
     category = data.categories;
     videoCategoryIds = data.videoCategoryIds;
-    tabs =
-        category.map((e) => TDTab(text: e.name ?? '')).toList(growable: false);
+    tabs = category
+        .map((e) => TDTab(text: e.name ?? ''))
+        .toList(growable: false);
     swiperMap = Map<int, List<SwiperDataList>>.from(data.swiperMap);
     albumMap = Map<int, List<AlbumDataList>>.from(data.albumMap);
     noticeInfoData = List<NoticeInfoDataList>.from(data.noticeInfo);
@@ -387,7 +386,7 @@ class _HomePageState extends State<Home>
 
   void _handleTabSelection() {
     if (!mounted || !_tabController.indexIsChanging) return;
-    
+
     pageController.animateToPage(
       _tabController.index,
       duration: _tabAnimationDuration,
@@ -483,9 +482,7 @@ class _HomePageState extends State<Home>
           children: [
             Expanded(
               flex: 5,
-              child: CommonSearchBar(
-                onTap: () => Get.toNamed("/search"),
-              ),
+              child: CommonSearchBar(onTap: () => Get.toNamed("/search")),
             ),
             const SizedBox(width: 10),
             GestureDetector(
@@ -510,7 +507,8 @@ class _HomePageState extends State<Home>
     }
 
     if (!_isInitialized) {
-      return const Center(child: Text('初始化失败'));
+      Get.toNamed("/connection_error");
+      return Container();
     }
 
     return Column(
@@ -624,15 +622,14 @@ class _HomePageState extends State<Home>
       tabRefreshController.add(RefreshController());
     }
 
-    final albumList = (albumMap[categoryId] ?? [])
-        .where((album) {
+    final albumList =
+        (albumMap[categoryId] ?? []).where((album) {
           final data = album.list;
           if (data == null) return false;
           if (data is List) return data.isNotEmpty;
           if (data is Iterable) return data.isNotEmpty;
           return false;
-        })
-        .toList();
+        }).toList();
 
     return SmartRefresher(
       controller: tabRefreshController[index],
@@ -640,6 +637,7 @@ class _HomePageState extends State<Home>
       enablePullUp: false,
       onRefresh: () => onRefresh(index),
       child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.only(
           top: 0,
           left: Layout.paddingL,
@@ -654,24 +652,25 @@ class _HomePageState extends State<Home>
               child: _buildDotsSwiper(categoryId),
             );
           }
-          
+
           // 专辑内容
           final albumIndex = itemIndex - 1;
           final album = albumList[albumIndex];
-          final albumVideos = (album.list is List)
-              ? List<dynamic>.from(album.list as List)
-              : (album.list is Iterable)
+          final albumVideos =
+              (album.list is List)
+                  ? List<dynamic>.from(album.list as List)
+                  : (album.list is Iterable)
                   ? List<dynamic>.from(album.list as Iterable)
                   : <dynamic>[];
           if (albumVideos.isEmpty) {
             return const SizedBox.shrink();
           }
-          
+
           return RepaintBoundary(
             key: ValueKey('album_${album.id}_$itemIndex'),
             child: Column(
               children: [
-                if (albumIndex > 0) 
+                if (albumIndex > 0)
                   const SizedBox(height: Layout.paddingL)
                 else
                   const SizedBox(height: Layout.paddingL),
@@ -716,7 +715,6 @@ class _HomePageState extends State<Home>
       },
     );
   }
-
 
   @override
   Widget build(BuildContext context) {

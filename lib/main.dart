@@ -11,6 +11,7 @@ import 'package:flutter_app/utils/store/app/appState.dart';
 import 'package:flutter_app/utils/store/theme/theme.dart';
 import 'package:flutter_app/utils/store/user/user.dart';
 import 'package:flutter_app/utils/user.dart';
+import 'package:flutter_app/views/connection_error/connectionError.dart';
 import 'package:flutter_app/views/environment_error/environment_error.dart';
 import 'package:flutter_app/views/feedback/feedback.dart';
 import 'package:flutter_app/views/home/home.dart';
@@ -171,6 +172,11 @@ class _MyAppState extends State<MyApp> {
               GetPage(name: '/feedback', page: () => FeedbackPage()),
               GetPage(name: '/score', page: () => TaskCenterPage()),
               GetPage(name: '/score_order', page: () => ScoreOrder()),
+              GetPage(name: '/connection_error', page: () => ConnectionError()),
+              GetPage(
+                name: '/environment_error',
+                page: () => EnvironmentError(),
+              ),
             ],
             navigatorKey: ContextManager.navigatorKey,
             navigatorObservers: [routeObserver], // 添加路由观察者
