@@ -45,8 +45,8 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
     try {
       ///Todo: 获取验证码
       ///
-      getCaptcha();
-      noticeInfo();
+    await  getCaptcha();
+    await  noticeInfo();
       return "init success";
     } catch (e) {
       return "init success";
@@ -55,22 +55,42 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
 
   // 数据加载逻辑分离
   Future<void> noticeInfo() async {
+    // 通知类型常量
+    const int privacyType = 642; // 隐私政策类型
+    const int serviceType = 641; // 服务协议类型
+    
     try {
-      privacyData =
-          (await Api.noticeInfo({"page": 1, "size": 1, "type": 642,"status":1})).data?.list
-              as List<NoticeInfoDataList>;
-      serviceData =
-          (await Api.noticeInfo({"page": 1, "size": 1, "type": 641,"status":1})).data?.list
-              as List<NoticeInfoDataList>;
-      setState(() {});
-    } catch (e) {
-      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+      // 并行执行两个 API 调用以提高性能
+      final results = await Future.wait([
+        Api.noticeInfo({"page": 1, "size": 1, "type": privacyType, "status": 1}),
+        Api.noticeInfo({"page": 1, "size": 1, "type": serviceType, "status": 1}),
+      ]);
+      
+      // 安全地提取数据，避免类型转换异常
+      privacyData = results[0].data?.list ?? [];
+      serviceData = results[1].data?.list ?? [];
+      
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e, stackTrace) {
+      debugPrint('获取通知信息失败 (noticeInfo): $e');
+      debugPrint('错误堆栈: $stackTrace');
+      // 发生错误时设置为空列表，避免后续使用 null
+      privacyData = [];
+      serviceData = [];
     }
   }
 
   Future<void> getCaptcha() async {
-    captchaData = (await Api.getCaptcha({})).data;
-    setState(() {});
+    try {
+      captchaData = (await Api.getCaptcha({})).data;
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint('获取验证码失败: $e');
+    }
   }
 
   @override
@@ -459,43 +479,50 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
             style: TextStyle(color: Color.fromRGBO(30, 33, 33, 1)),
           ),
           TextSpan(
-            text: "服务协议",
+            text: privacyData?.isNotEmpty == true 
+                ? (privacyData![0].title ?? "隐私政策")
+                : "隐私政策",
             style: const TextStyle(
               color: Color.fromRGBO(22, 93, 255, 1),
               decoration: TextDecoration.underline,
             ),
-            recognizer:
-                TapGestureRecognizer()
-                  ..onTap =
-                      () =>
-                          () => Get.toNamed(
-                            "/html",
-                            arguments: {
-                              "title": privacyData?[1].title ?? "",
-                              "content": privacyData?[1].content ?? "",
-                            },
-                          ),
+            recognizer: TapGestureRecognizer()
+              ..onTap = () {
+                if (privacyData?.isNotEmpty == true) {
+                  Get.toNamed(
+                    "/html",
+                    arguments: {
+                      "title": privacyData![0].title ?? "",
+                      "content": privacyData![0].content ?? "",
+                    },
+                  );
+                }
+              },
           ),
           const TextSpan(
             text: " 和 ",
             style: TextStyle(color: Color.fromRGBO(30, 33, 33, 1)),
           ),
           TextSpan(
-            text: "隐私政策",
+            text: serviceData?.isNotEmpty == true
+                ? (serviceData![0].title ?? "服务协议")
+                : "服务协议",
             style: const TextStyle(
               color: Color.fromRGBO(22, 93, 255, 1),
               decoration: TextDecoration.underline,
             ),
-            recognizer:
-                TapGestureRecognizer()
-                  ..onTap =
-                      () => Get.toNamed(
-                        "/html",
-                        arguments: {
-                          "title": privacyData?[0].title ?? "",
-                          "content": privacyData?[0].content ?? "",
-                        },
-                      ),
+            recognizer: TapGestureRecognizer()
+              ..onTap = () {
+                if (serviceData?.isNotEmpty == true) {
+                  Get.toNamed(
+                    "/html",
+                    arguments: {
+                      "title": serviceData![0].title ?? "",
+                      "content": serviceData![0].content ?? "",
+                    },
+                  );
+                }
+              },
           ),
         ],
       ),

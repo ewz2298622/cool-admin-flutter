@@ -12,7 +12,7 @@ class SearchHistoryDatabaseHelper {
     _createTable();
   }
 
-  // 创建搜索历史表
+  // 创建搜索历史表 - 优化：添加索引提升查询性能
   void _createTable() {
     _database.execute('''
       CREATE TABLE IF NOT EXISTS search_history (
@@ -21,36 +21,46 @@ class SearchHistoryDatabaseHelper {
         timestamp TEXT NOT NULL
       );
     ''');
+    // 为 query 字段添加索引，提升查询性能
+    _database.execute('''
+      CREATE INDEX IF NOT EXISTS idx_search_history_query 
+      ON search_history(query);
+    ''');
+    // 为 timestamp 字段添加索引，提升排序性能
+    _database.execute('''
+      CREATE INDEX IF NOT EXISTS idx_search_history_timestamp 
+      ON search_history(timestamp DESC);
+    ''');
   }
 
-  // 插入搜索记录
+  // 插入搜索记录 - 优化：使用 LIMIT 1 提升查询性能
   void insertSearchHistory(SearchHistoryEntity searchHistory) {
-    //清除searchHistory.query 的搜索空格
+    // 清除搜索空格
     searchHistory.query = searchHistory.query.trim();
-    final query = '''
-      INSERT INTO search_history (query, timestamp)
-      VALUES (?, ?);
-    ''';
-    //查询searchHistory.query 是否已经存在
-
-    final result = _database.select(
-      'SELECT * FROM search_history WHERE query = ?;',
+    
+    // 检查是否已存在（使用 LIMIT 1 提升性能）
+    final existing = _database.select(
+      'SELECT id FROM search_history WHERE query = ? LIMIT 1;',
       [searchHistory.query],
     );
-    if (result.isNotEmpty) {
+    if (existing.isNotEmpty) {
       return;
     }
 
-    _database.execute(query, [
-      searchHistory.query,
-      searchHistory.timestamp.toIso8601String(),
-    ]);
+    // 插入新记录
+    _database.execute(
+      'INSERT INTO search_history (query, timestamp) VALUES (?, ?);',
+      [
+        searchHistory.query,
+        searchHistory.timestamp.toIso8601String(),
+      ],
+    );
   }
 
-  // 根据搜索内容查询搜索记录
-  SearchHistoryEntity? getSearchHistoryByQuery(String query) {
-    final query = 'SELECT * FROM search_history WHERE query = ?;';
-    final result = _database.select(query, [query]);
+  // 根据搜索内容查询搜索记录 - 优化：修复变量名冲突
+  SearchHistoryEntity? getSearchHistoryByQuery(String searchQuery) {
+    final sql = 'SELECT * FROM search_history WHERE query = ? LIMIT 1;';
+    final result = _database.select(sql, [searchQuery]);
 
     if (result.isEmpty) {
       return null;

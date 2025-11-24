@@ -12,7 +12,7 @@ class AldultDatabaseHelper {
     _createTable();
   }
 
-  // 创建搜索历史表
+  // 创建成人模式表 - 优化：添加索引提升查询性能
   void _createTable() {
     _database.execute('''
       CREATE TABLE IF NOT EXISTS aldult (
@@ -20,6 +20,11 @@ class AldultDatabaseHelper {
         status INTEGER NOT NULL,
         timestamp TEXT NOT NULL
       );
+    ''');
+    // 为 timestamp 字段添加索引，提升排序查询性能
+    _database.execute('''
+      CREATE INDEX IF NOT EXISTS idx_aldult_timestamp 
+      ON aldult(timestamp DESC);
     ''');
   }
 

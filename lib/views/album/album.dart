@@ -87,6 +87,7 @@ class VideoAlbumState extends State<VideoAlbum> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const PageLoading();
         } else if (snapshot.hasError) {
+          debugPrint('Album initialization error: ${snapshot.error}');
           return Text('Error: ${snapshot.error}');
         } else if (snapshot.hasData) {
           return SingleChildScrollView(

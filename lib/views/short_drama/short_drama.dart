@@ -155,15 +155,16 @@ class _ShortDramaState extends State<ShortDrama>
   /// 返回一个Widget自动填充剩余高度 且可以滑动
   Widget _buildContent() {
     return FutureBuilder<String>(
-      future: _futureBuilderFuture, // 异步操作
+      future: _futureBuilderFuture,
       builder: (context, snapshot) {
-        debugPrint('snapshot: ${snapshot.hasData}');
+        // 优化：移除不必要的 debugPrint，减少重建时的开销
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return PageLoading();
+          return const PageLoading();
         } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}'); // 显示错误信息
+          debugPrint('ShortDrama initialization error: ${snapshot.error}');
+          return Text('Error: ${snapshot.error}');
         } else if (!snapshot.hasData || _videoList.isEmpty) {
-          return Text('No data available');
+          return const Text('No data available');
         }
 
         return PageView.builder(

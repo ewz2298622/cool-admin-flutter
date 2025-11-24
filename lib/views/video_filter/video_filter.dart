@@ -180,11 +180,12 @@ class VideoFilterState extends State<VideoFilter>
     
     try {
       _isLoading = true;
+      // 只在开始时调用一次 setState
       if (mounted) {
         setState(() {});
       }
       
-      // 并行执行所有初始化任务，不需要 Future.microtask
+      // 并行执行所有初始化任务，提升加载速度
       await Future.wait([
         getVideoPages(),
         getVideoCategoryPages(),
@@ -193,6 +194,7 @@ class VideoFilterState extends State<VideoFilter>
       ]);
       
       _isLoading = false;
+      // 只在结束时调用一次 setState
       if (mounted) {
         setState(() {});
       }
