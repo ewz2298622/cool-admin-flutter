@@ -40,7 +40,7 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
   Future<void> noticeInfo() async {
     try {
       List<NoticeInfoDataList> list =
-          (await Api.noticeInfo({"page": currentPage})).data?.list
+          (await Api.noticeInfo({"page": currentPage,"status":1})).data?.list
               as List<NoticeInfoDataList>;
       setState(() {
         noticeInfoData.addAll(list);

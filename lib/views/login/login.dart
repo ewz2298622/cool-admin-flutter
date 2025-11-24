@@ -57,10 +57,10 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
   Future<void> noticeInfo() async {
     try {
       privacyData =
-          (await Api.noticeInfo({"page": 1, "size": 1, "type": 642})).data?.list
+          (await Api.noticeInfo({"page": 1, "size": 1, "type": 642,"status":1})).data?.list
               as List<NoticeInfoDataList>;
       serviceData =
-          (await Api.noticeInfo({"page": 1, "size": 1, "type": 641})).data?.list
+          (await Api.noticeInfo({"page": 1, "size": 1, "type": 641,"status":1})).data?.list
               as List<NoticeInfoDataList>;
       setState(() {});
     } catch (e) {

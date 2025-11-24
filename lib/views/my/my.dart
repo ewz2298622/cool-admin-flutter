@@ -62,7 +62,7 @@ class MyState extends State<My>
   Future<void> noticeInfo() async {
     try {
       List<NoticeInfoDataList> list =
-          (await Api.noticeInfo({"page": 1, "size": 1, "type": 640})).data?.list
+          (await Api.noticeInfo({"page": 1, "size": 1, "type": 640,"status":1})).data?.list
               as List<NoticeInfoDataList>;
       noticeInfoData = list;
     } catch (e) {
