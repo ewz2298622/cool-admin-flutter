@@ -397,6 +397,7 @@ class VideoRankingState extends State<VideoRanking>
         itemCount: videoPageDataList.length > index 
             ? videoPageDataList[index].length 
             : 0,
+        cacheExtent: 200, // 优化缓存范围
         itemBuilder: (context, key) {
           final videoData = videoPageDataList[index][key];
           return RepaintBoundary(

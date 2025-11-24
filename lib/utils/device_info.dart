@@ -5,102 +5,144 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:protect_app/protect_app.dart';
 
+/// 设备信息工具类
+/// 提供设备信息获取、安全检测等功能
 class DeviceInfoUtils {
-  // 添加单例实例
+  /// 单例实例
   static final DeviceInfoUtils _instance = DeviceInfoUtils._internal();
 
+  /// 设备信息插件实例
   static final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+
+  /// 保护应用插件实例（单例复用）
+  static final ProtectApp _protectApp = ProtectApp();
+
+  /// 设备数据缓存
   Map<String, dynamic> _deviceData = <String, dynamic>{};
-  // 添加数据缓存字段
 
-  // 私有构造函数
-  DeviceInfoUtils._internal();
-
-  // 单例访问点
-  factory DeviceInfoUtils() => _instance;
-
+  /// 设备信息缓存
   Map<String, dynamic>? deviceInfo;
 
+  /// 未知设备信息常量
+  static const String _unknownDevice = 'Unknown';
+
+  /// 私有构造函数
+  DeviceInfoUtils._internal();
+
+  /// 单例访问点
+  factory DeviceInfoUtils() => _instance;
+
+  /// 获取缓存的设备信息
   Map<String, dynamic>? getDeviceInfo() {
     return deviceInfo;
   }
 
+  /// 请求设备信息
+  /// 如果已缓存则直接返回，否则获取并缓存设备信息
   Future<Map<String, dynamic>> requestDeviceInfo() async {
-    // 开启禁止屏幕截图功能
-    await ProtectApp().turnOffScreenshots();
     // 如果已经获取过设备信息，则直接返回
     if (deviceInfo != null) {
       return deviceInfo!;
     }
-    final _protectAppPlugin = ProtectApp();
-    bool deviceUseVPN = await _protectAppPlugin.isDeviceUseVPN() ?? false;
-    bool tempIsRunOnTestFlight =
-        await _protectAppPlugin.isRunningInTestFlight() ?? false;
-    bool tempIsDeviceIsReal = await _protectAppPlugin.isItRealDevice() ?? false;
-    bool tempIsUseJailBrokenOrRoot =
-        await _protectAppPlugin.isUseJailBrokenOrRoot() ?? false;
-    bool checkIsTheDeveloperModeOn =
-        await _protectAppPlugin.checkIsTheDeveloperModeOn() ?? false;
 
-    //判断平台
-    if (Platform.isAndroid) {
-      // 获取Android设备信息
-      final androidInfo = await DeviceInfoPlugin().androidInfo;
-      // 添加deviceInfo
-      deviceInfo = {
-        "deviceId": androidInfo.id,
-        "deviceName": androidInfo.model,
-        "deviceBrand": androidInfo.brand,
-        "deviceType": Platform.operatingSystem,
-        "deviceVersion": androidInfo.version.release,
-        "isPhysicalDevice": androidInfo.isPhysicalDevice,
-        "deviceUseVPN": deviceUseVPN,
-        "isDeviceIsReal": tempIsDeviceIsReal,
-        "isUseJailBrokenOrRoot": tempIsUseJailBrokenOrRoot,
-        "isRunOnTestFlight": tempIsRunOnTestFlight,
-        "checkIsTheDeveloperModeOn": checkIsTheDeveloperModeOn,
-      };
-    } else if (Platform.isIOS) {
-      // 获取iOS设备信息
-      final iosInfo = await DeviceInfoPlugin().iosInfo;
-      deviceInfo = {
-        "deviceName": iosInfo.name,
-        "deviceBrand": iosInfo.utsname.machine,
-        "deviceType": Platform.operatingSystem,
-        "deviceVersion": iosInfo.systemVersion,
-        "isPhysicalDevice": iosInfo.isPhysicalDevice,
-        "deviceUseVPN": deviceUseVPN,
-        "isDeviceIsReal": tempIsDeviceIsReal,
-        "isUseJailBrokenOrRoot": tempIsUseJailBrokenOrRoot,
-        "isRunOnTestFlight": tempIsRunOnTestFlight,
-        "checkIsTheDeveloperModeOn": checkIsTheDeveloperModeOn,
-      };
-    } else {
-      // 其他平台
-      deviceInfo = {
-        "deviceName": "Unknown",
-        "deviceBrand": "Unknown",
-        "deviceType": Platform.operatingSystem,
-        "deviceVersion": "Unknown",
-        "deviceUseVPN": deviceUseVPN,
-        "isDeviceIsReal": tempIsDeviceIsReal,
-        "isUseJailBrokenOrRoot": tempIsUseJailBrokenOrRoot,
-        "isRunOnTestFlight": tempIsRunOnTestFlight,
-        "checkIsTheDeveloperModeOn": checkIsTheDeveloperModeOn,
-      };
+    try {
+      // 开启禁止屏幕截图功能
+      await _protectApp.turnOffScreenshots();
+
+      // 并行获取安全检测信息
+      final securityInfo = await _getSecurityInfo();
+
+      // 根据平台获取设备信息
+      if (Platform.isAndroid) {
+        deviceInfo = await _getAndroidDeviceInfo(securityInfo);
+      } else if (Platform.isIOS) {
+        deviceInfo = await _getIOSDeviceInfo(securityInfo);
+      } else {
+        deviceInfo = _getUnknownDeviceInfo(securityInfo);
+      }
+
+      debugPrint('deviceInfo: $deviceInfo');
+      return deviceInfo!;
+    } catch (e, stackTrace) {
+      debugPrint('获取设备信息失败: $e\n$stackTrace');
+      // 返回默认设备信息
+      deviceInfo = _getUnknownDeviceInfo({
+        'deviceUseVPN': false,
+        'isDeviceIsReal': false,
+        'isUseJailBrokenOrRoot': false,
+        'isRunOnTestFlight': false,
+        'checkIsTheDeveloperModeOn': false,
+      });
+      return deviceInfo!;
     }
-    debugPrint("deviceInfo: $deviceInfo");
-
-    return deviceInfo!;
   }
 
+  /// 获取安全检测信息
+  Future<Map<String, bool>> _getSecurityInfo() async {
+    return {
+      'deviceUseVPN': await _protectApp.isDeviceUseVPN() ?? false,
+      'isDeviceIsReal': await _protectApp.isItRealDevice() ?? false,
+      'isUseJailBrokenOrRoot':
+          await _protectApp.isUseJailBrokenOrRoot() ?? false,
+      'isRunOnTestFlight':
+          await _protectApp.isRunningInTestFlight() ?? false,
+      'checkIsTheDeveloperModeOn':
+          await _protectApp.checkIsTheDeveloperModeOn() ?? false,
+    };
+  }
+
+  /// 获取Android设备信息
+  Future<Map<String, dynamic>> _getAndroidDeviceInfo(
+    Map<String, bool> securityInfo,
+  ) async {
+    final androidInfo = await deviceInfoPlugin.androidInfo;
+    return {
+      'deviceId': androidInfo.id,
+      'deviceName': androidInfo.model,
+      'deviceBrand': androidInfo.brand,
+      'deviceType': Platform.operatingSystem,
+      'deviceVersion': androidInfo.version.release,
+      'isPhysicalDevice': androidInfo.isPhysicalDevice,
+      ...securityInfo,
+    };
+  }
+
+  /// 获取iOS设备信息
+  Future<Map<String, dynamic>> _getIOSDeviceInfo(
+    Map<String, bool> securityInfo,
+  ) async {
+    final iosInfo = await deviceInfoPlugin.iosInfo;
+    return {
+      'deviceName': iosInfo.name,
+      'deviceBrand': iosInfo.utsname.machine,
+      'deviceType': Platform.operatingSystem,
+      'deviceVersion': iosInfo.systemVersion,
+      'isPhysicalDevice': iosInfo.isPhysicalDevice,
+      ...securityInfo,
+    };
+  }
+
+  /// 获取未知平台设备信息
+  Map<String, dynamic> _getUnknownDeviceInfo(Map<String, bool> securityInfo) {
+    return {
+      'deviceName': _unknownDevice,
+      'deviceBrand': _unknownDevice,
+      'deviceType': Platform.operatingSystem,
+      'deviceVersion': _unknownDevice,
+      ...securityInfo,
+    };
+  }
+
+  /// 初始化平台状态
+  /// 获取平台相关的详细设备信息
   Future<void> initPlatformState() async {
-    var deviceData = <String, dynamic>{};
     try {
       if (kIsWeb) {
-        deviceData = _readWebBrowserInfo(await deviceInfoPlugin.webBrowserInfo);
+        _deviceData = _readWebBrowserInfo(
+          await deviceInfoPlugin.webBrowserInfo,
+        );
       } else {
-        deviceData = switch (defaultTargetPlatform) {
+        _deviceData = switch (defaultTargetPlatform) {
           TargetPlatform.android => _readAndroidBuildData(
             await deviceInfoPlugin.androidInfo,
           ),
@@ -117,18 +159,19 @@ class DeviceInfoUtils {
             await deviceInfoPlugin.macOsInfo,
           ),
           TargetPlatform.fuchsia => <String, dynamic>{
-            'Error:': 'Fuchsia platform isn\'t supported',
+            'Error': 'Fuchsia platform is not supported',
           },
         };
-        _deviceData = deviceData;
       }
-    } on PlatformException {
-      deviceData = <String, dynamic>{
-        'Error:': 'Failed to get platform version.',
+    } on PlatformException catch (e, stackTrace) {
+      debugPrint('获取平台信息失败: $e\n$stackTrace');
+      _deviceData = <String, dynamic>{
+        'Error': 'Failed to get platform version',
       };
     }
   }
 
+  /// 读取Android构建数据
   Map<String, dynamic> _readAndroidBuildData(AndroidDeviceInfo build) {
     return <String, dynamic>{
       'version.securityPatch': build.version.securityPatch,
@@ -165,6 +208,7 @@ class DeviceInfoUtils {
     };
   }
 
+  /// 读取iOS设备信息
   Map<String, dynamic> _readIosDeviceInfo(IosDeviceInfo data) {
     return <String, dynamic>{
       'name': data.name,
@@ -186,6 +230,7 @@ class DeviceInfoUtils {
     };
   }
 
+  /// 读取Linux设备信息
   Map<String, dynamic> _readLinuxDeviceInfo(LinuxDeviceInfo data) {
     return <String, dynamic>{
       'name': data.name,
@@ -202,6 +247,7 @@ class DeviceInfoUtils {
     };
   }
 
+  /// 读取Web浏览器信息
   Map<String, dynamic> _readWebBrowserInfo(WebBrowserInfo data) {
     return <String, dynamic>{
       'browserName': data.browserName.name,
@@ -222,6 +268,7 @@ class DeviceInfoUtils {
     };
   }
 
+  /// 读取macOS设备信息
   Map<String, dynamic> _readMacOsDeviceInfo(MacOsDeviceInfo data) {
     return <String, dynamic>{
       'computerName': data.computerName,
@@ -241,6 +288,7 @@ class DeviceInfoUtils {
     };
   }
 
+  /// 读取Windows设备信息
   Map<String, dynamic> _readWindowsDeviceInfo(WindowsDeviceInfo data) {
     return <String, dynamic>{
       'numberOfCores': data.numberOfCores,

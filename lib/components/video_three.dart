@@ -174,15 +174,20 @@ class VideoThree extends StatelessWidget {
         mainAxisSpacing: 4.0,
         mainAxisExtent: 205,
       ),
-      itemBuilder:
-          (context, i) => GridTile(
-            child: Center(child: Video(videoData: videoPageData[i])),
-          ),
+      itemBuilder: (context, i) => RepaintBoundary(
+        key: ValueKey('video_three_$i'),
+        child: GridTile(
+          child: Center(child: Video(videoData: videoPageData[i])),
+        ),
+      ),
       itemCount: videoPageData.length,
-      padding: EdgeInsets.zero, // 如果需要可以添加 padding
-      shrinkWrap: true, // 如果需要在可滚动组件中使用
-      physics: const NeverScrollableScrollPhysics(), // 如果需要禁用滚动
-      cacheExtent: 1000, // 增加缓存区域
+      padding: EdgeInsets.zero,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      cacheExtent: 200, // 优化缓存范围
+      addAutomaticKeepAlives: true,
+      addRepaintBoundaries: true,
+      addSemanticIndexes: false,
     );
   }
 }

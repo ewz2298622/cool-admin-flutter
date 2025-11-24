@@ -36,11 +36,12 @@ class VideoItem extends StatelessWidget {
   const VideoItem({super.key, required this.videoData});
 
   Widget _buildAlbumItems(BuildContext context) {
-    return GestureDetector(
-      onTap:
-          () => Get.toNamed("/video_detail", arguments: {"id": videoData.id}),
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTap:
+            () => Get.toNamed("/video_detail", arguments: {"id": videoData.id}),
 
-      child: Container(
+        child: Container(
         padding: const EdgeInsets.only(left: 4, right: 4, bottom: 10),
         child: Row(
           spacing: 5,
@@ -187,6 +188,7 @@ class VideoItem extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

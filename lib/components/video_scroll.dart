@@ -23,8 +23,10 @@ class HorizontalVideoList extends StatelessWidget {
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: videoPageData.length,
-        itemBuilder:
-            (context, i) => GestureDetector(
+        cacheExtent: 200, // 优化缓存范围
+        itemBuilder: (context, i) => RepaintBoundary(
+          key: ValueKey('video_scroll_$i'),
+          child: GestureDetector(
               onTap: () {
                 if (onTap != null) {
                   onTap!();
@@ -87,6 +89,7 @@ class HorizontalVideoList extends StatelessWidget {
                 ),
               ),
             ),
+        ),
       ),
     );
   }

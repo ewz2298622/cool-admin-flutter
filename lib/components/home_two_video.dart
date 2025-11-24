@@ -62,11 +62,14 @@ class HomeTwoVideo extends StatelessWidget {
             //自动换行
             children: List.generate(
               album.length,
-              (index) => SizedBox(
-                width: itemWidth, // 固定宽度
-                child: _buildAlbumItem(
-                  album[index] ?? AlbumDataListList(),
-                  context,
+              (index) => RepaintBoundary(
+                key: ValueKey('home_two_video_$index'),
+                child: SizedBox(
+                  width: itemWidth, // 固定宽度
+                  child: _buildAlbumItem(
+                    album[index] ?? AlbumDataListList(),
+                    context,
+                  ),
                 ),
               ),
             ),

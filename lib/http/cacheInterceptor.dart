@@ -1,18 +1,35 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// 缓存拦截器
+/// 提供HTTP请求缓存功能，提升应用性能和响应速度
 class CacheInterceptor extends Interceptor {
+  /// 缓存持续时间
   final Duration cacheDuration;
+  
+  /// 是否强制刷新
   final bool forceRefresh;
+  
+  /// 白名单路径（不使用缓存）
   final List<String> whitelistPaths;
+
+  /// SharedPreferences 实例缓存（避免重复获取）
+  static SharedPreferences? _prefs;
 
   CacheInterceptor({
     this.cacheDuration = const Duration(minutes: 10),
     this.forceRefresh = false,
     this.whitelistPaths = const [],
   });
+
+  /// 获取 SharedPreferences 实例（单例模式）
+  Future<SharedPreferences> _getPrefs() async {
+    _prefs ??= await SharedPreferences.getInstance();
+    return _prefs!;
+  }
 
   // 生成更健壮的缓存键
   String _generateCacheKey(RequestOptions options) {
@@ -67,14 +84,14 @@ class CacheInterceptor extends Interceptor {
     }
 
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _getPrefs();
       final cacheKey = _generateCacheKey(options);
       final cachedData = prefs.getString(cacheKey);
 
       if (cachedData != null) {
         try {
-          final cacheMap = json.decode(cachedData);
-          final cacheTimestamp = cacheMap['timestamp'];
+          final cacheMap = json.decode(cachedData) as Map<String, dynamic>;
+          final cacheTimestamp = cacheMap['timestamp'] as int;
           final isExpired =
               _getCurrentTimestamp() - cacheTimestamp >
               cacheDuration.inMilliseconds;
@@ -89,17 +106,17 @@ class CacheInterceptor extends Interceptor {
             handler.resolve(cachedResponse);
             return;
           }
-        } catch (e) {
+        } catch (e, stackTrace) {
           // 缓存数据解析失败，忽略并继续请求
-          print('Cache parse error: $e');
+          debugPrint('Cache parse error: $e\n$stackTrace');
         }
       }
 
       // 没有缓存或缓存已过期，继续请求
       handler.next(options);
-    } catch (e) {
+    } catch (e, stackTrace) {
       // 缓存读取失败，继续请求
-      print('Cache read error: $e');
+      debugPrint('Cache read error: $e\n$stackTrace');
       handler.next(options);
     }
   }
@@ -114,17 +131,20 @@ class CacheInterceptor extends Interceptor {
         response.requestOptions.extra['noCache'] != true &&
         !_isWhitelisted(response.requestOptions)) {
       try {
-        final prefs = await SharedPreferences.getInstance();
+        final prefs = await _getPrefs();
         final cacheKey = _generateCacheKey(response.requestOptions);
         final cacheData = {
           'data': response.data,
           'timestamp': _getCurrentTimestamp(),
         };
 
-        await prefs.setString(cacheKey, json.encode(cacheData));
-      } catch (e) {
+        // 异步保存，不阻塞响应
+        prefs.setString(cacheKey, json.encode(cacheData)).catchError((e) {
+          debugPrint('Cache save failed: $e');
+        });
+      } catch (e, stackTrace) {
         // 缓存失败不影响正常流程
-        print('Cache save failed: $e');
+        debugPrint('Cache save error: $e\n$stackTrace');
       }
     }
 
