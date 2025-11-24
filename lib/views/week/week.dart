@@ -110,7 +110,8 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
               height: 140,
               imgUrl: item.surfacePlot ?? "",
               errorWidget: const TDImage(
-                width: 150,
+                 width: 110,
+              height: 140,
                 assetUrl: 'assets/images/loading.gif',
               ),
             ),

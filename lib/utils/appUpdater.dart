@@ -27,7 +27,7 @@ class AppUpdater {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
       String currentVersion = packageInfo.version;
       List<NoticeInfoDataList> noticeInfoData =
-          (await Api.noticeInfo({"page": 1, "size": 1, "type": 636})).data?.list
+          (await Api.noticeInfo({"page": 1, "size": 1, "type": 636,"status":1})).data?.list
               as List<NoticeInfoDataList>;
 
       // 假设服务器返回JSON格式: {"title": "版本更新通知", "content": "本次更新优化了性能并修复了已知问题...", "type": 1, "summary": "v2.0.0 版本更新公告", "status": 1, "appVersion": "2.0.0", "appUrl": "https://example.com/app/download"}
@@ -38,7 +38,15 @@ class AppUpdater {
       // 比较版本 _compareVersions(currentVersion, latestVersion) < 0
       debugPrint('AppUpdatercurrentVersion: $currentVersion');
       debugPrint('AppUpdaterlatestVersion: $latestVersion');
-      if (currentVersion != latestVersion) {
+      if(latestVersion.isEmpty){
+          debugPrint('没有新版本');
+        return;
+      }
+
+      double currentVersionNumber = double.parse(currentVersion);
+      double latestVersionNumber = double.parse(latestVersion);
+
+      if (currentVersionNumber < latestVersionNumber) {
         debugPrint('有新版本');
         // 有新版本
         _showUpdateDialog(
