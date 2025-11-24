@@ -7,9 +7,7 @@ import '../../components/loading.dart';
 import '../../components/sectionWithMore.dart';
 import '../../db/entity/SearchHistoryEntity.dart';
 import '../../db/manager/SearchHistoryDatabaseHelper.dart';
-import '../../entity/dict_data_entity.dart';
-import '../../entity/hot_keyWord_entity.dart';
-import '../../entity/video_page_entity.dart';
+import '../../entity/video_hot_words_entity.dart';
 import '../../entity/video_rank_entity.dart';
 import '../../style/layout.dart';
 import '../../utils/color.dart';
@@ -40,12 +38,14 @@ class _GradientPainter extends BoxPainter {
 
   @override
   void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
-    final rect = Offset(offset.dx, configuration.size!.height - decoration.height) &
+    final rect =
+        Offset(offset.dx, configuration.size!.height - decoration.height) &
         Size(configuration.size!.width, decoration.height);
 
-    final paint = Paint()
-      ..shader = decoration.gradient.createShader(rect)
-      ..isAntiAlias = true;
+    final paint =
+        Paint()
+          ..shader = decoration.gradient.createShader(rect)
+          ..isAntiAlias = true;
 
     canvas.drawRRect(
       RRect.fromRectAndRadius(rect, Radius.circular(decoration.radius)),
@@ -67,10 +67,9 @@ class VideoSearchState extends State<VideoSearch>
   String inputText = '';
   final searchHistory = SearchHistoryDatabaseHelper();
   Iterable<SearchHistoryEntity> searchHistoryList = [];
-  List<DictDataDataVideoCategory> category = [];
   List<VideoRankDataList> searchType = [];
   List<List<VideoRankDataListList>> searchTypeVideoPageDataList = [];
-  List<List<HotKeyWordDataList>> hotKeyWordList = [];
+  List<List<VideoHotWordsDataListList>> hotKeyWordList = [];
   List<TDTab> tabs = [];
   late TabController _tabController;
   late Future<String> _futureBuilderFuture;
@@ -140,29 +139,35 @@ class VideoSearchState extends State<VideoSearch>
     }
   }
 
-  /// 获取分类信息并加载热门关键词（并发执行）
+  /// 获取分类信息并加载热门关键词（使用 getSearchHotKeyWord）
   Future<void> getDictCategoryInfoPages() async {
     try {
-      category = ((await Api.getDictData({
-                "types": ["video_category"],
-              })).data as DictDataData)
-          .videoCategory ?? [];
-      category = category.where((element) => element.parentId == null).toList();
+      final hotWordsEntity = await Api.getSearchHotKeyWord({});
+      final hotWordsList = hotWordsEntity.data?.list ?? [];
 
       tabs.clear();
       hotKeyWordList.clear();
 
-      // 并发加载所有分类的热门关键词
-      if (category.isNotEmpty) {
-        final futures = category.map((element) async {
-          tabs.add(TDTab(text: element.name ?? '分类'));
-          return videoHotKeyWord(element.id ?? 0);
-        }).toList();
+      // 遍历热词分类数据，构建 tabs 和热词列表
+      for (var element in hotWordsList) {
+        final name = element.name ?? '分类';
+        tabs.add(TDTab(text: name));
 
-        await Future.wait(futures);
+        // 获取该分类下的热词列表，限制数量为 _hotKeyWordPageSize
+        final keywordList = element.list ?? <VideoHotWordsDataListList>[];
+        final limitedList =
+            keywordList.length > _hotKeyWordPageSize
+                ? keywordList.sublist(0, _hotKeyWordPageSize)
+                : keywordList;
+        hotKeyWordList.add(limitedList);
       }
     } catch (e) {
       debugPrint('getDictCategoryInfoPages failed: $e');
+      // 容错处理：确保至少有一个默认 tab
+      if (tabs.isEmpty) {
+        tabs = [const TDTab(text: '默认')];
+        hotKeyWordList.add(<VideoHotWordsDataListList>[]);
+      }
     }
   }
 
@@ -178,9 +183,10 @@ class VideoSearchState extends State<VideoSearch>
         for (var element in searchType) {
           final list = element.list ?? <VideoRankDataListList>[];
           // 限制数量为 _searchTypeVideoPageSize
-          final limitedList = list.length > _searchTypeVideoPageSize
-              ? list.sublist(0, _searchTypeVideoPageSize)
-              : list;
+          final limitedList =
+              list.length > _searchTypeVideoPageSize
+                  ? list.sublist(0, _searchTypeVideoPageSize)
+                  : list;
           searchTypeVideoPageDataList.add(limitedList);
         }
       }
@@ -197,33 +203,18 @@ class VideoSearchState extends State<VideoSearch>
     }
   }
 
-  /// 获取热门关键词
-  Future<void> videoHotKeyWord(int categoryId) async {
-    try {
-      final list = (await Api.getHostKeyWord({
-            "page": 1,
-            "size": _hotKeyWordPageSize,
-            "category_id": categoryId,
-          })).data?.list ??
-          <HotKeyWordDataList>[];
-      hotKeyWordList.add(list);
-    } catch (e) {
-      debugPrint('videoHotKeyWord failed: $e');
-      // 添加空列表，保持索引一致性
-      hotKeyWordList.add(<HotKeyWordDataList>[]);
-    }
-  }
-
   /// 获取搜索历史
   Future<void> getSearchHistoryEntity() async {
     try {
-      searchHistoryList = searchHistory.getSearchHistoryByPage(1, _searchHistoryPageSize);
+      searchHistoryList = searchHistory.getSearchHistoryByPage(
+        1,
+        _searchHistoryPageSize,
+      );
     } catch (e) {
       debugPrint('getSearchHistoryEntity failed: $e');
       searchHistoryList = [];
     }
   }
-
 
   /// 跳转到搜索结果页
   void goToSearchResult() {
@@ -250,6 +241,7 @@ class VideoSearchState extends State<VideoSearch>
       height: 45,
       centerTitle: false,
       padding: const EdgeInsets.only(left: 0, right: 0),
+
       titleWidget: TDSearchBar(
         backgroundColor: Colors.transparent,
         placeHolder: '',
@@ -284,10 +276,7 @@ class VideoSearchState extends State<VideoSearch>
                 children: [
                   _buildDefaultSearchBar(),
                   Container(
-                    padding: EdgeInsets.only(
-                      bottom: Layout.paddingB,
-                      top: 15,
-                    ),
+                    padding: EdgeInsets.only(bottom: Layout.paddingB, top: 15),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -325,13 +314,13 @@ class VideoSearchState extends State<VideoSearch>
   /// 构建页面视图内容列表（缓存结果）
   List<Widget> _buildPageViewContentList() {
     if (searchType.isEmpty) return [];
-    
+
     return List.generate(searchType.length, (i) {
       // 容错处理：检查索引是否有效
       if (i >= searchTypeVideoPageDataList.length) {
         return const SizedBox.shrink();
       }
-      
+
       final searchTypeItem = searchType[i];
       final color = HexColor(
         (Theme.of(context).brightness == Brightness.dark
@@ -339,7 +328,7 @@ class VideoSearchState extends State<VideoSearch>
                 : searchTypeItem.color) ??
             "#77A1D3",
       );
-      
+
       return RepaintBoundary(
         child: _buildPageViewContent(
           searchTypeItem.name ?? "",
@@ -353,7 +342,7 @@ class VideoSearchState extends State<VideoSearch>
   /// 构建标签页组件
   Widget _buildTabs() {
     if (tabs.isEmpty) return const SizedBox.shrink();
-    
+
     return Column(
       spacing: 10,
       children: [
@@ -394,10 +383,11 @@ class VideoSearchState extends State<VideoSearch>
             physics: const BouncingScrollPhysics(),
             children: List.generate(tabs.length, (index) {
               // 容错处理：检查索引是否有效
-              if (index >= hotKeyWordList.length || hotKeyWordList[index].isEmpty) {
+              if (index >= hotKeyWordList.length ||
+                  hotKeyWordList[index].isEmpty) {
                 return const Center(child: Text('暂无数据'));
               }
-              
+
               return RepaintBoundary(
                 child: GridView.builder(
                   shrinkWrap: true,
@@ -425,15 +415,12 @@ class VideoSearchState extends State<VideoSearch>
 
   /// 构建热门关键词项
   Widget _buildHotKeyWordItem(
-    HotKeyWordDataList item,
+    VideoHotWordsDataListList item,
     int tabIndex,
     int keyWordIndex,
   ) {
     return Container(
-      padding: EdgeInsets.only(
-        left: Layout.paddingL,
-        right: Layout.paddingL,
-      ),
+      padding: EdgeInsets.only(left: Layout.paddingL, right: Layout.paddingL),
       child: Row(
         children: [
           Text(
@@ -479,10 +466,11 @@ class VideoSearchState extends State<VideoSearch>
                     ),
                 ],
               ),
-              onTap: () => Get.toNamed(
-                "/search_result",
-                arguments: {"keyWord": item.keyWord},
-              ),
+              onTap:
+                  () => Get.toNamed(
+                    "/search_result",
+                    arguments: {"keyWord": item.keyWord},
+                  ),
             ),
           ),
         ],
@@ -509,9 +497,10 @@ class VideoSearchState extends State<VideoSearch>
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.white
-              : _borderColor,
+          color:
+              Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : _borderColor,
         ),
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -535,10 +524,7 @@ class VideoSearchState extends State<VideoSearch>
       ),
       child: Column(
         children: [
-          SectionWithMore(
-            title: title,
-            onMorePressed: () {},
-          ),
+          SectionWithMore(title: title, onMorePressed: () {}),
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -610,9 +596,10 @@ class VideoSearchState extends State<VideoSearch>
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 16,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black,
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black,
                     ),
                   ),
                   Text(
@@ -621,9 +608,10 @@ class VideoSearchState extends State<VideoSearch>
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.grey[400]
-                          : _textGreyColor,
+                      color:
+                          Theme.of(context).brightness == Brightness.dark
+                              ? Colors.grey[400]
+                              : _textGreyColor,
                     ),
                   ),
                 ],
@@ -632,10 +620,7 @@ class VideoSearchState extends State<VideoSearch>
           ],
         ),
       ),
-      onTap: () => Get.toNamed(
-        "/video_detail",
-        arguments: {"id": item.id},
-      ),
+      onTap: () => Get.toNamed("/video_detail", arguments: {"id": item.id}),
     );
   }
 
@@ -682,7 +667,8 @@ class VideoSearchState extends State<VideoSearch>
                     scrollDirection: Axis.horizontal,
                     cacheExtent: 200,
                     itemCount: searchHistoryList.length,
-                    separatorBuilder: (context, index) => const SizedBox(width: 5),
+                    separatorBuilder:
+                        (context, index) => const SizedBox(width: 5),
                     itemBuilder: (context, index) {
                       final entity = searchHistoryList.elementAt(index);
                       return RepaintBoundary(
@@ -690,9 +676,11 @@ class VideoSearchState extends State<VideoSearch>
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).brightness == Brightness.dark
-                                  ? _darkBackgroundColor
-                                  : _lightBackgroundColor,
+                              color:
+                                  Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? _darkBackgroundColor
+                                      : _lightBackgroundColor,
                               borderRadius: BorderRadius.circular(15.0),
                             ),
                             child: Row(
@@ -702,10 +690,11 @@ class VideoSearchState extends State<VideoSearch>
                                 Text(
                                   entity.query,
                                   style: TextStyle(
-                                    color: Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? Colors.white
-                                        : Colors.black,
+                                    color:
+                                        Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.white
+                                            : Colors.black,
                                   ),
                                 ),
                                 GestureDetector(

@@ -26,6 +26,7 @@ import 'package:flutter_app/entity/video_album_entity.dart';
 import 'package:flutter_app/entity/video_category_entity.dart';
 import 'package:flutter_app/entity/video_detail_data_entity.dart';
 import 'package:flutter_app/entity/video_detail_entity.dart';
+import 'package:flutter_app/entity/video_hot_words_entity.dart';
 import 'package:flutter_app/entity/video_line_entity.dart';
 import 'package:flutter_app/entity/video_live_entity.dart';
 import 'package:flutter_app/entity/video_page_entity.dart';
@@ -827,6 +828,39 @@ class JsonConvert {
               .toList()
           as M;
     }
+    if (<VideoHotWordsEntity>[] is M) {
+      return data
+              .map<VideoHotWordsEntity>(
+                (Map<String, dynamic> e) => VideoHotWordsEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<VideoHotWordsData>[] is M) {
+      return data
+              .map<VideoHotWordsData>(
+                (Map<String, dynamic> e) => VideoHotWordsData.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<VideoHotWordsDataList>[] is M) {
+      return data
+              .map<VideoHotWordsDataList>(
+                (Map<String, dynamic> e) => VideoHotWordsDataList.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<VideoHotWordsDataListList>[] is M) {
+      return data
+              .map<VideoHotWordsDataListList>(
+                (Map<String, dynamic> e) =>
+                    VideoHotWordsDataListList.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
     if (<VideoLineEntity>[] is M) {
       return data
               .map<VideoLineEntity>(
@@ -1156,6 +1190,10 @@ class JsonConvertClassCollection {
         VideoDetailDataDataLinesPlayLines.fromJson,
     (VideoDetailEntity).toString(): VideoDetailEntity.fromJson,
     (VideoDetailData).toString(): VideoDetailData.fromJson,
+    (VideoHotWordsEntity).toString(): VideoHotWordsEntity.fromJson,
+    (VideoHotWordsData).toString(): VideoHotWordsData.fromJson,
+    (VideoHotWordsDataList).toString(): VideoHotWordsDataList.fromJson,
+    (VideoHotWordsDataListList).toString(): VideoHotWordsDataListList.fromJson,
     (VideoLineEntity).toString(): VideoLineEntity.fromJson,
     (VideoLineData).toString(): VideoLineData.fromJson,
     (VideoLineDataList).toString(): VideoLineDataList.fromJson,

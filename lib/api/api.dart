@@ -22,6 +22,7 @@ import '../entity/video_album_entity.dart';
 import '../entity/video_category_entity.dart';
 import '../entity/video_detail_data_entity.dart';
 import '../entity/video_detail_entity.dart';
+import '../entity/video_hot_words_entity.dart';
 import '../entity/video_line_entity.dart';
 import '../entity/video_live_entity.dart';
 import '../entity/video_page_entity.dart';
@@ -743,6 +744,21 @@ class Api {
         "/app/video/videos/videoRank",
       ); // 添加注释说明 ONE 的含义});
       return VideoRankEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //搜索热词
+  static Future<VideoHotWordsEntity> getSearchHotKeyWord(
+    Map<String, dynamic>? data,
+  ) async {
+    try {
+      final response = await server.get(
+        "/app/video/hot_keyword/videoHotWords",
+      ); // 添加注释说明 ONE 的含义});
+      return VideoHotWordsEntity.fromJson(response.data);
     } catch (error) {
       // 重新抛出异常以便上层处理
       rethrow;
