@@ -29,6 +29,7 @@ import 'package:flutter_app/entity/video_detail_entity.dart';
 import 'package:flutter_app/entity/video_line_entity.dart';
 import 'package:flutter_app/entity/video_live_entity.dart';
 import 'package:flutter_app/entity/video_page_entity.dart';
+import 'package:flutter_app/entity/video_rank_entity.dart';
 import 'package:flutter_app/entity/video_sort_entity.dart';
 import 'package:flutter_app/entity/views_entity.dart';
 import 'package:flutter_app/entity/week_entity.dart';
@@ -922,6 +923,38 @@ class JsonConvert {
               .toList()
           as M;
     }
+    if (<VideoRankEntity>[] is M) {
+      return data
+              .map<VideoRankEntity>(
+                (Map<String, dynamic> e) => VideoRankEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<VideoRankData>[] is M) {
+      return data
+              .map<VideoRankData>(
+                (Map<String, dynamic> e) => VideoRankData.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<VideoRankDataList>[] is M) {
+      return data
+              .map<VideoRankDataList>(
+                (Map<String, dynamic> e) => VideoRankDataList.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<VideoRankDataListList>[] is M) {
+      return data
+              .map<VideoRankDataListList>(
+                (Map<String, dynamic> e) => VideoRankDataListList.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
     if (<VideoSortEntity>[] is M) {
       return data
               .map<VideoSortEntity>(
@@ -1135,6 +1168,10 @@ class JsonConvertClassCollection {
     (VideoPageData).toString(): VideoPageData.fromJson,
     (VideoPageDataList).toString(): VideoPageDataList.fromJson,
     (VideoPageDataPagination).toString(): VideoPageDataPagination.fromJson,
+    (VideoRankEntity).toString(): VideoRankEntity.fromJson,
+    (VideoRankData).toString(): VideoRankData.fromJson,
+    (VideoRankDataList).toString(): VideoRankDataList.fromJson,
+    (VideoRankDataListList).toString(): VideoRankDataListList.fromJson,
     (VideoSortEntity).toString(): VideoSortEntity.fromJson,
     (VideoSortData).toString(): VideoSortData.fromJson,
     (VideoSortDataList).toString(): VideoSortDataList.fromJson,

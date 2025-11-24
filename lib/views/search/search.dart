@@ -10,6 +10,7 @@ import '../../db/manager/SearchHistoryDatabaseHelper.dart';
 import '../../entity/dict_data_entity.dart';
 import '../../entity/hot_keyWord_entity.dart';
 import '../../entity/video_page_entity.dart';
+import '../../entity/video_rank_entity.dart';
 import '../../style/layout.dart';
 import '../../utils/color.dart';
 import '../../utils/video.dart';
@@ -67,8 +68,8 @@ class VideoSearchState extends State<VideoSearch>
   final searchHistory = SearchHistoryDatabaseHelper();
   Iterable<SearchHistoryEntity> searchHistoryList = [];
   List<DictDataDataVideoCategory> category = [];
-  List<DictDataDataSearchType> searchType = [];
-  List<List<VideoPageDataList>> searchTypeVideoPageDataList = [];
+  List<VideoRankDataList> searchType = [];
+  List<List<VideoRankDataListList>> searchTypeVideoPageDataList = [];
   List<List<HotKeyWordDataList>> hotKeyWordList = [];
   List<TDTab> tabs = [];
   late TabController _tabController;
@@ -165,24 +166,34 @@ class VideoSearchState extends State<VideoSearch>
     }
   }
 
-  /// 获取搜索类型信息并加载视频数据（并发执行）
+  /// 获取搜索类型信息并加载视频数据（使用排名数据）
   Future<void> getDictSearchTypeInfoPages() async {
     try {
-      searchType = ((await Api.getDictData({
-                "types": ["search_type"],
-              })).data as DictDataData)
-          .searchType ?? [];
+      final rankEntity = await Api.getSearchVideoRank({});
+      searchType = rankEntity.data?.list ?? [];
       searchTypeVideoPageDataList.clear();
 
-      // 并发加载所有搜索类型的视频数据
+      // 加载所有搜索类型的视频数据
       if (searchType.isNotEmpty) {
-        final futures = searchType
-            .map((element) => searchTypeVideoPageDataListGet(element.id ?? 0))
-            .toList();
-        await Future.wait(futures);
+        for (var element in searchType) {
+          final list = element.list ?? <VideoRankDataListList>[];
+          // 限制数量为 _searchTypeVideoPageSize
+          final limitedList = list.length > _searchTypeVideoPageSize
+              ? list.sublist(0, _searchTypeVideoPageSize)
+              : list;
+          searchTypeVideoPageDataList.add(limitedList);
+        }
       }
     } catch (e) {
       debugPrint('getDictSearchTypeInfoPages failed: $e');
+      // 添加空列表，保持索引一致性
+      if (searchType.isNotEmpty) {
+        for (var i = 0; i < searchType.length; i++) {
+          if (i >= searchTypeVideoPageDataList.length) {
+            searchTypeVideoPageDataList.add(<VideoRankDataListList>[]);
+          }
+        }
+      }
     }
   }
 
@@ -213,22 +224,6 @@ class VideoSearchState extends State<VideoSearch>
     }
   }
 
-  /// 获取搜索类型视频数据
-  Future<void> searchTypeVideoPageDataListGet(int searchRecommendType) async {
-    try {
-      final list = (await Api.getVideoPages({
-            "page": 1,
-            "size": _searchTypeVideoPageSize,
-            "searchRecommendType": searchRecommendType,
-          })).data?.list ??
-          <VideoPageDataList>[];
-      searchTypeVideoPageDataList.add(list);
-    } catch (e) {
-      debugPrint('searchTypeVideoPageDataListGet failed: $e');
-      // 添加空列表，保持索引一致性
-      searchTypeVideoPageDataList.add(<VideoPageDataList>[]);
-    }
-  }
 
   /// 跳转到搜索结果页
   void goToSearchResult() {
@@ -499,7 +494,7 @@ class VideoSearchState extends State<VideoSearch>
   Widget _buildPageViewContent(
     String title,
     Color color,
-    List<VideoPageDataList> list,
+    List<VideoRankDataListList> list,
   ) {
     if (list.isEmpty) {
       return const SizedBox.shrink();
@@ -563,7 +558,7 @@ class VideoSearchState extends State<VideoSearch>
   }
 
   /// 构建视频项
-  Widget _buildVideoItem(VideoPageDataList item, int index) {
+  Widget _buildVideoItem(VideoRankDataListList item, int index) {
     return GestureDetector(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4.0),
