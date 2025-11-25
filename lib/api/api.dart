@@ -741,7 +741,7 @@ class Api {
   ) async {
     try {
       final response = await server.get(
-        "/app/video/videos/videoRank",
+        "/app/video/videos/rank",
       ); // 添加注释说明 ONE 的含义});
       return VideoRankEntity.fromJson(response.data);
     } catch (error) {
@@ -756,7 +756,7 @@ class Api {
   ) async {
     try {
       final response = await server.get(
-        "/app/video/hot_keyword/videoHotWords",
+        "/app/video/hot_keyword/video_hot_words",
       ); // 添加注释说明 ONE 的含义});
       return VideoHotWordsEntity.fromJson(response.data);
     } catch (error) {

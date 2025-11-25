@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -71,7 +73,7 @@ class VideoSearchState extends State<VideoSearch>
   List<List<VideoRankDataListList>> searchTypeVideoPageDataList = [];
   List<List<VideoHotWordsDataListList>> hotKeyWordList = [];
   List<TDTab> tabs = [];
-  late TabController _tabController;
+  TabController? _tabController;
   late Future<String> _futureBuilderFuture;
 
   // 常量定义
@@ -110,31 +112,50 @@ class VideoSearchState extends State<VideoSearch>
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _tabController?.dispose();
     super.dispose();
   }
 
   /// 初始化数据
   Future<String> init() async {
     try {
-      // 并发执行所有初始化任务
-      await Future.wait([
-        getDictCategoryInfoPages(),
-        getSearchHistoryEntity(),
-        getDictSearchTypeInfoPages(),
-      ]);
+      // 并发执行所有初始化任务，添加超时保护
+      try {
+        await Future.wait([
+          getDictCategoryInfoPages(),
+          getSearchHistoryEntity(),
+          getDictSearchTypeInfoPages(),
+        ]).timeout(const Duration(seconds: 15));
+      } on TimeoutException {
+        debugPrint('Initialization timeout');
+        // 超时后继续执行，使用默认值
+      }
 
       // 容错处理：确保 tabs 不为空
-      final tabLength = tabs.isEmpty ? 1 : tabs.length;
-      _tabController = TabController(length: tabLength, vsync: this);
+      if (tabs.isEmpty) {
+        tabs = [const TDTab(text: '默认')];
+        hotKeyWordList.add(<VideoHotWordsDataListList>[]);
+      }
+      
+      // 确保 TabController 长度与 tabs 一致
+      final tabLength = tabs.length;
+      if (_tabController == null || _tabController!.length != tabLength) {
+        _tabController?.dispose();
+        _tabController = TabController(length: tabLength, vsync: this);
+      }
+      
       return "init success";
     } catch (e) {
       debugPrint('Initialization failed: $e');
       // 即使失败也创建 TabController，避免崩溃
       if (tabs.isEmpty) {
         tabs = [const TDTab(text: '默认')];
+        hotKeyWordList.add(<VideoHotWordsDataListList>[]);
       }
-      _tabController = TabController(length: tabs.length, vsync: this);
+      if (_tabController == null || _tabController!.length != tabs.length) {
+        _tabController?.dispose();
+        _tabController = TabController(length: tabs.length, vsync: this);
+      }
       return "init success";
     }
   }
@@ -142,7 +163,8 @@ class VideoSearchState extends State<VideoSearch>
   /// 获取分类信息并加载热门关键词（使用 getSearchHotKeyWord）
   Future<void> getDictCategoryInfoPages() async {
     try {
-      final hotWordsEntity = await Api.getSearchHotKeyWord({});
+      final hotWordsEntity = await Api.getSearchHotKeyWord({})
+          .timeout(const Duration(seconds: 10));
       final hotWordsList = hotWordsEntity.data?.list ?? [];
 
       tabs.clear();
@@ -174,7 +196,8 @@ class VideoSearchState extends State<VideoSearch>
   /// 获取搜索类型信息并加载视频数据（使用排名数据）
   Future<void> getDictSearchTypeInfoPages() async {
     try {
-      final rankEntity = await Api.getSearchVideoRank({});
+      final rankEntity = await Api.getSearchVideoRank({})
+          .timeout(const Duration(seconds: 10));
       searchType = rankEntity.data?.list ?? [];
       searchTypeVideoPageDataList.clear();
 
@@ -341,7 +364,7 @@ class VideoSearchState extends State<VideoSearch>
 
   /// 构建标签页组件
   Widget _buildTabs() {
-    if (tabs.isEmpty) return const SizedBox.shrink();
+    if (tabs.isEmpty || _tabController == null) return const SizedBox.shrink();
 
     return Column(
       spacing: 10,
@@ -349,7 +372,7 @@ class VideoSearchState extends State<VideoSearch>
         SizedBox(
           height: _tabBarHeight,
           child: TabBar(
-            controller: _tabController,
+            controller: _tabController!,
             isScrollable: true,
             tabAlignment: TabAlignment.center,
             dividerHeight: 0,
@@ -379,7 +402,7 @@ class VideoSearchState extends State<VideoSearch>
         SizedBox(
           height: _tabBarViewHeight,
           child: TabBarView(
-            controller: _tabController,
+            controller: _tabController!,
             physics: const BouncingScrollPhysics(),
             children: List.generate(tabs.length, (index) {
               // 容错处理：检查索引是否有效
@@ -748,14 +771,9 @@ class VideoSearchState extends State<VideoSearch>
   }
 
   @override
-  Future<void> didChangeDependencies() async {
+  void didChangeDependencies() {
     super.didChangeDependencies();
-    // 只在首次加载时获取搜索历史，避免不必要的重建
-    if (searchHistoryList.isEmpty) {
-      await getSearchHistoryEntity();
-      if (mounted) {
-        setState(() {});
-      }
-    }
+    // 移除异步操作，避免与 initState 冲突
+    // 搜索历史已在 init() 中加载
   }
 }
