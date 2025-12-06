@@ -359,6 +359,8 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
       }
       // 添加容错处理，如果url为空则不播放
       if (url.isNotEmpty) {
+        // 重置播放器并设置新的数据源
+        await player.reset();
         player.setDataSource(url, autoPlay: true, showCover: true);
       }
       // 开始监听播放进度
@@ -765,113 +767,125 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   Widget _buildPlayer() {
     // 添加容错处理：检查lines是否存在且不为空
     if (videoInfoData.lines != null && videoInfoData.lines!.isNotEmpty) {
-      // 修复类型错误，正确获取选中的播放链接
-      final selectedLine = videoInfoData.lines?[currentLine.value];
-      final playLines = selectedLine?.playLines ?? [];
-      if (playLines.isNotEmpty) {
-        return ValueListenableBuilder<int>(
-          valueListenable: currentPlay,
-          builder: (context, key, child) {
-            return SizedBox(
-              height: 40,
-              //最小宽度
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal, // 水平滚动
-                itemCount: playLines.length, // 列表项数量
-                itemBuilder: (context, index) {
-                  final item = playLines[index]; // 获取当前项
-                  return Container(
-                    margin: const EdgeInsets.only(right: 6),
-                    child: Stack(
-                      alignment: Alignment.topRight,
-                      children: [
-                        SizedBox(
-                          width: 100,
-                          height: 35,
-                          child: TextButton(
-                            style: TextButton.styleFrom(
-                              backgroundColor:
-                                  currentPlay.value == index
-                                      ? const Color.fromRGBO(252, 119, 66, 1)
-                                      : const Color.fromRGBO(246, 247, 248, 1),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.0),
+      return ValueListenableBuilder<int>(
+        valueListenable: currentLine,
+        builder: (context, lineIndex, child) {
+          // 在builder内部获取当前线路的playLines，确保数据是最新的
+          final selectedLine = videoInfoData.lines?[lineIndex];
+          final playLines = selectedLine?.playLines ?? [];
+          
+          if (playLines.isNotEmpty) {
+            return ValueListenableBuilder<int>(
+              valueListenable: currentPlay,
+              builder: (context, playIndex, child) {
+                return SizedBox(
+                  height: 40,
+                  //最小宽度
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal, // 水平滚动
+                    itemCount: playLines.length, // 列表项数量
+                    itemBuilder: (context, index) {
+                      final item = playLines[index]; // 获取当前项
+                      return Container(
+                        margin: const EdgeInsets.only(right: 6),
+                        child: Stack(
+                          alignment: Alignment.topRight,
+                          children: [
+                            SizedBox(
+                              width: 100,
+                              height: 35,
+                              child: TextButton(
+                                style: TextButton.styleFrom(
+                                  backgroundColor:
+                                      playIndex == index
+                                          ? const Color.fromRGBO(252, 119, 66, 1)
+                                          : const Color.fromRGBO(246, 247, 248, 1),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  try {
+                                    if (item.vip == 1 &&
+                                        (item.file ?? "").isEmpty) {
+                                      Fluttertoast.showToast(
+                                        msg: "请开通VIP后重试",
+                                        toastLength: Toast.LENGTH_SHORT,
+                                      );
+                                      return;
+                                    }
+                                    // 更新当前选集
+                                    currentPlay.value = index;
+                                    // 设置新的视频URL - 确保使用最新的playLines数据
+                                    final currentSelectedLine = videoInfoData.lines?[currentLine.value];
+                                    final currentPlayLines = currentSelectedLine?.playLines ?? [];
+                                    if (index < currentPlayLines.length) {
+                                      setVideoUrl(currentPlayLines[index].file ?? "");
+                                    }
+                                  } catch (e) {
+                                    debugPrint("切换选集：${e.toString()}");
+                                  }
+                                },
+                                child: Text(
+                                  item.name ?? '',
+                                  style: TextStyle(
+                                    color:
+                                        playIndex == index
+                                            ? Colors.white
+                                            : Colors.black,
+                                  ),
+                                ),
                               ),
                             ),
-                            onPressed: () {
-                              try {
-                                if (item.vip == 1 &&
-                                    (item.file ?? "").isEmpty) {
-                                  Fluttertoast.showToast(
-                                    msg: "请开通VIP后重试",
-                                    toastLength: Toast.LENGTH_SHORT,
-                                  );
-                                  return;
-                                }
-                                currentPlay.value = index;
-                                setVideoUrl(playLines[index].file ?? "");
-                              } catch (e) {
-                                debugPrint("切换选集：${e.toString()}");
-                              }
-                            },
-                            child: Text(
-                              item.name ?? '',
-                              style: TextStyle(
-                                color:
-                                    currentPlay.value == index
-                                        ? Colors.white
-                                        : Colors.black,
+                            //VIP角标右上角位置
+                            if (item.vip == 1)
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                child: const TDBadge(
+                                  TDBadgeType.subscript,
+                                  size: TDBadgeSize.large,
+                                  message: 'VIP',
+                                ),
                               ),
-                            ),
-                          ),
+                          ],
                         ),
-                        //VIP角标右上角位置
-                        if (item.vip == 1)
-                          Positioned(
-                            right: 0,
-                            top: 0,
-                            child: const TDBadge(
-                              TDBadgeType.subscript,
-                              size: TDBadgeSize.large,
-                              message: 'VIP',
-                            ),
-                          ),
-                      ],
-                    ),
-                  );
+                      );
+                    },
+                  ),
+                );
+              },
+            );
+          } else {
+            return Container(
+              height: 40,
+              alignment: Alignment.center,
+              //居中
+              child: GestureDetector(
+                onTap: () {
+                  showModalBottomSheetList();
                 },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    TDLink(
+                      linkClick: (url) {
+                        showModalBottomSheetList();
+                      },
+                      style: TDLinkStyle.primary,
+
+                      label: '当前线路暂无数据,建议切换线路',
+                      type: TDLinkType.withSuffixIcon,
+                      size: TDLinkSize.medium,
+                    ),
+                  ],
+                ),
               ),
             );
-          },
-        );
-      } else {
-        return Container(
-          height: 40,
-          alignment: Alignment.center,
-          //居中
-          child: GestureDetector(
-            onTap: () {
-              showModalBottomSheetList();
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                TDLink(
-                  linkClick: (url) {
-                    showModalBottomSheetList();
-                  },
-                  style: TDLinkStyle.primary,
-
-                  label: '当前线路暂无数据,建议切换线路',
-                  type: TDLinkType.withSuffixIcon,
-                  size: TDLinkSize.medium,
-                ),
-              ],
-            ),
-          ),
-        );
-      }
+          }
+        },
+      );
     } else {
       // 当没有播放线路时显示提示信息
       return Container(
@@ -938,6 +952,11 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                               // 添加容错处理
                               if (videoInfoData.lines != null &&
                                   tabIndex < videoInfoData.lines!.length) {
+                                // 更新当前线路
+                                setState(() {
+                                  currentLine.value = tabIndex;
+                                });
+                                
                                 // 修复类型错误，正确获取选中的播放链接
                                 final selectedLine =
                                     videoInfoData.lines?[tabIndex];
@@ -946,14 +965,15 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                                     selectedIndices.first <
                                         (selectedLine?.playLines?.length ??
                                             0)) {
+                                  // 更新当前播放索引
+                                  setState(() {
+                                    currentPlay.value = selectedIndices.first;
+                                  });
+                                  
                                   final selectedPlayLine =
                                       selectedLine?.playLines?[selectedIndices
                                           .first];
                                   setVideoUrl(selectedPlayLine?.file ?? "");
-                                  setState(() {
-                                    currentLine.value = tabIndex;
-                                    currentPlay.value = selectedIndices.first;
-                                  });
                                 }
                               }
                             } catch (e) {
@@ -1459,6 +1479,8 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                 if (videoList.isNotEmpty &&
                     currentPlay.value < videoList.length - 1) {
                   currentPlay.value += 1;
+                  // 确保播放器加载新的视频
+                  setVideoUrl(videoList[currentPlay.value].url);
                 }
               });
             },
