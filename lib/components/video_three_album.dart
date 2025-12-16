@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
-import '../entity/video_page_entity.dart';
+import '../entity/album_video_list_entity.dart';
 import '../utils/video.dart';
 
 class Video extends StatelessWidget {
-  final VideoPageDataList videoData; // 使用 dynamic 类型
+  final AlbumVideoListDataList videoData; // 使用 dynamic 类型
 
   const Video({super.key, required this.videoData});
 
@@ -61,7 +61,7 @@ class Video extends StatelessWidget {
     );
   }
 
-  Widget _buildVideoItemNote(VideoPageDataList item) {
+  Widget _buildVideoItemNote(AlbumVideoListDataList item) {
     if (item.remarks == null) {
       return Container();
     }
@@ -119,7 +119,7 @@ class Video extends StatelessWidget {
     );
   }
 
-  Widget _buildVideoItemHDTag(VideoPageDataList item) {
+  Widget _buildVideoItemHDTag(AlbumVideoListDataList item) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -151,20 +151,20 @@ class Video extends StatelessWidget {
     );
   }
 
-  void _buildvideo_onClick(VideoPageDataList item, BuildContext context) {
+  void _buildvideo_onClick(AlbumVideoListDataList item, BuildContext context) {
     if (item.categoryPid == 551) {
-      Get.toNamed("/short_drama", arguments: {"id": item.id});
+      Get.toNamed("/short_drama", arguments: {"id": item.videosId});
     } else {
-      Get.toNamed("/video_detail", arguments: {"id": item.id});
+      Get.toNamed("/video_detail", arguments: {"id": item.videosId});
     }
   }
 }
 
-class VideoThree extends StatelessWidget {
+class VideoThreeAlbum extends StatelessWidget {
   // final List<VideoPageDataList> videoPageData;
-  final List<VideoPageDataList> videoPageData; // 使用 dynamic 类型
+  final List<AlbumVideoListDataList> videoPageData; // 使用 dynamic 类型
 
-  const VideoThree({super.key, required this.videoPageData});
+  const VideoThreeAlbum({super.key, required this.videoPageData});
 
   @override
   Widget build(BuildContext context) {

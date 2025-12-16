@@ -4,7 +4,7 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
 import '../../components/loading.dart';
-import '../../components/video_three.dart';
+import '../../components/video_three_album.dart';
 import '../../entity/album_video_list_entity.dart';
 import '../../entity/video_album_entity.dart';
 import '../../style/layout.dart';
@@ -63,13 +63,10 @@ class VideoAlbumState extends State<VideoAlbum> {
   Future<String> init() async {
     try {
       if (!mounted) return "init failed";
-      
+
       // 并发执行所有异步操作，提升加载速度
-      await Future.wait([
-        getAlbumById(),
-        getAlbumVideoList(),
-      ]);
-      
+      await Future.wait([getAlbumById(), getAlbumVideoList()]);
+
       if (mounted) {
         setState(() {});
       }
@@ -193,7 +190,7 @@ class VideoAlbumState extends State<VideoAlbum> {
           child: ListView(
             padding: const EdgeInsets.only(top: 0),
             cacheExtent: 200,
-            children: [VideoThree(videoPageData: videoPageData)],
+            children: [VideoThreeAlbum(videoPageData: videoPageData ?? [])],
           ),
         ),
       ),

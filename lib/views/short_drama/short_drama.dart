@@ -86,13 +86,10 @@ class _ShortDramaState extends State<ShortDrama>
       final rawList = response.data?.list;
       if (rawList == null) {
         playerLineData = [];
-      } else if (rawList is List<PlayLineDataList>) {
-        playerLineData = rawList;
-      } else if (rawList is List) {
-        playerLineData = rawList.whereType<PlayLineDataList>().toList();
       } else {
-        playerLineData = [];
+        playerLineData = rawList;
       }
+
       _videoList = List.generate(
         playerLineData.length,
         (index) => VideoItem(
@@ -111,10 +108,7 @@ class _ShortDramaState extends State<ShortDrama>
 
   Future<String> init() async {
     try {
-      await Future.wait([
-        getVideoById(),
-        getVideoLinePages(),
-      ]);
+      await Future.wait([getVideoById(), getVideoLinePages()]);
       await getPlayLinePages();
       return "init success";
     } catch (e) {
@@ -377,9 +371,7 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
       child: Stack(
         children: [
           // 视频播放器
-          Positioned.fill(
-            child: _buildVideoContent(),
-          ),
+          Positioned.fill(child: _buildVideoContent()),
 
           // 渐变背景
           Positioned.fill(

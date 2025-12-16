@@ -30,10 +30,8 @@ class VideoFilterState extends State<VideoFilter>
   static const Color _activeColor = Color.fromRGBO(255, 122, 27, 1);
   static const Color _activeBgColor = Color.fromRGBO(244, 244, 244, 1);
   static const double _tagBorderRadius = 15.0;
-  static const double _tagSpacing = 8.0;
+  static const double _tagSpacing = 1.0;
   static const double _tagListHeight = 40.0;
-  static const EdgeInsets _tagChipPadding =
-      EdgeInsets.symmetric(horizontal: 12, vertical: 6);
 
   //定义currentPage
   int currentPage = 1;
@@ -44,7 +42,10 @@ class VideoFilterState extends State<VideoFilter>
   List<DictDataDataVideoTag> tagData = [];
   List<VideoPageDataList> videoPageData = [];
   //实现一个从今年到15年前的list
-  final List<int> years = List.generate(20, (index) => DateTime.now().year - index);
+  final List<int> years = List.generate(
+    20,
+    (index) => DateTime.now().year - index,
+  );
   final ValueNotifier<int> categoryCurrent = ValueNotifier<int>(0);
   final ValueNotifier<int> tagCurrent = ValueNotifier<int>(0);
   final ValueNotifier<int> yearCurrent = ValueNotifier<int>(0);
@@ -55,25 +56,25 @@ class VideoFilterState extends State<VideoFilter>
   List<DictInfoListData> categoryOriginalDictList = [];
   // 添加加载状态标志
   bool _isLoading = false;
-  
+
   // 添加组件缓存映射
   final Map<int, Widget> _videoItemCache = {};
   final Map<String, Widget> _categoryWidgetCache = {};
   final Map<String, Widget> _tagWidgetCache = {};
   final Map<String, Widget> _areaWidgetCache = {};
   final Map<String, Widget> _yearWidgetCache = {};
-  
+
   // 标签查找缓存，避免重复查找
   final Map<int, String?> _tagNameCache = {};
-  
+
   // RefreshController 用于下拉刷新和上拉加载
   final RefreshController _refreshController = RefreshController();
-  
+
   // 移除内容缓存，因为它会阻止下拉刷新功能
 
   Future<void> getVideoPages() async {
     if (!mounted) return;
-    
+
     try {
       // 优化标签查找，使用缓存
       String? tagName;
@@ -95,7 +96,8 @@ class VideoFilterState extends State<VideoFilter>
 
       final data = {
         "page": currentPage,
-        "category_pid": categoryCurrent.value == 0 ? null : categoryCurrent.value,
+        "category_pid":
+            categoryCurrent.value == 0 ? null : categoryCurrent.value,
         "video_tag": tagName,
         "year": yearCurrent.value == 0 ? null : yearCurrent.value,
         "region": regionCurrent.value == 0 ? null : regionCurrent.value,
@@ -177,14 +179,14 @@ class VideoFilterState extends State<VideoFilter>
 
   Future<String> init() async {
     if (!mounted) return "init failed";
-    
+
     try {
       _isLoading = true;
       // 只在开始时调用一次 setState
       if (mounted) {
         setState(() {});
       }
-      
+
       // 并行执行所有初始化任务，提升加载速度
       await Future.wait([
         getVideoPages(),
@@ -192,7 +194,7 @@ class VideoFilterState extends State<VideoFilter>
         getVideoAreaPages(),
         getVideoTagPages(),
       ]);
-      
+
       _isLoading = false;
       // 只在结束时调用一次 setState
       if (mounted) {
@@ -248,7 +250,7 @@ class VideoFilterState extends State<VideoFilter>
 
   Future<void> _category_change(DictDataDataVideoCategory? item) async {
     if (!mounted) return;
-    
+
     categoryCurrent.value = item?.id ?? 0;
     // 清除相关缓存
     _clearTagCache();
@@ -257,17 +259,17 @@ class VideoFilterState extends State<VideoFilter>
     videoPageData.clear();
     _isLoading = true;
     currentPage = 1;
-    
+
     if (mounted) {
       setState(() {});
     }
-    
+
     await getVideoPages();
-    
+
     // 重置其他筛选条件
     yearCurrent.value = 0;
     regionCurrent.value = 0;
-    
+
     _isLoading = false;
     if (mounted) {
       setState(() {});
@@ -276,7 +278,7 @@ class VideoFilterState extends State<VideoFilter>
 
   Future<void> _tag_change(DictDataDataVideoTag? item) async {
     if (!mounted) return;
-    
+
     tagCurrent.value = item?.id ?? 0;
     // 清除相关缓存
     _clearTagCache();
@@ -285,17 +287,17 @@ class VideoFilterState extends State<VideoFilter>
     videoPageData.clear();
     _isLoading = true;
     currentPage = 1;
-    
+
     if (mounted) {
       setState(() {});
     }
-    
+
     await getVideoPages();
-    
+
     // 重置其他筛选条件
     yearCurrent.value = 0;
     regionCurrent.value = 0;
-    
+
     _isLoading = false;
     if (mounted) {
       setState(() {});
@@ -304,7 +306,7 @@ class VideoFilterState extends State<VideoFilter>
 
   Future<void> _year_change(int item) async {
     if (!mounted) return;
-    
+
     yearCurrent.value = item;
     // 清除相关缓存
     _clearTagCache();
@@ -312,13 +314,13 @@ class VideoFilterState extends State<VideoFilter>
     videoPageData.clear();
     _isLoading = true;
     currentPage = 1;
-    
+
     if (mounted) {
       setState(() {});
     }
-    
+
     await getVideoPages();
-    
+
     _isLoading = false;
     if (mounted) {
       setState(() {});
@@ -327,7 +329,7 @@ class VideoFilterState extends State<VideoFilter>
 
   Future<void> _area_change(DictInfoListData? item) async {
     if (!mounted) return;
-    
+
     regionCurrent.value = item?.id ?? 0;
     // 清除相关缓存
     _clearTagCache();
@@ -335,13 +337,13 @@ class VideoFilterState extends State<VideoFilter>
     videoPageData.clear();
     _isLoading = true;
     currentPage = 1;
-    
+
     if (mounted) {
       setState(() {});
     }
-    
+
     await getVideoPages();
-    
+
     _isLoading = false;
     if (mounted) {
       setState(() {});
@@ -363,7 +365,7 @@ class VideoFilterState extends State<VideoFilter>
     if (items.isEmpty) {
       return const SizedBox.shrink();
     }
-    
+
     return ValueListenableBuilder<int>(
       valueListenable: categoryCurrent,
       builder: (context, selectedId, child) {
@@ -371,12 +373,12 @@ class VideoFilterState extends State<VideoFilter>
         final brightnessKey =
             Theme.of(context).brightness == Brightness.dark ? 'dark' : 'light';
         final cacheKey = '$title-$selectedId-${items.length}-$brightnessKey';
-        
+
         // 检查缓存中是否已存在该组件
         if (_categoryWidgetCache.containsKey(cacheKey)) {
           return _categoryWidgetCache[cacheKey]!;
         }
-        
+
         // 缓存 Theme 值，避免重复获取
         final theme = TDTheme.of(context);
         final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -386,21 +388,22 @@ class VideoFilterState extends State<VideoFilter>
         final widget = CommonFilterBar<DictDataDataVideoCategory>(
           items: items,
           labelBuilder: (item) => item?.name ?? title,
-          isSelected: (item) => item == null
-              ? selectedId == 0
-              : (item.id ?? 0) == selectedId,
+          isSelected:
+              (item) =>
+                  item == null ? selectedId == 0 : (item.id ?? 0) == selectedId,
           onTap: (item) => _category_change(item),
-          chipBuilder: (label, isSelected) => _buildTagChip(
-            text: label,
-            selected: isSelected,
-            selectedTextColor: _activeColor,
-            unselectedTextColor: unselectedColor,
-            selectedBgColor: _activeBgColor,
-          ),
+          chipBuilder:
+              (label, isSelected) => _buildTagChip(
+                text: label,
+                selected: isSelected,
+                selectedTextColor: _activeColor,
+                unselectedTextColor: unselectedColor,
+                selectedBgColor: _activeBgColor,
+              ),
           height: _tagListHeight,
           spacing: _tagSpacing,
         );
-        
+
         // 缓存组件
         _categoryWidgetCache[cacheKey] = widget;
         return widget;
@@ -416,7 +419,7 @@ class VideoFilterState extends State<VideoFilter>
     required Color selectedBgColor,
   }) {
     final padding = EdgeInsets.symmetric(
-      horizontal: selected ? 14 : 12,
+      horizontal: selected ? 8 : 6,
       vertical: 6,
     );
     return Padding(
@@ -441,7 +444,7 @@ class VideoFilterState extends State<VideoFilter>
     if (items.isEmpty) {
       return const SizedBox.shrink();
     }
-    
+
     return ValueListenableBuilder<int>(
       valueListenable: tagCurrent,
       builder: (context, selectedId, child) {
@@ -449,35 +452,36 @@ class VideoFilterState extends State<VideoFilter>
         final brightnessKey =
             Theme.of(context).brightness == Brightness.dark ? 'dark' : 'light';
         final cacheKey = '$title-$selectedId-${items.length}-$brightnessKey';
-        
+
         // 检查缓存中是否已存在该组件
         if (_tagWidgetCache.containsKey(cacheKey)) {
           return _tagWidgetCache[cacheKey]!;
         }
-        
+
         // 缓存 Theme 值，避免重复获取
         final theme = TDTheme.of(context);
         final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
         final Color unselectedColor =
             isDarkMode ? Colors.white70 : theme.fontGyColor2;
-        
+
         final widget = CommonFilterBar<DictDataDataVideoTag>(
           items: items,
           labelBuilder: (item) => item?.name ?? title,
-          isSelected: (item) =>
-              item == null ? selectedId == 0 : item.id == selectedId,
+          isSelected:
+              (item) => item == null ? selectedId == 0 : item.id == selectedId,
           onTap: (item) => _tag_change(item),
-          chipBuilder: (label, isSelected) => _buildTagChip(
-            text: label,
-            selected: isSelected,
-            selectedTextColor: _activeColor,
-            unselectedTextColor: unselectedColor,
-            selectedBgColor: _activeBgColor,
-          ),
+          chipBuilder:
+              (label, isSelected) => _buildTagChip(
+                text: label,
+                selected: isSelected,
+                selectedTextColor: _activeColor,
+                unselectedTextColor: unselectedColor,
+                selectedBgColor: _activeBgColor,
+              ),
           height: _tagListHeight,
           spacing: _tagSpacing,
         );
-        
+
         // 缓存组件
         _tagWidgetCache[cacheKey] = widget;
         return widget;
@@ -489,7 +493,7 @@ class VideoFilterState extends State<VideoFilter>
     if (items.isEmpty) {
       return const SizedBox.shrink();
     }
-    
+
     return ValueListenableBuilder<int>(
       valueListenable: regionCurrent,
       builder: (context, selectedId, child) {
@@ -497,12 +501,12 @@ class VideoFilterState extends State<VideoFilter>
         final brightnessKey =
             Theme.of(context).brightness == Brightness.dark ? 'dark' : 'light';
         final cacheKey = '$title-$selectedId-${items.length}-$brightnessKey';
-        
+
         // 检查缓存中是否已存在该组件
         if (_areaWidgetCache.containsKey(cacheKey)) {
           return _areaWidgetCache[cacheKey]!;
         }
-        
+
         // 缓存 Theme 值，避免重复获取
         final theme = TDTheme.of(context);
         final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -512,20 +516,21 @@ class VideoFilterState extends State<VideoFilter>
         final widget = CommonFilterBar<DictInfoListData>(
           items: items,
           labelBuilder: (item) => item?.name ?? title,
-          isSelected: (item) =>
-              item == null ? selectedId == 0 : item.id == selectedId,
+          isSelected:
+              (item) => item == null ? selectedId == 0 : item.id == selectedId,
           onTap: (item) => _area_change(item),
-          chipBuilder: (label, isSelected) => _buildTagChip(
-            text: label,
-            selected: isSelected,
-            selectedTextColor: _activeColor,
-            unselectedTextColor: unselectedColor,
-            selectedBgColor: _activeBgColor,
-          ),
+          chipBuilder:
+              (label, isSelected) => _buildTagChip(
+                text: label,
+                selected: isSelected,
+                selectedTextColor: _activeColor,
+                unselectedTextColor: unselectedColor,
+                selectedBgColor: _activeBgColor,
+              ),
           height: _tagListHeight,
           spacing: _tagSpacing,
         );
-        
+
         // 缓存组件
         _areaWidgetCache[cacheKey] = widget;
         return widget;
@@ -541,12 +546,12 @@ class VideoFilterState extends State<VideoFilter>
         final brightnessKey =
             Theme.of(context).brightness == Brightness.dark ? 'dark' : 'light';
         final cacheKey = '$title-$selectedYear-${items.length}-$brightnessKey';
-        
+
         // 检查缓存中是否已存在该组件
         if (_yearWidgetCache.containsKey(cacheKey)) {
           return _yearWidgetCache[cacheKey]!;
         }
-        
+
         // 缓存 Theme 值，避免重复获取
         final theme = TDTheme.of(context);
         final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -555,23 +560,26 @@ class VideoFilterState extends State<VideoFilter>
 
         final widget = CommonFilterBar<int>(
           items: items,
-          labelBuilder: (item) => item == null || item == 0
-              ? title
-              : item.toString(),
-          isSelected: (item) =>
-              (item == null || item == 0) ? selectedYear == 0 : selectedYear == item,
+          labelBuilder:
+              (item) => item == null || item == 0 ? title : item.toString(),
+          isSelected:
+              (item) =>
+                  (item == null || item == 0)
+                      ? selectedYear == 0
+                      : selectedYear == item,
           onTap: (item) => _year_change(item ?? 0),
-          chipBuilder: (label, isSelected) => _buildTagChip(
-            text: label,
-            selected: isSelected,
-            selectedTextColor: _activeColor,
-            unselectedTextColor: unselectedColor,
-            selectedBgColor: _activeBgColor,
-          ),
+          chipBuilder:
+              (label, isSelected) => _buildTagChip(
+                text: label,
+                selected: isSelected,
+                selectedTextColor: _activeColor,
+                unselectedTextColor: unselectedColor,
+                selectedBgColor: _activeBgColor,
+              ),
           height: _tagListHeight,
           spacing: _tagSpacing,
         );
-        
+
         // 缓存组件
         _yearWidgetCache[cacheKey] = widget;
         return widget;
@@ -616,9 +624,7 @@ class VideoFilterState extends State<VideoFilter>
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const PageLoading();
         } else if (snapshot.hasError) {
-          return Center(
-            child: Text('Error: ${snapshot.error}'),
-          );
+          return Center(child: Text('Error: ${snapshot.error}'));
         } else if (snapshot.hasData) {
           // 注意：我们不再缓存整个内容，因为这会阻止下拉刷新和上拉加载更多功能
           // 每次都需要重新构建内容以确保刷新功能正常工作
@@ -642,17 +648,15 @@ class VideoFilterState extends State<VideoFilter>
               cacheExtent: 2000, // 增加缓存区域提高滚动性能
               slivers: <Widget>[
                 SliverToBoxAdapter(
-                  child: RepaintBoundary(
-                    child: _buildDefaultSearchBar(),
-                  ),
+                  child: RepaintBoundary(child: _buildDefaultSearchBar()),
                 ),
                 SliverStickyHeader(
                   header: RepaintBoundary(
                     child: Container(
                       color: Theme.of(context).scaffoldBackgroundColor,
                       padding: EdgeInsets.only(
-                        left: Layout.paddingL,
-                        right: Layout.paddingR,
+                        // left: Layout.paddingL,
+                        // right: Layout.paddingR,
                         top: 5,
                         bottom: Layout.paddingB,
                       ),
@@ -676,9 +680,7 @@ class VideoFilterState extends State<VideoFilter>
             ),
           );
         } else {
-          return const Center(
-            child: Text('No data available'),
-          );
+          return const Center(child: Text('No data available'));
         }
       },
     );
@@ -687,14 +689,10 @@ class VideoFilterState extends State<VideoFilter>
   Widget isShowContent() {
     if (_isLoading) {
       // 显示加载指示器
-      return const SliverToBoxAdapter(
-        child: Center(child: PageLoading()),
-      );
+      return const SliverToBoxAdapter(child: Center(child: PageLoading()));
     } else if (videoPageData.isEmpty) {
       // 确认无数据时显示 NoData 组件
-      return const SliverToBoxAdapter(
-        child: Center(child: NoData()),
-      );
+      return const SliverToBoxAdapter(child: Center(child: NoData()));
     } else {
       // 使用预构建的组件列表来提高性能
       return SliverGrid(
@@ -708,27 +706,25 @@ class VideoFilterState extends State<VideoFilter>
           (context, i) {
             final videoItem = videoPageData[i];
             final id = videoItem.id;
-            
+
             // 检查是否有缓存的组件
             if (id != null && _videoItemCache.containsKey(id)) {
               return _videoItemCache[id]!;
             }
-            
+
             // 创建新的组件并缓存，使用 RepaintBoundary 隔离重绘
             final widget = RepaintBoundary(
               key: ValueKey('video_$id'),
               child: GridTile(
-                child: Center(
-                  child: Video(videoData: videoItem),
-                ),
+                child: Center(child: Video(videoData: videoItem)),
               ),
             );
-            
+
             // 缓存组件（仅对前两页的数据进行缓存以平衡内存和性能）
             if (id != null && currentPage <= 2) {
               _videoItemCache[id] = widget;
             }
-            
+
             return widget;
           },
           childCount: videoPageData.length,

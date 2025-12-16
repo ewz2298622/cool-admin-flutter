@@ -107,9 +107,11 @@ class _SplashPageState extends State<SplashPage> {
       }
     } catch (e) {
       debugPrint("_loadAd开屏广告加载失败: $e");
-      // 加载失败时，如果还没跳转，则跳转
+      // 加载失败时，直接跳转
       if (mounted && !_hasNavigated) {
-        _navigateToNextPage();
+        _hasNavigated = true;
+        _timeoutTimer?.cancel();
+        Get.offAllNamed('/main');
       }
     }
   }
@@ -155,7 +157,11 @@ class _SplashPageState extends State<SplashPage> {
                         },
                         onFail: (error) {
                           print("开屏广告失败 $error");
-                          _navigateToNextPage();
+                          if (!_hasNavigated && mounted) {
+                            _hasNavigated = true;
+                            _timeoutTimer?.cancel();
+                            Get.offAllNamed('/main');
+                          }
                         },
                         onFinish: () {
                           print("开屏广告倒计时结束");
@@ -167,7 +173,11 @@ class _SplashPageState extends State<SplashPage> {
                         },
                         onTimeOut: () {
                           print("开屏广告超时");
-                          _navigateToNextPage();
+                          if (!_hasNavigated && mounted) {
+                            _hasNavigated = true;
+                            _timeoutTimer?.cancel();
+                            Get.offAllNamed('/main');
+                          }
                         },
                         onEcpm: (info) {
                           print("开屏广告获取ecpm:$info");

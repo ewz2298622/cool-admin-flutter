@@ -204,7 +204,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
           (await Api.getVideoPages({
             "category_id": videoInfoData.video?.categoryId ?? 0,
             //page参数随机1-20整数
-            "page": Random().nextInt(20) + 1,
+            "page": Random().nextInt(2) + 1,
           })).data?.list ??
           [] as List<VideoPageDataList>;
       setState(() {
@@ -773,7 +773,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
           // 在builder内部获取当前线路的playLines，确保数据是最新的
           final selectedLine = videoInfoData.lines?[lineIndex];
           final playLines = selectedLine?.playLines ?? [];
-          
+
           if (playLines.isNotEmpty) {
             return ValueListenableBuilder<int>(
               valueListenable: currentPlay,
@@ -798,8 +798,18 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                                 style: TextButton.styleFrom(
                                   backgroundColor:
                                       playIndex == index
-                                          ? const Color.fromRGBO(252, 119, 66, 1)
-                                          : const Color.fromRGBO(246, 247, 248, 1),
+                                          ? const Color.fromRGBO(
+                                            252,
+                                            119,
+                                            66,
+                                            1,
+                                          )
+                                          : const Color.fromRGBO(
+                                            246,
+                                            247,
+                                            248,
+                                            1,
+                                          ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
@@ -817,10 +827,14 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                                     // 更新当前选集
                                     currentPlay.value = index;
                                     // 设置新的视频URL - 确保使用最新的playLines数据
-                                    final currentSelectedLine = videoInfoData.lines?[currentLine.value];
-                                    final currentPlayLines = currentSelectedLine?.playLines ?? [];
+                                    final currentSelectedLine =
+                                        videoInfoData.lines?[currentLine.value];
+                                    final currentPlayLines =
+                                        currentSelectedLine?.playLines ?? [];
                                     if (index < currentPlayLines.length) {
-                                      setVideoUrl(currentPlayLines[index].file ?? "");
+                                      setVideoUrl(
+                                        currentPlayLines[index].file ?? "",
+                                      );
                                     }
                                   } catch (e) {
                                     debugPrint("切换选集：${e.toString()}");
@@ -956,7 +970,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                                 setState(() {
                                   currentLine.value = tabIndex;
                                 });
-                                
+
                                 // 修复类型错误，正确获取选中的播放链接
                                 final selectedLine =
                                     videoInfoData.lines?[tabIndex];
@@ -969,7 +983,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                                   setState(() {
                                     currentPlay.value = selectedIndices.first;
                                   });
-                                  
+
                                   final selectedPlayLine =
                                       selectedLine?.playLines?[selectedIndices
                                           .first];
@@ -1119,7 +1133,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                           TDTag(
                             Dict.getDictName(
                               videoInfoData.video?.language ?? 0,
-                              language as List<DictDataDataLanguage>? ?? [],
+                              language ?? [],
                             ),
                             isLight: true,
                             theme: TDTagTheme.success,

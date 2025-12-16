@@ -14,7 +14,7 @@ class CommonFilterBar<T> extends StatelessWidget {
     required this.onTap,
     required this.chipBuilder,
     this.height = 40,
-    this.spacing = 6,
+    this.spacing = 0,
   });
 
   final List<T> items;
@@ -37,15 +37,27 @@ class CommonFilterBar<T> extends StatelessWidget {
             parent: AlwaysScrollableScrollPhysics(),
           ),
           itemCount: entries.length,
+          cacheExtent: 200, // 预缓存范围，提升滚动性能
+          addAutomaticKeepAlives: false, // 禁用自动保持活跃，提升性能
+          addRepaintBoundaries: false, // 已手动添加 RepaintBoundary，禁用自动添加
           itemBuilder: (context, index) {
             final entry = entries[index];
             final label = labelBuilder(entry);
             final selected = isSelected(entry);
-            return Padding(
-              padding: EdgeInsets.only(left: index == 0 ? 0 : spacing),
-              child: GestureDetector(
-                onTap: () => onTap(entry),
-                child: chipBuilder(label, selected),
+            // 使用稳定的 key，基于 index 和 entry 的标识
+            final key = entry != null 
+                ? ValueKey('filter_${entry.hashCode}_$index')
+                : ValueKey('filter_null_$index');
+            return RepaintBoundary(
+              key: key,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: index == 0 ? 0 : spacing,
+                ),
+                child: GestureDetector(
+                  onTap: () => onTap(entry),
+                  child: chipBuilder(label, selected),
+                ),
               ),
             );
           },
@@ -54,4 +66,3 @@ class CommonFilterBar<T> extends StatelessWidget {
     );
   }
 }
-
