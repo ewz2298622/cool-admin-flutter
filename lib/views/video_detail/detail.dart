@@ -31,7 +31,6 @@ import '../../utils/cast_screen_manager.dart'; // 导入投屏管理类
 import '../../utils/dict.dart';
 import '../../utils/user.dart';
 import '../../utils/video.dart';
-import '../../utils/video_download.dart';
 
 String TAG = 'Video_Detail';
 
@@ -998,7 +997,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                           },
                           defaultSelectedItems: {
                             currentLine.value: {currentPlay.value},
-                          }
+                          },
                         ),
                       ),
                     ],
@@ -1408,16 +1407,6 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   }
 
   videoDownload() async {
-    final downloader = VideoDownload(
-      onProgress: (downloaded, total, currentProgress, totalProgress) {
-        debugPrint(
-          'videoDownload下载进度: ${(totalProgress * 100).toStringAsFixed(2)}%',
-        );
-      },
-      onStatus: (status, message) {
-        debugPrint('videoDownload下载状态: $status $message');
-      },
-    );
     // 开始下载
     try {
       final selectedLine = videoInfoData.lines?[currentLine.value];
@@ -1434,12 +1423,6 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
     } catch (e) {
       debugPrint('videoDownload 下载失败: $e');
     }
-
-    // 取消下载（如果需要）
-    // downloader.cancel();
-
-    // 释放资源
-    downloader.dispose();
   }
 
   Widget _buildVideo() {
