@@ -996,6 +996,9 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                               debugPrint("切换选集错误：${e.toString()}");
                             }
                           },
+                          defaultSelectedItems: {
+                            currentLine.value: {currentPlay.value},
+                          }
                         ),
                       ),
                     ],
