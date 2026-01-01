@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:fplayer/fplayer.dart';
@@ -30,6 +31,7 @@ import '../../utils/cast_screen_manager.dart'; // 导入投屏管理类
 import '../../utils/dict.dart';
 import '../../utils/user.dart';
 import '../../utils/video.dart';
+import '../../utils/video_download.dart';
 
 String TAG = 'Video_Detail';
 
@@ -1402,6 +1404,41 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
     }
   }
 
+  videoDownload() async {
+    final downloader = VideoDownload(
+      onProgress: (downloaded, total, currentProgress, totalProgress) {
+        debugPrint(
+          'videoDownload下载进度: ${(totalProgress * 100).toStringAsFixed(2)}%',
+        );
+      },
+      onStatus: (status, message) {
+        debugPrint('videoDownload下载状态: $status $message');
+      },
+    );
+    // 开始下载
+    try {
+      final selectedLine = videoInfoData.lines?[currentLine.value];
+      if (selectedLine?.playLines != null &&
+          currentPlay.value < (selectedLine?.playLines?.length ?? 0)) {
+        final selectedPlayLine = selectedLine?.playLines?[currentPlay.value];
+        //将selectedPlayLine?.file复制粘贴到剪贴板中
+        Clipboard.setData(ClipboardData(text: selectedPlayLine?.file ?? ""));
+        Fluttertoast.showToast(
+          msg: "请打开迅雷app",
+          toastLength: Toast.LENGTH_SHORT,
+        );
+      }
+    } catch (e) {
+      debugPrint('videoDownload 下载失败: $e');
+    }
+
+    // 取消下载（如果需要）
+    // downloader.cancel();
+
+    // 释放资源
+    downloader.dispose();
+  }
+
   Widget _buildVideo() {
     // 添加容错处理
     String videoUrl = "";
@@ -1451,9 +1488,9 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                       top: Radius.circular(5),
                     ),
                   ),
-                  child: Icon(
-                    Icons.playlist_play,
-                    color: Theme.of(context).primaryColor,
+                  child: Text(
+                    '选集',
+                    style: TextStyle(color: Theme.of(context).primaryColor),
                   ),
                 ),
               ),
@@ -1470,6 +1507,26 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                     ),
                   ),
                   child: Icon(Icons.tv, color: Theme.of(context).primaryColor),
+                ),
+              ),
+
+              ///下载按钮
+              InkWell(
+                onTap: () {
+                  videoDownload();
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColorLight,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(5),
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.cloud_download,
+                    color: Theme.of(context).primaryColor,
+                  ),
                 ),
               ),
             ],
