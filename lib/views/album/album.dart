@@ -23,6 +23,10 @@ class VideoAlbumState extends State<VideoAlbum> {
   VideoAlbumData? albumInfoData;
   List<AlbumVideoListDataList>? videoPageData;
   final RefreshController _refreshController = RefreshController();
+  int currentPage = 1;
+  int pageSize = 12;
+  int? totalCount;
+  bool hasMore = true;
 
   @override
   void initState() {
@@ -36,12 +40,35 @@ class VideoAlbumState extends State<VideoAlbum> {
     super.dispose();
   }
 
-  Future<void> getAlbumVideoList() async {
+  Future<void> getAlbumVideoList({bool loadMore = false}) async {
     try {
       if (!mounted) return;
-      videoPageData =
-          (await Api.getAlbumVideoList({"album_id": widget.id})).data?.list ??
-          [] as List<AlbumVideoListDataList>;
+      final response = await Api.getAlbumVideoList({
+        "album_id": widget.id,
+        "page": currentPage,
+        "size": pageSize,
+      });
+
+      final newList = response.data?.list ?? [];
+      final pagination = response.data?.pagination;
+
+      if (loadMore && videoPageData != null) {
+        // 加载更多：追加数据
+        videoPageData!.addAll(newList);
+      } else {
+        // 首次加载或刷新：替换数据
+        videoPageData = newList;
+      }
+
+      if (pagination != null) {
+        totalCount = pagination.total;
+        // 判断是否还有更多数据：当前已加载数量 < 总数量
+        final currentCount = videoPageData?.length ?? 0;
+        hasMore = currentCount < (totalCount ?? 0);
+      } else {
+        // 如果没有分页信息，根据返回的数据量判断
+        hasMore = newList.length >= pageSize;
+      }
     } catch (e) {
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
     }
@@ -63,6 +90,10 @@ class VideoAlbumState extends State<VideoAlbum> {
   Future<String> init() async {
     try {
       if (!mounted) return "init failed";
+
+      // 重置分页状态
+      currentPage = 1;
+      hasMore = true;
 
       // 并发执行所有异步操作，提升加载速度
       await Future.wait([getAlbumById(), getAlbumVideoList()]);
@@ -174,14 +205,32 @@ class VideoAlbumState extends State<VideoAlbum> {
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
         child: SmartRefresher(
           onRefresh: () async {
+            currentPage = 1;
+            hasMore = true;
+            videoPageData = [];
             await init();
             if (mounted) {
               _refreshController.refreshCompleted();
             }
           },
           onLoading: () async {
+            if (!hasMore) {
+              if (mounted) {
+                _refreshController.loadNoData();
+              }
+              return;
+            }
+
+            currentPage++;
+            await getAlbumVideoList(loadMore: true);
+
             if (mounted) {
-              _refreshController.loadComplete();
+              setState(() {});
+              if (hasMore) {
+                _refreshController.loadComplete();
+              } else {
+                _refreshController.loadNoData();
+              }
             }
           },
           enablePullDown: true,
