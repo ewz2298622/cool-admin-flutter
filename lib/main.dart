@@ -30,6 +30,7 @@ import 'package:flutter_app/views/splash_page/splash_page.dart';
 import 'package:flutter_app/views/video_detail/detail.dart';
 import 'package:flutter_app/views/video_filter/video_filter.dart';
 import 'package:flutter_app/views/week/week.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
@@ -138,6 +139,14 @@ class _MyAppState extends State<MyApp> {
                 canLoadingText: '',
               ),
           child: GetMaterialApp(
+            locale: const Locale('zh', 'CN'),
+            // 设置默认语言为中文
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [Locale('zh', 'CN')],
             darkTheme: ThemeData.dark(),
             themeMode: themeManager.themeMode,
             theme: ThemeData(
