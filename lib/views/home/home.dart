@@ -23,6 +23,7 @@ import '../../entity/swiper_entity.dart';
 import '../../services/home_prefetch_service.dart';
 import '../../style/layout.dart';
 import '../../utils/appUpdater.dart';
+import '../../utils/context_manager.dart';
 import '../album/album.dart';
 
 class GradientTabIndicator extends Decoration {
@@ -121,11 +122,13 @@ class _HomePageState extends State<Home>
   void initState() {
     super.initState();
     _initializeData();
-    // 延迟检查更新，避免影响初始化性能
-    Future.delayed(_updateCheckDelay, () {
-      if (mounted) {
-        AppUpdater.checkUpdate();
-      }
+    // 延迟检查更新，确保页面已完全构建且 context 已设置
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(_updateCheckDelay, () {
+        if (mounted) {
+          AppUpdater.checkUpdate();
+        }
+      });
     });
   }
 
@@ -719,6 +722,8 @@ class _HomePageState extends State<Home>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    // 确保 context 已设置，用于更新检查
+    ContextManager.setContext(context);
     return Scaffold(body: _buildContent());
   }
 

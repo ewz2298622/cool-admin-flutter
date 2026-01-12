@@ -11,4 +11,5 @@ final List<String> whitelistPaths = [
   '/app/member/score/addScore',
   '/app/member/score/page ',
   '/app/video/videos/detail',
+  '/app/application/noticeInfo/page',
 ];

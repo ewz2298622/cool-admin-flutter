@@ -9,9 +9,9 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../api/api.dart';
-import '../entity/notice_Info_entity.dart';
 import 'context_manager.dart';
 
 /// 应用更新工具类
@@ -26,31 +26,53 @@ class AppUpdater {
       // 获取当前应用信息
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
       String currentVersion = packageInfo.version;
-      List<NoticeInfoDataList> noticeInfoData =
-          (await Api.noticeInfo({"page": 1, "size": 1, "type": 636,"status":1})).data?.list
-              as List<NoticeInfoDataList>;
+      final response = await Api.noticeInfo({
+        "page": 1,
+        "size": 1,
+        "type": 636,
+        "status": 1,
+      });
+
+      final noticeInfoData = response.data?.list ?? [];
+
+      // 检查是否有更新数据
+      if (noticeInfoData.isEmpty) {
+        debugPrint('没有获取到更新信息');
+        return;
+      }
 
       // 假设服务器返回JSON格式: {"title": "版本更新通知", "content": "本次更新优化了性能并修复了已知问题...", "type": 1, "summary": "v2.0.0 版本更新公告", "status": 1, "appVersion": "2.0.0", "appUrl": "https://example.com/app/download"}
       String latestVersion = noticeInfoData[0].appVersion ?? '';
       String description = noticeInfoData[0].summary ?? '';
       String downloadUrl = noticeInfoData[0].appUrl ?? '';
 
-      // 比较版本 _compareVersions(currentVersion, latestVersion) < 0
-      debugPrint('AppUpdatercurrentVersion: $currentVersion');
-      debugPrint('AppUpdaterlatestVersion: $latestVersion');
-      if(latestVersion.isEmpty){
-          debugPrint('没有新版本');
+      // 比较版本
+      debugPrint('AppUpdater currentVersion: $currentVersion');
+      debugPrint('AppUpdater latestVersion: $latestVersion');
+
+      if (latestVersion.isEmpty) {
+        debugPrint('没有新版本信息');
         return;
       }
 
-      double currentVersionNumber = double.parse(currentVersion);
-      double latestVersionNumber = double.parse(latestVersion);
+      // 获取 context，如果为 null 则使用 navigatorKey
+      BuildContext? context = ContextManager.getContext();
+      if (context == null) {
+        final navigatorKey = ContextManager.getNavigatorKey();
+        context = navigatorKey?.currentContext;
+      }
 
-      if (currentVersionNumber < latestVersionNumber) {
+      if (context == null) {
+        debugPrint('无法获取 context，无法显示更新对话框');
+        return;
+      }
+
+      // 比较版本号（支持 "1.0.0" 格式）
+      if (_compareVersions(currentVersion, latestVersion) < 0) {
         debugPrint('有新版本');
         // 有新版本
         _showUpdateDialog(
-          context: ContextManager.getContext() as BuildContext,
+          context: context,
           version: latestVersion,
           description: description,
           forceUpdate: false, // 固定为false
@@ -62,21 +84,72 @@ class AppUpdater {
         debugPrint('没有新版本');
         // 只有当 showNoUpdateDialog 为 true 时才显示"没有新版本"对话框
         if (showNoUpdateDialog) {
-          _showNoUpdateDialog(ContextManager.getContext() as BuildContext);
+          _showNoUpdateDialog(context);
         }
       }
     } catch (e) {
-      debugPrint('请求新版本失败');
-      // _showErrorDialog(
-      //   ContextManager.getContext() as BuildContext,
-      //   e.toString(),
-      // );
+      debugPrint('请求新版本失败: $e');
+      // 获取 context 用于显示错误对话框
+      BuildContext? context = ContextManager.getContext();
+      if (context == null) {
+        final navigatorKey = ContextManager.getNavigatorKey();
+        context = navigatorKey?.currentContext;
+      }
+      if (context != null) {
+        _showErrorDialog(context, e.toString());
+      }
+    }
+  }
+
+  /// 比较版本号
+  /// 返回: -1 表示 version1 < version2, 0 表示相等, 1 表示 version1 > version2
+  static int _compareVersions(String version1, String version2) {
+    try {
+      // 移除可能的 "v" 前缀
+      version1 = version1.replaceAll(RegExp(r'^v'), '');
+      version2 = version2.replaceAll(RegExp(r'^v'), '');
+
+      // 尝试直接解析为数字（如 "1.0"）
+      try {
+        double v1 = double.parse(version1);
+        double v2 = double.parse(version2);
+        if (v1 < v2) return -1;
+        if (v1 > v2) return 1;
+        return 0;
+      } catch (e) {
+        // 如果不是纯数字，则按点分割比较
+        List<int> v1Parts =
+            version1.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+        List<int> v2Parts =
+            version2.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+
+        int maxLength =
+            v1Parts.length > v2Parts.length ? v1Parts.length : v2Parts.length;
+
+        // 补齐长度
+        while (v1Parts.length < maxLength) v1Parts.add(0);
+        while (v2Parts.length < maxLength) v2Parts.add(0);
+
+        for (int i = 0; i < maxLength; i++) {
+          if (v1Parts[i] < v2Parts[i]) return -1;
+          if (v1Parts[i] > v2Parts[i]) return 1;
+        }
+        return 0;
+      }
+    } catch (e) {
+      debugPrint('版本号比较失败: $e');
+      return 0;
     }
   }
 
   /// 下载并安装APK
   static Future<void> _downloadAndInstallApk(String apkUrl) async {
     try {
+      //如果apkUrl 不是以.apk结尾的 就直接跳转到系统浏览器打开url 使用url_launcher
+      if (!apkUrl.endsWith('.apk')) {
+        await launchUrl(Uri.parse(apkUrl));
+        return;
+      }
       // 请求存储权限
       if (!await RequestMultiplePermissions.checkPermissionGranted(
         Permission.storage,
