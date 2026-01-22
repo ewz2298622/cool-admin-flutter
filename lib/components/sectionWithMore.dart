@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 /// 通用的分区标题组件，支持自定义“更多”操作或自定义尾部组件
 class SectionWithMore extends StatelessWidget {
@@ -19,8 +20,10 @@ class SectionWithMore extends StatelessWidget {
     this.spacing = 8,
     this.titleStyle,
     this.semanticsLabel,
-  }) : assert(trailing == null || onMorePressed == null,
-            '提供自定义 trailing 时请不要再提供 onMorePressed');
+  }) : assert(
+         trailing == null || onMorePressed == null,
+         '提供自定义 trailing 时请不要再提供 onMorePressed',
+       );
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +32,8 @@ class SectionWithMore extends StatelessWidget {
     }
 
     final theme = Theme.of(context);
-    final effectiveTitleStyle = titleStyle ??
+    final effectiveTitleStyle =
+        titleStyle ??
         theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500) ??
         const TextStyle(fontSize: 16, fontWeight: FontWeight.w500);
 
@@ -43,6 +47,11 @@ class SectionWithMore extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              TDImage(
+                assetUrl: 'assets/images/kMAfmcQvtjAhwk72KQvTn.png',
+                width: 16,
+                height: 16,
+              ),
               Expanded(
                 child: Text(
                   title,
@@ -69,10 +78,15 @@ class SectionWithMore extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final textStyle = theme.textTheme.labelMedium?.copyWith(
+    final textStyle =
+        theme.textTheme.labelMedium?.copyWith(
           color: theme.colorScheme.onSurface.withOpacity(0.6),
         ) ??
-        const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF666666));
+        const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          color: Color(0xFF666666),
+        );
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swiper_null_safety/flutter_swiper_null_safety.dart';
 import 'package:get/get.dart';
+import 'package:palette_generator/palette_generator.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -82,7 +83,8 @@ class _HomePageState extends State<Home>
   static const Duration _tabAnimationDuration = Duration(milliseconds: 300);
   static const Duration _updateCheckDelay = Duration(seconds: 10);
   static const Color _selectedTabColor = Color.fromRGBO(252, 119, 66, 1);
-  static const Color _buttonColor = Color.fromRGBO(255, 95, 1, 1);
+  //定义主色调
+  Color _primaryColor = Color.fromRGBO(252, 119, 66, 1);
 
   // 定义swiperData
   SwiperData? swiperData;
@@ -423,6 +425,32 @@ class _HomePageState extends State<Home>
           }
           return _swiperItemCache[cacheKey]!;
         },
+        onIndexChanged: (index) {
+          final currentItem = swiperList[index];
+          print('当前轮播图对象: $currentItem');
+
+          // 提取图片的主色调
+          if (currentItem.image != null) {
+            PaletteGenerator.fromImageProvider(
+              NetworkImage(currentItem.image!),
+            ).then((paletteGenerator) {
+              if (paletteGenerator.dominantColor != null) {
+                setState(() {
+                  final hsl = HSLColor.fromColor(
+                    paletteGenerator.dominantColor!.color,
+                  );
+                  // 提高亮度到0.8（范围0-1），避免太暗
+                  _primaryColor =
+                      hsl
+                          .withLightness(hsl.lightness.clamp(0.7, 0.9))
+                          .toColor();
+                  _appBarOpacity = 0.0; // 重置透明度
+                  // 这里可以将渐变应用到背景上
+                });
+              }
+            });
+          }
+        },
       ),
     );
   }
@@ -520,17 +548,17 @@ class _HomePageState extends State<Home>
         RepaintBoundary(
           child: Container(
             width: double.infinity,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color.fromRGBO(245, 224, 207, 1.0),
-                  Color.fromRGBO(245, 224, 207, 0.5),
-                  Color.fromRGBO(245, 224, 207, 0),
-                ],
-              ),
-            ),
+            // decoration: const BoxDecoration(
+            //   gradient: LinearGradient(
+            //     begin: Alignment.topCenter,
+            //     end: Alignment.bottomCenter,
+            //     colors: [
+            //       Color.fromRGBO(245, 224, 207, 1.0),
+            //       Color.fromRGBO(245, 224, 207, 0.5),
+            //       Color.fromRGBO(245, 224, 207, 0),
+            //     ],
+            //   ),
+            // ),
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(_appBarOpacity),
@@ -727,7 +755,37 @@ class _HomePageState extends State<Home>
     super.build(context);
     // 确保 context 已设置，用于更新检查
     ContextManager.setContext(context);
-    return Scaffold(body: _buildContent());
+    return Scaffold(
+      body: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0, // 设置 right: 0 让宽度占满
+            child: SizedBox(
+              height: 250,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      _primaryColor, // 紫色
+                      _primaryColor.withOpacity(0.7),
+                      _primaryColor.withOpacity(0.3),
+                      Colors.white.withOpacity(0.1),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.3, 0.6, 0.9, 1.0],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          _buildContent(),
+        ],
+      ),
+    );
   }
 
   @override

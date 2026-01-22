@@ -67,6 +67,7 @@ dependencies:
   open_file: ^3.5.10
   pull_to_refresh: ^2.0.0
   flutter_localization: ^0.3.3
+  palette_generator: ^0.3.3+7
 
 dev_dependencies:
   flutter_test:
