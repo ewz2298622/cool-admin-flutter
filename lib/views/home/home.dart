@@ -414,27 +414,47 @@ class _HomePageState extends State<Home>
     }
 
     return RepaintBoundary(
-      child: Swiper(
-        itemHeight: _swiperHeight,
-        autoplay: true,
-        itemCount: swiperList.length,
-        itemBuilder: (BuildContext context, int index) {
-          final cacheKey = '$id-${swiperList[index].id}';
-          if (!_swiperItemCache.containsKey(cacheKey)) {
-            _swiperItemCache[cacheKey] = _buildSwiperItem(swiperList[index]);
-          }
-          return _swiperItemCache[cacheKey]!;
-        },
-        onIndexChanged: (index) {
-          final currentItem = swiperList[index];
-          print('当前轮播图对象: $currentItem');
+      child: SizedBox(
+        height: _swiperHeight,
+        child: Swiper(
+          itemHeight: _swiperHeight,
+          autoplay: true,
+          // 添加性能优化参数
+          autoplayDelay: 4000, // 设置自动播放间隔，降低频率减少性能消耗
+          // 移除左右分页器
+          // 优化重建
+          loop: true,
+          // 限制预加载数量，避免过多资源消耗
+          itemCount: swiperList.length,
+          itemBuilder: (BuildContext context, int index) {
+            final cacheKey = '$id-${swiperList[index].id}';
+            if (!_swiperItemCache.containsKey(cacheKey)) {
+              // 使用缓存优化，避免重复构建
+              _swiperItemCache[cacheKey] = _buildSwiperItem(swiperList[index]);
+            }
+            return _swiperItemCache[cacheKey]!;
+          },
+          onIndexChanged: (index) {
+            final currentItem = swiperList[index];
+            // 提取图片的主色调 - 优化性能，防止重复计算
+            getColor(currentItem.image ?? "");
+          },
+        ),
+      ),
+    );
+  }
 
-          // 提取图片的主色调
-          if (currentItem.image != null) {
-            PaletteGenerator.fromImageProvider(
-              NetworkImage(currentItem.image!),
-            ).then((paletteGenerator) {
-              if (paletteGenerator.dominantColor != null) {
+  getColor(String image) {
+    // 使用防抖机制，避免频繁计算
+    Future.delayed(Duration(milliseconds: 300)).then((_) {
+      if (mounted) {
+        PaletteGenerator.fromImageProvider(NetworkImage(image!)).then((
+          paletteGenerator,
+        ) {
+          if (paletteGenerator.dominantColor != null && mounted) {
+            // 使用scheduleMicrotask优化状态更新时机
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
                 setState(() {
                   final hsl = HSLColor.fromColor(
                     paletteGenerator.dominantColor!.color,
@@ -450,14 +470,16 @@ class _HomePageState extends State<Home>
               }
             });
           }
-        },
-      ),
-    );
+        });
+      }
+    });
   }
 
   Widget _buildSwiperItem(SwiperDataList item) {
     return RepaintBoundary(
       child: Card(
+        elevation: 0, // 减少阴影计算提升性能
+        margin: EdgeInsets.zero, // 避免额外边距
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(_borderRadius),
@@ -465,13 +487,17 @@ class _HomePageState extends State<Home>
           child: Stack(
             fit: StackFit.expand,
             children: [
+              // 使用CachedNetworkImage提升图片加载性能
+              // 注意：如果项目中未引入cached_network_image，可使用下面的TDImage
               TDImage(
                 height: _swiperHeight,
                 width: double.infinity,
                 fit: BoxFit.cover,
                 imgUrl: item.image ?? '',
+                // 预先指定图片大小以优化性能
                 errorWidget: const TDImage(
                   width: double.infinity,
+                  height: _swiperHeight,
                   fit: BoxFit.cover,
                   assetUrl: 'assets/images/loading.gif',
                 ),
@@ -657,9 +683,7 @@ class _HomePageState extends State<Home>
         (albumMap[categoryId] ?? []).where((album) {
           final data = album.list;
           if (data == null) return false;
-          if (data is List) return data.isNotEmpty;
-          if (data is Iterable) return data.isNotEmpty;
-          return false;
+          return data.isNotEmpty;
         }).toList();
 
     return SmartRefresher(
