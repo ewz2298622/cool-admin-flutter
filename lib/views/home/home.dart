@@ -76,7 +76,7 @@ class Home extends StatefulWidget {
 class _HomePageState extends State<Home>
     with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   // 提取常量
-  static const double _swiperHeight = 158.0;
+  static const double _swiperHeight = 208.0;
   static const double _tabBarHeight = 35.0;
   static const double _borderRadius = 5.0;
   static const Duration _tabAnimationDuration = Duration(milliseconds: 300);
@@ -650,9 +650,12 @@ class _HomePageState extends State<Home>
         itemBuilder: (context, itemIndex) {
           if (itemIndex == 0) {
             // 第一个是轮播图
-            return SizedBox(
-              height: _swiperHeight,
-              child: _buildDotsSwiper(categoryId),
+            return Padding(
+              padding: const EdgeInsets.only(top: Layout.paddingL),
+              child: SizedBox(
+                height: _swiperHeight,
+                child: _buildDotsSwiper(categoryId),
+              ),
             );
           }
 
