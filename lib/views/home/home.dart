@@ -10,8 +10,6 @@ import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
-import '../../utils/color_notifier.dart';
-
 import '../../api/api.dart';
 import '../../components/common/common_search_bar.dart';
 import '../../components/home_two_video.dart';
@@ -27,6 +25,7 @@ import '../../entity/swiper_entity.dart';
 import '../../services/home_prefetch_service.dart';
 import '../../style/layout.dart';
 import '../../utils/appUpdater.dart';
+import '../../utils/color_notifier.dart';
 import '../../utils/context_manager.dart';
 import '../album/album.dart';
 
@@ -107,6 +106,9 @@ class _HomePageState extends State<Home>
 
   // 添加 TabController
   late TabController _tabController;
+
+  // 当前活动的 tab 索引
+  int _currentTabIndex = 0;
 
   // 添加滚动监听相关变量
   double _appBarOpacity = 0.0; // AppBar透明度
@@ -434,7 +436,9 @@ class _HomePageState extends State<Home>
                 final cacheKey = '$id-${swiperList[index].id}';
                 if (!_swiperItemCache.containsKey(cacheKey)) {
                   // 使用缓存优化，避免重复构建
-                  _swiperItemCache[cacheKey] = _buildSwiperItem(swiperList[index]);
+                  _swiperItemCache[cacheKey] = _buildSwiperItem(
+                    swiperList[index],
+                  );
                 }
                 return _swiperItemCache[cacheKey]!;
               },
@@ -463,19 +467,17 @@ class _HomePageState extends State<Home>
             // 使用scheduleMicrotask优化状态更新时机
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                final colorNotifier = Provider.of<ColorNotifier>(context, listen: false);
+                final colorNotifier = Provider.of<ColorNotifier>(
+                  context,
+                  listen: false,
+                );
                 final hsl = HSLColor.fromColor(
                   paletteGenerator.dominantColor!.color,
                 );
                 // 提高亮度到0.8（范围0-1），避免太暗
                 final newColor =
-                    hsl
-                        .withLightness(hsl.lightness.clamp(0.7, 0.9))
-                        .toColor();
+                    hsl.withLightness(hsl.lightness.clamp(0.7, 0.9)).toColor();
                 colorNotifier.updatePrimaryColor(newColor);
-                setState(() {
-                  _appBarOpacity = 0.0; // 重置透明度
-                });
               }
             });
           }
@@ -772,6 +774,7 @@ class _HomePageState extends State<Home>
   Widget _buildAlbumHeader(AlbumDataList album) {
     return SectionWithMore(
       title: album.title ?? "",
+      showIcon: true,
       onMorePressed: () {
         Navigator.push(
           context,

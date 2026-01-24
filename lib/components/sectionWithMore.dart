@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
-/// 通用的分区标题组件，支持自定义“更多”操作或自定义尾部组件
+/// 通用的分区标题组件，支持自定义"更多"操作或自定义尾部组件
 class SectionWithMore extends StatelessWidget {
   final String title;
   final VoidCallback? onMorePressed;
@@ -10,6 +10,7 @@ class SectionWithMore extends StatelessWidget {
   final double spacing;
   final TextStyle? titleStyle;
   final String? semanticsLabel;
+  final bool showIcon;
 
   const SectionWithMore({
     super.key,
@@ -20,6 +21,7 @@ class SectionWithMore extends StatelessWidget {
     this.spacing = 8,
     this.titleStyle,
     this.semanticsLabel,
+    this.showIcon = false,
   }) : assert(
          trailing == null || onMorePressed == null,
          '提供自定义 trailing 时请不要再提供 onMorePressed',
@@ -47,11 +49,12 @@ class SectionWithMore extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              TDImage(
-                assetUrl: 'assets/images/kMAfmcQvtjAhwk72KQvTn.png',
-                width: 16,
-                height: 16,
-              ),
+              if (showIcon)
+                TDImage(
+                  assetUrl: 'assets/images/kMAfmcQvtjAhwk72KQvTn.png',
+                  width: 16,
+                  height: 16,
+                ),
               Expanded(
                 child: Text(
                   title,
