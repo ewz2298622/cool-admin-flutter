@@ -6,8 +6,11 @@ import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swiper_null_safety/flutter_swiper_null_safety.dart';
 import 'package:get/get.dart';
 import 'package:palette_generator/palette_generator.dart';
+import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
+
+import '../../utils/color_notifier.dart';
 
 import '../../api/api.dart';
 import '../../components/common/common_search_bar.dart';
@@ -83,8 +86,7 @@ class _HomePageState extends State<Home>
   static const Duration _tabAnimationDuration = Duration(milliseconds: 300);
   static const Duration _updateCheckDelay = Duration(seconds: 10);
   static const Color _selectedTabColor = Color.fromRGBO(252, 119, 66, 1);
-  //定义主色调
-  Color _primaryColor = Color.fromRGBO(252, 119, 66, 1);
+  // Color _primaryColor = Color.fromRGBO(252, 119, 66, 1); // 已移至ColorNotifier
 
   // 定义swiperData
   SwiperData? swiperData;
@@ -413,59 +415,66 @@ class _HomePageState extends State<Home>
       );
     }
 
-    return RepaintBoundary(
-      child: SizedBox(
-        height: _swiperHeight,
-        child: Swiper(
-          itemHeight: _swiperHeight,
-          autoplay: true,
-          // 添加性能优化参数
-          autoplayDelay: 4000, // 设置自动播放间隔，降低频率减少性能消耗
-          // 移除左右分页器
-          // 优化重建
-          loop: true,
-          // 限制预加载数量，避免过多资源消耗
-          itemCount: swiperList.length,
-          itemBuilder: (BuildContext context, int index) {
-            final cacheKey = '$id-${swiperList[index].id}';
-            if (!_swiperItemCache.containsKey(cacheKey)) {
-              // 使用缓存优化，避免重复构建
-              _swiperItemCache[cacheKey] = _buildSwiperItem(swiperList[index]);
-            }
-            return _swiperItemCache[cacheKey]!;
-          },
-          onIndexChanged: (index) {
-            final currentItem = swiperList[index];
-            // 提取图片的主色调 - 优化性能，防止重复计算
-            getColor(currentItem.image ?? "");
-          },
-        ),
-      ),
+    return Consumer<ColorNotifier>(
+      builder: (context, colorNotifier, child) {
+        return RepaintBoundary(
+          child: SizedBox(
+            height: _swiperHeight,
+            child: Swiper(
+              itemHeight: _swiperHeight,
+              autoplay: true,
+              // 添加性能优化参数
+              autoplayDelay: 4000, // 设置自动播放间隔，降低频率减少性能消耗
+              // 移除左右分页器
+              // 优化重建
+              loop: true,
+              // 限制预加载数量，避免过多资源消耗
+              itemCount: swiperList.length,
+              itemBuilder: (BuildContext context, int index) {
+                final cacheKey = '$id-${swiperList[index].id}';
+                if (!_swiperItemCache.containsKey(cacheKey)) {
+                  // 使用缓存优化，避免重复构建
+                  _swiperItemCache[cacheKey] = _buildSwiperItem(swiperList[index]);
+                }
+                return _swiperItemCache[cacheKey]!;
+              },
+
+              ///TODO: 添加图片主色调
+              onIndexChanged: (index) {
+                final currentItem = swiperList[index];
+                // 提取图片的主色调 - 优化性能，防止重复计算
+                getColor(currentItem.image ?? "", context);
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 
-  getColor(String image) {
+  getColor(String image, BuildContext context) {
     // 使用防抖机制，避免频繁计算
     Future.delayed(Duration(milliseconds: 300)).then((_) {
       if (mounted) {
-        PaletteGenerator.fromImageProvider(NetworkImage(image!)).then((
+        PaletteGenerator.fromImageProvider(NetworkImage(image)).then((
           paletteGenerator,
         ) {
           if (paletteGenerator.dominantColor != null && mounted) {
             // 使用scheduleMicrotask优化状态更新时机
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
+                final colorNotifier = Provider.of<ColorNotifier>(context, listen: false);
+                final hsl = HSLColor.fromColor(
+                  paletteGenerator.dominantColor!.color,
+                );
+                // 提高亮度到0.8（范围0-1），避免太暗
+                final newColor =
+                    hsl
+                        .withLightness(hsl.lightness.clamp(0.7, 0.9))
+                        .toColor();
+                colorNotifier.updatePrimaryColor(newColor);
                 setState(() {
-                  final hsl = HSLColor.fromColor(
-                    paletteGenerator.dominantColor!.color,
-                  );
-                  // 提高亮度到0.8（范围0-1），避免太暗
-                  _primaryColor =
-                      hsl
-                          .withLightness(hsl.lightness.clamp(0.7, 0.9))
-                          .toColor();
                   _appBarOpacity = 0.0; // 重置透明度
-                  // 这里可以将渐变应用到背景上
                 });
               }
             });
@@ -788,21 +797,25 @@ class _HomePageState extends State<Home>
             right: 0, // 设置 right: 0 让宽度占满
             child: SizedBox(
               height: 250,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      _primaryColor, // 紫色
-                      _primaryColor.withOpacity(0.7),
-                      _primaryColor.withOpacity(0.3),
-                      Colors.white.withOpacity(0.1),
-                      Colors.transparent,
-                    ],
-                    stops: const [0.0, 0.3, 0.6, 0.9, 1.0],
-                  ),
-                ),
+              child: Consumer<ColorNotifier>(
+                builder: (context, colorNotifier, child) {
+                  return DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          colorNotifier.primaryColor, // 紫色
+                          colorNotifier.primaryColor.withOpacity(0.7),
+                          colorNotifier.primaryColor.withOpacity(0.3),
+                          Colors.white.withOpacity(0.1),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.3, 0.6, 0.9, 1.0],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ),

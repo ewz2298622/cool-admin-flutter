@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app/style/color_styles.dart';
 import 'package:flutter_app/utils/ads.dart';
+import 'package:flutter_app/utils/color_notifier.dart';
 import 'package:flutter_app/utils/context_manager.dart';
 import 'package:flutter_app/utils/device_info.dart';
 import 'package:flutter_app/utils/share_util.dart';
@@ -75,6 +76,7 @@ class AppBootstrap extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeChangeEvent()),
         ChangeNotifierProvider(create: (_) => UserState()),
         ChangeNotifierProvider(create: (_) => AppState()),
+        ChangeNotifierProvider(create: (_) => ColorNotifier()),
       ],
       child: const MyApp(),
     );
