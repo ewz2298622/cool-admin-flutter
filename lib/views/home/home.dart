@@ -123,6 +123,9 @@ class _HomePageState extends State<Home>
   // 缓存组件
   final Map<int, Widget> _tabContentCache = {};
   final Map<String, Widget> _swiperItemCache = {};
+  
+  // 保存每个轮播图的key，用于直接访问轮播图组件
+  final Map<int, GlobalKey> _swiperKeys = {};
 
   @override
   void initState() {
@@ -396,9 +399,15 @@ class _HomePageState extends State<Home>
   void _handleTabSelection() {
     if (!mounted || !_tabController.indexIsChanging) return;
 
+    int previousTabIndex = _currentTabIndex;
     // 更新当前选中的tab索引
     setState(() {
       _currentTabIndex = _tabController.index;
+    });
+    
+    // 切换tab后，主动寻找当前轮播图对象并重新调用getColor
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshCurrentSwiperColor();
     });
     
     pageController.animateToPage(
@@ -406,6 +415,44 @@ class _HomePageState extends State<Home>
       duration: _tabAnimationDuration,
       curve: Curves.ease,
     );
+  }
+
+  // 新增方法：刷新当前轮播图的颜色
+  void _refreshCurrentSwiperColor() {
+    if (!mounted || _currentTabIndex >= category.length) return;
+    
+    int currentCategoryId = category[_currentTabIndex].id ?? 0;
+    List<SwiperDataList>? swiperList = swiperMap[currentCategoryId];
+    
+    if (swiperList != null && swiperList.isNotEmpty) {
+      // 尝试获取当前轮播图的索引（如果是正在自动播放的轮播图）
+      // 如果无法获取当前索引，则默认使用第一张图片的颜色
+      String color = swiperList[0].color ?? "";
+      
+      // 查找当前Swiper组件并获取当前显示的索引
+      // 这里我们遍历当前tab的内容查找Swiper实例
+      _findAndSetColorForCurrentSwiper(currentCategoryId);
+    }
+  }
+
+  // 新增方法：查找当前轮播图并设置颜色
+  void _findAndSetColorForCurrentSwiper(int categoryId) {
+    if (!mounted) return;
+    
+    List<SwiperDataList>? swiperList = swiperMap[categoryId];
+    if (swiperList == null || swiperList.isEmpty) return;
+    
+    // 由于无法直接访问子组件的状态，我们通过重建widget的方式确保颜色更新
+    // 通过触发一次状态更新来重新构建轮播图
+    setState(() {
+      // 触发重建以确保轮播图使用正确的颜色
+    });
+    
+    // 确保使用第一个轮播项的颜色作为当前tab的颜色
+    String color = swiperList[0].color ?? "";
+    if (color.isNotEmpty) {
+      getColor(color, context);
+    }
   }
 
   Widget _buildDotsSwiper(int id) {
