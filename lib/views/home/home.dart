@@ -2,10 +2,10 @@
 import 'dart:core';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/utils/color.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swiper_null_safety/flutter_swiper_null_safety.dart';
 import 'package:get/get.dart';
-import 'package:palette_generator/palette_generator.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -447,7 +447,7 @@ class _HomePageState extends State<Home>
               onIndexChanged: (index) {
                 final currentItem = swiperList[index];
                 // 提取图片的主色调 - 优化性能，防止重复计算
-                getColor(currentItem.image ?? "", context);
+                getColor(currentItem.color ?? "", context);
               },
             ),
           ),
@@ -456,34 +456,12 @@ class _HomePageState extends State<Home>
     );
   }
 
-  getColor(String image, BuildContext context) {
+  getColor(String colorString, BuildContext context) {
     // 使用防抖机制，避免频繁计算
-    Future.delayed(Duration(milliseconds: 300)).then((_) {
-      if (mounted) {
-        PaletteGenerator.fromImageProvider(NetworkImage(image)).then((
-          paletteGenerator,
-        ) {
-          if (paletteGenerator.dominantColor != null && mounted) {
-            // 使用scheduleMicrotask优化状态更新时机
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                final colorNotifier = Provider.of<ColorNotifier>(
-                  context,
-                  listen: false,
-                );
-                final hsl = HSLColor.fromColor(
-                  paletteGenerator.dominantColor!.color,
-                );
-                // 提高亮度到0.8（范围0-1），避免太暗
-                final newColor =
-                    hsl.withLightness(hsl.lightness.clamp(0.7, 0.9)).toColor();
-                colorNotifier.updatePrimaryColor(newColor);
-              }
-            });
-          }
-        });
-      }
-    });
+    if (mounted) {
+      final colorNotifier = Provider.of<ColorNotifier>(context, listen: false);
+      colorNotifier.updatePrimaryColor(HexColor(colorString));
+    }
   }
 
   Widget _buildSwiperItem(SwiperDataList item) {
