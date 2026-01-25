@@ -123,9 +123,6 @@ class _HomePageState extends State<Home>
   // 缓存组件
   final Map<int, Widget> _tabContentCache = {};
   final Map<String, Widget> _swiperItemCache = {};
-  
-  // 保存每个轮播图的key，用于直接访问轮播图组件
-  final Map<int, GlobalKey> _swiperKeys = {};
 
   @override
   void initState() {
@@ -399,7 +396,6 @@ class _HomePageState extends State<Home>
   void _handleTabSelection() {
     if (!mounted || !_tabController.indexIsChanging) return;
 
-    int previousTabIndex = _currentTabIndex;
     // 更新当前选中的tab索引
     setState(() {
       _currentTabIndex = _tabController.index;
@@ -425,33 +421,11 @@ class _HomePageState extends State<Home>
     List<SwiperDataList>? swiperList = swiperMap[currentCategoryId];
     
     if (swiperList != null && swiperList.isNotEmpty) {
-      // 尝试获取当前轮播图的索引（如果是正在自动播放的轮播图）
-      // 如果无法获取当前索引，则默认使用第一张图片的颜色
+      // 确保使用第一个轮播项的颜色作为当前tab的颜色
       String color = swiperList[0].color ?? "";
-      
-      // 查找当前Swiper组件并获取当前显示的索引
-      // 这里我们遍历当前tab的内容查找Swiper实例
-      _findAndSetColorForCurrentSwiper(currentCategoryId);
-    }
-  }
-
-  // 新增方法：查找当前轮播图并设置颜色
-  void _findAndSetColorForCurrentSwiper(int categoryId) {
-    if (!mounted) return;
-    
-    List<SwiperDataList>? swiperList = swiperMap[categoryId];
-    if (swiperList == null || swiperList.isEmpty) return;
-    
-    // 由于无法直接访问子组件的状态，我们通过重建widget的方式确保颜色更新
-    // 通过触发一次状态更新来重新构建轮播图
-    setState(() {
-      // 触发重建以确保轮播图使用正确的颜色
-    });
-    
-    // 确保使用第一个轮播项的颜色作为当前tab的颜色
-    String color = swiperList[0].color ?? "";
-    if (color.isNotEmpty) {
-      getColor(color, context);
+      if (color.isNotEmpty) {
+        getColor(color, context);
+      }
     }
   }
 
@@ -524,54 +498,34 @@ class _HomePageState extends State<Home>
 
   Widget _buildSwiperItem(SwiperDataList item) {
     return RepaintBoundary(
-      child: Card(
-        elevation: 0, // 减少阴影计算提升性能
-        margin: EdgeInsets.zero, // 避免额外边距
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(_borderRadius),
+          image: DecorationImage(
+            image: NetworkImage(item.image ?? ''),
+            fit: BoxFit.cover,
+          ),
+        ),
         child: Container(
+          alignment: Alignment.bottomLeft,
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(_borderRadius),
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.transparent, Colors.black54],
+            ),
           ),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // 使用CachedNetworkImage提升图片加载性能
-              // 注意：如果项目中未引入cached_network_image，可使用下面的TDImage
-              TDImage(
-                height: _swiperHeight,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                imgUrl: item.image ?? '',
-                // 预先指定图片大小以优化性能
-                errorWidget: const TDImage(
-                  width: double.infinity,
-                  height: _swiperHeight,
-                  fit: BoxFit.cover,
-                  assetUrl: 'assets/images/loading.gif',
-                ),
-              ),
-              Container(
-                alignment: Alignment.bottomLeft,
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(_borderRadius),
-                  gradient: const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Colors.black54],
-                  ),
-                ),
-                child: Text(
-                  item.title ?? "",
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
+          child: Text(
+            item.title ?? "",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),
@@ -621,17 +575,6 @@ class _HomePageState extends State<Home>
         RepaintBoundary(
           child: Container(
             width: double.infinity,
-            // decoration: const BoxDecoration(
-            //   gradient: LinearGradient(
-            //     begin: Alignment.topCenter,
-            //     end: Alignment.bottomCenter,
-            //     colors: [
-            //       Color.fromRGBO(245, 224, 207, 1.0),
-            //       Color.fromRGBO(245, 224, 207, 0.5),
-            //       Color.fromRGBO(245, 224, 207, 0),
-            //     ],
-            //   ),
-            // ),
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(_appBarOpacity),
@@ -796,8 +739,8 @@ class _HomePageState extends State<Home>
             ),
           );
         },
-        addAutomaticKeepAlives: true,
-        addRepaintBoundaries: true,
+        addAutomaticKeepAlives: false, // 禁用keep-alive提高性能
+        addRepaintBoundaries: false, // 禁用repaint边界提高性能
         addSemanticIndexes: false,
       ),
     );
