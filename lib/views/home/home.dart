@@ -396,6 +396,11 @@ class _HomePageState extends State<Home>
   void _handleTabSelection() {
     if (!mounted || !_tabController.indexIsChanging) return;
 
+    // 更新当前选中的tab索引
+    setState(() {
+      _currentTabIndex = _tabController.index;
+    });
+    
     pageController.animateToPage(
       _tabController.index,
       duration: _tabAnimationDuration,
@@ -419,6 +424,9 @@ class _HomePageState extends State<Home>
 
     return Consumer<ColorNotifier>(
       builder: (context, colorNotifier, child) {
+        // 获取当前swiper所属的分类索引
+        int tabIndex = category.indexWhere((cat) => cat.id == id);
+        
         return RepaintBoundary(
           child: SizedBox(
             height: _swiperHeight,
@@ -445,9 +453,12 @@ class _HomePageState extends State<Home>
 
               ///TODO: 添加图片主色调
               onIndexChanged: (index) {
-                final currentItem = swiperList[index];
-                // 提取图片的主色调 - 优化性能，防止重复计算
-                getColor(currentItem.color ?? "", context);
+                // 只有当这个swiper所属的tab是当前激活的tab时才执行颜色获取
+                if (tabIndex == _currentTabIndex) {
+                  final currentItem = swiperList[index];
+                  // 提取图片的主色调 - 优化性能，防止重复计算
+                  getColor(currentItem.color ?? "", context);
+                }
               },
             ),
           ),
@@ -616,6 +627,11 @@ class _HomePageState extends State<Home>
                       ),
                       tabs: tabs,
                       onTap: (index) {
+                        // 更新当前选中的tab索引
+                        setState(() {
+                          _currentTabIndex = index;
+                        });
+                        
                         pageController.animateToPage(
                           index,
                           duration: _tabAnimationDuration,
@@ -643,6 +659,11 @@ class _HomePageState extends State<Home>
     return PageView(
       controller: pageController,
       onPageChanged: (pageViewIndex) {
+        // 更新当前选中的tab索引
+        setState(() {
+          _currentTabIndex = pageViewIndex;
+        });
+        
         if (_tabController.index != pageViewIndex) {
           _tabController.animateTo(pageViewIndex);
         }
