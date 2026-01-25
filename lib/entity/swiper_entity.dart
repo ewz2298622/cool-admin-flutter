@@ -56,7 +56,8 @@ class SwiperDataList {
   int? sort;
   int? status;
   int? category;
-  dynamic title;
+  String? title;
+  String? color;
 
   SwiperDataList();
 
