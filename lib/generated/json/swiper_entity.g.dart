@@ -1,5 +1,5 @@
-import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 import 'package:flutter_app/entity/swiper_entity.dart';
+import 'package:flutter_app/generated/json/base/json_convert_content.dart';
 
 SwiperEntity $SwiperEntityFromJson(Map<String, dynamic> json) {
   final SwiperEntity swiperEntity = SwiperEntity();
@@ -27,11 +27,7 @@ Map<String, dynamic> $SwiperEntityToJson(SwiperEntity entity) {
 }
 
 extension SwiperEntityExtension on SwiperEntity {
-  SwiperEntity copyWith({
-    int? code,
-    String? message,
-    SwiperData? data,
-  }) {
+  SwiperEntity copyWith({int? code, String? message, SwiperData? data}) {
     return SwiperEntity()
       ..code = code ?? this.code
       ..message = message ?? this.message
@@ -41,15 +37,15 @@ extension SwiperEntityExtension on SwiperEntity {
 
 SwiperData $SwiperDataFromJson(Map<String, dynamic> json) {
   final SwiperData swiperData = SwiperData();
-  final List<SwiperDataList>? list = (json['list'] as List<dynamic>?)
-      ?.map(
-          (e) => jsonConvert.convert<SwiperDataList>(e) as SwiperDataList)
-      .toList();
+  final List<SwiperDataList>? list =
+      (json['list'] as List<dynamic>?)
+          ?.map((e) => jsonConvert.convert<SwiperDataList>(e) as SwiperDataList)
+          .toList();
   if (list != null) {
     swiperData.list = list;
   }
-  final SwiperDataPagination? pagination = jsonConvert.convert<
-      SwiperDataPagination>(json['pagination']);
+  final SwiperDataPagination? pagination = jsonConvert
+      .convert<SwiperDataPagination>(json['pagination']);
   if (pagination != null) {
     swiperData.pagination = pagination;
   }
@@ -124,9 +120,13 @@ SwiperDataList $SwiperDataListFromJson(Map<String, dynamic> json) {
   if (category != null) {
     swiperDataList.category = category;
   }
-  final dynamic title = json['title'];
+  final String? title = jsonConvert.convert<String>(json['title']);
   if (title != null) {
     swiperDataList.title = title;
+  }
+  final String? color = jsonConvert.convert<String>(json['color']);
+  if (color != null) {
+    swiperDataList.color = color;
   }
   return swiperDataList;
 }
@@ -146,6 +146,7 @@ Map<String, dynamic> $SwiperDataListToJson(SwiperDataList entity) {
   data['status'] = entity.status;
   data['category'] = entity.category;
   data['title'] = entity.title;
+  data['color'] = entity.color;
   return data;
 }
 
@@ -163,7 +164,8 @@ extension SwiperDataListExtension on SwiperDataList {
     int? sort,
     int? status,
     int? category,
-    dynamic title,
+    String? title,
+    String? color,
   }) {
     return SwiperDataList()
       ..id = id ?? this.id
@@ -178,7 +180,8 @@ extension SwiperDataListExtension on SwiperDataList {
       ..sort = sort ?? this.sort
       ..status = status ?? this.status
       ..category = category ?? this.category
-      ..title = title ?? this.title;
+      ..title = title ?? this.title
+      ..color = color ?? this.color;
   }
 }
 
@@ -208,11 +211,7 @@ Map<String, dynamic> $SwiperDataPaginationToJson(SwiperDataPagination entity) {
 }
 
 extension SwiperDataPaginationExtension on SwiperDataPagination {
-  SwiperDataPagination copyWith({
-    int? page,
-    int? size,
-    int? total,
-  }) {
+  SwiperDataPagination copyWith({int? page, int? size, int? total}) {
     return SwiperDataPagination()
       ..page = page ?? this.page
       ..size = size ?? this.size
