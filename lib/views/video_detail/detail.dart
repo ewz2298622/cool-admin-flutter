@@ -1064,6 +1064,8 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                 fit: BoxFit.cover,
                 imgUrl: videoInfoData.video?.surfacePlot ?? "",
                 errorWidget: const TDImage(
+                  width: 150,
+                  height: 100,
                   fit: BoxFit.cover,
                   assetUrl: 'assets/images/loading.gif',
                 ),
