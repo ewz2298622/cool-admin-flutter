@@ -11,6 +11,7 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
+import '../../components/buildSwiperItem.dart';
 import '../../components/common/common_search_bar.dart';
 import '../../components/home_two_video.dart';
 import '../../components/loading.dart';
@@ -400,12 +401,12 @@ class _HomePageState extends State<Home>
     setState(() {
       _currentTabIndex = _tabController.index;
     });
-    
+
     // 切换tab后，主动寻找当前轮播图对象并重新调用getColor
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _refreshCurrentSwiperColor();
     });
-    
+
     pageController.animateToPage(
       _tabController.index,
       duration: _tabAnimationDuration,
@@ -416,10 +417,10 @@ class _HomePageState extends State<Home>
   // 新增方法：刷新当前轮播图的颜色
   void _refreshCurrentSwiperColor() {
     if (!mounted || _currentTabIndex >= category.length) return;
-    
+
     int currentCategoryId = category[_currentTabIndex].id ?? 0;
     List<SwiperDataList>? swiperList = swiperMap[currentCategoryId];
-    
+
     if (swiperList != null && swiperList.isNotEmpty) {
       // 确保使用第一个轮播项的颜色作为当前tab的颜色
       String color = swiperList[0].color ?? "";
@@ -447,7 +448,7 @@ class _HomePageState extends State<Home>
       builder: (context, colorNotifier, child) {
         // 获取当前swiper所属的分类索引
         int tabIndex = category.indexWhere((cat) => cat.id == id);
-        
+
         return RepaintBoundary(
           child: SizedBox(
             height: _swiperHeight,
@@ -465,8 +466,9 @@ class _HomePageState extends State<Home>
                 final cacheKey = '$id-${swiperList[index].id}';
                 if (!_swiperItemCache.containsKey(cacheKey)) {
                   // 使用缓存优化，避免重复构建
-                  _swiperItemCache[cacheKey] = _buildSwiperItem(
-                    swiperList[index],
+                  _swiperItemCache[cacheKey] = SwiperItemComponent(
+                    item: swiperList[index],
+                    borderRadius: _borderRadius,
                   );
                 }
                 return _swiperItemCache[cacheKey]!;
@@ -481,6 +483,17 @@ class _HomePageState extends State<Home>
                   getColor(currentItem.color ?? "", context);
                 }
               },
+
+              // 添加指示器配置 - 居右显示，缩小尺寸
+              pagination: SwiperPagination(
+                alignment: Alignment.bottomRight,
+                builder: TDSwiperDotsPagination(
+                  size: 4.0,
+                  activeSize: 4.0,
+                  space: 2.0,
+                  roundedRectangleWidth: 12,
+                ),
+              ),
             ),
           ),
         );
@@ -494,42 +507,6 @@ class _HomePageState extends State<Home>
       final colorNotifier = Provider.of<ColorNotifier>(context, listen: false);
       colorNotifier.updatePrimaryColor(HexColor(colorString));
     }
-  }
-
-  Widget _buildSwiperItem(SwiperDataList item) {
-    return RepaintBoundary(
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(_borderRadius),
-          image: DecorationImage(
-            image: NetworkImage(item.image ?? ''),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
-          alignment: Alignment.bottomLeft,
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(_borderRadius),
-            gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.transparent, Colors.black54],
-            ),
-          ),
-          child: Text(
-            item.title ?? "",
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
-    );
   }
 
   Widget _buildDefaultSearchBar() {
@@ -621,7 +598,7 @@ class _HomePageState extends State<Home>
                         setState(() {
                           _currentTabIndex = index;
                         });
-                        
+
                         pageController.animateToPage(
                           index,
                           duration: _tabAnimationDuration,
@@ -653,7 +630,7 @@ class _HomePageState extends State<Home>
         setState(() {
           _currentTabIndex = pageViewIndex;
         });
-        
+
         if (_tabController.index != pageViewIndex) {
           _tabController.animateTo(pageViewIndex);
         }
