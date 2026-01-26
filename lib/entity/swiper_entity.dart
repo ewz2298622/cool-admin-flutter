@@ -58,6 +58,7 @@ class SwiperDataList {
   int? category;
   String? title;
   String? color;
+  String? subTitle;
 
   SwiperDataList();
 

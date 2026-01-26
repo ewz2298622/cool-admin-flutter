@@ -13,56 +13,92 @@ class SwiperItemComponent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 计算标题宽度，避免重复计算
+    final screenWidth = MediaQuery.of(context).size.width;
+    final titleWidth = screenWidth * 0.7;
+
     return RepaintBoundary(
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(borderRadius),
-          image: DecorationImage(
-            image: NetworkImage(item.image ?? ''),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
-          alignment: Alignment.bottomLeft,
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(borderRadius),
-            gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.transparent, Colors.black54],
+      child: ClipRRect(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // 背景图片
+            Image.network(
+              item.image ?? '',
+              fit: BoxFit.cover,
+              loadingBuilder: (
+                BuildContext context,
+                Widget child,
+                ImageChunkEvent? loadingProgress,
+              ) {
+                if (loadingProgress == null) return child;
+                return Container(
+                  color: Colors.grey[300], // 占位颜色
+                );
+              },
+              errorBuilder: (
+                BuildContext context,
+                Object exception,
+                StackTrace? stackTrace,
+              ) {
+                return Container(
+                  color: Colors.grey[400], // 错误占位颜色
+                  child: Icon(Icons.broken_image, color: Colors.grey[600]),
+                );
+              },
             ),
-          ),
-          child: Column(
-            //居左
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                item.title ?? "",
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+            // 渐变遮罩层
+            Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Colors.black54],
                 ),
               ),
-              Text(
-                '彭于晏艾伦首次合作火花十足！',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.8), // opacity: .8
-                  fontSize: 12, // 假设 1rem = 16px，根据你的设计系统调整
-                  fontFamily: 'PingFang SC', // 注意：Flutter需要确保字体已添加
-                  fontWeight: FontWeight.normal, // font-weight: 400
-                  height: 0.333 / 0.32, // line-height相对于font-size的比例
-                  overflow: TextOverflow.ellipsis, // text-overflow: ellipsis
-                ),
-                maxLines: 1, // white-space: nowrap 的效果
-                overflow: TextOverflow.ellipsis, // 这里再设置一次确保效果
+            ),
+            // 文字内容
+            Positioned(
+              bottom: 10,
+              left: 10,
+              right: 10,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: titleWidth),
+                    child: Text(
+                      item.title ?? "",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  if ((item.subTitle ?? '').isNotEmpty)
+                    const SizedBox(
+                      height: 5,
+                    ), // 使用 SizedBox 分离元素而不是 Column spacing
+                  if ((item.subTitle ?? '').isNotEmpty)
+                    Text(
+                      item.subTitle ?? "",
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 12,
+                        fontWeight: FontWeight.normal,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

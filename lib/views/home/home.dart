@@ -433,13 +433,11 @@ class _HomePageState extends State<Home>
   Widget _buildDotsSwiper(int id) {
     final swiperList = swiperMap[id];
     if (swiperList == null || swiperList.isEmpty) {
-      return SizedBox(
+      return Container(
         height: _swiperHeight,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(_borderRadius),
-            color: Colors.grey[200],
-          ),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(_borderRadius),
+          color: Colors.grey[200],
         ),
       );
     }
@@ -449,9 +447,10 @@ class _HomePageState extends State<Home>
         // 获取当前swiper所属的分类索引
         int tabIndex = category.indexWhere((cat) => cat.id == id);
 
-        return RepaintBoundary(
-          child: SizedBox(
-            height: _swiperHeight,
+        return Container(
+          height: _swiperHeight,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(_borderRadius),
             child: Swiper(
               itemHeight: _swiperHeight,
               autoplay: true,

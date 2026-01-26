@@ -128,6 +128,10 @@ SwiperDataList $SwiperDataListFromJson(Map<String, dynamic> json) {
   if (color != null) {
     swiperDataList.color = color;
   }
+  final String? subTitle = jsonConvert.convert<String>(json['subTitle']);
+  if (subTitle != null) {
+    swiperDataList.subTitle = subTitle;
+  }
   return swiperDataList;
 }
 
@@ -147,6 +151,7 @@ Map<String, dynamic> $SwiperDataListToJson(SwiperDataList entity) {
   data['category'] = entity.category;
   data['title'] = entity.title;
   data['color'] = entity.color;
+  data['subTitle'] = entity.subTitle;
   return data;
 }
 
@@ -166,6 +171,7 @@ extension SwiperDataListExtension on SwiperDataList {
     int? category,
     String? title,
     String? color,
+    String? subTitle,
   }) {
     return SwiperDataList()
       ..id = id ?? this.id
@@ -181,7 +187,8 @@ extension SwiperDataListExtension on SwiperDataList {
       ..status = status ?? this.status
       ..category = category ?? this.category
       ..title = title ?? this.title
-      ..color = color ?? this.color;
+      ..color = color ?? this.color
+      ..subTitle = subTitle ?? this.subTitle;
   }
 }
 
