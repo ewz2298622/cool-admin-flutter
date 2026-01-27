@@ -26,8 +26,8 @@ import '../../entity/swiper_entity.dart';
 import '../../services/home_prefetch_service.dart';
 import '../../style/layout.dart';
 import '../../utils/appUpdater.dart';
-import '../../utils/color_notifier.dart';
 import '../../utils/context_manager.dart';
+import '../../utils/store/home/color_notifier.dart';
 import '../album/album.dart';
 
 class GradientTabIndicator extends Decoration {

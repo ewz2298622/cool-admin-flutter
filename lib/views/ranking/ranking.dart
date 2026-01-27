@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // 添加 provider 包
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -7,6 +8,7 @@ import '../../components/loading.dart';
 import '../../components/no_data.dart';
 import '../../components/video_one.dart';
 import '../../entity/video_page_entity.dart';
+import '../../utils/store/ranking/ranking_background_notifier.dart';
 
 class VideoRanking extends StatefulWidget {
   const VideoRanking({super.key});
@@ -48,7 +50,7 @@ class VideoRankingState extends State<VideoRanking>
   int currentPage = 1;
   int currentIndex = 0;
   // 添加一个变量来跟踪当前显示的背景图片索引，避免快速切换时的闪烁
-  int displayedBackgroundIndex = 0;
+  late RankingBackgroundNotifier _backgroundNotifier;
   final List<String> sort = [
     "popularity_day",
     "popularity_week",
@@ -59,7 +61,7 @@ class VideoRankingState extends State<VideoRanking>
   List<int> pageList = [1, 1, 1, 1];
   // 添加每个tab是否还有更多数据的标记
   List<bool> hasMoreList = [true, true, true, true];
-  
+
   // 添加加载状态
   bool _isInitializing = true;
 
@@ -69,7 +71,7 @@ class VideoRankingState extends State<VideoRanking>
     int page = 1,
   }) async {
     if (!mounted) return [];
-    
+
     // 如果没有更多数据，直接返回空列表
     if (!hasMoreList[index]) {
       return [];
@@ -83,12 +85,12 @@ class VideoRankingState extends State<VideoRanking>
       });
 
       final list = response.data?.list ?? <VideoPageDataList>[];
-      
+
       // 检查是否还有更多数据
       if (list.length < _pageSize) {
         hasMoreList[index] = false;
       }
-      
+
       return list;
     } catch (e) {
       debugPrint('_fetchDataByIndex failed for index $index: $e');
@@ -98,7 +100,7 @@ class VideoRankingState extends State<VideoRanking>
 
   Future<void> initRequest() async {
     if (!mounted) return;
-    
+
     // 重置状态
     pageList = [1, 1, 1, 1];
     hasMoreList = [true, true, true, true];
@@ -131,10 +133,7 @@ class VideoRankingState extends State<VideoRanking>
     if (!mounted || !hasMoreList[index]) return;
 
     pageList[index]++;
-    final dataList = await _fetchDataByIndex(
-      index,
-      page: pageList[index],
-    );
+    final dataList = await _fetchDataByIndex(index, page: pageList[index]);
 
     if (!mounted || dataList.isEmpty) return;
 
@@ -153,14 +152,14 @@ class VideoRankingState extends State<VideoRanking>
         popularity_sum = [...popularity_sum, ...dataList];
         break;
     }
-    
+
     videoPageDataList = [
       popularity_day,
       popularity_week,
       popularity_month,
       popularity_sum,
     ];
-    
+
     if (mounted) {
       setState(() {});
     }
@@ -168,7 +167,7 @@ class VideoRankingState extends State<VideoRanking>
 
   Future<void> _initData() async {
     if (!mounted) return;
-    
+
     try {
       _initTabController(0);
       await initRequest();
@@ -188,6 +187,7 @@ class VideoRankingState extends State<VideoRanking>
   @override
   void initState() {
     super.initState();
+    _backgroundNotifier = RankingBackgroundNotifier();
     _initData();
   }
 
@@ -202,6 +202,8 @@ class VideoRankingState extends State<VideoRanking>
       controller.dispose();
     }
     tabRefreshController.clear();
+    // 释放 BackgroundNotifier
+    _backgroundNotifier.dispose();
     super.dispose();
   }
 
@@ -213,81 +215,83 @@ class VideoRankingState extends State<VideoRanking>
   }
 
   Widget contentIsEmpty() {
-    if (videoPageDataList.isEmpty || 
+    if (videoPageDataList.isEmpty ||
         (videoPageDataList.isNotEmpty && videoPageDataList[0].isEmpty)) {
-      return const Padding(
-        padding: EdgeInsets.only(top: 120),
-        child: NoData(),
-      );
+      return const Padding(padding: EdgeInsets.only(top: 120), child: NoData());
     }
-    
-    return Stack(
-      children: [
-        // 使用 RepaintBoundary 隔离背景图片重绘
-        RepaintBoundary(
-          child: AnimatedSwitcher(
-            duration: _animationDuration,
-            transitionBuilder: (child, animation) {
-              return FadeTransition(
-                opacity: animation,
-                child: child,
+
+    return ChangeNotifierProvider.value(
+      value: _backgroundNotifier,
+      child: Stack(
+        children: [
+          // 使用 Consumer 监听背景图片索引变化
+          Consumer<RankingBackgroundNotifier>(
+            builder: (context, notifier, child) {
+              return RepaintBoundary(
+                child: AnimatedSwitcher(
+                  duration: _animationDuration,
+                  transitionBuilder: (child, animation) {
+                    return FadeTransition(opacity: animation, child: child);
+                  },
+                  child: TDImage(
+                    key: ValueKey('bg_${notifier.backgroundIndex}'),
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: _backgroundHeight,
+                    imgUrl:
+                        videoPageDataList.length > notifier.backgroundIndex &&
+                                videoPageDataList[notifier.backgroundIndex]
+                                    .isNotEmpty
+                            ? videoPageDataList[notifier.backgroundIndex][0]
+                                    .surfacePlot ??
+                                ""
+                            : "",
+                    errorWidget: const TDImage(
+                      width: 150,
+                      assetUrl: 'assets/images/loading.gif',
+                    ),
+                  ),
+                ),
               );
             },
-            child: TDImage(
-              key: ValueKey('bg_$displayedBackgroundIndex'),
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: _backgroundHeight,
-              imgUrl: videoPageDataList.length > displayedBackgroundIndex && 
-                      videoPageDataList[displayedBackgroundIndex].isNotEmpty
-                  ? videoPageDataList[displayedBackgroundIndex][0].surfacePlot ?? ""
-                  : "",
-              errorWidget: const TDImage(
-                width: 150,
-                assetUrl: 'assets/images/loading.gif',
+          ),
+          // 渐变遮罩层
+          Container(
+            height: _backgroundHeight,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(_backgroundBorderRadius),
+              gradient: const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.transparent, Colors.black],
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20, top: 60),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 10,
+                children: const [
+                  Text(
+                    "排行榜",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    "根据内容热点排名，每小时更新一次",
+                    style: TextStyle(color: Colors.white, fontSize: 15),
+                  ),
+                ],
               ),
             ),
           ),
-        ),
-        // 渐变遮罩层
-        Container(
-          height: _backgroundHeight,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(_backgroundBorderRadius),
-            gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.transparent,
-                Colors.black,
-              ],
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.only(left: 20, right: 20, top: 60),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 10,
-              children: const [
-                Text(
-                  "排行榜",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  "根据内容热点排名，每小时更新一次",
-                  style: TextStyle(color: Colors.white, fontSize: 15),
-                ),
-              ],
-            ),
-          ),
-        ),
-        _buildTabsContent(),
-      ],
+          _buildTabsContent(),
+        ],
+      ),
     );
   }
 
@@ -303,7 +307,7 @@ class VideoRankingState extends State<VideoRanking>
 
   void _onTabChanged() {
     if (!mounted || _tabController == null) return;
-    
+
     final newIndex = _tabController!.index;
     if (newIndex != currentIndex) {
       currentIndex = newIndex;
@@ -315,9 +319,8 @@ class VideoRankingState extends State<VideoRanking>
       );
       // 延迟更新背景图索引，避免快速切换时的闪烁
       Future.delayed(_backgroundUpdateDelay, () {
-        if (mounted && displayedBackgroundIndex != currentIndex) {
-          displayedBackgroundIndex = currentIndex;
-          setState(() {});
+        if (mounted) {
+          _backgroundNotifier.updateBackgroundIndex(currentIndex);
         }
       });
     }
@@ -325,13 +328,12 @@ class VideoRankingState extends State<VideoRanking>
 
   void _onPageChanged(int index) {
     if (!mounted || index == currentIndex) return;
-    
+
     currentIndex = index;
     // 延迟更新显示的背景图片索引，避免快速切换时的闪烁
     Future.delayed(_backgroundUpdateDelay, () {
       if (mounted && currentIndex == index) {
-        displayedBackgroundIndex = index;
-        setState(() {});
+        _backgroundNotifier.updateBackgroundIndex(index);
       }
     });
     // 同步更新 tab 控制器的 index
@@ -350,10 +352,7 @@ class VideoRankingState extends State<VideoRanking>
               tabAlignment: TabAlignment.start,
               dividerHeight: 0,
               indicator: const UnderlineTabIndicator(
-                borderSide: BorderSide(
-                  width: 0.0,
-                  color: Colors.transparent,
-                ),
+                borderSide: BorderSide(width: 0.0, color: Colors.transparent),
               ),
               labelColor: _selectedTabColor,
               unselectedLabelStyle: const TextStyle(
@@ -394,17 +393,16 @@ class VideoRankingState extends State<VideoRanking>
       enablePullUp: true,
       child: ListView.builder(
         padding: EdgeInsets.zero,
-        itemCount: videoPageDataList.length > index 
-            ? videoPageDataList[index].length 
-            : 0,
+        itemCount:
+            videoPageDataList.length > index
+                ? videoPageDataList[index].length
+                : 0,
         cacheExtent: 200, // 优化缓存范围
         itemBuilder: (context, key) {
           final videoData = videoPageDataList[index][key];
           return RepaintBoundary(
             key: ValueKey('video_${videoData.id}_$index'),
-            child: VideoOne(
-              videoData: videoData,
-            ),
+            child: VideoOne(videoData: videoData),
           );
         },
         addAutomaticKeepAlives: true,
@@ -416,14 +414,14 @@ class VideoRankingState extends State<VideoRanking>
 
   Future<void> _onRefresh(int index) async {
     if (!mounted) return;
-    
+
     pageList[index] = 1;
     hasMoreList[index] = true;
-    
+
     final dataList = await _fetchDataByIndex(index, page: 1);
-    
+
     if (!mounted) return;
-    
+
     switch (index) {
       case 0:
         popularity_day = dataList;
@@ -438,14 +436,14 @@ class VideoRankingState extends State<VideoRanking>
         popularity_sum = dataList;
         break;
     }
-    
+
     videoPageDataList = [
       popularity_day,
       popularity_week,
       popularity_month,
       popularity_sum,
     ];
-    
+
     if (mounted) {
       setState(() {});
       tabRefreshController[index].refreshCompleted();
@@ -454,11 +452,11 @@ class VideoRankingState extends State<VideoRanking>
 
   Future<void> _onLoadMore(int index) async {
     if (!mounted) return;
-    
+
     await loadMoreData(index);
-    
+
     if (!mounted || index >= tabRefreshController.length) return;
-    
+
     if (hasMoreList[index]) {
       tabRefreshController[index].loadComplete();
     } else {

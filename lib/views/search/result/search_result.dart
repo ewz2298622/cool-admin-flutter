@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/components/no_data.dart';
 import 'package:get/get.dart';
@@ -30,6 +32,12 @@ class SearchResultState extends State<SearchResult>
   );
   String keyWord = Get.arguments["keyWord"];
 
+  // 添加状态标志，用于批量更新
+  bool _shouldUpdateUI = false;
+
+  // 添加搜索加载状态
+  bool _isLoading = false;
+
   Future<void> getVideoPages() async {
     try {
       Map<String, dynamic>? data = {"page": currentPage};
@@ -42,6 +50,14 @@ class SearchResultState extends State<SearchResult>
     } catch (e) {
       // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+    }
+  }
+
+  // 批量更新UI的方法
+  void _updateUI() {
+    if (_shouldUpdateUI && mounted) {
+      setState(() {});
+      _shouldUpdateUI = false;
     }
   }
 
@@ -75,7 +91,8 @@ class SearchResultState extends State<SearchResult>
     if (disposed) {
       return;
     }
-    setState(() {});
+    _shouldUpdateUI = true;
+    _updateUI();
   }
 
   Widget _buildDefaultSearchBar() {
@@ -95,36 +112,59 @@ class SearchResultState extends State<SearchResult>
         style: TDSearchStyle.round,
         padding: EdgeInsets.only(left: 0, right: 0, bottom: 2, top: 2),
         onTextChanged: (String text) {
-          setState(() {
-            inputText = text;
-          });
+          inputText = text; // 直接更新变量，不需要立即setState
         },
-        onActionClick: (contexts) => search(),
+        onActionClick: (contexts) => search(), // 传递上下文以便关闭键盘
       ),
     );
   }
 
   Future<void> search() async {
+    // 设置加载状态为true
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _isLoading = true;
+    });
+
     currentPage = 1;
     videoPageData.clear();
     // TDToast.showLoading(context: context, text: "加载中");
     await getVideoPages();
     // TDToast.dismissLoading();
+
+    // 设置加载状态为false
+    setState(() {
+      _isLoading = false;
+    });
+
     if (disposed) {
       return;
     }
-    setState(() {});
+    _shouldUpdateUI = true;
+    _updateUI();
     // 刷新完成
     _refreshController.refreshCompleted();
   }
 
   // 添加刷新方法
   Future<void> _onRefresh() async {
+    // 设置加载状态为true
+    setState(() {
+      _isLoading = true;
+    });
+
     currentPage = 1;
     videoPageData.clear();
     await getVideoPages();
+
+    // 设置加载状态为false
+    setState(() {
+      _isLoading = false;
+    });
+
     if (disposed) return;
-    setState(() {});
+    _shouldUpdateUI = true;
+    _updateUI();
     _refreshController.refreshCompleted();
   }
 
@@ -133,7 +173,8 @@ class SearchResultState extends State<SearchResult>
     currentPage++;
     await getVideoPages();
     if (disposed) return;
-    setState(() {});
+    _shouldUpdateUI = true;
+    _updateUI();
 
     // 判断是否还有更多数据
     if (videoPageData.length < currentPage * 10) {
@@ -150,21 +191,28 @@ class SearchResultState extends State<SearchResult>
       controller: _refreshController,
       enablePullUp: true,
       onRefresh: _onRefresh,
-      onLoading: _onLoading, child: videoPageData.isEmpty
-          ? NoData()
-          : CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Container(
-                    padding: const EdgeInsets.only(top: 10),
-                    width: double.infinity,
-                    child: Column(
-                      children: [VideoOneSmall(videoPageData: videoPageData)],
+      onLoading: _onLoading,
+      child:
+          _isLoading
+              ? Container(
+                height: MediaQuery.of(context).size.height * 0.6,
+                child: Center(child: PageLoading()),
+              )
+              : videoPageData.isEmpty
+              ? NoData()
+              : CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Container(
+                      padding: const EdgeInsets.only(top: 10),
+                      width: double.infinity,
+                      child: Column(
+                        children: [VideoOneSmall(videoPageData: videoPageData)],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
     );
   }
 
