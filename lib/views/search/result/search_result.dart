@@ -9,6 +9,8 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 import '../../../api/api.dart';
 import '../../../components/loading.dart';
 import '../../../components/video_one_small.dart';
+import '../../../db/entity/SearchHistoryEntity.dart';
+import '../../../db/manager/SearchHistoryDatabaseHelper.dart';
 import '../../../entity/video_page_entity.dart';
 
 class SearchResult extends StatefulWidget {
@@ -31,6 +33,7 @@ class SearchResultState extends State<SearchResult>
     initialRefresh: false,
   );
   String keyWord = Get.arguments["keyWord"];
+  final searchHistory = SearchHistoryDatabaseHelper();
 
   // 添加状态标志，用于批量更新
   bool _shouldUpdateUI = false;
@@ -85,9 +88,7 @@ class SearchResultState extends State<SearchResult>
   Future<void> loadMore() async {
     debugPrint('loadMore');
     currentPage++;
-    // TDToast.showLoading(context: context, text: "加载中");
     await getVideoPages();
-    // TDToast.dismissLoading();
     if (disposed) {
       return;
     }
@@ -114,23 +115,26 @@ class SearchResultState extends State<SearchResult>
         onTextChanged: (String text) {
           inputText = text; // 直接更新变量，不需要立即setState
         },
-        onActionClick: (contexts) => search(), // 传递上下文以便关闭键盘
+        onActionClick: (ctx) => search(context), // 使用当前widget的context
       ),
     );
   }
 
-  Future<void> search() async {
-    // 设置加载状态为true
+  Future<void> search(BuildContext context) async {
+    // 关闭键盘
     FocusScope.of(context).unfocus();
+    searchHistory.insertSearchHistory(
+      SearchHistoryEntity(query: inputText, timestamp: DateTime.now()),
+    );
+
+    // 设置加载状态为true
     setState(() {
       _isLoading = true;
     });
 
     currentPage = 1;
     videoPageData.clear();
-    // TDToast.showLoading(context: context, text: "加载中");
     await getVideoPages();
-    // TDToast.dismissLoading();
 
     // 设置加载状态为false
     setState(() {
@@ -148,19 +152,9 @@ class SearchResultState extends State<SearchResult>
 
   // 添加刷新方法
   Future<void> _onRefresh() async {
-    // 设置加载状态为true
-    setState(() {
-      _isLoading = true;
-    });
-
     currentPage = 1;
     videoPageData.clear();
     await getVideoPages();
-
-    // 设置加载状态为false
-    setState(() {
-      _isLoading = false;
-    });
 
     if (disposed) return;
     _shouldUpdateUI = true;
