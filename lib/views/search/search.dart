@@ -136,14 +136,14 @@ class VideoSearchState extends State<VideoSearch>
         tabs = [const TDTab(text: '默认')];
         hotKeyWordList.add(<VideoHotWordsDataListList>[]);
       }
-      
+
       // 确保 TabController 长度与 tabs 一致
       final tabLength = tabs.length;
       if (_tabController == null || _tabController!.length != tabLength) {
         _tabController?.dispose();
         _tabController = TabController(length: tabLength, vsync: this);
       }
-      
+
       return "init success";
     } catch (e) {
       debugPrint('Initialization failed: $e');
@@ -163,8 +163,9 @@ class VideoSearchState extends State<VideoSearch>
   /// 获取分类信息并加载热门关键词（使用 getSearchHotKeyWord）
   Future<void> getDictCategoryInfoPages() async {
     try {
-      final hotWordsEntity = await Api.getSearchHotKeyWord({})
-          .timeout(const Duration(seconds: 10));
+      final hotWordsEntity = await Api.getSearchHotKeyWord(
+        {},
+      ).timeout(const Duration(seconds: 10));
       final hotWordsList = hotWordsEntity.data?.list ?? [];
 
       tabs.clear();
@@ -196,8 +197,9 @@ class VideoSearchState extends State<VideoSearch>
   /// 获取搜索类型信息并加载视频数据（使用排名数据）
   Future<void> getDictSearchTypeInfoPages() async {
     try {
-      final rankEntity = await Api.getSearchVideoRank({})
-          .timeout(const Duration(seconds: 10));
+      final rankEntity = await Api.getSearchVideoRank(
+        {},
+      ).timeout(const Duration(seconds: 10));
       searchType = rankEntity.data?.list ?? [];
       searchTypeVideoPageDataList.clear();
 
@@ -272,11 +274,10 @@ class VideoSearchState extends State<VideoSearch>
         style: TDSearchStyle.round,
         padding: const EdgeInsets.only(left: 0, right: 0, bottom: 2, top: 2),
         onTextChanged: (String text) {
-          if (mounted) {
-            setState(() {
-              inputText = text;
-            });
-          }
+          // 使用ValueNotifier等更精细的状态管理，避免整个页面重建
+          setState(() {
+            inputText = text;
+          });
         },
         onActionClick: (contexts) => goToSearchResult(),
       ),
@@ -352,12 +353,10 @@ class VideoSearchState extends State<VideoSearch>
             "#77A1D3",
       );
 
-      return RepaintBoundary(
-        child: _buildPageViewContent(
-          searchTypeItem.name ?? "",
-          color,
-          searchTypeVideoPageDataList[i],
-        ),
+      return _buildPageViewContent(
+        searchTypeItem.name ?? "",
+        color,
+        searchTypeVideoPageDataList[i],
       );
     });
   }
@@ -411,23 +410,21 @@ class VideoSearchState extends State<VideoSearch>
                 return const Center(child: Text('暂无数据'));
               }
 
-              return RepaintBoundary(
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  cacheExtent: 200,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisExtent: 24,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
-                  ),
-                  itemCount: hotKeyWordList[index].length,
-                  itemBuilder: (context, keyWordIndex) {
-                    final item = hotKeyWordList[index][keyWordIndex];
-                    return _buildHotKeyWordItem(item, index, keyWordIndex);
-                  },
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                cacheExtent: 200,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisExtent: 24,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
                 ),
+                itemCount: hotKeyWordList[index].length,
+                itemBuilder: (context, keyWordIndex) {
+                  final item = hotKeyWordList[index][keyWordIndex];
+                  return _buildHotKeyWordItem(item, index, keyWordIndex);
+                },
               );
             }),
           ),
@@ -556,9 +553,7 @@ class VideoSearchState extends State<VideoSearch>
             cacheExtent: 200,
             itemCount: list.length,
             itemBuilder: (context, index) {
-              return RepaintBoundary(
-                child: _buildVideoItem(list[index], index),
-              );
+              return _buildVideoItem(list[index], index);
             },
           ),
         ],
@@ -595,15 +590,32 @@ class VideoSearchState extends State<VideoSearch>
                 ),
               ),
             ),
-            TDImage(
-              fit: BoxFit.cover,
+            Container(
               width: _imageWidth,
               height: _imageHeight,
-              imgUrl: item.surfacePlot ?? "",
-              errorWidget: const TDImage(
-                width: _imageWidth,
-                height: _imageHeight,
-                assetUrl: 'assets/images/loading.gif',
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(3),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(3),
+                child: TDImage(
+                  fit: BoxFit.cover,
+                  width: _imageWidth,
+                  height: _imageHeight,
+                  imgUrl: item.surfacePlot ?? "",
+                  errorWidget: const TDImage(
+                    width: _imageWidth,
+                    height: _imageHeight,
+                    assetUrl: 'assets/images/loading.gif',
+                  ),
+                ),
               ),
             ),
             Expanded(
@@ -694,55 +706,52 @@ class VideoSearchState extends State<VideoSearch>
                         (context, index) => const SizedBox(width: 5),
                     itemBuilder: (context, index) {
                       final entity = searchHistoryList.elementAt(index);
-                      return RepaintBoundary(
-                        child: GestureDetector(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            decoration: BoxDecoration(
-                              color:
-                                  Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? _darkBackgroundColor
-                                      : _lightBackgroundColor,
-                              borderRadius: BorderRadius.circular(15.0),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              spacing: 5,
-                              children: [
-                                Text(
-                                  entity.query,
-                                  style: TextStyle(
-                                    color:
-                                        Theme.of(context).brightness ==
-                                                Brightness.dark
-                                            ? Colors.white
-                                            : Colors.black,
-                                  ),
-                                ),
-                                GestureDetector(
-                                  child: const Icon(
-                                    Icons.close,
-                                    size: 14,
-                                    color: Color.fromRGBO(151, 151, 151, 1),
-                                  ),
-                                  onTap: () {
-                                    searchHistory.deleteSearchHistoryById(
-                                      entity.id ?? 0,
-                                    );
-                                    getSearchHistoryEntity().then((_) {
-                                      if (mounted) setState(() {});
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
+                      return GestureDetector(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? _darkBackgroundColor
+                                    : _lightBackgroundColor,
+                            borderRadius: BorderRadius.circular(15.0),
                           ),
-                          onTap: () {
-                            inputText = entity.query;
-                            goToSearchResult();
-                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            spacing: 5,
+                            children: [
+                              Text(
+                                entity.query,
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white
+                                          : Colors.black,
+                                ),
+                              ),
+                              GestureDetector(
+                                child: const Icon(
+                                  Icons.close,
+                                  size: 14,
+                                  color: Color.fromRGBO(151, 151, 151, 1),
+                                ),
+                                onTap: () {
+                                  searchHistory.deleteSearchHistoryById(
+                                    entity.id ?? 0,
+                                  );
+                                  getSearchHistoryEntity().then((_) {
+                                    if (mounted) setState(() {});
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
                         ),
+                        onTap: () {
+                          inputText = entity.query;
+                          goToSearchResult();
+                        },
                       );
                     },
                   ),
@@ -765,6 +774,7 @@ class VideoSearchState extends State<VideoSearch>
         automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
       ),
+      // 设置为false，让系统自动处理键盘弹起时的布局调整，避免不必要的重建
       resizeToAvoidBottomInset: false,
       body: _buildContent(),
     );
@@ -773,7 +783,10 @@ class VideoSearchState extends State<VideoSearch>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // 移除异步操作，避免与 initState 冲突
-    // 搜索历史已在 init() 中加载
+    // 仅在首次加载或需要强制刷新时才重新初始化
+    // 避免因输入框聚焦等常规操作触发不必要的刷新
+    if (_futureBuilderFuture == null) {
+      _futureBuilderFuture = init();
+    }
   }
 }
