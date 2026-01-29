@@ -12,19 +12,26 @@ class User {
   static final UserDatabaseHelper userDatabaseHelper = UserDatabaseHelper();
   static final TokenDatabaseHelper tokenDatabaseHelper = TokenDatabaseHelper();
   static UserEntity? userInfoData;
-  static isLogin() {
+  
+  static bool isLogin() {
     try {
       Iterable<UserEntity> user = userDatabaseHelper.list();
       if (user.isEmpty) {
         return false;
       } else {
-        userInfoData = user.toList()[0] as UserEntity?;
-        (ContextManager.getContext() as BuildContext)
-            .read<UserState>()
-            .updateUserInfoData(userInfoData as UserEntity);
+        userInfoData = user.first as UserEntity?;
+        BuildContext? context = ContextManager.getContext() as BuildContext?;
+        if (context != null) {
+          try {
+            context.read<UserState>().updateUserInfoData(userInfoData as UserEntity);
+          } catch (e) {
+            debugPrint('Failed to update user info in provider: $e');
+          }
+        }
         return true;
       }
     } catch (error) {
+      debugPrint('isLogin error: $error');
       return false;
     }
   }
@@ -44,12 +51,22 @@ class User {
 
   //删除用户信息
   static void deleteUser() {
-    userDatabaseHelper.deleteAll();
-    tokenDatabaseHelper.deleteAll();
+    try {
+      userDatabaseHelper.deleteAll();
+      tokenDatabaseHelper.deleteAll();
+    } catch (e) {
+      debugPrint('deleteUser error: $e');
+    }
   }
 
   //实现一个对手机号脱敏的函数
-  static String getPhoneNumber(String phoneNumber) {
+  static String getPhoneNumber(String? phoneNumber) {
+    if (phoneNumber == null || phoneNumber.isEmpty) {
+      return "";
+    }
+    if (phoneNumber.length < 7) {
+      return phoneNumber;
+    }
     return phoneNumber.replaceRange(3, phoneNumber.length - 4, "****");
   }
 }

@@ -26,11 +26,14 @@ class CastScreenManager {
     // 通知UI更新
     onDeviceListUpdate?.call(deviceList);
 
-    // 创建DLNA管理器
-    _dlnaManager = DLNAManager();
+    // 如果已有活动的管理器，先停止它
+    await stopSearchDevices();
 
     try {
+      // 创建DLNA管理器
+      _dlnaManager = DLNAManager();
       final manager = await _dlnaManager?.start();
+      
       if (manager != null) {
         // 监听设备列表变化
         _deviceSubscription?.cancel();
@@ -59,7 +62,13 @@ class CastScreenManager {
           }
 
           // 通知UI更新设备列表
-          onDeviceListUpdate?.call(deviceList);
+          try {
+            onDeviceListUpdate?.call(deviceList);
+          } catch (e) {
+            debugPrint('Error calling onDeviceListUpdate: $e');
+          }
+        }, onError: (error) {
+          debugPrint('Device stream error: $error');
         });
       }
     } catch (e) {
@@ -77,7 +86,9 @@ class CastScreenManager {
   /// 向指定设备投屏
   Future<void> castToDevice(dynamic device, String url, String title) async {
     try {
-      await device['value'].setUrl(url, title: title, type: PlayType.Video);
+      if (device != null && device['value'] != null) {
+        await device['value'].setUrl(url, title: title, type: PlayType.Video);
+      }
     } catch (e) {
       debugPrint('投屏失败: $e');
     }

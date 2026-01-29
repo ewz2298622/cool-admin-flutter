@@ -47,7 +47,7 @@ class DeviceInfoUtils {
 
     try {
       // 开启禁止屏幕截图功能
-      await _protectApp.turnOffScreenshots();
+      // await _protectApp.turnOffScreenshots();
 
       // 并行获取安全检测信息
       final securityInfo = await _getSecurityInfo();
@@ -84,8 +84,7 @@ class DeviceInfoUtils {
       'isDeviceIsReal': await _protectApp.isItRealDevice() ?? false,
       'isUseJailBrokenOrRoot':
           await _protectApp.isUseJailBrokenOrRoot() ?? false,
-      'isRunOnTestFlight':
-          await _protectApp.isRunningInTestFlight() ?? false,
+      'isRunOnTestFlight': await _protectApp.isRunningInTestFlight() ?? false,
       'checkIsTheDeveloperModeOn':
           await _protectApp.checkIsTheDeveloperModeOn() ?? false,
     };

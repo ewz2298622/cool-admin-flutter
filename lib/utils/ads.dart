@@ -22,7 +22,7 @@ class Ads {
 
   static String REWARD_VIDEO_AD_ANDROID =
       AdsConfig.FULL_SCREEN_VIDEO_AD_ANDROID;
-  static String REWARD_VIDEO_AD_IOS = AdsConfig.REWARD_VIDEO_AD_IOS;
+  static String REWARD_VIDEO_AD_IOS = AdsConfig.FULL_SCREEN_VIDEO_AD_IOS;
   //注册
   static initRegister() async {
     try {
@@ -150,7 +150,7 @@ class Ads {
         orientation: FlutterUnionadOrientation.VERTICAL,
       );
     } catch (e) {
-      debugPrint("插屏广告加载失败");
+      debugPrint("插屏广告加载失败: $e");
     }
   }
 
@@ -186,14 +186,15 @@ class Ads {
         },
       );
 
-      List<AppAdsDataList> adsList =
-          response.data?.list ?? [] as List<AppAdsDataList>;
+      List<AppAdsDataList>? adsList = response.data?.list as List<AppAdsDataList>?;
 
-      // 更新缓存
-      _cachedAdsList = adsList;
-      _cacheTime = DateTime.now();
+      if (adsList != null) {
+        // 更新缓存
+        _cachedAdsList = adsList;
+        _cacheTime = DateTime.now();
 
-      _updateRewardAdConfig(adsList);
+        _updateRewardAdConfig(adsList);
+      }
     } catch (e) {
       debugPrint("_loadAd激励广告加载失败: $e");
       // 如果请求失败但有缓存，使用缓存
@@ -233,7 +234,7 @@ class Ads {
       }
     } catch (e) {
       // 捕获并处理异常
-      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+      debugPrint('getUserInfo failed: $e');
     }
   }
 
@@ -266,7 +267,7 @@ class Ads {
         //奖励名称 选填
         rewardAmount: score,
         //奖励数量 选填
-        userID: user?.id.toString() ?? '',
+        userID: user?.id?.toString() ?? '',
         //  用户id 选填
         orientation: FlutterUnionadOrientation.VERTICAL,
         //视屏方向 选填
@@ -274,18 +275,25 @@ class Ads {
         //扩展参数 选填
       );
     } catch (e) {
-      debugPrint("激励广告加载失败");
+      debugPrint("激励广告加载失败: $e");
     }
   }
 
   //显示激励广告
   static Future<void> showRewardVideoAd() async {
-    await FlutterUnionad.showRewardVideoAd();
+    try {
+      await FlutterUnionad.showRewardVideoAd();
+    } catch (e) {
+      debugPrint("显示激励广告失败: $e");
+    }
   }
 
   //监听广告
   static void addListener() {
-    Ads._adViewStream = FlutterUnionadStream.initAdStream(
+    // 先取消之前的订阅，避免重复监听
+    _adViewStream?.cancel();
+    
+    _adViewStream = FlutterUnionadStream.initAdStream(
       flutterUnionadFullVideoCallBack: FlutterUnionadFullVideoCallBack(
         onShow: () {
           print("全屏广告显示");
@@ -402,7 +410,11 @@ class Ads {
             "阶段激励广告奖励  验证结果=$rewardVerify 奖励类型<FlutterUnionadRewardType>=$rewardType 奖励=$rewardAmount"
             "奖励名称$rewardName 错误码=$errorCode 错误$error 建议奖励$propose",
           );
-          await Api.addScore({"businessType": 0, "businessId": adsId});
+          try {
+            await Api.addScore({"businessType": 0, "businessId": adsId});
+          } catch (e) {
+            debugPrint("Api.addScore error: $e");
+          }
           Fluttertoast.showToast(msg: "奖励已发放", toastLength: Toast.LENGTH_SHORT);
         },
         onEcpm: (info) {

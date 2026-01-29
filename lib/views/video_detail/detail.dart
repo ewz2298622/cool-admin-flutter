@@ -58,12 +58,42 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   List<DictDataDataVideoCategory>? videoCategory = [];
   List<DictDataDataLanguage>? language = [];
   final PageController pageController = PageController(initialPage: 0);
-  late FPlayer player = FPlayer();
+  late FPlayer player;
+
+  @override
+  void initState() {
+    player = FPlayer();
+    _futureBuilderFuture = init();
+    // 设置投屏设备列表更新回调
+    _castScreenManager.onDeviceListUpdate = (devices) {
+      setState(() {
+        deviceList = devices;
+      });
+      TVshowModalBottomSheetListSate?.call(() {});
+    };
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    debugPrint('Video_Detail: dispose called');
+    // 在组件销毁前调用addViews
+    _onPageLeave();
+    // 停止监听播放进度
+    _stopPositionListener();
+    // 释放播放器资源
+    player.dispose();
+    super.dispose();
+    // 取消路由订阅
+    routeObserver.unsubscribe(this);
+    // 释放投屏管理器资源
+    _castScreenManager.dispose();
+  }
   List<dynamic> deviceList = [];
   StateSetter? TVshowModalBottomSheetListSate;
   final CastScreenManager _castScreenManager = CastScreenManager(); // 添加投屏管理器
-  final id = Get.arguments["id"];
-  final viewingDuration = Get.arguments["viewingDuration"];
+  final id = Get.arguments?["id"];
+  final viewingDuration = Get.arguments?["viewingDuration"];
   String androidCodeId = AdsConfig.INTERSTITIAL_AD_ANDROID;
   String iosCodeId = AdsConfig.INTERSTITIAL_AD_IOS;
   VideoDetailDataData videoInfoData = VideoDetailDataData();
@@ -142,6 +172,10 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
 
   getVideoDetail() async {
     try {
+      // 清空之前的数据以防止数据污染
+      tabs.clear();
+      videoList.clear();
+      
       videoInfoData =
           ((await Api.getVideoDetail({"id": id})).data as VideoDetailDataData);
       // 添加容错处理：确保lines存在且不为空
@@ -208,12 +242,14 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
             "page": Random().nextInt(2) + 1,
           })).data?.list ??
           [] as List<VideoPageDataList>;
-      setState(() {
-        videoPageData = list;
-      });
+      if (mounted) {
+        setState(() {
+          videoPageData = list;
+        });
+      }
     } catch (e) {
       // 捕获并处理异常
-      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+      debugPrint('Initialization getVideoPages failed: $e');
     }
   }
 
@@ -236,6 +272,8 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   void _videoListener() {
     player.onCurrentPosUpdate.listen((pos) {
       progress = pos.inSeconds;
+    }).onError((error) {
+      debugPrint('Video position listener error: $error');
     });
   }
 
@@ -245,11 +283,17 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
     }
     try {
       if (videoInfoData.video?.id != null) {
+        // 添加空值检查，防止player.value.duration在播放器未初始化时抛出异常
+        int videoDuration = 0;
+        if (player.value.duration != null && !player.value.duration.isNegative) {
+          videoDuration = player.value.duration.inMilliseconds ~/ 1000;
+        }
+        
         await Api.addViews({
           "title": videoInfoData.video?.title,
           "associationId": videoInfoData.video?.id ?? 1,
           "viewingDuration": progress,
-          "duration": player.value.duration.inMilliseconds ~/ 1000,
+          "duration": videoDuration,
           "type": 19,
           "cover": videoInfoData.video?.surfacePlot ?? "",
           "videoIndex": currentPlay.value,
@@ -267,6 +311,10 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
 
   Future<String> init() async {
     try {
+      // 清空之前的数据以防止数据污染
+      tabs.clear();
+      videoList.clear();
+      
       _initTabController();
       await getVideoDetail();
       await Future.wait([
@@ -283,6 +331,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
       return "init success";
     } catch (e) {
       // 捕获并处理异常
+      debugPrint('Initialization error in init(): $e');
       return "init success";
     }
   }
@@ -337,18 +386,22 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   }
 
   playerValueChanged() {
-    FValue value = player.value;
-    if (value.state == FState.error) {
-      debugPrint("播放失败");
-      // 添加容错处理
-      if (videoInfoData.lines != null &&
-          videoInfoData.lines!.isNotEmpty &&
-          currentPlay.value < videoInfoData.lines!.length) {
-        Api.VideoLineUpdate({
-          "id": videoInfoData.lines?[currentPlay.value].id,
-          "status": 0,
-        });
+    try {
+      FValue value = player.value;
+      if (value.state == FState.error) {
+        debugPrint("播放失败");
+        // 添加容错处理
+        if (videoInfoData.lines != null &&
+            videoInfoData.lines!.isNotEmpty &&
+            currentPlay.value < videoInfoData.lines!.length) {
+          Api.VideoLineUpdate({
+            "id": videoInfoData.lines?[currentPlay.value].id,
+            "status": 0,
+          });
+        }
       }
+    } catch (e) {
+      debugPrint('playerValueChanged error: $e');
     }
   }
 
@@ -366,24 +419,15 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
       }
       // 开始监听播放进度
       _startPositionListener();
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     } catch (error) {
       debugPrint('setVideoUrl error: $error');
     }
   }
 
-  @override
-  void initState() {
-    _futureBuilderFuture = init();
-    // 设置投屏设备列表更新回调
-    _castScreenManager.onDeviceListUpdate = (devices) {
-      setState(() {
-        deviceList = devices;
-      });
-      TVshowModalBottomSheetListSate?.call(() {});
-    };
-    super.initState();
-  }
+
 
   @override
   void didChangeDependencies() {
@@ -392,20 +436,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
     routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute);
   }
 
-  @override
-  void dispose() {
-    debugPrint('Video_Detail: dispose called');
-    // 在组件销毁前调用addViews
-    _onPageLeave();
-    // 停止监听播放进度
-    _stopPositionListener();
-    super.dispose();
-    removeVideo();
-    // 取消路由订阅
-    routeObserver.unsubscribe(this);
-    // 释放投屏管理器资源
-    _castScreenManager.dispose();
-  }
+
 
   // 当页面被其他页面覆盖时调用
   @override
@@ -474,7 +505,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
       arguments: {
         "videoId": videoId,
         "videoUrl": videoUrl,
-        "videoName": videoData?.title,
+        "videoName": videoData?.title ?? videoInfoData.video?.title,
         "playLineId": playLineId,
       },
     );
@@ -485,6 +516,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
     _onPageLeave();
     // 停止监听播放进度
     _stopPositionListener();
+    // 重置播放器
     player.reset();
     _isPlayerReleased = true;
   }

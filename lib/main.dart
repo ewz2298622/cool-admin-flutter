@@ -351,9 +351,7 @@ class _MainPageState extends State<MainPage> {
 
       // 登录状态检查（延迟执行）
       Future.delayed(const Duration(milliseconds: 200), () {
-        User.isLogin().catchError((e) {
-          debugPrint('User.isLogin failed: $e');
-        });
+        User.isLogin();
       });
 
       // 广告加载改为后台异步执行，不阻塞应用启动
@@ -393,6 +391,7 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
+    // 初始化页面
     _pages = <Widget>[
       const Home(),
       const VideoFilter(),
