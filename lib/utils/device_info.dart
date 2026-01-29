@@ -1,3 +1,4 @@
+import 'dart:async'; // 添加 async 导入
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
@@ -50,7 +51,20 @@ class DeviceInfoUtils {
       // await _protectApp.turnOffScreenshots();
 
       // 并行获取安全检测信息
-      final securityInfo = await _getSecurityInfo();
+      // 修复：添加超时机制，防止安全检测卡死导致 App 无响应
+      final securityInfo = await _getSecurityInfo().timeout(
+        const Duration(seconds: 2),
+        onTimeout: () {
+          debugPrint('安全检测超时，跳过检测');
+          return {
+            'deviceUseVPN': false,
+            'isDeviceIsReal': true, // 默认为真机，避免误判
+            'isUseJailBrokenOrRoot': false,
+            'isRunOnTestFlight': false,
+            'checkIsTheDeveloperModeOn': false,
+          };
+        },
+      );
 
       // 根据平台获取设备信息
       if (Platform.isAndroid) {
@@ -79,15 +93,33 @@ class DeviceInfoUtils {
 
   /// 获取安全检测信息
   Future<Map<String, bool>> _getSecurityInfo() async {
-    return {
-      'deviceUseVPN': await _protectApp.isDeviceUseVPN() ?? false,
-      'isDeviceIsReal': await _protectApp.isItRealDevice() ?? false,
-      'isUseJailBrokenOrRoot':
-          await _protectApp.isUseJailBrokenOrRoot() ?? false,
-      'isRunOnTestFlight': await _protectApp.isRunningInTestFlight() ?? false,
-      'checkIsTheDeveloperModeOn':
-          await _protectApp.checkIsTheDeveloperModeOn() ?? false,
-    };
+    try {
+      // 并行执行所有检查以提高速度
+      final results = await Future.wait([
+        _protectApp.isDeviceUseVPN(),
+        _protectApp.isItRealDevice(),
+        _protectApp.isUseJailBrokenOrRoot(),
+        _protectApp.isRunningInTestFlight(),
+        _protectApp.checkIsTheDeveloperModeOn(),
+      ]);
+
+      return {
+        'deviceUseVPN': results[0] ?? false,
+        'isDeviceIsReal': results[1] ?? false,
+        'isUseJailBrokenOrRoot': results[2] ?? false,
+        'isRunOnTestFlight': results[3] ?? false,
+        'checkIsTheDeveloperModeOn': results[4] ?? false,
+      };
+    } catch (e) {
+      debugPrint('安全检测发生错误: $e');
+      return {
+        'deviceUseVPN': false,
+        'isDeviceIsReal': true,
+        'isUseJailBrokenOrRoot': false,
+        'isRunOnTestFlight': false,
+        'checkIsTheDeveloperModeOn': false,
+      };
+    }
   }
 
   /// 获取Android设备信息

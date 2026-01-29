@@ -58,12 +58,19 @@ Future<void> main() async {
       systemNavigationBarContrastEnforced: false,
     ),
   );
-  // 预加载改为后台异步执行，不阻塞应用启动
-  // 保持原有业务逻辑不变，只是改变执行时机
-  HomePrefetchService.instance.preload().catchError((e) {
-    debugPrint('Home prefetch failed: $e');
-  });
+
+  // 修复：先启动 App，再执行预加载，避免阻塞首帧
   runApp(const AppBootstrap());
+
+  // 使用 addPostFrameCallback 确保在第一帧绘制完成后再开始繁重的预加载任务
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    // 延迟一点点，让 UI 动画先跑起来
+    Future.delayed(const Duration(milliseconds: 500), () {
+      HomePrefetchService.instance.preload().catchError((e) {
+        debugPrint('Home prefetch failed: $e');
+      });
+    });
+  });
 }
 
 class AppBootstrap extends StatelessWidget {
@@ -98,12 +105,9 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     if (!_sdkInitialized) {
       _sdkInitialized = true;
-      // 延迟初始化 SDK，不阻塞应用启动
-      // 使用 scheduleMicrotask 确保在下一帧执行，不阻塞当前帧
-      scheduleMicrotask(() {
-        // 进一步延迟，让应用先完成初始渲染
-        Future.delayed(const Duration(milliseconds: 100), _initSDK);
-      });
+      // 修复：增加延迟时间，避免与 App 启动时的 UI 构建争抢资源
+      // 延迟 1.5 秒初始化广告 SDK，确保 Splash 页面已经展示
+      Future.delayed(const Duration(milliseconds: 1500), _initSDK);
     }
   }
 
@@ -330,33 +334,39 @@ class _MainPageState extends State<MainPage> {
 
   Future<String> init() async {
     try {
+      // 修复：给 UI 一点时间来渲染，避免数据库初始化卡住主线程
+      await Future.delayed(const Duration(milliseconds: 200));
+
       // 只等待关键操作：数据库初始化（必需，其他操作依赖它）
       await DBManager.init();
 
       // 其他非关键操作改为后台异步执行，不阻塞应用启动
       // 保持原有业务逻辑不变，只是改变执行时机
       // 设备信息获取（延迟执行，不阻塞启动）
-      Future.delayed(const Duration(milliseconds: 100), () {
+      Future.delayed(const Duration(milliseconds: 500), () {
         initPlatformState().catchError((e) {
           debugPrint('initPlatformState failed: $e');
         });
       });
 
       // 分享图片准备（延迟执行，在真正需要时再准备）
-      Future.delayed(const Duration(milliseconds: 300), () {
+      Future.delayed(const Duration(milliseconds: 1000), () {
         ShareUtil.prepareShareImage().catchError((e) {
           debugPrint('prepareShareImage failed: $e');
         });
       });
 
       // 登录状态检查（延迟执行）
-      Future.delayed(const Duration(milliseconds: 200), () {
+      Future.delayed(const Duration(milliseconds: 800), () {
         User.isLogin();
       });
 
       // 广告加载改为后台异步执行，不阻塞应用启动
-      getAd().catchError((e) {
-        debugPrint('getAd failed: $e');
+      // 延迟加载广告，优先展示内容
+      Future.delayed(const Duration(milliseconds: 1000), () {
+        getAd().catchError((e) {
+          debugPrint('getAd failed: $e');
+        });
       });
 
       //跳转到SplashPage组件
