@@ -18,8 +18,8 @@ class AdsConfig {
   static const String INTERSTITIAL_AD_IOS = "";
 
   //开屏广告
-  static const String SPLASH_AD_ANDROID = "";
-  static const String SPLASH_AD_IOS = "";
+  static const String SPLASH_AD_ANDROID = "102357892"; // 默认开屏广告ID
+  static const String SPLASH_AD_IOS = "102392509"; // 默认开屏广告ID
 
   // 激励广告配置
   static const String REWARD_NAME = "积分";

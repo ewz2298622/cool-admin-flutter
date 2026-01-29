@@ -21,8 +21,15 @@ class SplashPage extends StatefulWidget {
 
 class _SplashPageState extends State<SplashPage> {
   bool _offstage = false;
-  String androidCodeId = AdsConfig.SPLASH_AD_ANDROID;
-  String iosCodeId = AdsConfig.INTERSTITIAL_AD_IOS;
+  // 使用默认测试广告ID，避免空ID导致平台视图崩溃
+  String androidCodeId =
+      AdsConfig.SPLASH_AD_ANDROID.isEmpty
+          ? '102357892'
+          : AdsConfig.SPLASH_AD_ANDROID;
+  String iosCodeId =
+      AdsConfig.INTERSTITIAL_AD_IOS.isEmpty
+          ? '102392509'
+          : AdsConfig.INTERSTITIAL_AD_IOS;
   bool _isAdDataLoaded = false;
   bool _hasNavigated = false;
   Timer? _timeoutTimer;
@@ -125,7 +132,9 @@ class _SplashPageState extends State<SplashPage> {
           child: Container(
             color: Colors.white,
             child:
-                _isAdDataLoaded
+                _isAdDataLoaded &&
+                        androidCodeId.isNotEmpty &&
+                        iosCodeId.isNotEmpty
                     ? FlutterUnionadSplashAdView(
                       //android 开屏广告广告id 必填 889033013 102729400
                       // androidCodeId: "892349010",
@@ -188,6 +197,7 @@ class _SplashPageState extends State<SplashPage> {
                       width: MediaQuery.of(context).size.width,
                       height: MediaQuery.of(context).size.height - 100,
                       color: Colors.white,
+                      child: Center(),
                     ),
           ),
         ),
