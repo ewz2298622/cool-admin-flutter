@@ -13,6 +13,7 @@ import '../../entity/dict_info_list_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../style/layout.dart';
 import '../search/search.dart';
+import '../../services/video_filter_prefetch_service.dart';
 
 String TAG = "VideoFilter";
 
@@ -178,13 +179,26 @@ class VideoFilterState extends State<VideoFilter>
       // 使用ValueNotifier更新加载状态
       isLoadingNotifier.value = true;
 
-      // 并行执行所有初始化任务，提升加载速度
-      await Future.wait([
-        getVideoPages(),
-        getVideoCategoryPages(),
-        getVideoAreaPages(),
-        getVideoTagPages(),
-      ]);
+      // 首先尝试从预加载服务获取数据
+      final prefetchService = VideoFilterPrefetchService.instance;
+      final prefetchData = await prefetchService.preload();
+
+      if (prefetchData != null) {
+        // 使用预加载的数据
+        categoryData = prefetchData.categoryData;
+        tagData = prefetchData.tagData;
+        areaDictList = prefetchData.areaData;
+      } else {
+        // 如果预加载失败或没有预加载数据，则直接获取数据
+        await Future.wait([
+          getVideoCategoryPages(),
+          getVideoAreaPages(),
+          getVideoTagPages(),
+        ]);
+      }
+
+      // 然后获取视频页面数据
+      await getVideoPages();
 
       // 加载完成后更新状态
       isLoadingNotifier.value = false;
@@ -337,10 +351,8 @@ class VideoFilterState extends State<VideoFilter>
   Future<void> loadMore() async {
     currentPage++;
     await getVideoPages();
-    // 加载完成后更新加载状态
-    isLoadingNotifier.value = false;
     TDToast.dismissLoading();
-    // 不再在这里调用_refreshController.loadComplete()，因为它在SmartRefresher的回调中调用
+    // 不要在这里设置isLoadingNotifier.value = false，由SmartRefresher控制
   }
 
   /// 返回一个Widget自动填充剩余高度 且可以滑动

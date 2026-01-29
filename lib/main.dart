@@ -43,6 +43,7 @@ import 'components/loading.dart';
 import 'db/manager/DBManager.dart';
 import 'entity/app_ads_entity.dart';
 import 'services/home_prefetch_service.dart';
+import 'services/video_filter_prefetch_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,8 +67,13 @@ Future<void> main() async {
   WidgetsBinding.instance.addPostFrameCallback((_) {
     // 延迟一点点，让 UI 动画先跑起来
     Future.delayed(const Duration(milliseconds: 500), () {
+      // 并行预加载多个服务的数据
       HomePrefetchService.instance.preload().catchError((e) {
         debugPrint('Home prefetch failed: $e');
+      });
+      
+      VideoFilterPrefetchService.instance.preload().catchError((e) {
+        debugPrint('VideoFilter prefetch failed: $e');
       });
     });
   });
