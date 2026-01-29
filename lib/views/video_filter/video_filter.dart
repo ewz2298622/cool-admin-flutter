@@ -11,9 +11,9 @@ import '../../components/video_three.dart';
 import '../../entity/dict_data_entity.dart';
 import '../../entity/dict_info_list_entity.dart';
 import '../../entity/video_page_entity.dart';
+import '../../services/video_filter_prefetch_service.dart';
 import '../../style/layout.dart';
 import '../search/search.dart';
-import '../../services/video_filter_prefetch_service.dart';
 
 String TAG = "VideoFilter";
 
@@ -32,7 +32,8 @@ class VideoFilterState extends State<VideoFilter>
   //定义currentPage
   int currentPage = 1;
   TDBackTopStyle style = TDBackTopStyle.circle;
-  var _futureBuilderFuture;
+  var _headerFutureBuilderFuture;
+  var _contentFutureBuilderFuture;
   var inputText = "";
   List<DictDataDataVideoCategory> categoryData = [];
   List<DictDataDataVideoTag> tagData = [];
@@ -48,6 +49,8 @@ class VideoFilterState extends State<VideoFilter>
   final ValueNotifier<int> regionCurrent = ValueNotifier<int>(0);
   // 添加加载状态 ValueNotifier，替代布尔变量
   final ValueNotifier<bool> isLoadingNotifier = ValueNotifier<bool>(false);
+  // 添加头部加载状态 ValueNotifier
+  final ValueNotifier<bool> isHeaderLoadingNotifier = ValueNotifier<bool>(true);
   bool disposed = false;
   List<DictInfoListData> categoryDictList = [];
   List<DictInfoListData> areaDictList = [];
@@ -172,13 +175,10 @@ class VideoFilterState extends State<VideoFilter>
     }
   }
 
-  Future<String> init() async {
-    if (!mounted) return "init failed";
+  Future<String> initHeader() async {
+    if (!mounted) return "init header failed";
 
     try {
-      // 使用ValueNotifier更新加载状态
-      isLoadingNotifier.value = true;
-
       // 首先尝试从预加载服务获取数据
       final prefetchService = VideoFilterPrefetchService.instance;
       final prefetchData = await prefetchService.preload();
@@ -197,23 +197,47 @@ class VideoFilterState extends State<VideoFilter>
         ]);
       }
 
-      // 然后获取视频页面数据
+      // 头部数据加载完成，更新头部加载状态
+      if (mounted) {
+        isHeaderLoadingNotifier.value = false;
+      }
+
+      return "init header success";
+    } catch (e) {
+      debugPrint('Header initialization failed: $e');
+      // 即使出错也要更新头部加载状态
+      if (mounted) {
+        isHeaderLoadingNotifier.value = false;
+      }
+      return "init header failed";
+    }
+  }
+
+  Future<String> initContent() async {
+    if (!mounted) return "init content failed";
+
+    try {
+      // 使用ValueNotifier更新加载状态
+      isLoadingNotifier.value = true;
+
+      // 获取视频页面数据
       await getVideoPages();
 
       // 加载完成后更新状态
       isLoadingNotifier.value = false;
-      return "init success";
+      return "init content success";
     } catch (e) {
-      debugPrint('Initialization failed: $e');
+      debugPrint('Content initialization failed: $e');
       isLoadingNotifier.value = false;
-      return "init success";
+      return "init content failed";
     }
   }
 
   @override
   void initState() {
     super.initState();
-    _futureBuilderFuture = init();
+    _headerFutureBuilderFuture = initHeader();
+    _contentFutureBuilderFuture = initContent();
   }
 
   @override
@@ -225,6 +249,7 @@ class VideoFilterState extends State<VideoFilter>
     yearCurrent.dispose();
     regionCurrent.dispose();
     isLoadingNotifier.dispose();
+    isHeaderLoadingNotifier.dispose(); // 释放头部加载状态 ValueNotifier
     // 释放 RefreshController
     _refreshController.dispose();
     // 清理缓存
@@ -357,102 +382,113 @@ class VideoFilterState extends State<VideoFilter>
 
   /// 返回一个Widget自动填充剩余高度 且可以滑动
   Widget _buildContent() {
-    return FutureBuilder<String>(
-      future: _futureBuilderFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: isHeaderLoadingNotifier,
+      builder: (context, isHeaderLoading, child) {
+        // 如果头部还在加载，显示全局加载动画
+        if (isHeaderLoading) {
           return const PageLoading();
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else if (snapshot.hasData) {
-          // 注意：我们不再缓存整个内容，因为这会阻止下拉刷新和上拉加载更多功能
-          // 每次都需要重新构建内容以确保刷新功能正常工作
-          return SmartRefresher(
-            onRefresh: () async {
-              await onRefresh();
-              if (mounted) {
-                _refreshController.refreshCompleted();
-              }
-            },
-            onLoading: () async {
-              await loadMore();
-              if (mounted) {
-                _refreshController.loadComplete();
-              }
-            },
-            enablePullDown: true,
-            enablePullUp: true,
-            controller: _refreshController,
-            child: CustomScrollView(
-              cacheExtent: 2000, // 增加缓存区域提高滚动性能
-              slivers: <Widget>[
-                SliverToBoxAdapter(
-                  child: RepaintBoundary(child: _buildDefaultSearchBar()),
-                ),
-                SliverStickyHeader(
-                  header: RepaintBoundary(
-                    child: Container(
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      padding: EdgeInsets.only(
-                        // left: Layout.paddingL,
-                        // right: Layout.paddingR,
-                        top: 5,
-                        bottom: Layout.paddingB,
-                      ),
-                      child: Visibility(
-                        visible: categoryData.isNotEmpty,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            FilterRow<DictDataDataVideoCategory>(
-                              title: '全部分类',
-                              items: categoryData,
-                              notifier: categoryCurrent,
-                              labelBuilder: (item) => item?.name ?? '全部分类',
-                              onTap: _category_change,
+        } else {
+          // 头部加载完成，显示页面内容
+          return Stack(
+            children: [
+              // 首先构建包含头部筛选区域的页面
+              SmartRefresher(
+                onRefresh: () async {
+                  await onRefresh();
+                  if (mounted) {
+                    _refreshController.refreshCompleted();
+                  }
+                },
+                onLoading: () async {
+                  await loadMore();
+                  if (mounted) {
+                    _refreshController.loadComplete();
+                  }
+                },
+                enablePullDown: true,
+                enablePullUp: true,
+                controller: _refreshController,
+                child: CustomScrollView(
+                  cacheExtent: 2000, // 增加缓存区域提高滚动性能
+                  slivers: <Widget>[
+                    SliverToBoxAdapter(
+                      child: RepaintBoundary(child: _buildDefaultSearchBar()),
+                    ),
+                    SliverStickyHeader(
+                      header: RepaintBoundary(
+                        child: Container(
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                          padding: EdgeInsets.only(
+                            // left: Layout.paddingL,
+                            // right: Layout.paddingR,
+                            top: 5,
+                            bottom: Layout.paddingB,
+                          ),
+                          // 直接显示筛选控件，因为我们已经确认头部加载完成
+                          child: Visibility(
+                            visible: categoryData.isNotEmpty,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                FilterRow<DictDataDataVideoCategory>(
+                                  title: '全部分类',
+                                  items: categoryData,
+                                  notifier: categoryCurrent,
+                                  labelBuilder: (item) => item?.name ?? '全部分类',
+                                  onTap: _category_change,
+                                ),
+                                FilterRow<DictDataDataVideoTag>(
+                                  title: "全部标签",
+                                  items: tagData,
+                                  notifier: tagCurrent,
+                                  labelBuilder: (item) => item?.name ?? "全部标签",
+                                  onTap: _tag_change,
+                                ),
+                                FilterRow<DictInfoListData>(
+                                  title: '全部地区',
+                                  items: areaDictList,
+                                  notifier: regionCurrent,
+                                  labelBuilder: (item) => item?.name ?? '全部地区',
+                                  onTap: _area_change,
+                                ),
+                                FilterRow<int>(
+                                  title: "全部年份",
+                                  items: years,
+                                  notifier: yearCurrent,
+                                  labelBuilder:
+                                      (item) =>
+                                          item == null || item == 0
+                                              ? "全部年份"
+                                              : item.toString(),
+                                  onTap: (item) => _year_change(item ?? 0),
+                                ),
+                              ],
                             ),
-                            FilterRow<DictDataDataVideoTag>(
-                              title: "全部标签",
-                              items: tagData,
-                              notifier: tagCurrent,
-                              labelBuilder: (item) => item?.name ?? "全部标签",
-                              onTap: _tag_change,
-                            ),
-                            FilterRow<DictInfoListData>(
-                              title: '全部地区',
-                              items: areaDictList,
-                              notifier: regionCurrent,
-                              labelBuilder: (item) => item?.name ?? '全部地区',
-                              onTap: _area_change,
-                            ),
-                            FilterRow<int>(
-                              title: "全部年份",
-                              items: years,
-                              notifier: yearCurrent,
-                              labelBuilder:
-                                  (item) =>
-                                      item == null || item == 0
-                                          ? "全部年份"
-                                          : item.toString(),
-                              onTap: (item) => _year_change(item ?? 0),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
+                      sliver: ValueListenableBuilder<bool>(
+                        valueListenable: isLoadingNotifier,
+                        builder: (context, isLoading, child) {
+                          // 根据内容区域的加载状态决定显示什么
+                          if (isLoading) {
+                            // 内容区域仍在加载中，显示加载指示器
+                            return const SliverToBoxAdapter(
+                              child: Center(child: PageLoading()),
+                            );
+                          } else {
+                            // 内容区域加载完成
+                            return isShowContent(isLoading);
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                  sliver: ValueListenableBuilder<bool>(
-                    valueListenable: isLoadingNotifier,
-                    builder: (context, isLoading, child) {
-                      return isShowContent(isLoading);
-                    },
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           );
-        } else {
-          return const Center(child: Text('No data available'));
         }
       },
     );

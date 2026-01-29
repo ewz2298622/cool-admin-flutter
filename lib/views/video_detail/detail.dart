@@ -337,6 +337,8 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   }
 
   //广告加载（直接从 API 请求，带超时保护，不阻塞页面显示）
+  bool _isAdAvailable = false; // 添加广告是否可用的状态
+  
   Future<void> _loadAd() async {
     try {
       // 设置请求超时为 2 秒，避免长时间阻塞
@@ -369,13 +371,34 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
             setState(() {
               androidCodeId = adsData.adsId ?? androidCodeId;
               iosCodeId = adsData.adsId ?? iosCodeId;
+              _isAdAvailable = true; // 设置广告可用状态
             });
             debugPrint("_loadAd Banner广告数据:$filteredAds");
           }
+        } else {
+          // 如果筛选后没有符合条件的广告数据，设置广告不可用
+          if (mounted) {
+            setState(() {
+              _isAdAvailable = false;
+            });
+          }
+        }
+      } else {
+        // 如果没有广告数据，设置广告不可用
+        if (mounted) {
+          setState(() {
+            _isAdAvailable = false;
+          });
         }
       }
     } catch (e) {
       debugPrint("_loadAd Banner广告加载失败: $e");
+      // 发生异常时，也设置广告不可用
+      if (mounted) {
+        setState(() {
+          _isAdAvailable = false;
+        });
+      }
     }
   }
 
@@ -1044,16 +1067,22 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   }
 
   Widget _buildBanner() {
-    return Container(
-      //宽度95%
-      width: double.infinity,
-      padding: const EdgeInsets.only(
-        left: Layout.paddingL,
-        right: Layout.paddingR,
-      ),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
-      child: BannerAds(androidCodeId: androidCodeId, iosCodeId: iosCodeId),
-    );
+    // 只有当广告可用时才显示广告组件
+    if (_isAdAvailable) {
+      return Container(
+        //宽度95%
+        width: double.infinity,
+        padding: const EdgeInsets.only(
+          left: Layout.paddingL,
+          right: Layout.paddingR,
+        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+        child: BannerAds(androidCodeId: androidCodeId, iosCodeId: iosCodeId),
+      );
+    } else {
+      // 如果广告不可用，返回一个空的容器
+      return Container(); // 或者返回 SizedBox.shrink()
+    }
   }
 
   Widget _buildRecommendations() {
