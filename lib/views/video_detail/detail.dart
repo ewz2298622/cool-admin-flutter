@@ -41,10 +41,13 @@ class Video_Detail extends StatefulWidget {
   _Video_DetailState createState() => _Video_DetailState();
 }
 
-class _Video_DetailState extends State<Video_Detail> with RouteAware {
+// 1. 【修改】: 混入 WidgetsBindingObserver 以监听App生命周期
+class _Video_DetailState extends State<Video_Detail>
+    with RouteAware, WidgetsBindingObserver {
   final ValueNotifier<int> currentLine = ValueNotifier<int>(0);
   final ValueNotifier<int> currentPlay = ValueNotifier<int>(0);
   StateSetter? showModalBottomSheetListSate;
+
   //获取当前时间戳
   final int currentTimeStamp = DateTime.now().millisecondsSinceEpoch;
 
@@ -62,33 +65,61 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
 
   @override
   void initState() {
+    // 2. 【修改】: super.initState() 推荐放在最前面
+    super.initState();
+
+    // 3. 【修改】: 注册App生命周期监听器
+    WidgetsBinding.instance.addObserver(this);
+
     player = FPlayer();
     _futureBuilderFuture = init();
     // 设置投屏设备列表更新回调
     _castScreenManager.onDeviceListUpdate = (devices) {
+      if (!mounted) return;
       setState(() {
         deviceList = devices;
       });
       TVshowModalBottomSheetListSate?.call(() {});
     };
-    super.initState();
   }
 
   @override
   void dispose() {
     debugPrint('Video_Detail: dispose called');
+
+    // 4. 【修改】: 统一在此处释放和反注册所有监听器
+    WidgetsBinding.instance.removeObserver(this);
+    routeObserver.unsubscribe(this);
+
+    // 确保播放器在销毁前暂停
+    player.pause();
+
     // 在组件销毁前调用addViews
     _onPageLeave();
     // 停止监听播放进度
     _stopPositionListener();
     // 释放播放器资源
     player.dispose();
-    super.dispose();
-    // 取消路由订阅
-    routeObserver.unsubscribe(this);
     // 释放投屏管理器资源
     _castScreenManager.dispose();
+
+    // 5. 【修改】: super.dispose() 必须放在最后
+    super.dispose();
   }
+
+  // 6. 【新增】: App生命周期变化回调
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // 当App进入后台时，暂停播放
+    if (state == AppLifecycleState.paused) {
+      debugPrint('App is in background, pausing player.');
+      if (player.isPlayable()) {
+        player.pause();
+      }
+    }
+  }
+
   List<dynamic> deviceList = [];
   StateSetter? TVshowModalBottomSheetListSate;
   final CastScreenManager _castScreenManager = CastScreenManager(); // 添加投屏管理器
@@ -100,8 +131,10 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
   List<TDTab> tabs = []; // 添加缺失的 tabs 变量定义
   //定义进度
   int progress = 0;
+
   //定义视频总时长
   int duration = 0;
+
   // 倍速列表
   final Map<String, double> speedList = {
     "2.0": 2.0,
@@ -175,7 +208,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
       // 清空之前的数据以防止数据污染
       tabs.clear();
       videoList.clear();
-      
+
       videoInfoData =
           ((await Api.getVideoDetail({"id": id})).data as VideoDetailDataData);
       // 添加容错处理：确保lines存在且不为空
@@ -270,11 +303,16 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
 
   //视频监听
   void _videoListener() {
-    player.onCurrentPosUpdate.listen((pos) {
-      progress = pos.inSeconds;
-    }).onError((error) {
-      debugPrint('Video position listener error: $error');
-    });
+    player.onCurrentPosUpdate
+        .listen((pos) {
+          if (!mounted) return;
+          setState(() {
+            progress = pos.inSeconds;
+          });
+        })
+        .onError((error) {
+          debugPrint('Video position listener error: $error');
+        });
   }
 
   Future<void> addViews() async {
@@ -285,10 +323,11 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
       if (videoInfoData.video?.id != null) {
         // 添加空值检查，防止player.value.duration在播放器未初始化时抛出异常
         int videoDuration = 0;
-        if (player.value.duration != null && !player.value.duration.isNegative) {
+        if (player.value.duration != null &&
+            !player.value.duration.isNegative) {
           videoDuration = player.value.duration.inMilliseconds ~/ 1000;
         }
-        
+
         await Api.addViews({
           "title": videoInfoData.video?.title,
           "associationId": videoInfoData.video?.id ?? 1,
@@ -314,7 +353,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
       // 清空之前的数据以防止数据污染
       tabs.clear();
       videoList.clear();
-      
+
       _initTabController();
       await getVideoDetail();
       await Future.wait([
@@ -338,7 +377,7 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
 
   //广告加载（直接从 API 请求，带超时保护，不阻塞页面显示）
   bool _isAdAvailable = false; // 添加广告是否可用的状态
-  
+
   Future<void> _loadAd() async {
     try {
       // 设置请求超时为 2 秒，避免长时间阻塞
@@ -450,8 +489,6 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
     }
   }
 
-
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -459,31 +496,36 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
     routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute);
   }
 
-
-
-  // 当页面被其他页面覆盖时调用
+  // 7. 【修改】: 当有新页面覆盖当前页时，暂停播放
   @override
   void didPushNext() {
-    debugPrint('Video_Detail: didPushNext called - page is being covered');
-    // 页面被其他页面覆盖时不调用addViews，保持播放状态
-    // _onPageLeave();
+    debugPrint(
+      'Video_Detail: didPushNext called - page is being covered, pausing player.',
+    );
+    if (player.isPlayable()) {
+      player.pause();
+    }
   }
 
-  // 当页面从导航栈中移除时调用
+  // 8. 【修改】: 当页面被弹出（返回、手势滑动退出）时，立即暂停播放
   @override
   void didPop() {
     debugPrint(
-      'Video_Detail: didPop called - page is being removed from stack',
+      'Video_Detail: didPop called - page is being removed, pausing player.',
     );
+    if (player.isPlayable()) {
+      player.pause();
+    }
     // 页面从导航栈中移除时调用addViews
     _onPageLeave();
+    super.didPop();
   }
 
-  // 当页面重新变为可见时调用
+  // 9. 【修改】: 当从其他页面返回到当前页时，恢复播放
   @override
   void didPopNext() {
     debugPrint(
-      'Video_Detail: didPopNext called - page is becoming visible again',
+      'Video_Detail: didPopNext called - page is becoming visible again.',
     );
     // 页面重新变为可见时，如果播放器已被释放则重新初始化
     if (_isPlayerReleased && _isPlayerInitialized) {
@@ -501,6 +543,9 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
           }
         }
       });
+    } else if (player.isPlayable()) {
+      // 如果播放器只是被暂停，则恢复播放
+      player.start();
     }
   }
 
@@ -944,7 +989,6 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                         showModalBottomSheetList();
                       },
                       style: TDLinkStyle.primary,
-
                       label: '当前线路暂无数据,建议切换线路',
                       type: TDLinkType.withSuffixIcon,
                       size: TDLinkSize.medium,
@@ -1510,12 +1554,14 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
       children: [
         FView(
           player: player,
-
           width: double.infinity,
-          height: 200, // 需自行设置，此处宽度/高度=16/9
+          height: 200,
+          // 需自行设置，此处宽度/高度=16/9
           color: Colors.black,
-          fsFit: FFit.contain, // 全屏模式下的填充
-          fit: FFit.fill, // 正常模式下的填充
+          fsFit: FFit.contain,
+          // 全屏模式下的填充
+          fit: FFit.fill,
+          // 正常模式下的填充
           panelBuilder: fPanelBuilder(
             // 视频列表开关
             isVideos: true,
@@ -1530,7 +1576,11 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                   showModalBottomSheetList();
                 },
                 child: Container(
-                  padding: const EdgeInsets.all(10),
+                  // 10. 【修复】: 减小垂直内边距，防止全屏时布局溢出
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Theme.of(context).primaryColorLight,
                     borderRadius: const BorderRadius.vertical(
@@ -1548,7 +1598,11 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                   tvDevice();
                 },
                 child: Container(
-                  padding: const EdgeInsets.all(10),
+                  // 10. 【修复】: 减小垂直内边距
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Theme.of(context).primaryColorLight,
                     borderRadius: const BorderRadius.vertical(
@@ -1565,7 +1619,11 @@ class _Video_DetailState extends State<Video_Detail> with RouteAware {
                   videoDownload();
                 },
                 child: Container(
-                  padding: const EdgeInsets.all(10),
+                  // 10. 【修复】: 减小垂直内边距
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Theme.of(context).primaryColorLight,
                     borderRadius: const BorderRadius.vertical(
