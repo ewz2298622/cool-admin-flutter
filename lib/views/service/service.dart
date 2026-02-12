@@ -152,9 +152,10 @@ class _LiveStreamPageState extends State<VideoService> {
           return Text(
             'Error: ${snapshot.error}',
             style: TextStyle(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black,
+              color:
+                  Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
             ),
           ); // 显示错误信息
         } else if (snapshot.hasData) {
@@ -179,9 +180,10 @@ class _LiveStreamPageState extends State<VideoService> {
           return Text(
             'No data available',
             style: TextStyle(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black,
+              color:
+                  Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
             ),
           );
         }
@@ -206,9 +208,10 @@ class _LiveStreamPageState extends State<VideoService> {
           data: Theme.of(context).copyWith(
             textTheme: Theme.of(context).textTheme.copyWith(
               bodyMedium: TextStyle(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : Colors.black,
+                color:
+                    Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
               ),
             ),
           ),
@@ -289,16 +292,19 @@ class _LiveStreamPageState extends State<VideoService> {
           children: [
             SizedBox(width: 5),
             TDImage(width: 40, height: 40, imgUrl: item.image),
-            Text(
-              item.title ?? "",
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              // 添加黑夜模式支持
-              style: TextStyle(
-                color:
-                    Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black,
+            SizedBox(
+              width: 150,
+              child: Text(
+                item.title ?? "",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                // 添加黑夜模式支持
+                style: TextStyle(
+                  color:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
+                ),
               ),
             ),
           ],

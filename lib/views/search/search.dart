@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -756,6 +757,20 @@ class VideoSearchState extends State<VideoSearch>
                     },
                   ),
                 ),
+              ),
+              //点击组件
+              GestureDetector(
+                child: SvgPicture.asset(
+                  'assets/images/clear.svg',
+                  width: 24,
+                  height: 24,
+                ),
+                onTap: () {
+                  searchHistory.deleteAll();
+                  getSearchHistoryEntity().then((_) {
+                    if (mounted) setState(() {});
+                  });
+                },
               ),
             ],
           ),

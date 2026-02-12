@@ -242,26 +242,24 @@ class _DetailTabsViewState extends State<DetailTabsView>
                 child: Container(
                   margin: const EdgeInsets.only(bottom: _rowMargin),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     mainAxisSize: MainAxisSize.max,
                     children: List.generate(
-                      crossAxisCount,
+                      rowItems.length,
                       (index) {
-                        if (index < rowItems.length) {
-                          final item = rowItems[index];
-                          final itemIndex = rowIndex * crossAxisCount + index;
-                          final isSelected = _isItemSelected(tabIndex, itemIndex);
+                        final item = rowItems[index];
+                        final itemIndex = rowIndex * crossAxisCount + index;
+                        final isSelected = _isItemSelected(tabIndex, itemIndex);
 
-                          return _buildPlayLineButton(
+                        return Padding(
+                          padding: EdgeInsets.only(right: index < rowItems.length - 1 ? 8.0 : 0),
+                          child: _buildPlayLineButton(
                             item: item,
                             isSelected: isSelected,
                             tabIndex: tabIndex,
                             itemIndex: itemIndex,
-                          );
-                        } else {
-                          // 填充空位置
-                          return _buildEmptyPlaceholder();
-                        }
+                          ),
+                        );
                       },
                     ),
                   ),
