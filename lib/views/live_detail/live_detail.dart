@@ -4,6 +4,7 @@ import 'package:dlna_dart/dlna.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fplayer/fplayer.dart';
+import 'package:get/get.dart';
 
 import '../../api/api.dart';
 import '../../components/loading.dart';
@@ -16,9 +17,7 @@ import '../../style/layout.dart';
 String TAG = 'Video_Detail';
 
 class Live_Detail extends StatefulWidget {
-  //接受路由传递过来的props id
-  final int id;
-  const Live_Detail({super.key, required this.id});
+  const Live_Detail({super.key});
 
   @override
   Live_DetailState createState() => Live_DetailState();
@@ -26,6 +25,8 @@ class Live_Detail extends StatefulWidget {
 
 class Live_DetailState extends State<Live_Detail>
     with SingleTickerProviderStateMixin {
+  final int id = Get.arguments?["id"] ?? "";
+
   final ValueNotifier<int> currentPlay = ValueNotifier<int>(0);
   //获取当前时间戳
   final int currentTimeStamp = DateTime.now().millisecondsSinceEpoch;
@@ -42,7 +43,7 @@ class Live_DetailState extends State<Live_Detail>
 
   Future<void> liveInfo() async {
     try {
-      videoData = (await Api.liveInfo({"id": widget.id})).data as LiveInfoData;
+      videoData = (await Api.liveInfo({"id": id})).data as LiveInfoData;
     } catch (e) {
       // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
@@ -106,7 +107,7 @@ class Live_DetailState extends State<Live_Detail>
   @override
   void initState() {
     super.initState();
-    _viewerSeed = 1200 + (widget.id % 7300);
+    _viewerSeed = 1200 + (id % 7300);
     _loadFuture = _loadInitialData();
   }
 
@@ -129,17 +130,14 @@ class Live_DetailState extends State<Live_Detail>
         Layout.paddingR,
         Layout.paddingB,
       ),
-      child:Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SectionWithMore(
-                title: "猜你喜欢",
-                padding: EdgeInsets.zero,
-              ),
-              const SizedBox(height: 12),
-              VideoThree(videoPageData: videoPageData),
-            ],
-          ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SectionWithMore(title: "猜你喜欢", padding: EdgeInsets.zero),
+          const SizedBox(height: 12),
+          VideoThree(videoPageData: videoPageData),
+        ],
+      ),
     );
   }
 
@@ -151,7 +149,8 @@ class Live_DetailState extends State<Live_Detail>
           return PageLoading();
         }
         if (snapshot.hasError || _errorMessage != null) {
-          final message = snapshot.error?.toString() ?? _errorMessage ?? '加载直播信息失败';
+          final message =
+              snapshot.error?.toString() ?? _errorMessage ?? '加载直播信息失败';
           return _buildErrorView(message);
         }
         if (videoData == null) {
@@ -241,9 +240,7 @@ class Live_DetailState extends State<Live_Detail>
       children: [
         Text(
           live.title ?? '精彩直播',
-          style: textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
         SizedBox(
@@ -284,13 +281,12 @@ class Live_DetailState extends State<Live_Detail>
     );
   }
 
-
-
   Widget _buildAttributeCell(ThemeData theme, _AttributeItem item) {
     final bool isDark = theme.brightness == Brightness.dark;
-    final background = isDark
-        ? theme.colorScheme.surfaceVariant.withOpacity(0.22)
-        : theme.colorScheme.surfaceVariant.withOpacity(0.7);
+    final background =
+        isDark
+            ? theme.colorScheme.surfaceVariant.withOpacity(0.22)
+            : theme.colorScheme.surfaceVariant.withOpacity(0.7);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -340,9 +336,10 @@ class Live_DetailState extends State<Live_Detail>
     return Container(
       padding: const EdgeInsets.only(left: 12, right: 12),
       decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withOpacity(0.08)
-            : theme.colorScheme.primary.withOpacity(0.12),
+        color:
+            isDark
+                ? Colors.white.withOpacity(0.08)
+                : theme.colorScheme.primary.withOpacity(0.12),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Row(
@@ -369,7 +366,11 @@ class Live_DetailState extends State<Live_Detail>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.wifi_off_rounded, size: 52, color: theme.colorScheme.primary),
+            Icon(
+              Icons.wifi_off_rounded,
+              size: 52,
+              color: theme.colorScheme.primary,
+            ),
             const SizedBox(height: 16),
             Text(
               '加载失败',
@@ -395,8 +396,10 @@ class Live_DetailState extends State<Live_Detail>
               icon: const Icon(Icons.refresh_rounded),
               label: const Text('重新加载'),
               style: ElevatedButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -461,8 +464,7 @@ class Live_DetailState extends State<Live_Detail>
   }
 
   Widget _buildViewerBadge(ThemeData theme) {
-    final viewers =
-        _formatViewers(_viewerSeed + DateTime.now().second * 12);
+    final viewers = _formatViewers(_viewerSeed + DateTime.now().second * 12);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -525,8 +527,11 @@ class Live_DetailState extends State<Live_Detail>
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-          onPressed: () => Navigator.of(context).maybePop(),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+          ),
+          onPressed: () => Get.back(),
         ),
       ),
       resizeToAvoidBottomInset: false,
@@ -588,7 +593,13 @@ class Live_DetailState extends State<Live_Detail>
               color: Colors.transparent,
               fsFit: FFit.contain,
               fit: FFit.fill,
-              panelBuilder: (FPlayer player, FData data, BuildContext context, Size viewSize, Rect texturePos) {
+              panelBuilder: (
+                FPlayer player,
+                FData data,
+                BuildContext context,
+                Size viewSize,
+                Rect texturePos,
+              ) {
                 // 自定义面板，隐藏播放/暂停按钮和全屏按钮
                 // 直播流不需要显示进度条和播放控制按钮
                 return Stack(
@@ -622,24 +633,13 @@ class Live_DetailState extends State<Live_Detail>
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0x66000000),
-                      Color(0x00000000),
-                    ],
+                    colors: [Color(0x66000000), Color(0x00000000)],
                   ),
                 ),
               ),
             ),
-            Positioned(
-              left: 16,
-              bottom: 30,
-              child: _buildLiveBadge(theme),
-            ),
-            Positioned(
-              right: 16,
-              bottom: 30,
-              child: _buildViewerBadge(theme),
-            ),
+            Positioned(left: 16, bottom: 30, child: _buildLiveBadge(theme)),
+            Positioned(right: 16, bottom: 30, child: _buildViewerBadge(theme)),
           ],
         ),
       ),

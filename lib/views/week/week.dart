@@ -110,8 +110,8 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
               height: 140,
               imgUrl: item.surfacePlot ?? "",
               errorWidget: const TDImage(
-                 width: 110,
-              height: 140,
+                width: 110,
+                height: 140,
                 assetUrl: 'assets/images/loading.gif',
               ),
             ),
@@ -363,9 +363,7 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
         //返回按钮
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, size: 20),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Get.back(),
         ),
         //标题居中
         centerTitle: true,

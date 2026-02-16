@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -70,8 +71,9 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
           "size": pageSize,
         });
 
-        final List<ViewsDataList> fetched =
-            List<ViewsDataList>.from(response.data?.list ?? <ViewsDataList>[]);
+        final List<ViewsDataList> fetched = List<ViewsDataList>.from(
+          response.data?.list ?? <ViewsDataList>[],
+        );
 
         if (refresh) {
           viewsData = fetched;
@@ -97,7 +99,6 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
         viewsData = [];
         hasMore = false;
       }
-
     } catch (e) {
       if (refresh) {
         viewsData = [];
@@ -195,35 +196,37 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
             onLoading: _onLoading,
             enablePullDown: true,
             enablePullUp: true,
-            child: viewsData.isEmpty
-                ? (_isLoading ? PageLoading() : const NoData())
-                : ListView.builder(
-                    itemCount: viewsData.length,
-                    itemBuilder: (context, index) {
-                      return TDSwipeCell(
-                        right: TDSwipeCellPanel(
-                          children: [
-                            TDSwipeCellAction(
-                              flex: 60,
-                              backgroundColor: TDTheme.of(context).errorColor6,
-                              label: '删除',
-                              onPressed: (context) async {
-                                TDSwipeCell.of(context);
-                                await Api.delViews({
-                                  "ids": [viewsData[index].id],
-                                });
-                                viewsData.removeAt(index);
-                                if (mounted) {
-                                  setState(() {});
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                        cell: VideoHistoryItem(videoData: viewsData[index]),
-                      );
-                    },
-                  ),
+            child:
+                viewsData.isEmpty
+                    ? (_isLoading ? PageLoading() : const NoData())
+                    : ListView.builder(
+                      itemCount: viewsData.length,
+                      itemBuilder: (context, index) {
+                        return TDSwipeCell(
+                          right: TDSwipeCellPanel(
+                            children: [
+                              TDSwipeCellAction(
+                                flex: 60,
+                                backgroundColor:
+                                    TDTheme.of(context).errorColor6,
+                                label: '删除',
+                                onPressed: (context) async {
+                                  TDSwipeCell.of(context);
+                                  await Api.delViews({
+                                    "ids": [viewsData[index].id],
+                                  });
+                                  viewsData.removeAt(index);
+                                  if (mounted) {
+                                    setState(() {});
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                          cell: VideoHistoryItem(videoData: viewsData[index]),
+                        );
+                      },
+                    ),
           );
         } else {
           return const Center(child: Text('暂无观看历史'));
@@ -240,9 +243,7 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
         //返回
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, size: 20),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Get.back(),
         ),
         //标题居中
         centerTitle: true,

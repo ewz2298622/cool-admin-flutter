@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
-// 导入 webview_flutter 包，用于在 Flutter 应用中嵌入 WebView 来显示网页内容
 import 'package:webview_flutter/webview_flutter.dart';
 
 // 定义一个名为 HtmlPage 的有状态组件，用于展示一个包含 WebView 的页面
@@ -21,7 +20,7 @@ class _HtmlPageState extends State<HtmlPage> {
 
   String title = Get.arguments["title"];
   String content = Get.arguments["content"];
-  
+
   // 缓存主题样式避免重复计算
   String? _cachedDarkModeCSS;
   String? _cachedLightModeCSS;
@@ -241,9 +240,7 @@ class _HtmlPageState extends State<HtmlPage> {
         //返回按钮
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, size: 20),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Get.back(),
         ),
         //标题居中
         centerTitle: true,

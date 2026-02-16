@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -8,7 +9,6 @@ import '../../components/no_data.dart';
 import '../../entity/dict_info_list_entity.dart';
 import '../../entity/video_live_entity.dart';
 import '../../style/layout.dart';
-import '../live_detail/live_detail.dart';
 
 /// 直播页面主组件
 class VideoService extends StatefulWidget {
@@ -273,12 +273,7 @@ class _LiveStreamPageState extends State<VideoService> {
   Widget videoCard(VideoLiveDataList item) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Live_Detail(id: item.id ?? 0),
-          ),
-        );
+        Get.toNamed('/live_detail', arguments: {"id": item.id ?? 0});
       },
       child: Card(
         // 添加黑夜模式支持

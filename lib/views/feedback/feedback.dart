@@ -232,9 +232,7 @@ class _FeedbackState extends State<FeedbackPage> {
         //返回
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, size: 20),
-          onPressed: () {
-            Get.back();
-          },
+          onPressed: () => Get.back(),
         ),
         //标题居中
         centerTitle: true,

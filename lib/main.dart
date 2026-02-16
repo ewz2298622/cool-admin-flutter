@@ -18,6 +18,7 @@ import 'package:flutter_app/views/environment_error/environment_error.dart';
 import 'package:flutter_app/views/feedback/feedback.dart';
 import 'package:flutter_app/views/home/home.dart';
 import 'package:flutter_app/views/htmlPage/html.dart';
+import 'package:flutter_app/views/live_detail/live_detail.dart';
 import 'package:flutter_app/views/login/login.dart';
 import 'package:flutter_app/views/my/my.dart';
 import 'package:flutter_app/views/notice/notice.dart';
@@ -153,7 +154,7 @@ class _MyAppState extends State<MyApp> {
               ),
           child: GetMaterialApp(
             popGesture: true, // 启用手势控制
-            transitionDuration: const Duration(milliseconds: 250),
+            transitionDuration: const Duration(milliseconds: 210),
             defaultTransition: Transition.rightToLeft, // 使用iOS风格转场
 
             locale: const Locale('zh', 'CN'),
@@ -200,6 +201,8 @@ class _MyAppState extends State<MyApp> {
               GetPage(name: '/score_order', page: () => ScoreOrder()),
               GetPage(name: '/connection_error', page: () => ConnectionError()),
               GetPage(name: '/video_album', page: () => VideoAlbum()),
+              GetPage(name: '/live_detail', page: () => Live_Detail()),
+
               GetPage(
                 name: '/environment_error',
                 page: () => EnvironmentError(),
