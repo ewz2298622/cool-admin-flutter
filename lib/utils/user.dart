@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/utils/store/user/user.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import '../db/entity/UserEntity.dart';
 import '../db/manager/TokenDatabaseHelper.dart';
 import '../db/manager/UserDatabaseHelper.dart';
-import '../views/login/login.dart';
 import 'context_manager.dart';
 
 class User {
   static final UserDatabaseHelper userDatabaseHelper = UserDatabaseHelper();
   static final TokenDatabaseHelper tokenDatabaseHelper = TokenDatabaseHelper();
   static UserEntity? userInfoData;
-  
+
   static bool isLogin() {
     try {
       Iterable<UserEntity> user = userDatabaseHelper.list();
@@ -23,7 +23,9 @@ class User {
         BuildContext? context = ContextManager.getContext() as BuildContext?;
         if (context != null) {
           try {
-            context.read<UserState>().updateUserInfoData(userInfoData as UserEntity);
+            context.read<UserState>().updateUserInfoData(
+              userInfoData as UserEntity,
+            );
           } catch (e) {
             debugPrint('Failed to update user info in provider: $e');
           }
@@ -37,7 +39,7 @@ class User {
   }
 
   static void _modalBottomSheetMenu(BuildContext context) {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+    Get.toNamed("/login");
   }
 
   static bool isUserLoginView(BuildContext context) {

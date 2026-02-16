@@ -70,6 +70,9 @@ class _Video_DetailState extends State<Video_Detail>
 
     // 3. 【修改】: 注册App生命周期监听器
     WidgetsBinding.instance.addObserver(this);
+    
+    // 初始化页面活跃状态
+    _isPageActive = true;
 
     player = FPlayer();
     _futureBuilderFuture = init();
@@ -86,20 +89,33 @@ class _Video_DetailState extends State<Video_Detail>
   @override
   void dispose() {
     debugPrint('Video_Detail: dispose called');
+    
+    // 立即暂停播放器，防止音频继续播放
+    try {
+      if (player.isPlayable()) {
+        player.pause();
+      }
+    } catch (e) {
+      debugPrint('Video_Detail: Error pausing player in dispose: $e');
+    }
 
     // 4. 【修改】: 统一在此处释放和反注册所有监听器
     WidgetsBinding.instance.removeObserver(this);
     routeObserver.unsubscribe(this);
 
-    // 确保播放器在销毁前暂停
-    player.pause();
-
     // 在组件销毁前调用addViews
     _onPageLeave();
     // 停止监听播放进度
     _stopPositionListener();
-    // 释放播放器资源
-    player.dispose();
+    
+    // 确保播放器完全停止并释放资源
+    try {
+      player.reset();
+      player.dispose();
+    } catch (e) {
+      debugPrint('Video_Detail: Error disposing player: $e');
+    }
+    
     // 释放投屏管理器资源
     _castScreenManager.dispose();
 
@@ -111,12 +127,67 @@ class _Video_DetailState extends State<Video_Detail>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    // 当App进入后台时，暂停播放
-    if (state == AppLifecycleState.paused) {
-      debugPrint('App is in background, pausing player.');
-      if (player.isPlayable()) {
+    debugPrint('App lifecycle state changed to: $state');
+    
+    // 执行安全检查
+    _ensurePlayerSafety();
+    
+    // 当App进入后台或失去焦点时，立即暂停播放
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      debugPrint('App is in background/inactive, pausing player.');
+      _pausePlayerImmediately();
+    }
+    // 当App回到前台时，根据之前的播放状态决定是否恢复播放
+    else if (state == AppLifecycleState.resumed) {
+      debugPrint('App is resumed, checking player state.');
+      _resumePlayerIfNeeded();
+    }
+  }
+  
+  // 立即暂停播放器的方法
+  void _pausePlayerImmediately() {
+    try {
+      // 只有在页面活跃且播放器可播放时才暂停
+      if (_isPageActive && player.isPlayable()) {
+        player.pause();
+        debugPrint('Player paused immediately');
+      } else {
+        debugPrint('Player not paused - page inactive or player not playable');
+      }
+    } catch (e) {
+      debugPrint('Error pausing player immediately: $e');
+    }
+  }
+  
+  // 根据需要恢复播放的方法
+  void _resumePlayerIfNeeded() {
+    try {
+      // 只有在播放器已初始化且之前是播放状态时才恢复
+      if (_isPlayerInitialized && !_isPlayerReleased && player.isPlayable()) {
+        // 可以选择是否自动恢复播放，这里暂时不自动恢复
+        debugPrint('Player ready to resume, but not auto-resuming');
+      }
+    } catch (e) {
+      debugPrint('Error resuming player: $e');
+    }
+  }
+  
+  // 全局播放器状态安全检查
+  void _ensurePlayerSafety() {
+    try {
+      // 如果页面不活跃但播放器仍在播放，则强制暂停
+      if (!_isPageActive && player.isPlayable() && player.value.state == FState.started) {
+        debugPrint('Safety check: Page inactive but player playing, forcing pause');
         player.pause();
       }
+      
+      // 如果播放器已释放但仍被标记为初始化，则修正状态
+      if (_isPlayerReleased && _isPlayerInitialized) {
+        _isPlayerInitialized = false;
+        debugPrint('Safety check: Corrected player initialization state');
+      }
+    } catch (e) {
+      debugPrint('Safety check error: $e');
     }
   }
 
@@ -155,23 +226,31 @@ class _Video_DetailState extends State<Video_Detail>
   // 添加变量来跟踪播放器状态
   bool _isPlayerInitialized = false;
   bool _isPlayerReleased = false;
+  bool _isPageActive = true; // 跟踪页面是否处于活跃状态
 
   // 开始监听播放进度
   void _startPositionListener() {
     _positionTimer?.cancel();
+    // 只有在页面活跃时才启动监听器
+    if (_isPageActive) {
+      // 这里可以添加具体的进度监听逻辑
+      debugPrint('Position listener started');
+    }
   }
 
   // 停止监听播放进度
   void _stopPositionListener() {
     _positionTimer?.cancel();
     _positionTimer = null;
+    debugPrint('Position listener stopped');
   }
 
   // 在页面离开时调用addViews的方法
   void _onPageLeave() {
-    if (!_hasAddedViews) {
+    if (!_hasAddedViews && _isPageActive) {
       addViews();
       _hasAddedViews = true;
+      debugPrint('Views recorded on page leave');
     }
   }
 
@@ -469,16 +548,28 @@ class _Video_DetailState extends State<Video_Detail>
 
   Future<void> setVideoUrl(String url) async {
     try {
+      debugPrint('Setting video URL: $url');
+      
       // 如果播放器已被释放，重新初始化
       if (_isPlayerReleased) {
         _isPlayerReleased = false;
+        _isPlayerInitialized = true;
       }
+      
       // 添加容错处理，如果url为空则不播放
       if (url.isNotEmpty) {
         // 重置播放器并设置新的数据源
         await player.reset();
-        player.setDataSource(url, autoPlay: true, showCover: true);
+        await player.setDataSource(url, autoPlay: true, showCover: true);
+        debugPrint('Video URL set successfully');
+      } else {
+        debugPrint('Empty URL provided, not setting video source');
+        // 如果URL为空，暂停当前播放
+        if (player.isPlayable()) {
+          player.pause();
+        }
       }
+      
       // 开始监听播放进度
       _startPositionListener();
       if (mounted) {
@@ -486,6 +577,14 @@ class _Video_DetailState extends State<Video_Detail>
       }
     } catch (error) {
       debugPrint('setVideoUrl error: $error');
+      // 出错时确保播放器处于暂停状态
+      try {
+        if (player.isPlayable()) {
+          player.pause();
+        }
+      } catch (e) {
+        debugPrint('Error pausing player after setVideoUrl failure: $e');
+      }
     }
   }
 
@@ -502,9 +601,9 @@ class _Video_DetailState extends State<Video_Detail>
     debugPrint(
       'Video_Detail: didPushNext called - page is being covered, pausing player.',
     );
-    if (player.isPlayable()) {
-      player.pause();
-    }
+    // 执行安全检查
+    _ensurePlayerSafety();
+    _pausePlayerImmediately();
   }
 
   // 8. 【修改】: 当页面被弹出（返回、手势滑动退出）时，立即暂停播放
@@ -513,9 +612,10 @@ class _Video_DetailState extends State<Video_Detail>
     debugPrint(
       'Video_Detail: didPop called - page is being removed, pausing player.',
     );
-    if (player.isPlayable()) {
-      player.pause();
-    }
+    _isPageActive = false;
+    // 执行安全检查
+    _ensurePlayerSafety();
+    _pausePlayerImmediately();
     // 页面从导航栈中移除时调用addViews
     _onPageLeave();
     super.didPop();
@@ -527,6 +627,11 @@ class _Video_DetailState extends State<Video_Detail>
     debugPrint(
       'Video_Detail: didPopNext called - page is becoming visible again.',
     );
+    _isPageActive = true;
+    
+    // 执行安全检查
+    _ensurePlayerSafety();
+    
     // 页面重新变为可见时，如果播放器已被释放则重新初始化
     if (_isPlayerReleased && _isPlayerInitialized) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -545,7 +650,8 @@ class _Video_DetailState extends State<Video_Detail>
       });
     } else if (player.isPlayable()) {
       // 如果播放器只是被暂停，则恢复播放
-      player.start();
+      // 注意：这里不自动恢复播放，让用户手动控制
+      debugPrint('Player is playable but not auto-starting');
     }
   }
 
@@ -580,12 +686,19 @@ class _Video_DetailState extends State<Video_Detail>
   }
 
   removeVideo() {
+    debugPrint('Video_Detail: removeVideo called');
+    // 立即暂停播放
+    _pausePlayerImmediately();
     // 在视频被销毁前调用addViews记录观看历史
     _onPageLeave();
     // 停止监听播放进度
     _stopPositionListener();
     // 重置播放器
-    player.reset();
+    try {
+      player.reset();
+    } catch (e) {
+      debugPrint('Error resetting player in removeVideo: $e');
+    }
     _isPlayerReleased = true;
   }
 

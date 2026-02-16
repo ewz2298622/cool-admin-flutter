@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../components/bouncingBallsScreen.dart';
-import '../../components/loading.dart';
 import '../../db/entity/TokenEntity.dart';
 import '../../db/entity/UserEntity.dart';
 import '../../db/manager/TokenDatabaseHelper.dart';
@@ -38,18 +37,18 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
   ];
   var browseOn = false;
   CaptchaData? captchaData;
+  bool _isCaptchaLoading = true; // 验证码默认加载状态
   List<NoticeInfoDataList>? privacyData = [];
   List<NoticeInfoDataList>? serviceData = [];
   BuildContext? _context;
   Future<String> init() async {
     try {
-      ///Todo: 获取验证码
-      ///
-    await  getCaptcha();
-    await  noticeInfo();
+      /// 初始化其他必要数据（不包括验证码）
+      await noticeInfo();
       return "init success";
     } catch (e) {
-      return "init success";
+      debugPrint('初始化失败: $e');
+      return "init failed";
     }
   }
 
@@ -58,18 +57,28 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
     // 通知类型常量
     const int privacyType = 642; // 隐私政策类型
     const int serviceType = 641; // 服务协议类型
-    
+
     try {
       // 并行执行两个 API 调用以提高性能
       final results = await Future.wait([
-        Api.noticeInfo({"page": 1, "size": 1, "type": privacyType, "status": 1}),
-        Api.noticeInfo({"page": 1, "size": 1, "type": serviceType, "status": 1}),
+        Api.noticeInfo({
+          "page": 1,
+          "size": 1,
+          "type": privacyType,
+          "status": 1,
+        }),
+        Api.noticeInfo({
+          "page": 1,
+          "size": 1,
+          "type": serviceType,
+          "status": 1,
+        }),
       ]);
-      
+
       // 安全地提取数据，避免类型转换异常
       privacyData = results[0].data?.list ?? [];
       serviceData = results[1].data?.list ?? [];
-      
+
       if (mounted) {
         setState(() {});
       }
@@ -83,13 +92,29 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
   }
 
   Future<void> getCaptcha() async {
+    // 防止重复请求，但如果当前正在加载则允许重试
+    if (_isCaptchaLoading && captchaData != null) return;
+
+    setState(() {
+      _isCaptchaLoading = true;
+    });
+
     try {
       captchaData = (await Api.getCaptcha({})).data;
       if (mounted) {
-        setState(() {});
+        setState(() {
+          _isCaptchaLoading = false;
+        });
       }
     } catch (e) {
       debugPrint('获取验证码失败: $e');
+      if (mounted) {
+        setState(() {
+          _isCaptchaLoading = false;
+        });
+        // 显示错误提示
+        TDToast.showText('验证码加载失败，请重试', context: context);
+      }
     }
   }
 
@@ -97,22 +122,17 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
   void initState() {
     _futureBuilderFuture = init();
     super.initState();
+    // 页面初始化后立即开始加载验证码，不阻塞页面显示
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getCaptcha();
+    });
   }
 
   Widget _buildContent(BuildContext context) {
     return FutureBuilder<String>(
       future: _futureBuilderFuture, // 异步操作
       builder: (context, snapshot) {
-        debugPrint('snapshot: ${snapshot.hasData}');
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return PageLoading();
-        } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}'); // 显示错误信息
-        } else if (snapshot.hasData) {
-          return _buildForm(context);
-        } else {
-          return Text('No data available');
-        }
+        return _buildForm(context);
       },
     );
   }
@@ -274,21 +294,45 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
                     ),
                   ),
                   GestureDetector(
-                    child: SvgPicture.string(
-                      captchaData?.svg ?? "",
-                      width: 150, // 与SVG中的width一致
-                      height: 50, // 与SVG中的height一致
-                      fit: BoxFit.contain,
-                      // 可选：添加颜色过滤器（如果SVG本身没有颜色）
-                      colorFilter: const ColorFilter.mode(
-                        Colors.blue,
-                        BlendMode.srcIn,
-                      ),
+                    child: Container(
+                      width: 150,
+                      height: 50,
+                      child:
+                          _isCaptchaLoading
+                              ? Center(
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: TDLoading(
+                                    size: TDLoadingSize.small,
+                                    icon: TDLoadingIcon.circle,
+                                    iconColor: Color.fromRGBO(255, 162, 16, 1),
+                                  ),
+                                ),
+                              )
+                              : captchaData?.svg?.isNotEmpty == true
+                              ? SvgPicture.string(
+                                captchaData!.svg!,
+                                fit: BoxFit.contain,
+                                colorFilter: const ColorFilter.mode(
+                                  Colors.blue,
+                                  BlendMode.srcIn,
+                                ),
+                              )
+                              : Center(
+                                child: Text(
+                                  '加载失败',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
                     ),
-
                     onTap: () async {
-                      await getCaptcha();
-                      setState(() {});
+                      if (!_isCaptchaLoading) {
+                        await getCaptcha();
+                      }
                     },
                   ),
                 ],
@@ -441,7 +485,7 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, size: 20),
           onPressed: () {
-            Navigator.pop(context);
+            Get.back();
           },
         ),
         //标题居中
@@ -479,50 +523,54 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
             style: TextStyle(color: Color.fromRGBO(30, 33, 33, 1)),
           ),
           TextSpan(
-            text: privacyData?.isNotEmpty == true 
-                ? (privacyData![0].title ?? "隐私政策")
-                : "隐私政策",
+            text:
+                privacyData?.isNotEmpty == true
+                    ? (privacyData![0].title ?? "隐私政策")
+                    : "隐私政策",
             style: const TextStyle(
               color: Color.fromRGBO(22, 93, 255, 1),
               decoration: TextDecoration.underline,
             ),
-            recognizer: TapGestureRecognizer()
-              ..onTap = () {
-                if (privacyData?.isNotEmpty == true) {
-                  Get.toNamed(
-                    "/html",
-                    arguments: {
-                      "title": privacyData![0].title ?? "",
-                      "content": privacyData![0].content ?? "",
-                    },
-                  );
-                }
-              },
+            recognizer:
+                TapGestureRecognizer()
+                  ..onTap = () {
+                    if (privacyData?.isNotEmpty == true) {
+                      Get.toNamed(
+                        "/html",
+                        arguments: {
+                          "title": privacyData![0].title ?? "",
+                          "content": privacyData![0].content ?? "",
+                        },
+                      );
+                    }
+                  },
           ),
           const TextSpan(
             text: " 和 ",
             style: TextStyle(color: Color.fromRGBO(30, 33, 33, 1)),
           ),
           TextSpan(
-            text: serviceData?.isNotEmpty == true
-                ? (serviceData![0].title ?? "服务协议")
-                : "服务协议",
+            text:
+                serviceData?.isNotEmpty == true
+                    ? (serviceData![0].title ?? "服务协议")
+                    : "服务协议",
             style: const TextStyle(
               color: Color.fromRGBO(22, 93, 255, 1),
               decoration: TextDecoration.underline,
             ),
-            recognizer: TapGestureRecognizer()
-              ..onTap = () {
-                if (serviceData?.isNotEmpty == true) {
-                  Get.toNamed(
-                    "/html",
-                    arguments: {
-                      "title": serviceData![0].title ?? "",
-                      "content": serviceData![0].content ?? "",
-                    },
-                  );
-                }
-              },
+            recognizer:
+                TapGestureRecognizer()
+                  ..onTap = () {
+                    if (serviceData?.isNotEmpty == true) {
+                      Get.toNamed(
+                        "/html",
+                        arguments: {
+                          "title": serviceData![0].title ?? "",
+                          "content": serviceData![0].content ?? "",
+                        },
+                      );
+                    }
+                  },
           ),
         ],
       ),

@@ -28,7 +28,6 @@ import '../../style/layout.dart';
 import '../../utils/appUpdater.dart';
 import '../../utils/context_manager.dart';
 import '../../utils/store/home/color_notifier.dart';
-import '../album/album.dart';
 
 class GradientTabIndicator extends Decoration {
   final Gradient gradient;
@@ -741,12 +740,7 @@ class _HomePageState extends State<Home>
       title: album.title ?? "",
       showIcon: true,
       onMorePressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => VideoAlbum(id: album.id ?? 0),
-          ),
-        );
+        Get.toNamed("/video_album", arguments: {"id": album.id});
       },
     );
   }

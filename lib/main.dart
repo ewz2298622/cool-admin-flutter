@@ -12,6 +12,7 @@ import 'package:flutter_app/utils/store/home/color_notifier.dart';
 import 'package:flutter_app/utils/store/theme/theme.dart';
 import 'package:flutter_app/utils/store/user/user.dart';
 import 'package:flutter_app/utils/user.dart';
+import 'package:flutter_app/views/album/album.dart';
 import 'package:flutter_app/views/connection_error/connectionError.dart';
 import 'package:flutter_app/views/environment_error/environment_error.dart';
 import 'package:flutter_app/views/feedback/feedback.dart';
@@ -71,7 +72,7 @@ Future<void> main() async {
       HomePrefetchService.instance.preload().catchError((e) {
         debugPrint('Home prefetch failed: $e');
       });
-      
+
       VideoFilterPrefetchService.instance.preload().catchError((e) {
         debugPrint('VideoFilter prefetch failed: $e');
       });
@@ -151,6 +152,10 @@ class _MyAppState extends State<MyApp> {
                 canLoadingText: '',
               ),
           child: GetMaterialApp(
+            popGesture: true, // 启用手势控制
+            transitionDuration: const Duration(milliseconds: 250),
+            defaultTransition: Transition.rightToLeft, // 使用iOS风格转场
+
             locale: const Locale('zh', 'CN'),
             // 设置默认语言为中文
             localizationsDelegates: const [
@@ -194,6 +199,7 @@ class _MyAppState extends State<MyApp> {
               GetPage(name: '/score', page: () => TaskCenterPage()),
               GetPage(name: '/score_order', page: () => ScoreOrder()),
               GetPage(name: '/connection_error', page: () => ConnectionError()),
+              GetPage(name: '/video_album', page: () => VideoAlbum()),
               GetPage(
                 name: '/environment_error',
                 page: () => EnvironmentError(),

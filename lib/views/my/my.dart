@@ -62,7 +62,12 @@ class MyState extends State<My>
   Future<void> noticeInfo() async {
     try {
       List<NoticeInfoDataList> list =
-          (await Api.noticeInfo({"page": 1, "size": 1, "type": 640,"status":1})).data?.list
+          (await Api.noticeInfo({
+                "page": 1,
+                "size": 1,
+                "type": 640,
+                "status": 1,
+              })).data?.list
               as List<NoticeInfoDataList>;
       noticeInfoData = list;
     } catch (e) {
@@ -240,10 +245,7 @@ class MyState extends State<My>
               SectionWithMore(
                 title: "浏览记录", // 传入标题
                 onMorePressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => History()),
-                  );
+                  Get.to(() => History());
                 },
               ),
               VideoViews(videoPageData: viewsData),
@@ -258,10 +260,7 @@ class MyState extends State<My>
     if (userInfoData == null) {
       return GestureDetector(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Login()),
-          );
+          Get.to(() => Login());
         },
         child: Text(
           "点击登录",
@@ -590,11 +589,14 @@ class MyState extends State<My>
                 _buildModelItem(Icon(Icons.message_outlined, size: 20), "系统通知"),
                 _buildModelItem(Icon(Icons.share_outlined, size: 20), "分享好友"),
                 // _buildModelItem("assets/images/collect.png", "我的收藏"),
-                // _buildModelItem("assets/images/customersService.png", "在线客服"),
                 _buildModelItem(Icon(Icons.settings_outlined, size: 20), "设置"),
                 _buildModelItem(
                   Icon(Icons.warning_amber_outlined, size: 20),
                   "关于",
+                ),
+                _buildModelItem(
+                  Icon(Icons.feedback_outlined, size: 20),
+                  "意见反馈",
                 ),
               ],
             ),
@@ -639,14 +641,8 @@ class MyState extends State<My>
         // 处理在线客服点击事件
         break;
       case "设置":
-        // 处理设置点击事件
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) => Setting(userStatus: user != null ? true : false),
-          ),
-        );
+        // 处理设置点击事件 - 统一使用GetX路由系统
+        Get.to(() => Setting(userStatus: user != null ? true : false));
         break;
       case "关于":
         // 跳转About页面
@@ -661,6 +657,12 @@ class MyState extends State<My>
             "content": noticeInfoData[0].content ?? "",
           },
         );
+        break;
+      case "意见反馈":
+        if (User.isUserLoginView(context)) {
+          Get.toNamed("/feedback");
+        }
+
         break;
     }
   }

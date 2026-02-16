@@ -24,10 +24,10 @@ class _FeedbackState extends State<FeedbackPage> {
   final ValueNotifier<int> currentIndex = ValueNotifier<int>(0);
   List<DictDataDataFeedbackType> feedback_type = [];
   String content = "";
-  final videoId = Get.arguments["videoId"];
-  final videoName = Get.arguments["videoName"];
-  final playLineId = Get.arguments["playLineId"];
-  final videoUrl = Get.arguments["videoUrl"];
+  final videoId = Get.arguments?["videoId"]?.toString() ?? "";
+  final videoName = Get.arguments?["videoName"]?.toString() ?? "";
+  final playLineId = Get.arguments?["playLineId"]?.toString() ?? "";
+  final videoUrl = Get.arguments?["videoUrl"]?.toString() ?? "";
 
   // 添加防抖相关的变量
   DateTime? _lastSubmitTime;
@@ -138,23 +138,29 @@ class _FeedbackState extends State<FeedbackPage> {
 
     // 更新上次提交时间
     _lastSubmitTime = now;
+    if (videoId.isEmpty) {
+      await Api.addFeedback({
+        "feedbackType": feedback_type[currentIndex.value].id,
+        "content": content,
+      });
+    } else {
+      await Api.addFeedback({
+        "videoId": videoId.isNotEmpty ? videoId : null,
+        "videoName": videoName.isNotEmpty ? videoName : null,
+        "playLineId": playLineId.isNotEmpty ? playLineId : null,
+        "videoUrl": videoUrl.isNotEmpty ? videoUrl : null,
+        "feedbackType": feedback_type[currentIndex.value].id,
+        "content": content,
+      });
+    }
 
-    // 执行实际的提交逻辑
-    await Api.addFeedback({
-      "videoId": videoId,
-      "videoName": videoName,
-      "playLineId": playLineId,
-      "videoUrl": videoUrl,
-      "feedbackType": feedback_type[currentIndex.value].id,
-      "content": content,
-    });
     TDToast.showText('反馈成功', context: context);
   }
 
   Widget _cardStyle(BuildContext context) {
     return TDTextarea(
       controller: TDTextareaController,
-      hintText: '请输入文字',
+      hintText: '输入您遇到的问题和意见以便我们提供更好的服务',
       maxLines: 4,
       minLines: 4,
       maxLength: 500,
@@ -227,7 +233,7 @@ class _FeedbackState extends State<FeedbackPage> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, size: 20),
           onPressed: () {
-            Navigator.pop(context);
+            Get.back();
           },
         ),
         //标题居中

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -11,14 +12,15 @@ import '../../style/layout.dart';
 
 class VideoAlbum extends StatefulWidget {
   //接受路由传递过来的props id
-  final int id;
-  const VideoAlbum({super.key, required this.id});
+  // final int id;
+  const VideoAlbum({super.key});
 
   @override
   VideoAlbumState createState() => VideoAlbumState();
 }
 
 class VideoAlbumState extends State<VideoAlbum> {
+  final id = Get.arguments?["id"] ?? "";
   late Future<String> _futureBuilderFuture;
   VideoAlbumData? albumInfoData;
   List<AlbumVideoListDataList>? videoPageData;
@@ -44,7 +46,7 @@ class VideoAlbumState extends State<VideoAlbum> {
     try {
       if (!mounted) return;
       final response = await Api.getAlbumVideoList({
-        "album_id": widget.id,
+        "album_id": id,
         "page": currentPage,
         "size": pageSize,
       });
@@ -78,7 +80,7 @@ class VideoAlbumState extends State<VideoAlbum> {
     try {
       if (!mounted) return;
       albumInfoData =
-          (await Api.getAlbumById({"id": widget.id})).data as VideoAlbumData;
+          (await Api.getAlbumById({"id": id})).data as VideoAlbumData;
       debugPrint(
         'Initialization getAlbumListByCategoryIds success${albumInfoData}',
       );
@@ -255,7 +257,8 @@ class VideoAlbumState extends State<VideoAlbum> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, size: 20, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context);
+            // Navigator.pop(context);
+            Get.back();
           },
         ),
         //透明
