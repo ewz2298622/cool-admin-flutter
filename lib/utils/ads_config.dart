@@ -3,7 +3,7 @@ class AdsConfig {
   static const String APP_ID_ANDROID = "5730751";
   static const String APP_ID_IOS = "5730751";
   // App 名称
-  static const String APP_NAME = "com.example.flutter_app";
+  static const String APP_NAME = "com.juzi.video";
 
   // 广告位 ID
   static const String FULL_SCREEN_VIDEO_AD_ANDROID = "";

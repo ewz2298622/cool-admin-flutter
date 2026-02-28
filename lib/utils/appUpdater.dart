@@ -357,7 +357,7 @@ class AppUpdater {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  '更新过程中发生错误: $error',
+                  '更新过程中发生错误',
                   style: const TextStyle(fontSize: 14, height: 1.4),
                 ),
                 const SizedBox(height: 24),

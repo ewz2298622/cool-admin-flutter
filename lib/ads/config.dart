@@ -1,7 +1,7 @@
 import 'dart:io';
 
 /// APP名称
-const APP_NAME = "com.example.flutter_app";
+const APP_NAME = "com.juzi.video";
 
 /// 是否是生产环境
 const IS_PRODUCTION = false;
