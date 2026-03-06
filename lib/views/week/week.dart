@@ -33,7 +33,7 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
 
   /// 获取字典信息和对应的星期数据
   ///
-  /// 从API获取星期分类数据，并为每个分类获取对应的视频列表
+  /// 从 API 获取星期分类数据，并为每个分类获取对应的视频列表
   /// 通过并行请求优化数据加载性能
   Future<void> getDictInfoPages() async {
     try {
@@ -43,22 +43,20 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
                   })).data
                   as DictDataData)
               .week!;
-
+  
       tabs.clear();
       weekList.clear();
-
+  
       // 并行获取所有星期的视频列表，提高加载性能
       final futures = <Future>[];
       for (var element in week) {
         tabs.add(TDTab(text: element.name));
-        // 创建并行请求
-        await getWeekList(element.id ?? 0);
+        // 创建并行请求（移除 await 以实现真正的并发）
+        futures.add(getWeekList(element.id ?? 0));
       }
       // 等待所有请求完成
       await Future.wait(futures);
     } catch (e) {
-      // 捕获并处理异常
-      print('获取视频分类数据失败: $e');
       // 清空数据以防止不一致
       tabs.clear();
       weekList.clear();
@@ -226,9 +224,6 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
         }
       }
     } catch (e) {
-      // 捕获并处理异常
-      print('获取视频分类数据失败: $e');
-
       // 在初始化阶段添加空列表
       if (weekList.length < week.length) {
         weekList.add([]);

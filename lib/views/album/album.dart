@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -9,6 +10,7 @@ import '../../components/video_three_album.dart';
 import '../../entity/album_video_list_entity.dart';
 import '../../entity/video_album_entity.dart';
 import '../../style/layout.dart';
+import '../../utils/share_util.dart';
 
 class VideoAlbum extends StatefulWidget {
   //接受路由传递过来的props id
@@ -261,6 +263,18 @@ class VideoAlbumState extends State<VideoAlbum> {
             Get.back();
           },
         ),
+        actions: [
+          IconButton(
+            icon: SvgPicture.asset(
+              'assets/images/zf.svg',
+              width: 65,
+              height: 65,
+            ),
+            onPressed: () {
+              ShareUtil.shareImage();
+            },
+          ),
+        ],
         //透明
         backgroundColor: Colors.transparent,
         centerTitle: true,
