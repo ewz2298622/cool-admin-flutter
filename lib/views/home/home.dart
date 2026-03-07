@@ -356,14 +356,6 @@ class _HomePageState extends State<Home>
     try {
       final categoryId = videoCategoryIds[index];
 
-      // 清除缓存
-      _tabContentCache.remove(categoryId);
-      for (final key in _swiperItemCache.keys.where(
-        (k) => k.startsWith('$categoryId-'),
-      )) {
-        _swiperItemCache.remove(key);
-      }
-
       // 并行重新获取数据
       final results = await Future.wait([
         Api.getSwiperListByCategoryIds([categoryId]),
@@ -371,6 +363,15 @@ class _HomePageState extends State<Home>
       ]);
 
       if (!mounted) return;
+
+      // 清除缓存
+      _tabContentCache.remove(categoryId);
+      final keysToRemove = _swiperItemCache.keys.where(
+        (k) => k.startsWith('$categoryId-'),
+      ).toList();
+      for (final key in keysToRemove) {
+        _swiperItemCache.remove(key);
+      }
 
       final swiperResult = results[0] as Map<int, List<SwiperDataList>>;
       final albumResult = results[1] as Map<int, List<AlbumDataList>>;
