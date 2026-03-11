@@ -23,8 +23,15 @@ class Ads {
   static String REWARD_VIDEO_AD_ANDROID =
       AdsConfig.FULL_SCREEN_VIDEO_AD_ANDROID;
   static String REWARD_VIDEO_AD_IOS = AdsConfig.FULL_SCREEN_VIDEO_AD_IOS;
+  static Completer<bool>? _initCompleter;
+
   //注册
-  static initRegister() async {
+  static Future<bool> initRegister() async {
+    if (_initCompleter != null) {
+      return _initCompleter!.future;
+    }
+    _initCompleter = Completer<bool>();
+
     try {
       _init = await FlutterUnionad.register(
         //穿山甲广告 Android appid 必填
@@ -106,12 +113,16 @@ class Ads {
         SDKVersion = await FlutterUnionad.getSDKVersion();
         addListener();
         debugPrint("initRegister success SDKVersion $SDKVersion");
+        _initCompleter?.complete(true);
       } else {
         debugPrint("initRegister fail");
+        _initCompleter?.complete(false);
       }
     } catch (e) {
       debugPrint("initRegister error: $e");
+      _initCompleter?.complete(false);
     }
+    return _initCompleter?.future ?? Future.value(false);
   }
 
   //请求权限

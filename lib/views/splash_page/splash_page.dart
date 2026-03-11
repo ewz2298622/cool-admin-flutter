@@ -7,6 +7,7 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
 import '../../entity/app_ads_entity.dart';
+import '../../utils/ads.dart';
 import '../../utils/ads_config.dart';
 
 /// 描述：开屏广告页
@@ -66,6 +67,16 @@ class _SplashPageState extends State<SplashPage> {
   //广告加载（直接从 API 请求，带超时保护）
   Future<void> _loadAd() async {
     try {
+      // 确保广告 SDK 已初始化
+      bool isInitialized = await Ads.initRegister();
+      if (!isInitialized) {
+        debugPrint("广告 SDK 初始化失败，跳过开屏广告");
+        if (mounted && !_hasNavigated) {
+          _navigateToNextPage();
+        }
+        return;
+      }
+
       // 设置请求超时为 1.5 秒
       AppAdsEntity response = await Api.getAdsList({
         'status': 1,

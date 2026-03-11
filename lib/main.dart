@@ -106,17 +106,12 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  static bool _sdkInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    if (!_sdkInitialized) {
-      _sdkInitialized = true;
-      // 修复：增加延迟时间，避免与 App 启动时的 UI 构建争抢资源
-      // 延迟 1.5 秒初始化广告 SDK，确保 Splash 页面已经展示
-      Future.delayed(const Duration(milliseconds: 1500), _initSDK);
-    }
+    // 立即初始化广告 SDK，Splash 页面会等待初始化完成
+    _initSDK();
   }
 
   Future<void> _initSDK() async {
