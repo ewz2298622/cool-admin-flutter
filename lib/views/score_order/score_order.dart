@@ -132,17 +132,19 @@ class ScoreOrderState extends State<ScoreOrder>
               child: Row(
                 //居中
                 mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 8,
                 children: [
                   //蓝色圆形
                   Container(
-                    width: 8,
-                    height: 8,
+                    width: 10,
+                    height: 10,
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Color.fromRGBO(118, 185, 255, 1),
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFBAE7FF), Color(0xFF69C0FF)],
+                      ),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  const SizedBox(width: 8),
                   Text(
                     "积分明细",
                     style: TextStyle(
@@ -151,13 +153,14 @@ class ScoreOrderState extends State<ScoreOrder>
                       color: Colors.black87,
                     ),
                   ),
-                  const SizedBox(width: 8),
                   Container(
-                    width: 8,
-                    height: 8,
+                    width: 10,
+                    height: 10,
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Color.fromRGBO(118, 185, 255, 1),
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFBAE7FF), Color(0xFF69C0FF)],
+                      ),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                 ],
@@ -296,9 +299,7 @@ class ScoreOrderState extends State<ScoreOrder>
             ),
           ),
           // 内容区域 - 添加 SafeArea 避免被状态栏遮挡
-          SafeArea(
-            child: _buildContent(),
-          ),
+          SafeArea(child: _buildContent()),
         ],
       ),
     );

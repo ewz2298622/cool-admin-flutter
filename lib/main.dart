@@ -18,6 +18,7 @@ import 'package:flutter_app/views/environment_error/environment_error.dart';
 import 'package:flutter_app/views/feedback/feedback.dart';
 import 'package:flutter_app/views/home/home.dart';
 import 'package:flutter_app/views/htmlPage/html.dart';
+import 'package:flutter_app/views/invite/invite.dart';
 import 'package:flutter_app/views/live_detail/live_detail.dart';
 import 'package:flutter_app/views/login/login.dart';
 import 'package:flutter_app/views/my/my.dart';
@@ -106,7 +107,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   @override
   void initState() {
     super.initState();
@@ -197,6 +197,7 @@ class _MyAppState extends State<MyApp> {
               GetPage(name: '/connection_error', page: () => ConnectionError()),
               GetPage(name: '/video_album', page: () => VideoAlbum()),
               GetPage(name: '/live_detail', page: () => Live_Detail()),
+              GetPage(name: '/invite_record', page: () => InviteCenterPage()),
 
               GetPage(
                 name: '/environment_error',
@@ -331,8 +332,7 @@ class _MainPageState extends State<MainPage> {
           type: BottomNavigationBarType.fixed,
           currentIndex: _selectedIndex,
           onTap: onTap,
-          backgroundColor:
-              Theme.of(context).bottomNavigationBarTheme.backgroundColor,
+          backgroundColor: Colors.white,
           unselectedItemColor: ColorStyles.color_1E88E5,
           unselectedFontSize: 14,
           selectedItemColor: ColorStyles.color_EA5034,

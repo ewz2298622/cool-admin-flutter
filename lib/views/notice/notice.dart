@@ -34,13 +34,15 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
   bool disposed = false;
   final ScrollController _scrollController = ScrollController();
   List<NoticeInfoDataList> noticeInfoData = [];
-  final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  final RefreshController _refreshController = RefreshController(
+    initialRefresh: false,
+  );
 
   // 数据加载逻辑分离
   Future<void> noticeInfo() async {
     try {
       List<NoticeInfoDataList> list =
-          (await Api.noticeInfo({"page": currentPage,"status":1})).data?.list
+          (await Api.noticeInfo({"page": currentPage, "status": 1})).data?.list
               as List<NoticeInfoDataList>;
       setState(() {
         noticeInfoData.addAll(list);
@@ -138,13 +140,13 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
           itemBuilder: (context, index) {
             return GestureDetector(
               child: Card(
+                color: Colors.white,
+                elevation: 0,
                 child: Container(
                   margin: const EdgeInsets.only(top: 10),
                   padding: const EdgeInsets.only(left: 10, right: 10),
                   decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(10),
-                    ),
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
                   ),
                   child: Padding(
                     padding: EdgeInsets.all(10),
@@ -153,12 +155,9 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment:
-                              CrossAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            _buildTitle(
-                              noticeInfoData[index].title ?? "",
-                            ),
+                            _buildTitle(noticeInfoData[index].title ?? ""),
                           ],
                         ),
                         Text(
@@ -166,10 +165,21 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        Divider(height: 0.5),
+                        Divider(
+                          height: 0.5,
+                          color: Color.fromRGBO(241, 241, 241, 1),
+                        ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: [Text("查看详情")],
+                          children: [
+                            Text(
+                              "查看详情",
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -200,6 +210,7 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
       style: TDTagStyle(
         backgroundColor: Colors.transparent,
         borderColor: Color.fromRGBO(249, 99, 7, 1),
+        borderRadius: BorderRadius.circular(6),
       ),
     );
   }
@@ -219,7 +230,11 @@ class NoticeState extends State<Notice> with SingleTickerProviderStateMixin {
         toolbarHeight: 40,
         automaticallyImplyLeading: false,
       ),
-      body: Container(child: _buildContent()),
+      body: Container(
+        color: Color.fromRGBO(245, 245, 245, 1),
+        padding: EdgeInsets.all(10),
+        child: _buildContent(),
+      ),
     );
   }
 }

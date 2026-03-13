@@ -671,17 +671,54 @@ class MyState extends State<My>
                 crossAxisSpacing: 10,
               ),
               children: [
-                _buildModelItem(Icon(Icons.message_outlined, size: 20), "系统通知"),
-                _buildModelItem(Icon(Icons.share_outlined, size: 20), "分享好友"),
-                // _buildModelItem("assets/images/collect.png", "我的收藏"),
-                _buildModelItem(Icon(Icons.settings_outlined, size: 20), "设置"),
                 _buildModelItem(
-                  Icon(Icons.warning_amber_outlined, size: 20),
+                  Icon(
+                    Icons.message_outlined,
+                    size: 20,
+                    color: Color.fromRGBO(20, 19, 22, 1),
+                  ),
+                  "系统通知",
+                ),
+                _buildModelItem(
+                  Icon(
+                    Icons.share_outlined,
+                    size: 20,
+                    color: Color.fromRGBO(20, 19, 22, 1),
+                  ),
+                  "分享好友",
+                ),
+                // _buildModelItem("assets/images/collect.png", "我的收藏"),
+                _buildModelItem(
+                  Icon(
+                    Icons.settings_outlined,
+                    size: 20,
+                    color: Color.fromRGBO(20, 19, 22, 1),
+                  ),
+                  "设置",
+                ),
+                _buildModelItem(
+                  Icon(
+                    Icons.warning_amber_outlined,
+                    size: 20,
+                    color: Color.fromRGBO(20, 19, 22, 1),
+                  ),
                   "关于",
                 ),
                 _buildModelItem(
-                  Icon(Icons.feedback_outlined, size: 20),
+                  Icon(
+                    Icons.feedback_outlined,
+                    size: 20,
+                    color: Color.fromRGBO(20, 19, 22, 1),
+                  ),
                   "意见反馈",
+                ),
+                _buildModelItem(
+                  Icon(
+                    Icons.feedback_outlined,
+                    size: 20,
+                    color: Color.fromRGBO(20, 19, 22, 1),
+                  ),
+                  "邀请好友",
                 ),
               ],
             ),
@@ -754,7 +791,10 @@ class MyState extends State<My>
         if (User.isUserLoginView(context)) {
           Get.toNamed("/feedback");
         }
-
+        break;
+      case "邀请好友":
+        // 退出登录
+        Get.toNamed("/invite_record");
         break;
     }
   }
