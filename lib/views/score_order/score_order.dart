@@ -118,152 +118,126 @@ class ScoreOrderState extends State<ScoreOrder>
     if (scoreOrderDataList.isEmpty) {
       return NoData();
     } else {
-      return SmartRefresher(
-        controller: _refreshController,
-        onRefresh: _onRefresh,
-        onLoading: _onLoading,
-        enablePullUp: true,
-        child: ListView.builder(
-          itemCount: scoreOrderDataList.length ?? 0,
-          itemBuilder: (context, index) {
-            final item = scoreOrderDataList[index];
-            final score = item.score ?? 0;
-            final isIncome = item.type == 1; // 1为收入，0为支出
-
-            // 根据主题确定卡片背景色
-            Color cardBgColor = Theme.of(context).brightness == Brightness.dark 
-                ? Color(0xFF1D1D1D) 
-                : Colors.white;
-
-            return Card(
-              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              elevation: Theme.of(context).brightness == Brightness.dark ? 0 : 1,
-              color: cardBgColor,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  gradient:
-                      isIncome
-                          ? LinearGradient(
-                            colors: Theme.of(context).brightness == Brightness.dark
-                                ? [Color(0xFF0D47A1), Color(0xFF1565C0)]
-                                : [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          )
-                          : LinearGradient(
-                            colors: Theme.of(context).brightness == Brightness.dark
-                                ? [Color(0xFFE65100), Color(0xFFFF6D00)]
-                                : [Color(0xFFFFF3E0), Color(0xFFFFCCBC)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color:
-                                  isIncome
-                                      ? (Theme.of(context).brightness == Brightness.dark 
-                                          ? Color(0xFF64B5F6) 
-                                          : Color(0xFF2196F3))
-                                      : (Theme.of(context).brightness == Brightness.dark 
-                                          ? Color(0xFFFFB74D) 
-                                          : Color(0xFFFF9800)),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              isIncome ? "收入" : "支出",
-                              style: TextStyle(
-                                color: Theme.of(context).brightness == Brightness.dark 
-                                    ? Colors.black 
-                                    : Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            item.createTime?.split(" ")[0] ?? "",
-                            style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.grey[400]
-                                  : Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        item.reason ?? "无描述",
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.grey[300]
-                              : Colors.grey[800],
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                      Divider(
-                        height: 1, 
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.grey[700]
-                            : Colors.grey[300]
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "积分变化",
-                            style: TextStyle(
-                              color: Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.grey[400]
-                                  : Colors.grey[600],
-                              fontSize: 14,
-                            ),
-                          ),
-                          Text(
-                            "${isIncome ? '+' : '-'}${score.abs()}",
-                            style: TextStyle(
-                              color:
-                                  isIncome
-                                      ? (Theme.of(context).brightness == Brightness.dark
-                                          ? Color(0xFF64B5F6)
-                                          : Color(0xFF2196F3))
-                                      : (Theme.of(context).brightness == Brightness.dark
-                                          ? Color(0xFFFFB74D)
-                                          : Color(0xFFFF9800)),
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+      return Container(
+        margin: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            // 顶部标题区域
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Row(
+                //居中
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  //蓝色圆形
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color.fromRGBO(118, 185, 255, 1),
+                    ),
                   ),
+                  const SizedBox(width: 8),
+                  Text(
+                    "积分明细",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color.fromRGBO(118, 185, 255, 1),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // 列表区域
+            Expanded(
+              child: SmartRefresher(
+                controller: _refreshController,
+                onRefresh: _onRefresh,
+                onLoading: _onLoading,
+                enablePullUp: true,
+                child: ListView.builder(
+                  itemCount: scoreOrderDataList.length ?? 0,
+                  itemBuilder: (context, index) {
+                    final item = scoreOrderDataList[index];
+                    final score = item.score ?? 0;
+                    final isIncome = item.type == 1; // 1 为收入，0 为支出
+                    final createTime = item.createTime ?? "";
+
+                    return Container(
+                      margin: const EdgeInsets.only(
+                        left: 16,
+                        right: 16,
+                        top: 8,
+                        bottom: 8,
+                      ),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Color.fromRGBO(241, 241, 241, 1),
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          // 左侧：标题和时间
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.reason ?? "无描述",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  createTime,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey[500],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // 右侧：分数
+                          Text(
+                            "+${score.abs()}",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFFFFB300),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
-            );
-          },
+            ),
+          ],
         ),
       );
     }
@@ -273,48 +247,59 @@ class ScoreOrderState extends State<ScoreOrder>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
-          "金币账单", 
+          "积分中心",
           style: TextStyle(
-            fontSize: 16,
-            color: Theme.of(context).brightness == Brightness.dark 
-                ? Colors.white 
-                : Colors.black,
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            height: 26.06 / 18,
           ),
         ),
         //返回按钮
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios, 
-            size: 20,
-            color: Theme.of(context).brightness == Brightness.dark 
-                ? Colors.white 
-                : Colors.black,
-          ),
+          icon: Icon(Icons.arrow_back_ios, size: 20, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
         //标题居中
         centerTitle: true,
-        toolbarHeight: 40,
-        automaticallyImplyLeading: false, //设置为false
-        backgroundColor: Theme.of(context).brightness == Brightness.dark 
-            ? Color(0xFF1D1D1D) 
-            : Theme.of(context).appBarTheme.backgroundColor, // 使用主题背景色
+        toolbarHeight: 50,
+        automaticallyImplyLeading: false, //设置为 false
+        backgroundColor: Colors.transparent, // 透明背景
+        elevation: 0,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: Theme.of(context).brightness == Brightness.dark
-                ? [Color(0xFF121212), Color(0xFF191919)]
-                : [Color(0xFFE3F2FD), Color(0xFFFFFFFF)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+      body: Stack(
+        children: [
+          // 渐变背景，固定高度 500
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 500,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    const Color.fromRGBO(80, 166, 255, 1),
+                    const Color.fromRGBO(60, 156, 255, 1),
+                    const Color.fromRGBO(60, 156, 255, 0),
+                  ],
+                  stops: const [0.0, 0.7561, 1.0],
+                ),
+              ),
+            ),
           ),
-        ),
-        child: _buildContent(),
+          // 内容区域 - 添加 SafeArea 避免被状态栏遮挡
+          SafeArea(
+            child: _buildContent(),
+          ),
+        ],
       ),
     );
   }

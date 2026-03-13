@@ -34,6 +34,7 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
     TextEditingController(),
     TextEditingController(),
     TextEditingController(),
+    TextEditingController(),
   ];
   var browseOn = false;
   CaptchaData? captchaData;
@@ -338,6 +339,45 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
                 ],
               ),
             ),
+            Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: EdgeInsets.only(left: 15, right: 15),
+              decoration: BoxDecoration(
+                color: Color.fromRGBO(238, 238, 238, 1),
+                border: Border.all(
+                  color: Color.fromRGBO(238, 238, 238, 1),
+                  width: 0.5,
+                ),
+                borderRadius: BorderRadius.circular((25.0)),
+              ),
+              child: Flex(
+                direction: Axis.horizontal,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Flexible(
+                    flex: 1,
+                    child: TDInput(
+                      size: TDInputSize.small,
+                      leftIcon: TDImage(
+                        width: 30,
+                        height: 30,
+                        assetUrl: "assets/images/inviteCode.png",
+                      ),
+                      controller: controller[3],
+                      hintText: '请输入邀请码(可选)',
+                      onChanged: (text) {
+                        setState(() {});
+                      },
+                      onClearTap: () {
+                        controller[3].clear();
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.only(
                 left: Layout.paddingL,
@@ -451,7 +491,11 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
             'password': controller[1].text.replaceAll(' ', ''),
             'code': controller[2].text.replaceAll(' ', ''),
             'captchaId': captchaData?.captchaId,
+            'inviteCode': controller[3].text.replaceAll(' ', ''),
           })).data;
+      debugPrint(
+        "登录成功邀请码 inviteCode ${controller[3].text.replaceAll(' ', '')}",
+      );
       if (data != null) {
         debugPrint("登录成功${data.toString()}");
         TokenDatabaseHelper tokenDatabaseHelper = TokenDatabaseHelper();

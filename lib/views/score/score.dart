@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -81,7 +82,8 @@ class TaskCenterPageState extends State<TaskCenterPage> {
   Future<void> getSignData() async {
     try {
       if (!mounted) return;
-      signData = (await Api.getSignInData({})).data?.list ??
+      signData =
+          (await Api.getSignInData({})).data?.list ??
           <MonthlyCheckinConfigDataList>[];
       if (mounted) {
         setState(() {});
@@ -96,13 +98,9 @@ class TaskCenterPageState extends State<TaskCenterPage> {
   Future<String> init() async {
     try {
       if (!mounted) return "init failed";
-      
-      await Future.wait([
-        getScore(),
-        getMemberConfig(),
-        getSignData(),
-      ]);
-      
+
+      await Future.wait([getScore(), getMemberConfig(), getSignData()]);
+
       debugPrint("TaskCenterPage init success");
       return "init success";
     } catch (e) {
@@ -114,25 +112,36 @@ class TaskCenterPageState extends State<TaskCenterPage> {
   /// 刷新积分和签到数据
   Future<void> _refreshData() async {
     if (!mounted) return;
-    await Future.wait([
-      getScore(),
-      getSignData(),
-    ]);
+    await Future.wait([getScore(), getSignData()]);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text("任务中心", style: TextStyle(fontSize: _titleFontSize)),
+        title: const Text(
+          "任务中心",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            height: 26.06 / 18,
+          ),
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: _iconSize),
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            size: _iconSize,
+            color: Colors.white,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
         toolbarHeight: _toolbarHeight,
         automaticallyImplyLeading: false,
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
       body: _buildContent(context),
     );
@@ -152,9 +161,13 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 48, color: Colors.grey),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Colors.grey,
+                    ),
                     const SizedBox(height: 16),
-                    Text('加载失败: ${snapshot.error}'),
+                    Text('加载失败：${snapshot.error}'),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
@@ -168,24 +181,85 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                 ),
               );
             }
-            return SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                children: [
-                  RepaintBoundary(
-                    child: _buildCoinVipArea(screenWidth),
+            return Stack(
+              children: [
+                // 背景渐变层
+                Container(
+                  width: screenWidth,
+                  height: 400,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        const Color.fromARGB(255, 80, 166, 255),
+                        const Color.fromARGB(255, 60, 156, 255),
+                        const Color.fromARGB(128, 60, 156, 255),
+                        const Color.fromARGB(0, 60, 156, 255),
+                      ],
+                      stops: const [0.0, 0.6, 0.85, 1.0],
+                    ),
                   ),
-                  RepaintBoundary(
-                    child: _buildVipExchangeArea(screenWidth),
+                ),
+                // 内容层
+                SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        left: 0,
+                        top: 100,
+                        child: Container(
+                          width: 88,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(255, 25, 138, 255),
+                            borderRadius: const BorderRadius.only(
+                              topRight: Radius.circular(16),
+                              bottomRight: Radius.circular(16),
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: GestureDetector(
+                            onTap: () => Get.toNamed("/score_order"),
+                            child: const Text(
+                              "金币详情",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          top: 20,
+                          right: 10,
+                          left: 10,
+                        ),
+                        child: Column(
+                          children: [
+                            RepaintBoundary(
+                              child: _buildCoinVipArea(screenWidth),
+                            ),
+                            RepaintBoundary(
+                              child: _buildVipExchangeArea(screenWidth),
+                            ),
+                            RepaintBoundary(
+                              child: _buildSignTaskArea(screenWidth),
+                            ),
+                            RepaintBoundary(
+                              child: _buildDailyTaskArea(screenWidth),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  RepaintBoundary(
-                    child: _buildSignTaskArea(screenWidth),
-                  ),
-                  RepaintBoundary(
-                    child: _buildDailyTaskArea(screenWidth),
-                  ),
-                ],
-              ),
+                ),
+              ],
             );
           default:
             return const PageLoading();
@@ -198,58 +272,42 @@ class TaskCenterPageState extends State<TaskCenterPage> {
   Widget _buildCoinVipArea(double screenWidth) {
     return Container(
       width: screenWidth,
-      color: Colors.white,
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.only(top: 1),
+      padding: const EdgeInsets.only(top: 22, bottom: 22),
       child: Column(
         children: [
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.only(top: 16),
-            decoration: BoxDecoration(
-              color: const Color(_coinColor),
-              borderRadius: BorderRadius.circular(_borderRadius),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "我的金币",
-                      style: TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      score.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: const Color(_coinColor),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(_buttonBorderRadius),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+          SizedBox(height: _toolbarHeight), // 留出 AppBar 高度
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 5,
+                children: [
+                  Text(
+                    score.toString(),
+                    style: const TextStyle(
+                      color: Color(0xFFFFFFFF),
+                      fontSize: 30,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0,
+                      height: 1,
                     ),
                   ),
-                  onPressed: () => Get.toNamed("/score_order"),
-                  child: const Text("金币账单", style: TextStyle(fontSize: 14)),
-                ),
-              ],
-            ),
+                  const Text(
+                    "我的金币",
+                    style: TextStyle(
+                      color: Color(0xFFFFFFFF),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0,
+                      height: 1.45,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
+          const SizedBox(height: 12), // 底部间距
         ],
       ),
     );
@@ -271,16 +329,19 @@ class TaskCenterPageState extends State<TaskCenterPage> {
 
     return Container(
       width: screenWidth,
-      color: Colors.white,
       margin: const EdgeInsets.only(top: 10),
       padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "今日签到领 $coin金币",
+                "今日签到领 $coin 金币",
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -311,9 +372,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                 cacheExtent: 200,
                 itemCount: signData.length,
                 itemBuilder: (context, index) {
-                  return RepaintBoundary(
-                    child: _buildSignCardItem(index),
-                  );
+                  return RepaintBoundary(child: _buildSignCardItem(index));
                 },
               ),
             ),
@@ -333,9 +392,10 @@ class TaskCenterPageState extends State<TaskCenterPage> {
     final item = signData[index];
     final isSigned = item.isSigned ?? 0;
     final isActive = isSigned == 3;
-    final statusText = isSigned == 1
-        ? "已签到"
-        : isSigned == 3
+    final statusText =
+        isSigned == 1
+            ? "已签到"
+            : isSigned == 3
             ? "签到"
             : "未签到";
     final scoreText = "${item.score ?? 0}";
@@ -353,32 +413,20 @@ class TaskCenterPageState extends State<TaskCenterPage> {
   ) async {
     // 容错处理：检查签到状态和ID
     if (item.isSigned != 3) {
-      Fluttertoast.showToast(
-        msg: "当前无法签到",
-        toastLength: Toast.LENGTH_SHORT,
-      );
+      Fluttertoast.showToast(msg: "当前无法签到", toastLength: Toast.LENGTH_SHORT);
       return;
     }
 
     if (item.id == null) {
-      Fluttertoast.showToast(
-        msg: "签到数据异常",
-        toastLength: Toast.LENGTH_SHORT,
-      );
+      Fluttertoast.showToast(msg: "签到数据异常", toastLength: Toast.LENGTH_SHORT);
       return;
     }
 
     try {
-      await Api.addScore({
-        "businessType": 1,
-        "businessId": item.id,
-      });
-      
+      await Api.addScore({"businessType": 1, "businessId": item.id});
+
       if (mounted) {
-        Fluttertoast.showToast(
-          msg: "签到成功",
-          toastLength: Toast.LENGTH_SHORT,
-        );
+        Fluttertoast.showToast(msg: "签到成功", toastLength: Toast.LENGTH_SHORT);
         await _refreshData();
       }
     } catch (e) {
@@ -402,9 +450,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
         color: isActive ? const Color(_signActiveColor) : Colors.white,
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
-          color: isActive
-              ? const Color(_signActiveColor)
-              : Colors.grey[200]!,
+          color: isActive ? const Color(_signActiveColor) : Colors.grey[200]!,
           width: 1,
         ),
       ),
@@ -474,7 +520,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
               "可在应用内直接更新",
               "",
               Icons.download,
-              "去授权",
+              "去完成",
               Colors.red[100]!,
               Colors.red,
               () => _handleInstallPermission(),
@@ -484,7 +530,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
               "可在应用内直接更新",
               "",
               Icons.video_collection,
-              "去授权",
+              "去完成",
               Colors.blue[100]!,
               Colors.blue,
               () => _handleStoragePermission(),
@@ -494,7 +540,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
               "最高得2880金币",
               "",
               Icons.ad_units,
-              "领福利",
+              "去完成",
               Colors.green[100]!,
               Colors.green,
               () => _handleWatchAd(),
@@ -539,9 +585,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
         }
         return;
       }
-      await RequestMultiplePermissions.requestPermissions(
-        Permission.storage,
-      );
+      await RequestMultiplePermissions.requestPermissions(Permission.storage);
       await getScore();
     } catch (e) {
       debugPrint('处理存储权限失败: $e');
@@ -583,14 +627,14 @@ class TaskCenterPageState extends State<TaskCenterPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(_borderRadius),
-        border: Border.all(color: Colors.grey[100]!),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey[100]!,
-            blurRadius: 2,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        // border: Border.all(color: Colors.grey[100]!),
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: Colors.grey[100]!,
+        //     blurRadius: 2,
+        //     offset: const Offset(0, 1),
+        //   ),
+        // ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -600,7 +644,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
             height: 40,
             decoration: BoxDecoration(
               color: iconBgColor,
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(40),
             ),
             child: Icon(icon, color: iconColor, size: 20),
           ),
@@ -637,28 +681,54 @@ class TaskCenterPageState extends State<TaskCenterPage> {
           const SizedBox(width: 8),
           ConstrainedBox(
             constraints: const BoxConstraints(minWidth: 100),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(_coinColor),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 0,
+            child: SizedBox(
+              width: 68,
+              height: 34,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  padding: EdgeInsets.zero,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(_buttonBorderRadius),
+                  ),
+                  textStyle: const TextStyle(fontSize: 12),
                 ),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(_buttonBorderRadius),
+                onPressed: onButtonPressed,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        const Color.fromARGB(255, 255, 161, 50),
+                        const Color.fromARGB(255, 255, 198, 54),
+                        const Color.fromARGB(255, 255, 192, 33),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(_buttonBorderRadius),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    buttonText,
+                    style: const TextStyle(
+                      color: Color(0xFFFFFFFF),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0,
+                      height: 0,
+                    ),
+                  ),
                 ),
-                textStyle: const TextStyle(fontSize: 12),
               ),
-              onPressed: onButtonPressed,
-              child: Text(buttonText),
             ),
           ),
         ],
       ),
     );
   }
-
 
   /// 会员分类兑换区
   Widget _buildVipExchangeArea(double screenWidth) {
@@ -668,9 +738,12 @@ class TaskCenterPageState extends State<TaskCenterPage> {
 
     return Container(
       width: screenWidth,
-      color: Colors.white,
       margin: const EdgeInsets.only(top: 10),
       padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Column(
         children: [
           Column(
@@ -684,10 +757,9 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                   style: TextStyle(fontSize: 10, color: Colors.grey),
                 ),
               ),
-              ...memberExchangeConfigDataList
-                  .map((item) => RepaintBoundary(
-                        child: _buildVipCard(item),
-                      )),
+              ...memberExchangeConfigDataList.map(
+                (item) => RepaintBoundary(child: _buildVipCard(item)),
+              ),
             ],
           ),
         ],
@@ -728,10 +800,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                 const SizedBox(height: 4),
                 Text(
                   '剩余: ${item.requiredScore}积分',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.orange[300],
-                  ),
+                  style: TextStyle(fontSize: 16, color: Colors.orange[300]),
                 ),
               ],
             ),
@@ -740,19 +809,53 @@ class TaskCenterPageState extends State<TaskCenterPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(_buttonBorderRadius),
-                  ),
-                ),
-                onPressed: () => _handleVipExchange(item),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Text(
-                    '立即兑换',
-                    style: TextStyle(fontSize: 12, color: Colors.white),
+              ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 100),
+                child: SizedBox(
+                  width: 68,
+                  height: 34,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      padding: EdgeInsets.zero,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          _buttonBorderRadius,
+                        ),
+                      ),
+                      textStyle: const TextStyle(fontSize: 12),
+                    ),
+                    onPressed: () => _handleVipExchange(item),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            const Color.fromARGB(255, 255, 161, 50),
+                            const Color.fromARGB(255, 255, 198, 54),
+                            const Color.fromARGB(255, 255, 192, 33),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(
+                          _buttonBorderRadius,
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "立即兑换",
+                        style: const TextStyle(
+                          color: Color(0xFFFFFFFF),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0,
+                          height: 0,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -768,10 +871,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
     // 容错处理：检查ID是否有效
     if (item.id == null) {
       if (mounted) {
-        Fluttertoast.showToast(
-          msg: "兑换数据异常",
-          toastLength: Toast.LENGTH_SHORT,
-        );
+        Fluttertoast.showToast(msg: "兑换数据异常", toastLength: Toast.LENGTH_SHORT);
       }
       return;
     }
@@ -779,12 +879,9 @@ class TaskCenterPageState extends State<TaskCenterPage> {
     try {
       await Api.memberExchange({"userMmemberExchangeId": item.id});
       await getScore();
-      
+
       if (mounted) {
-        Fluttertoast.showToast(
-          msg: "兑换成功",
-          toastLength: Toast.LENGTH_SHORT,
-        );
+        Fluttertoast.showToast(msg: "兑换成功", toastLength: Toast.LENGTH_SHORT);
       }
       debugPrint('会员兑换成功: ${item.id}');
     } catch (e) {
@@ -798,4 +895,3 @@ class TaskCenterPageState extends State<TaskCenterPage> {
     }
   }
 }
-

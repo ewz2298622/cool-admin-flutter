@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_app/utils/store/user/user.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -318,54 +320,71 @@ class MyState extends State<My>
 
   Widget _buildHead(BuildContext context, UserEntity? userInfoData) {
     if (userInfoData?.userId == null) {
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          TDImage(
-            imgUrl: userInfoData?.avatarUrl ?? "",
-            width: 50,
-            height: 50,
-            type: TDImageType.circle,
-            errorWidget: TDImage(
-              width: 80,
-              height: 80,
-              type: TDImageType.circle,
-              assetUrl: 'assets/images/user.png',
+      return Padding(
+        padding: EdgeInsets.only(left: 10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Color.fromRGBO(255, 255, 255, 0.5),
+                  width: 2,
+                ),
+              ),
+              child: TDImage(
+                imgUrl: userInfoData?.avatarUrl ?? "",
+                width: 70,
+                height: 70,
+                type: TDImageType.circle,
+                errorWidget: TDImage(
+                  width: 80,
+                  height: 80,
+                  type: TDImageType.circle,
+                  assetUrl: 'assets/images/user.png',
+                ),
+              ),
             ),
-          ),
-          SizedBox(height: 16.0),
-          Padding(
-            padding: EdgeInsets.only(left: 15),
-            child: _buildLogin(context, userInfoData),
-          ),
+            SizedBox(height: 16.0),
+            Padding(
+              padding: EdgeInsets.only(left: 15),
+              child: _buildLogin(context, userInfoData),
+            ),
 
-          // 用户姓名
-          SizedBox(height: 8.0),
-          // 用户电子邮件
-          // 你可以继续添加更多信息
-        ],
+            // 用户姓名
+            SizedBox(height: 8.0),
+            // 用户电子邮件
+            // 你可以继续添加更多信息
+          ],
+        ),
       );
     }
 
     return GestureDetector(
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Stack(
-          alignment: Alignment.topRight,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: Column(
-                children: [
-                  Row(
-                    spacing: 10,
-                    children: [
-                      TDImage(
+      child: Stack(
+        alignment: Alignment.topRight,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 10),
+            child: Column(
+              children: [
+                Row(
+                  spacing: 10,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Color.fromRGBO(255, 255, 255, 0.5),
+                          width: 2,
+                        ),
+                      ),
+                      child: TDImage(
                         imgUrl: userInfoData?.avatarUrl ?? "",
-                        width: 80,
-                        height: 80,
+                        width: 70,
+                        height: 70,
                         type: TDImageType.circle,
                         errorWidget: TDImage(
                           width: 80,
@@ -374,72 +393,128 @@ class MyState extends State<My>
                           assetUrl: 'assets/images/user.png',
                         ),
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // 用户ID
-                          Text(
-                            User.getPhoneNumber(
-                              userInfoData?.phone.toString() ?? "",
-                            ),
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 6,
+                      children: [
+                        // 用户ID
+                        Text(
+                          User.getPhoneNumber(
+                            userInfoData?.phone.toString() ?? "",
+                          ),
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0,
+                            height: 24.62 / 17,
+                            color: Color.fromRGBO(255, 255, 255, 1),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 200,
+                          child: TDProgress(
+                            showLabel: false,
+                            type: TDProgressType.linear,
+                            customProgressLabel: Center(),
+                            color: Color.fromRGBO(255, 255, 255, 1),
+                            backgroundColor: Color.fromRGBO(93, 146, 252, 1),
+                            value: 0.5,
+                            strokeWidth: 2,
+                            progressLabelPosition:
+                                TDProgressLabelPosition.right,
+                          ),
+                        ),
+                        // 虚拟货币数量
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Color.fromRGBO(242, 240, 241, 1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.only(left: 8, right: 8),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              spacing: 5,
+                              children: [
+                                Text(
+                                  'VIP 会员:',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0,
+                                    height: 21.72 / 15,
+                                    color: Color.fromRGBO(255, 227, 177, 1),
+                                  ),
+                                ),
+                                Text(
+                                  isValidMember == false ? '已过期' : '续期',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Color.fromRGBO(190, 190, 190, 1.0),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          SizedBox(height: 6),
-                          // 虚拟货币数量
-                          DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: Color.fromRGBO(242, 240, 241, 1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.only(left: 8, right: 8),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                spacing: 5,
-                                children: [
-                                  Text(
-                                    'VIP会员:',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Color.fromRGBO(245, 164, 33, 1),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    isValidMember == false ? '已过期' : '续期',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Color.fromRGBO(190, 190, 190, 1.0),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 12),
+                        ),
+                        SizedBox(height: 12),
 
-                          // 特惠信息
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                        // 特惠信息
+                      ],
+                    ),
+                  ],
+                ),
+              ],
             ),
-            if (isValidMember == true)
-              Positioned(
-                child: const TDBadge(
-                  TDBadgeType.subscript,
-                  message: 'VIP',
-                  size: TDBadgeSize.large,
+          ),
+          Positioned(
+            top: 30,
+            right: 0,
+            child: GestureDetector(
+              child: Container(
+                height: 27,
+                width: 92,
+                padding: EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: Color.fromRGBO(0, 0, 0, 0.3),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(15),
+                    bottomLeft: Radius.circular(15),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    SvgPicture.asset(
+                      'assets/images/gole.svg',
+                      width: 20,
+                      height: 20,
+                    ),
+                    Text(
+                      "签到赚金币",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0,
+                        height: 17.38 / 12,
+                        color: Color.fromRGBO(255, 255, 255, 1),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-          ],
-        ),
+            ),
+          ),
+          if (isValidMember == true)
+            Positioned(
+              child: const TDBadge(
+                TDBadgeType.subscript,
+                message: 'VIP',
+                size: TDBadgeSize.large,
+              ),
+            ),
+        ],
       ),
       onTap: () {
         //跳转/score
@@ -568,6 +643,10 @@ class MyState extends State<My>
 
   Widget _buildModelList() {
     return Card(
+      //白色
+      color: Colors.white,
+      //修改圆角
+      elevation: 0,
       child: Padding(
         padding: EdgeInsets.only(right: 5, left: 5, top: 5),
         child: Column(
@@ -575,7 +654,13 @@ class MyState extends State<My>
           children: [
             Text(
               "常用功能",
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0,
+                height: 21.72 / 15,
+                color: Color.fromRGBO(51, 51, 51, 1),
+              ),
             ),
             GridView(
               padding: EdgeInsets.zero,
@@ -612,12 +697,19 @@ class MyState extends State<My>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
+        spacing: 5,
         children: [
           // TDImage(assetUrl: assetUrl, width: 20, height: 20),
           icon,
           Text(
             label,
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0,
+              height: 18.82 / 13,
+              color: Color.fromRGBO(51, 51, 51, 1),
+            ),
           ),
         ],
       ),
@@ -671,63 +763,134 @@ class MyState extends State<My>
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: Text(
+          "我的",
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, size: 20, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        centerTitle: true,
+        toolbarHeight: 50,
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: Selector<UserState, UserEntity?>(
         selector:
             (context, value) => value.userInfoData, // 假设 UserState 中有 user 属性
         builder: (context, UserEntity? data, child) {
-          return Container(
-            padding: const EdgeInsets.only(
-              left: Layout.paddingL,
-              right: Layout.paddingR,
-              top: 40,
-            ),
-            child: FutureBuilder<String>(
-              future: _futureBuilderFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return PageLoading(); // 显示加载动画
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (snapshot.hasData) {
-                  return SingleChildScrollView(
-                    physics: BouncingScrollPhysics(),
-                    child: Column(
-                      spacing: Layout.paddingT,
-                      children: [
-                        _buildHead(context, data),
-                        GestureDetector(
-                          onTap: () async {
-                            if (User.isUserLoginView(context)) {
-                              await Ads.loadRewardVideoAd();
-                              Ads.showRewardVideoAd();
-                            }
-                          },
-                          child: buildPricingLayout(),
+          return Stack(
+            children: [
+              // 渐变背景，固定高度 500
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                // 高度设置为整个屏幕高度
+                height: MediaQueryData.fromWindow(window).size.height,
+                child: Stack(
+                  children: [
+                    // 底层：整个区域填充最后一种渐变颜色
+                    Container(color: const Color.fromRGBO(245, 245, 245, 1)),
+                    // 上层：300高度的渐变区域
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: 300, // 渐变区域高度固定为300
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              const Color.fromRGBO(80, 166, 255, 1),
+                              const Color.fromRGBO(60, 156, 255, 1),
+                              const Color.fromRGBO(245, 245, 245, 1),
+                            ],
+                            stops: const [0.0, 0.7561, 1.0],
+                          ),
                         ),
-                        _buildRecommendations(data),
-                        _buildModelList(),
-                        BannerAds(
-                          androidCodeId: androidCodeId,
-                          iosCodeId: iosCodeId,
-                        ),
-                      ],
+                      ),
                     ),
-                  );
-                } else {
-                  // 修改：在snapshot.hasData为false时，仍然显示页面内容
-                  return SingleChildScrollView(
-                    physics: BouncingScrollPhysics(),
-                    child: Column(
-                      children: [
-                        _buildHead(context, data),
-                        _buildRecommendations(data),
-                        _buildModelList(),
-                      ],
-                    ),
-                  );
-                }
-              },
-            ),
+                  ],
+                ),
+              ),
+              // 内容区域 - 添加 SafeArea 避免被状态栏遮挡
+              SafeArea(
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height,
+                  child: FutureBuilder<String>(
+                    future: _futureBuilderFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return PageLoading(); // 显示加载动画
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (snapshot.hasData) {
+                        return SingleChildScrollView(
+                          physics: BouncingScrollPhysics(),
+                          child: Column(
+                            spacing: Layout.paddingT,
+                            children: [
+                              _buildHead(context, data),
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 10,
+                                  right: 10,
+                                ),
+                                child: Column(
+                                  spacing: Layout.paddingT,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () async {
+                                        if (User.isUserLoginView(context)) {
+                                          await Ads.loadRewardVideoAd();
+                                          Ads.showRewardVideoAd();
+                                        }
+                                      },
+                                      child: buildPricingLayout(),
+                                    ),
+                                    _buildRecommendations(data),
+                                    _buildModelList(),
+                                    BannerAds(
+                                      androidCodeId: androidCodeId,
+                                      iosCodeId: iosCodeId,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else {
+                        // 修改：在 snapshot.hasData 为 false 时，仍然显示页面内容
+                        return SingleChildScrollView(
+                          physics: BouncingScrollPhysics(),
+                          child: Column(
+                            children: [
+                              _buildHead(context, data),
+                              _buildRecommendations(data),
+                              _buildModelList(),
+                            ],
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ],
           );
         },
       ),
