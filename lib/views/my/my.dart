@@ -24,7 +24,6 @@ import '../../utils/ads.dart';
 import '../../utils/ads_config.dart';
 import '../../utils/bus/bus.dart';
 import '../../utils/bus/constant.dart';
-import '../../utils/share_util.dart';
 import '../../utils/user.dart';
 import '../history/history.dart';
 import '../login/login.dart';
@@ -239,6 +238,8 @@ class MyState extends State<My>
       return Container();
     } else {
       return Card(
+        elevation: 0,
+        color: Colors.white,
         child: Padding(
           padding: EdgeInsets.only(right: 5, left: 5, top: 5, bottom: 5),
           child: Column(
@@ -426,37 +427,31 @@ class MyState extends State<My>
                           ),
                         ),
                         // 虚拟货币数量
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: Color.fromRGBO(242, 240, 241, 1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.only(left: 8, right: 8),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              spacing: 5,
-                              children: [
-                                Text(
-                                  'VIP 会员:',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0,
-                                    height: 21.72 / 15,
-                                    color: Color.fromRGBO(255, 227, 177, 1),
-                                  ),
+                        Padding(
+                          padding: EdgeInsets.only(left: 8, right: 8),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            spacing: 5,
+                            children: [
+                              Text(
+                                'VIP 会员:',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0,
+                                  height: 21.72 / 15,
+                                  color: Color.fromRGBO(255, 227, 177, 1),
                                 ),
-                                Text(
-                                  isValidMember == false ? '已过期' : '续期',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Color.fromRGBO(190, 190, 190, 1.0),
-                                  ),
+                              ),
+                              Text(
+                                isValidMember == false ? '已过期' : '续期',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Color.fromRGBO(190, 190, 190, 1.0),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                         SizedBox(height: 12),
@@ -470,7 +465,7 @@ class MyState extends State<My>
             ),
           ),
           Positioned(
-            top: 30,
+            top: 18,
             right: 0,
             child: GestureDetector(
               child: Container(
@@ -506,14 +501,14 @@ class MyState extends State<My>
               ),
             ),
           ),
-          if (isValidMember == true)
-            Positioned(
-              child: const TDBadge(
-                TDBadgeType.subscript,
-                message: 'VIP',
-                size: TDBadgeSize.large,
-              ),
-            ),
+          // if (isValidMember == true)
+          //   Positioned(
+          //     child: const TDBadge(
+          //       TDBadgeType.subscript,
+          //       message: 'VIP',
+          //       size: TDBadgeSize.large,
+          //     ),
+          //   ),
         ],
       ),
       onTap: () {
@@ -712,14 +707,6 @@ class MyState extends State<My>
                   ),
                   "意见反馈",
                 ),
-                _buildModelItem(
-                  Icon(
-                    Icons.feedback_outlined,
-                    size: 20,
-                    color: Color.fromRGBO(20, 19, 22, 1),
-                  ),
-                  "邀请好友",
-                ),
               ],
             ),
           ],
@@ -764,7 +751,7 @@ class MyState extends State<My>
         break;
       case "分享好友":
         // 处理分享好友点击事件
-        ShareUtil.shareImage();
+        Get.toNamed("/invite_record");
         break;
       case "在线客服":
         // 处理在线客服点击事件
@@ -792,10 +779,6 @@ class MyState extends State<My>
           Get.toNamed("/feedback");
         }
         break;
-      case "邀请好友":
-        // 退出登录
-        Get.toNamed("/invite_record");
-        break;
     }
   }
 
@@ -806,7 +789,7 @@ class MyState extends State<My>
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
-          "我的",
+          "",
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
@@ -829,116 +812,148 @@ class MyState extends State<My>
         selector:
             (context, value) => value.userInfoData, // 假设 UserState 中有 user 属性
         builder: (context, UserEntity? data, child) {
-          return Stack(
-            children: [
-              // 渐变背景，固定高度 500
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                // 高度设置为整个屏幕高度
-                height: MediaQueryData.fromWindow(window).size.height,
-                child: Stack(
-                  children: [
-                    // 底层：整个区域填充最后一种渐变颜色
-                    // Container(color: const Color.fromRGBO(245, 245, 245, 1)),
-                    // 上层：300高度的渐变区域
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: 300, // 渐变区域高度固定为 300
-                      child: ShaderMask(
-                        shaderCallback:
-                            (bounds) => LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.white, // 顶部不透明
-                                Colors.white.withOpacity(0.0), // 底部透明
-                              ],
-                            ).createShader(bounds),
-                        blendMode: BlendMode.dstIn,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: AssetImage(
-                                "assets/images/downloaded-image.jpg",
+          return Container(
+            color: Color.fromRGBO(245, 245, 245, 1),
+            child: Stack(
+              children: [
+                // 渐变背景，固定高度 500
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  // 高度设置为整个屏幕高度
+                  height: MediaQueryData.fromWindow(window).size.height,
+                  child: Stack(
+                    children: [
+                      // 底层：整个区域填充最后一种渐变颜色
+                      // Container(color: const Color.fromRGBO(245, 245, 245, 1)),
+                      // 上层：300高度的渐变区域
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        //页面的高度
+                        height: 300,
+                        child: ShaderMask(
+                          shaderCallback:
+                              (bounds) => LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.white, // 顶部不透明
+                                  Colors.white.withOpacity(0.0), // 底部透明
+                                ],
+                              ).createShader(bounds),
+                          blendMode: BlendMode.dstIn,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              image: DecorationImage(
+                                image: AssetImage(
+                                  "assets/images/downloaded-image.png",
+                                ),
+                                fit: BoxFit.fill,
                               ),
-                              fit: BoxFit.fill,
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              // 内容区域 - 添加 SafeArea 避免被状态栏遮挡
-              SafeArea(
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height,
-                  child: FutureBuilder<String>(
-                    future: _futureBuilderFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return PageLoading(); // 显示加载动画
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      } else if (snapshot.hasData) {
-                        return SingleChildScrollView(
-                          physics: BouncingScrollPhysics(),
-                          child: Column(
-                            spacing: Layout.paddingT,
-                            children: [
-                              _buildHead(context, data),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 10,
-                                  right: 10,
-                                ),
-                                child: Column(
-                                  spacing: Layout.paddingT,
+                // 内容区域 - 添加 SafeArea 避免被状态栏遮挡
+                SafeArea(
+                  child: SizedBox(
+                    height: MediaQuery.of(context).size.height,
+                    child: FutureBuilder<String>(
+                      future: _futureBuilderFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return PageLoading(); // 显示加载动画
+                        } else if (snapshot.hasError) {
+                          return Center(
+                            child: Text('Error: ${snapshot.error}'),
+                          );
+                        } else if (snapshot.hasData) {
+                          return SingleChildScrollView(
+                            physics: BouncingScrollPhysics(),
+                            child: Column(
+                              spacing: Layout.paddingT,
+                              children: [
+                                _buildHead(context, data),
+                                Column(
                                   children: [
-                                    GestureDetector(
-                                      onTap: () async {
-                                        if (User.isUserLoginView(context)) {
-                                          await Ads.loadRewardVideoAd();
-                                          Ads.showRewardVideoAd();
-                                        }
-                                      },
-                                      child: buildPricingLayout(),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 10,
+                                        right: 10,
+                                      ),
+                                      child: Column(
+                                        spacing: Layout.paddingT,
+                                        children: [
+                                          GestureDetector(
+                                            onTap: () async {
+                                              if (User.isUserLoginView(
+                                                context,
+                                              )) {
+                                                await Ads.loadRewardVideoAd();
+                                                Ads.showRewardVideoAd();
+                                              }
+                                            },
+                                            child: buildPricingLayout(),
+                                          ),
+                                          BannerAds(
+                                            androidCodeId: androidCodeId,
+                                            iosCodeId: iosCodeId,
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                    _buildRecommendations(data),
-                                    _buildModelList(),
-                                    BannerAds(
-                                      androidCodeId: androidCodeId,
-                                      iosCodeId: iosCodeId,
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(10),
+                                          topRight: Radius.circular(10),
+                                        ),
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(10),
+                                          topRight: Radius.circular(10),
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            _buildRecommendations(data),
+                                            _buildModelList(),
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      } else {
-                        // 修改：在 snapshot.hasData 为 false 时，仍然显示页面内容
-                        return SingleChildScrollView(
-                          physics: BouncingScrollPhysics(),
-                          child: Column(
-                            children: [
-                              _buildHead(context, data),
-                              _buildRecommendations(data),
-                              _buildModelList(),
-                            ],
-                          ),
-                        );
-                      }
-                    },
+                              ],
+                            ),
+                          );
+                        } else {
+                          // 修改：在 snapshot.hasData 为 false 时，仍然显示页面内容
+                          return SingleChildScrollView(
+                            physics: BouncingScrollPhysics(),
+                            child: Column(
+                              children: [
+                                _buildHead(context, data),
+                                _buildRecommendations(data),
+                                _buildModelList(),
+                              ],
+                            ),
+                          );
+                        }
+                      },
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),

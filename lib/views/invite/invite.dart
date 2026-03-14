@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_app/api/api.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../components/loading.dart';
+import '../../entity/invite_record_entity.dart';
 import '../../utils/share_util.dart';
+import '../../utils/user.dart';
 
 /// 邀请中心页面
 class InviteCenterPage extends StatefulWidget {
@@ -20,20 +23,7 @@ class InviteCenterPageState extends State<InviteCenterPage> {
   // 假数据
   final String inviteCode = 'AK233';
   final int totalInvites = 8;
-  final List<Map<String, dynamic>> inviteRecords = [
-    {
-      'avatar': 'assets/images/monkey.png',
-      'title': '使用时长大于 30s',
-      'time': '2023.07.11 20:55:45',
-      'score': 40,
-    },
-    {
-      'avatar': 'assets/images/monkey.png',
-      'title': '使用时长大于 30s',
-      'time': '2023.07.11 20:55:45',
-      'score': 40,
-    },
-  ];
+  List<InviteRecordDataList> inviteRecords = [];
 
   // 常量定义
   static const double _toolbarHeight = 40.0;
@@ -51,8 +41,9 @@ class InviteCenterPageState extends State<InviteCenterPage> {
       if (!mounted || _isLoading) return;
       _isLoading = true;
 
-      // 模拟网络请求延迟
-      await Future.delayed(const Duration(milliseconds: 500));
+      inviteRecords =
+          (await Api.inviteRecord({'code': '1234'})).data?.list ??
+          <InviteRecordDataList>[];
 
       if (mounted) {
         setState(() {});
@@ -311,7 +302,7 @@ class InviteCenterPageState extends State<InviteCenterPage> {
   }
 
   /// 单条邀请记录
-  Widget _buildRecordItem(Map<String, dynamic> record) {
+  Widget _buildRecordItem(InviteRecordDataList record) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -322,14 +313,17 @@ class InviteCenterPageState extends State<InviteCenterPage> {
       child: Row(
         children: [
           // 头像
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F5F5),
-              borderRadius: BorderRadius.circular(24),
+          TDImage(
+            imgUrl: record.avatarUrl ?? "",
+            width: 50,
+            height: 50,
+            type: TDImageType.circle,
+            errorWidget: TDImage(
+              width: 50,
+              height: 40,
+              type: TDImageType.circle,
+              assetUrl: 'assets/images/user.png',
             ),
-            child: const Icon(Icons.person, color: Color(0xFF69C0FF), size: 28),
           ),
           const SizedBox(width: 12),
           // 信息
@@ -338,7 +332,7 @@ class InviteCenterPageState extends State<InviteCenterPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  record['title'] as String,
+                  User.getPhoneNumber(record.phone.toString() ?? ""),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -347,7 +341,7 @@ class InviteCenterPageState extends State<InviteCenterPage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  record['time'] as String,
+                  record.createTime ?? "",
                   style: const TextStyle(
                     fontSize: 12,
                     color: Color(0xFF999999),
@@ -358,7 +352,7 @@ class InviteCenterPageState extends State<InviteCenterPage> {
           ),
           // 积分
           Text(
-            '+${record['score']}积分',
+            '+40积分',
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,

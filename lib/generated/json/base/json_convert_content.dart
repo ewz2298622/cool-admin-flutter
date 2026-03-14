@@ -11,6 +11,7 @@ import 'package:flutter_app/entity/captcha_entity.dart';
 import 'package:flutter_app/entity/dict_data_entity.dart';
 import 'package:flutter_app/entity/dict_info_list_entity.dart';
 import 'package:flutter_app/entity/hot_keyWord_entity.dart';
+import 'package:flutter_app/entity/invite_record_entity.dart';
 import 'package:flutter_app/entity/is_valid_member_entity.dart';
 import 'package:flutter_app/entity/live_info_entity.dart';
 import 'package:flutter_app/entity/login_entity.dart';
@@ -461,6 +462,39 @@ class JsonConvert {
               .map<HotKeyWordDataPagination>(
                 (Map<String, dynamic> e) =>
                     HotKeyWordDataPagination.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<InviteRecordEntity>[] is M) {
+      return data
+              .map<InviteRecordEntity>(
+                (Map<String, dynamic> e) => InviteRecordEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<InviteRecordData>[] is M) {
+      return data
+              .map<InviteRecordData>(
+                (Map<String, dynamic> e) => InviteRecordData.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<InviteRecordDataList>[] is M) {
+      return data
+              .map<InviteRecordDataList>(
+                (Map<String, dynamic> e) => InviteRecordDataList.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<InviteRecordDataPagination>[] is M) {
+      return data
+              .map<InviteRecordDataPagination>(
+                (Map<String, dynamic> e) =>
+                    InviteRecordDataPagination.fromJson(e),
               )
               .toList()
           as M;
@@ -1139,6 +1173,11 @@ class JsonConvertClassCollection {
     (HotKeyWordData).toString(): HotKeyWordData.fromJson,
     (HotKeyWordDataList).toString(): HotKeyWordDataList.fromJson,
     (HotKeyWordDataPagination).toString(): HotKeyWordDataPagination.fromJson,
+    (InviteRecordEntity).toString(): InviteRecordEntity.fromJson,
+    (InviteRecordData).toString(): InviteRecordData.fromJson,
+    (InviteRecordDataList).toString(): InviteRecordDataList.fromJson,
+    (InviteRecordDataPagination).toString():
+        InviteRecordDataPagination.fromJson,
     (IsValidMemberEntity).toString(): IsValidMemberEntity.fromJson,
     (IsValidMemberData).toString(): IsValidMemberData.fromJson,
     (LiveInfoEntity).toString(): LiveInfoEntity.fromJson,

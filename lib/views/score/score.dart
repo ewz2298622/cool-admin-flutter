@@ -121,7 +121,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text(
-          "任务中心",
+          "",
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -184,21 +184,45 @@ class TaskCenterPageState extends State<TaskCenterPage> {
             return Stack(
               children: [
                 // 背景渐变层
-                Container(
-                  width: screenWidth,
-                  height: 400,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        const Color.fromARGB(255, 80, 166, 255),
-                        const Color.fromARGB(255, 60, 156, 255),
-                        const Color.fromARGB(128, 60, 156, 255),
-                        const Color.fromARGB(0, 60, 156, 255),
-                      ],
-                      stops: const [0.0, 0.6, 0.85, 1.0],
-                    ),
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  // 高度设置为整个屏幕高度
+                  height: 300,
+                  child: Stack(
+                    children: [
+                      // 底层：整个区域填充最后一种渐变颜色
+                      // Container(color: const Color.fromRGBO(245, 245, 245, 1)),
+                      // 上层：300高度的渐变区域
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        //页面的高度
+                        height: 300,
+                        child: ShaderMask(
+                          shaderCallback:
+                              (bounds) => LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.white, // 顶部不透明
+                                  Colors.white.withOpacity(0.0), // 底部透明
+                                ],
+                              ).createShader(bounds),
+                          blendMode: BlendMode.dstIn,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              image: DecorationImage(
+                                image: AssetImage("assets/images/ces.jpg"),
+                                fit: BoxFit.fill,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 // 内容层
@@ -206,33 +230,33 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                   physics: const BouncingScrollPhysics(),
                   child: Stack(
                     children: [
-                      Positioned(
-                        left: 0,
-                        top: 100,
-                        child: Container(
-                          width: 88,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: const Color.fromARGB(255, 25, 138, 255),
-                            borderRadius: const BorderRadius.only(
-                              topRight: Radius.circular(16),
-                              bottomRight: Radius.circular(16),
-                            ),
-                          ),
-                          alignment: Alignment.center,
-                          child: GestureDetector(
-                            onTap: () => Get.toNamed("/score_order"),
-                            child: const Text(
-                              "金币详情",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                      // Positioned(
+                      //   left: 0,
+                      //   top: 100,
+                      //   child: Container(
+                      //     width: 88,
+                      //     height: 32,
+                      //     decoration: BoxDecoration(
+                      //       color: const Color.fromARGB(255, 25, 138, 255),
+                      //       borderRadius: const BorderRadius.only(
+                      //         topRight: Radius.circular(16),
+                      //         bottomRight: Radius.circular(16),
+                      //       ),
+                      //     ),
+                      //     alignment: Alignment.center,
+                      //     child: GestureDetector(
+                      //       onTap: () => Get.toNamed("/score_order"),
+                      //       child: const Text(
+                      //         "金币详情",
+                      //         style: TextStyle(
+                      //           color: Colors.white,
+                      //           fontSize: 14,
+                      //           fontWeight: FontWeight.w500,
+                      //         ),
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
                       Padding(
                         padding: const EdgeInsets.only(
                           top: 20,
@@ -272,38 +296,119 @@ class TaskCenterPageState extends State<TaskCenterPage> {
   Widget _buildCoinVipArea(double screenWidth) {
     return Container(
       width: screenWidth,
-      padding: const EdgeInsets.only(top: 22, bottom: 22),
+      padding: const EdgeInsets.only(top: 22, bottom: 22, left: 15),
       child: Column(
         children: [
           SizedBox(height: _toolbarHeight), // 留出 AppBar 高度
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
+            spacing: 100,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                spacing: 5,
-                children: [
-                  Text(
-                    score.toString(),
-                    style: const TextStyle(
-                      color: Color(0xFFFFFFFF),
-                      fontSize: 30,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0,
-                      height: 1,
+              GestureDetector(
+                onTap: () {
+                  Get.toNamed("/score_order");
+                },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  spacing: 8,
+                  children: [
+                    const Text(
+                      "金币收益",
+                      style: TextStyle(
+                        color: Color(0xFFFFFFFF),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 0,
+                        height: 1.45,
+                      ),
                     ),
-                  ),
-                  const Text(
-                    "我的金币",
-                    style: TextStyle(
-                      color: Color(0xFFFFFFFF),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 0,
-                      height: 1.45,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      spacing: 5,
+                      children: [
+                        Text(
+                          score.toString(),
+                          style: const TextStyle(
+                            color: Color(0xFFFFFFFF),
+                            fontSize: 30,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0,
+                            height: 1,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              "金币",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFFFFFFFF),
+                              ),
+                            ),
+                            const Icon(
+                              Icons.arrow_forward_ios,
+                              size: 12,
+                              color: Colors.white,
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Get.toNamed("/cashPage");
+                },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  spacing: 8,
+                  children: [
+                    const Text(
+                      "现金收益",
+                      style: TextStyle(
+                        color: Color(0xFFFFFFFF),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 0,
+                        height: 1.45,
+                      ),
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      spacing: 5,
+                      children: [
+                        Text(
+                          (score / 100).toString(),
+                          style: const TextStyle(
+                            color: Color(0xFFFFFFFF),
+                            fontSize: 30,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0,
+                            height: 1,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              "现金",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFFFFFFFF),
+                              ),
+                            ),
+                            const Icon(
+                              Icons.arrow_forward_ios,
+                              size: 12,
+                              color: Colors.white,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

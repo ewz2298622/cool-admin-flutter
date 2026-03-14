@@ -8,6 +8,7 @@ import '../entity/app_ads_entity.dart';
 import '../entity/captcha_entity.dart';
 import '../entity/dict_info_list_entity.dart';
 import '../entity/hot_keyWord_entity.dart';
+import '../entity/invite_record_entity.dart';
 import '../entity/is_valid_member_entity.dart';
 import '../entity/live_info_entity.dart';
 import '../entity/member_exchange_config_entity.dart';
@@ -759,6 +760,21 @@ class Api {
         "/app/video/hot_keyword/video_hot_words",
       ); // 添加注释说明 ONE 的含义});
       return VideoHotWordsEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //邀请码使用情况
+  static Future<InviteRecordEntity> inviteRecord(
+    Map<String, dynamic>? data,
+  ) async {
+    try {
+      final response = await server.post(
+        "/app/user/inviteRecord/page",
+      ); // 添加注释说明 ONE 的含义});
+      return InviteRecordEntity.fromJson(response.data);
     } catch (error) {
       // 重新抛出异常以便上层处理
       rethrow;
