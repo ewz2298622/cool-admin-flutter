@@ -82,7 +82,6 @@ class InviteCenterPageState extends State<InviteCenterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF6BB6FF),
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -106,7 +105,16 @@ class InviteCenterPageState extends State<InviteCenterPage> {
         centerTitle: true,
         toolbarHeight: _toolbarHeight,
       ),
-      body: SafeArea(top: true, child: _buildContent(context)),
+      body: Container(
+        height: double.infinity,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/downloaded-image.jpg'),
+            fit: BoxFit.fill,
+          ),
+        ),
+        child: SafeArea(top: true, child: _buildContent(context)),
+      ),
     );
   }
 
@@ -194,20 +202,18 @@ class InviteCenterPageState extends State<InviteCenterPage> {
             width: double.infinity,
             height: 48,
             decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [Color(0xFF58AAFF), Color(0xFF2992FF)],
               ),
-              borderRadius: BorderRadius.circular(14),
             ),
             child: TextButton(
               onPressed: _handleShareApp,
               style: TextButton.styleFrom(
                 padding: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
+                shape: RoundedRectangleBorder(),
               ),
               child: const Text(
                 '分享给好友',
@@ -224,24 +230,12 @@ class InviteCenterPageState extends State<InviteCenterPage> {
             width: double.infinity,
             height: 48,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color.fromRGBO(255, 255, 255, 0.34),
-                  Color.fromRGBO(255, 255, 255, 0),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(14),
+              color: Color.fromRGBO(166, 224, 245, 1),
+              borderRadius: BorderRadius.circular(5),
             ),
             child: TextButton(
               onPressed: _handleInputInviteCode,
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
+              style: TextButton.styleFrom(padding: EdgeInsets.zero),
               child: const Text(
                 '复制邀请码',
                 style: TextStyle(

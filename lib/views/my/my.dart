@@ -405,10 +405,10 @@ class MyState extends State<My>
                           ),
                           style: TextStyle(
                             fontSize: 17,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w500,
                             letterSpacing: 0,
                             height: 24.62 / 17,
-                            color: Color.fromRGBO(255, 255, 255, 1),
+                            color: Color.fromRGBO(5, 3, 2, 1),
                           ),
                         ),
                         SizedBox(
@@ -417,7 +417,7 @@ class MyState extends State<My>
                             showLabel: false,
                             type: TDProgressType.linear,
                             customProgressLabel: Center(),
-                            color: Color.fromRGBO(255, 255, 255, 1),
+                            color: Color.fromRGBO(255, 238, 208, 1),
                             backgroundColor: Color.fromRGBO(93, 146, 252, 1),
                             value: 0.5,
                             strokeWidth: 2,
@@ -841,24 +841,32 @@ class MyState extends State<My>
                 child: Stack(
                   children: [
                     // 底层：整个区域填充最后一种渐变颜色
-                    Container(color: const Color.fromRGBO(245, 245, 245, 1)),
+                    // Container(color: const Color.fromRGBO(245, 245, 245, 1)),
                     // 上层：300高度的渐变区域
                     Positioned(
                       top: 0,
                       left: 0,
                       right: 0,
-                      height: 300, // 渐变区域高度固定为300
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              const Color.fromRGBO(80, 166, 255, 1),
-                              const Color.fromRGBO(60, 156, 255, 1),
-                              const Color.fromRGBO(245, 245, 245, 1),
-                            ],
-                            stops: const [0.0, 0.7561, 1.0],
+                      height: 300, // 渐变区域高度固定为 300
+                      child: ShaderMask(
+                        shaderCallback:
+                            (bounds) => LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.white, // 顶部不透明
+                                Colors.white.withOpacity(0.0), // 底部透明
+                              ],
+                            ).createShader(bounds),
+                        blendMode: BlendMode.dstIn,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: AssetImage(
+                                "assets/images/downloaded-image.jpg",
+                              ),
+                              fit: BoxFit.fill,
+                            ),
                           ),
                         ),
                       ),
