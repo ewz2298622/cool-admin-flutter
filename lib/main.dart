@@ -14,6 +14,7 @@ import 'package:flutter_app/utils/store/user/user.dart';
 import 'package:flutter_app/utils/user.dart';
 import 'package:flutter_app/views/album/album.dart';
 import 'package:flutter_app/views/cash/cash.dart';
+import 'package:flutter_app/views/cash_order/cash_order.dart';
 import 'package:flutter_app/views/connection_error/connectionError.dart';
 import 'package:flutter_app/views/environment_error/environment_error.dart';
 import 'package:flutter_app/views/feedback/feedback.dart';
@@ -200,6 +201,7 @@ class _MyAppState extends State<MyApp> {
               GetPage(name: '/live_detail', page: () => Live_Detail()),
               GetPage(name: '/invite_record', page: () => InviteCenterPage()),
               GetPage(name: '/cashPage', page: () => CashPage()),
+              GetPage(name: '/cash_order', page: () => CashOrder()),
               GetPage(
                 name: '/environment_error',
                 page: () => EnvironmentError(),

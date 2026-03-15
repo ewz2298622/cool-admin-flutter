@@ -8,6 +8,7 @@ import 'package:flutter_app/entity/album_entity.dart';
 import 'package:flutter_app/entity/album_video_list_entity.dart';
 import 'package:flutter_app/entity/app_ads_entity.dart';
 import 'package:flutter_app/entity/captcha_entity.dart';
+import 'package:flutter_app/entity/cash_order_entity.dart';
 import 'package:flutter_app/entity/dict_data_entity.dart';
 import 'package:flutter_app/entity/dict_info_list_entity.dart';
 import 'package:flutter_app/entity/hot_keyWord_entity.dart';
@@ -299,6 +300,38 @@ class JsonConvert {
       return data
               .map<CaptchaData>(
                 (Map<String, dynamic> e) => CaptchaData.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<CashOrderEntity>[] is M) {
+      return data
+              .map<CashOrderEntity>(
+                (Map<String, dynamic> e) => CashOrderEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<CashOrderData>[] is M) {
+      return data
+              .map<CashOrderData>(
+                (Map<String, dynamic> e) => CashOrderData.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<CashOrderDataList>[] is M) {
+      return data
+              .map<CashOrderDataList>(
+                (Map<String, dynamic> e) => CashOrderDataList.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<CashOrderDataPagination>[] is M) {
+      return data
+              .map<CashOrderDataPagination>(
+                (Map<String, dynamic> e) => CashOrderDataPagination.fromJson(e),
               )
               .toList()
           as M;
@@ -1181,6 +1214,10 @@ class JsonConvertClassCollection {
     (AppAdsDataPagination).toString(): AppAdsDataPagination.fromJson,
     (CaptchaEntity).toString(): CaptchaEntity.fromJson,
     (CaptchaData).toString(): CaptchaData.fromJson,
+    (CashOrderEntity).toString(): CashOrderEntity.fromJson,
+    (CashOrderData).toString(): CashOrderData.fromJson,
+    (CashOrderDataList).toString(): CashOrderDataList.fromJson,
+    (CashOrderDataPagination).toString(): CashOrderDataPagination.fromJson,
     (DictDataEntity).toString(): DictDataEntity.fromJson,
     (DictDataData).toString(): DictDataData.fromJson,
     (DictDataDataLiveCategory).toString(): DictDataDataLiveCategory.fromJson,

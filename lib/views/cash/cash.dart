@@ -113,7 +113,7 @@ class CashPageState extends State<CashPage> {
         actions: [
           TextButton(
             onPressed: () {
-              Get.toNamed("/score_order");
+              Get.toNamed("/cash_order");
             },
             child: const Text(
               '收益明细',
