@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app/api/api.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../components/loading.dart';
@@ -100,7 +101,7 @@ class InviteCenterPageState extends State<InviteCenterPage> {
         height: double.infinity,
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/downloaded-image.jpg'),
+            image: AssetImage("assets/images/ces.jpg"),
             fit: BoxFit.fill,
           ),
         ),
@@ -194,10 +195,14 @@ class InviteCenterPageState extends State<InviteCenterPage> {
             height: 48,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(5),
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFF58AAFF), Color(0xFF2992FF)],
+                colors: [
+                  const Color.fromARGB(255, 255, 161, 50),
+                  const Color.fromARGB(255, 255, 198, 54),
+                  const Color.fromARGB(255, 255, 192, 33),
+                ],
               ),
             ),
             child: TextButton(
@@ -374,6 +379,7 @@ class InviteCenterPageState extends State<InviteCenterPage> {
   void _handleInputInviteCode() {
     //复制字符串到剪贴板
     Clipboard.setData(ClipboardData(text: inviteCode));
+    Fluttertoast.showToast(msg: "复制成功", toastLength: Toast.LENGTH_SHORT);
   }
 
   /// 处理分享应用

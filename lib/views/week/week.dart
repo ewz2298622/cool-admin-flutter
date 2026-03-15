@@ -43,10 +43,10 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
                   })).data
                   as DictDataData)
               .week!;
-  
+
       tabs.clear();
       weekList.clear();
-  
+
       // 并行获取所有星期的视频列表，提高加载性能
       final futures = <Future>[];
       for (var element in week) {
@@ -87,7 +87,7 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
         height: 150,
         margin: EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor, // 使用主题色适配黑夜模式
+          color: Colors.white, // 使用主题色适配黑夜模式
           borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(

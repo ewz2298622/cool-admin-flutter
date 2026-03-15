@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/utils/store/user/user.dart';
 import 'package:flutter_svg/svg.dart';
@@ -244,7 +245,7 @@ class MyState extends State<My>
         child: Padding(
           padding: EdgeInsets.only(right: 5, left: 5, top: 5, bottom: 5),
           child: Column(
-            spacing: 10,
+            spacing: 5,
             children: [
               SectionWithMore(
                 title: "浏览记录", // 传入标题
@@ -651,8 +652,8 @@ class MyState extends State<My>
             Text(
               "常用功能",
               style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
                 letterSpacing: 0,
                 height: 21.72 / 15,
                 color: Color.fromRGBO(51, 51, 51, 1),
@@ -669,7 +670,7 @@ class MyState extends State<My>
               children: [
                 _buildModelItem(
                   Icon(
-                    Icons.message_outlined,
+                    CupertinoIcons.bubble_left, // iOS 风格的消息图标
                     size: 20,
                     color: Color.fromRGBO(20, 19, 22, 1),
                   ),
@@ -677,7 +678,7 @@ class MyState extends State<My>
                 ),
                 _buildModelItem(
                   Icon(
-                    Icons.share_outlined,
+                    CupertinoIcons.share,
                     size: 20,
                     color: Color.fromRGBO(20, 19, 22, 1),
                   ),
@@ -686,23 +687,23 @@ class MyState extends State<My>
                 // _buildModelItem("assets/images/collect.png", "我的收藏"),
                 _buildModelItem(
                   Icon(
-                    Icons.settings_outlined,
+                    CupertinoIcons.gear,
                     size: 20,
                     color: Color.fromRGBO(20, 19, 22, 1),
                   ),
-                  "设置",
+                  "应用设置",
                 ),
                 _buildModelItem(
                   Icon(
-                    Icons.warning_amber_outlined,
+                    CupertinoIcons.exclamationmark_triangle,
                     size: 20,
                     color: Color.fromRGBO(20, 19, 22, 1),
                   ),
-                  "关于",
+                  "关于我们",
                 ),
                 _buildModelItem(
                   Icon(
-                    Icons.feedback_outlined,
+                    CupertinoIcons.pencil, // iOS 原生编辑/反馈类图标
                     size: 20,
                     color: Color.fromRGBO(20, 19, 22, 1),
                   ),
@@ -757,11 +758,11 @@ class MyState extends State<My>
       case "在线客服":
         // 处理在线客服点击事件
         break;
-      case "设置":
+      case "应用设置":
         // 处理设置点击事件 - 统一使用GetX路由系统
         Get.to(() => Setting(userStatus: user != null ? true : false));
         break;
-      case "关于":
+      case "关于我们":
         // 跳转About页面
         if (noticeInfoData.isEmpty) {
           TDToast.showText('暂无数据', context: context);
@@ -910,25 +911,69 @@ class MyState extends State<My>
                                         ],
                                       ),
                                     ),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(10),
-                                          topRight: Radius.circular(10),
-                                        ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 10,
+                                        right: 10,
                                       ),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(10),
-                                          topRight: Radius.circular(10),
-                                        ),
-                                        child: Column(
-                                          children: [
-                                            _buildRecommendations(data),
-                                            _buildModelList(),
-                                          ],
-                                        ),
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.only(
+                                                topLeft: Radius.circular(10),
+                                                topRight: Radius.circular(10),
+                                                bottomLeft: Radius.circular(10),
+                                                bottomRight: Radius.circular(
+                                                  10,
+                                                ),
+                                              ),
+                                            ),
+                                            child: ClipRRect(
+                                              borderRadius: BorderRadius.only(
+                                                topLeft: Radius.circular(10),
+                                                topRight: Radius.circular(10),
+                                                bottomLeft: Radius.circular(10),
+                                                bottomRight: Radius.circular(
+                                                  10,
+                                                ),
+                                              ),
+                                              child: Column(
+                                                children: [
+                                                  _buildRecommendations(data),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            margin: EdgeInsets.only(top: 10),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.only(
+                                                topLeft: Radius.circular(10),
+                                                topRight: Radius.circular(10),
+                                                bottomLeft: Radius.circular(10),
+                                                bottomRight: Radius.circular(
+                                                  10,
+                                                ),
+                                              ),
+                                            ),
+                                            child: ClipRRect(
+                                              borderRadius: BorderRadius.only(
+                                                topLeft: Radius.circular(10),
+                                                topRight: Radius.circular(10),
+                                                bottomLeft: Radius.circular(10),
+                                                bottomRight: Radius.circular(
+                                                  10,
+                                                ),
+                                              ),
+                                              child: Column(
+                                                children: [_buildModelList()],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],

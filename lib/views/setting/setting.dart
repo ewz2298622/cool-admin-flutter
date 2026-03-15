@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -28,51 +29,71 @@ class _SettingState extends State<Setting> {
   static final AldultDatabaseHelper aldultDatabaseHelper =
       AldultDatabaseHelper();
   // 组件状态初始化方法，在组件创建时调用
+  String version = "";
   @override
   void initState() {
     // 调用父类的 initState 方法，确保父类的初始化逻辑正常执行
+    getVersion();
     super.initState();
+  }
+
+  //获取版本号
+  Future<void> getVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      version = packageInfo.version;
+    });
   }
 
   Widget _buildTDCellGroup(BuildContext context) {
     bool flag =
         Provider.of<ThemeChangeEvent>(context).themeMode == ThemeMode.dark;
     int teenagerModel = aldultDatabaseHelper.getLatest()?.status ?? 0;
+
     List<TDCell> cells = [
       TDCell(
         style: TDCellStyle(
-          padding: EdgeInsets.only(top: 10, bottom: 10),
+          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           titleStyle: TextStyle(
             color: Theme.of(context).textTheme.titleLarge!.color,
           ),
         ),
         arrow: false,
-        title: '深色模式',
-        rightIconWidget: TDSwitch(
-          isOn: flag,
-          trackOnColor: Colors.green,
-          openText: "夜",
-          type: TDSwitchType.text,
-          closeText: "日",
-          onChanged: (bool value) {
-            setState(() {
-              flag = value;
-            });
-            context.read<ThemeChangeEvent>().changeTheme(
-              value ? ThemeMode.dark : ThemeMode.light,
-            );
-            return flag;
-          },
-        ),
+        title: '当前版本',
+        rightIconWidget: Text(version),
       ),
-      // 可单独修改样式
+      // TDCell(
+      //   style: TDCellStyle(
+      //     padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      //     titleStyle: TextStyle(
+      //       color: Theme.of(context).textTheme.titleLarge!.color,
+      //     ),
+      //   ),
+      //   arrow: false,
+      //   title: '深色模式',
+      //   rightIconWidget: TDSwitch(
+      //     isOn: flag,
+      //     trackOnColor: Colors.green,
+      //     openText: "夜",
+      //     type: TDSwitchType.text,
+      //     closeText: "日",
+      //     onChanged: (bool value) {
+      //       setState(() {
+      //         flag = value;
+      //       });
+      //       context.read<ThemeChangeEvent>().changeTheme(
+      //         value ? ThemeMode.dark : ThemeMode.light,
+      //       );
+      //       return flag;
+      //     },
+      //   ),
+      // ),
       TDCell(
         style: TDCellStyle(
-          padding: EdgeInsets.only(top: 10, bottom: 10),
+          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           titleStyle: TextStyle(
             color: Theme.of(context).textTheme.titleLarge!.color,
           ),
-          // backgroundColor: Theme.of(context).cardColor,
         ),
         arrow: true,
         title: '清空缓存',
@@ -81,13 +102,12 @@ class _SettingState extends State<Setting> {
         },
       ),
     ];
-    //如果widget.userStatus为true的话则给cells第二个索引的位置添加元素
     if (widget.userStatus) {
       cells.insert(
         1,
         TDCell(
           style: TDCellStyle(
-            padding: EdgeInsets.only(top: 10, bottom: 10),
+            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             titleStyle: TextStyle(
               color: Theme.of(context).textTheme.titleLarge!.color,
             ),
@@ -107,7 +127,6 @@ class _SettingState extends State<Setting> {
               aldultDatabaseHelper.insertAldult(
                 AldultEntity(status: teenagerModel, timestamp: DateTime.now()),
               );
-              //重启app
               Navigator.of(context).pushReplacementNamed('/');
               return value;
             },
@@ -117,11 +136,10 @@ class _SettingState extends State<Setting> {
       cells.add(
         TDCell(
           style: TDCellStyle(
-            padding: EdgeInsets.only(top: 10, bottom: 10),
+            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             titleStyle: TextStyle(
               color: Theme.of(context).textTheme.titleLarge!.color,
             ),
-            // backgroundColor: Theme.of(context).cardColor,
           ),
           arrow: true,
           title: '退出登录',
@@ -132,6 +150,8 @@ class _SettingState extends State<Setting> {
       );
     }
     return Card(
+      elevation: 0,
+      color: Colors.white,
       child: TDCellGroup(theme: TDCellGroupTheme.cardTheme, cells: cells),
     );
   }

@@ -31,9 +31,7 @@ class VideoViews extends StatelessWidget {
         itemCount: videoPageData.length,
         itemBuilder: (context, index) {
           return RepaintBoundary(
-            child: _VideoViewItem(
-              videoData: videoPageData[index],
-            ),
+            child: _VideoViewItem(videoData: videoPageData[index]),
           );
         },
       ),
@@ -50,10 +48,8 @@ class _VideoViewItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Get.toNamed(
-        "/video_detail",
-        arguments: {"id": videoData.id},
-      ),
+      onTap:
+          () => Get.toNamed("/video_detail", arguments: {"id": videoData.id}),
       child: Container(
         width: VideoViews._itemWidth,
         height: VideoViews._itemHeight,
@@ -86,8 +82,15 @@ class _VideoViewItem extends StatelessWidget {
                     right: VideoViews._titlePaddingHorizontal,
                   ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(VideoViews._borderRadius),
-                    color: const Color.fromRGBO(0, 0, 0, VideoViews._overlayOpacity),
+                    borderRadius: BorderRadius.circular(
+                      VideoViews._borderRadius,
+                    ),
+                    color: const Color.fromRGBO(
+                      0,
+                      0,
+                      0,
+                      VideoViews._overlayOpacity,
+                    ),
                   ),
                   child: Text(
                     videoData.title ?? "",

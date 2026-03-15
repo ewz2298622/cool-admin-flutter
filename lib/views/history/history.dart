@@ -250,7 +250,10 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
         toolbarHeight: 40,
         automaticallyImplyLeading: false, //设置为false
       ),
-      body: _buildContent(),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        child: _buildContent(),
+      ),
     );
   }
 }
