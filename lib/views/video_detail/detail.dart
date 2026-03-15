@@ -247,7 +247,7 @@ class _Video_DetailState extends State<Video_Detail>
 
   // 在页面离开时调用addViews的方法
   void _onPageLeave() {
-    if (!_hasAddedViews && _isPageActive) {
+    if (!_hasAddedViews) {
       addViews();
       _hasAddedViews = true;
       debugPrint('Views recorded on page leave');
@@ -601,9 +601,12 @@ class _Video_DetailState extends State<Video_Detail>
     debugPrint(
       'Video_Detail: didPushNext called - page is being covered, pausing player.',
     );
+    // 在页面被覆盖前调用addViews记录观看历史
+    _onPageLeave();
     // 执行安全检查
     _ensurePlayerSafety();
     _pausePlayerImmediately();
+    _isPageActive = false;
   }
 
   // 8. 【修改】: 当页面被弹出（返回、手势滑动退出）时，立即暂停播放
@@ -612,12 +615,12 @@ class _Video_DetailState extends State<Video_Detail>
     debugPrint(
       'Video_Detail: didPop called - page is being removed, pausing player.',
     );
+    // 在页面从导航栈中移除前调用addViews记录观看历史
+    _onPageLeave();
     _isPageActive = false;
     // 执行安全检查
     _ensurePlayerSafety();
     _pausePlayerImmediately();
-    // 页面从导航栈中移除时调用addViews
-    _onPageLeave();
     super.didPop();
   }
 

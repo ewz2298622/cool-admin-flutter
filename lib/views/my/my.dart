@@ -83,6 +83,7 @@ class MyState extends State<My>
       await noticeInfo();
       await getUserInfo();
       if (user != null) {
+        await User.refreshToken();
         await getVideoPages();
         await getViews();
         await checkMember();

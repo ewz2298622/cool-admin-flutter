@@ -17,6 +17,7 @@ import '../entity/notice_Info_entity.dart';
 import '../entity/play_line_entity.dart';
 import '../entity/score_order_entity.dart';
 import '../entity/score_total_entity.dart';
+import '../entity/score_withdrawal_config_entity.dart';
 import '../entity/swiper_entity.dart';
 import '../entity/user_info_entity.dart';
 import '../entity/video_album_entity.dart';
@@ -462,6 +463,21 @@ class Api {
     }
   }
 
+  //刷新登录信息
+  static Future<LoginEntity> refreshToken(Map<String, dynamic>? data) async {
+    try {
+      final response = await server.post(
+        "/app/user/login/refreshToken",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
+      // 将服务器返回的JSON数据解析为[VideoCategoryEntity]对象并返回
+      return LoginEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
   //获取登录信息
   static Future<UserInfoEntity> getUserInfo(Map<String, dynamic>? data) async {
     try {
@@ -775,6 +791,34 @@ class Api {
         "/app/user/inviteRecord/page",
       ); // 添加注释说明 ONE 的含义});
       return InviteRecordEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //获取提现配置
+  static Future<ScoreWithdrawalConfigEntity> scoreWithdrawalConfig(
+    Map<String, dynamic>? data,
+  ) async {
+    try {
+      final response = await server.post(
+        "/app/member/scoreWithdrawal/scoreWithdrawalConfig",
+      ); // 添加注释说明 ONE 的含义});
+      return ScoreWithdrawalConfigEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //获取提现配置
+  static Future<void> createWithdrawal(Map<String, dynamic>? data) async {
+    try {
+      await server.post(
+        "/app/member/scoreWithdrawal/createWithdrawal",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
     } catch (error) {
       // 重新抛出异常以便上层处理
       rethrow;

@@ -226,7 +226,7 @@ class ScoreOrderState extends State<ScoreOrder>
                           ),
                           // 右侧：分数
                           Text(
-                            "+${score.abs()}",
+                            "${score > 0 ? '+' : ''}$score",
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,

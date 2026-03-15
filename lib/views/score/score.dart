@@ -12,6 +12,7 @@ import '../../entity/member_exchange_config_entity.dart';
 import '../../entity/monthly_checkinConfig_entity.dart';
 import '../../utils/ads.dart';
 import '../../utils/requestMultiplePermissions.dart';
+import '../../main.dart' show routeObserver;
 
 /// 任务中心页面
 class TaskCenterPage extends StatefulWidget {
@@ -21,7 +22,7 @@ class TaskCenterPage extends StatefulWidget {
   TaskCenterPageState createState() => TaskCenterPageState();
 }
 
-class TaskCenterPageState extends State<TaskCenterPage> {
+class TaskCenterPageState extends State<TaskCenterPage> with RouteAware {
   late Future<String> _futureBuilderFuture;
   bool _isDailyTaskExpanded = true;
   bool _isSignTaskExpanded = true;
@@ -49,6 +50,34 @@ class TaskCenterPageState extends State<TaskCenterPage> {
     _futureBuilderFuture = init();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void didPush() {
+  }
+
+  @override
+  void didPopNext() {
+    if (mounted) {
+      setState(() {
+        _futureBuilderFuture = init();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
   /// 获取会员配置
   Future<void> getMemberConfig() async {
     try {
@@ -65,12 +94,8 @@ class TaskCenterPageState extends State<TaskCenterPage> {
   /// 获取积分
   Future<void> getScore() async {
     try {
-      if (!mounted || _isLoading) return;
-      _isLoading = true;
       score = (await Api.getUserScore({})).data ?? 0;
-      if (mounted) {
-        setState(() {});
-      }
+      setState(() {});
     } catch (e) {
       debugPrint('getScore failed: $e');
     } finally {
@@ -358,8 +383,8 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                 ),
               ),
               GestureDetector(
-                onTap: () {
-                  Get.toNamed("/cashPage");
+                onTap: () async {
+                  await Get.toNamed("/cashPage");
                 },
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -380,7 +405,7 @@ class TaskCenterPageState extends State<TaskCenterPage> {
                       spacing: 5,
                       children: [
                         Text(
-                          (score / 100).toString(),
+                          (score / 1000).toString(),
                           style: const TextStyle(
                             color: Color(0xFFFFFFFF),
                             fontSize: 30,

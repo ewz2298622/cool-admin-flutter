@@ -21,6 +21,7 @@ import 'package:flutter_app/entity/notice_Info_entity.dart';
 import 'package:flutter_app/entity/play_line_entity.dart';
 import 'package:flutter_app/entity/score_order_entity.dart';
 import 'package:flutter_app/entity/score_total_entity.dart';
+import 'package:flutter_app/entity/score_withdrawal_config_entity.dart';
 import 'package:flutter_app/entity/swiper_entity.dart';
 import 'package:flutter_app/entity/user_info_entity.dart';
 import 'package:flutter_app/entity/video_album_entity.dart';
@@ -706,6 +707,33 @@ class JsonConvert {
               .toList()
           as M;
     }
+    if (<ScoreWithdrawalConfigEntity>[] is M) {
+      return data
+              .map<ScoreWithdrawalConfigEntity>(
+                (Map<String, dynamic> e) =>
+                    ScoreWithdrawalConfigEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<ScoreWithdrawalConfigData>[] is M) {
+      return data
+              .map<ScoreWithdrawalConfigData>(
+                (Map<String, dynamic> e) =>
+                    ScoreWithdrawalConfigData.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<ScoreWithdrawalConfigDataList>[] is M) {
+      return data
+              .map<ScoreWithdrawalConfigDataList>(
+                (Map<String, dynamic> e) =>
+                    ScoreWithdrawalConfigDataList.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
     if (<SwiperEntity>[] is M) {
       return data
               .map<SwiperEntity>(
@@ -1208,6 +1236,11 @@ class JsonConvertClassCollection {
     (ScoreOrderDataList).toString(): ScoreOrderDataList.fromJson,
     (ScoreOrderDataPagination).toString(): ScoreOrderDataPagination.fromJson,
     (ScoreTotalEntity).toString(): ScoreTotalEntity.fromJson,
+    (ScoreWithdrawalConfigEntity).toString():
+        ScoreWithdrawalConfigEntity.fromJson,
+    (ScoreWithdrawalConfigData).toString(): ScoreWithdrawalConfigData.fromJson,
+    (ScoreWithdrawalConfigDataList).toString():
+        ScoreWithdrawalConfigDataList.fromJson,
     (SwiperEntity).toString(): SwiperEntity.fromJson,
     (SwiperData).toString(): SwiperData.fromJson,
     (SwiperDataList).toString(): SwiperDataList.fromJson,

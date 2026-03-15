@@ -3,9 +3,12 @@ import 'package:flutter_app/utils/store/user/user.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
+import '../api/api.dart';
+import '../db/entity/TokenEntity.dart';
 import '../db/entity/UserEntity.dart';
 import '../db/manager/TokenDatabaseHelper.dart';
 import '../db/manager/UserDatabaseHelper.dart';
+import '../entity/login_entity.dart';
 import 'context_manager.dart';
 
 class User {
@@ -70,5 +73,28 @@ class User {
       return phoneNumber;
     }
     return phoneNumber.replaceRange(3, phoneNumber.length - 4, "****");
+  }
+
+  //刷新refreshToken
+  static refreshToken() async {
+    TokenDatabaseHelper tokenDatabaseHelper = TokenDatabaseHelper();
+    TokenEntity? token = tokenDatabaseHelper.getLatest();
+    LoginData? response =
+        (await Api.refreshToken({
+          "refreshToken": token?.refreshToken ?? '',
+        })).data;
+    tokenDatabaseHelper.deleteAll();
+    if (response != null) {
+      tokenDatabaseHelper.insert(
+        TokenEntity(
+          expire: response.expire,
+          token: response.token,
+          refreshExpire: response.refreshExpire,
+          refreshToken: response.refreshToken,
+        ),
+      );
+    } else {
+      deleteUser();
+    }
   }
 }

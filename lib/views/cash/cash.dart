@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
 import '../../components/loading.dart';
+import '../../entity/score_withdrawal_config_entity.dart';
 
 /// 现金页面
 class CashPage extends StatefulWidget {
@@ -21,6 +24,8 @@ class CashPageState extends State<CashPage> {
   bool _isLoading = false;
   int score = 0;
 
+  List<ScoreWithdrawalConfigDataList> scoreWithdrawalConfigList = [];
+
   // 常量定义
   static const double _toolbarHeight = 40.0;
   static const double _iconSize = 20.0;
@@ -31,16 +36,20 @@ class CashPageState extends State<CashPage> {
     _futureBuilderFuture = init();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 页面显示时刷新积分数据
+    getScore();
+    getCashData();
+  }
+
   /// 获取积分
   Future<void> getScore() async {
     try {
-      if (!mounted || _isLoading) return;
-      _isLoading = true;
       score = (await Api.getUserScore({})).data ?? 0;
-      balance = score / 100;
-      if (mounted) {
-        setState(() {});
-      }
+      balance = score / 1000;
+      setState(() {});
     } catch (e) {
       debugPrint('getScore failed: $e');
     } finally {
@@ -51,17 +60,14 @@ class CashPageState extends State<CashPage> {
   /// 获取现金数据
   Future<void> getCashData() async {
     try {
-      if (!mounted || _isLoading) return;
-      _isLoading = true;
-
-      // TODO: 替换为实际的 API 调用
+      scoreWithdrawalConfigList =
+          (await Api.scoreWithdrawalConfig({})).data?.list
+              as List<ScoreWithdrawalConfigDataList>;
       // final response = await Api.getCashData({});
       // balance = response.data?.balance ?? 0.0;
       // todayScore = response.data?.todayScore ?? 0;
 
-      if (mounted) {
-        setState(() {});
-      }
+      setState(() {});
     } catch (e) {
       debugPrint('getCashData failed: $e');
     } finally {
@@ -102,7 +108,7 @@ class CashPageState extends State<CashPage> {
             size: _iconSize,
             color: Colors.black87,
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Get.back(),
         ),
         actions: [
           TextButton(
@@ -118,19 +124,19 @@ class CashPageState extends State<CashPage> {
               ),
             ),
           ),
-          TextButton(
-            onPressed: () {
-              // TODO: 跳转到规则页面
-            },
-            child: const Text(
-              '规则',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
-              ),
-            ),
-          ),
+          // TextButton(
+          //   onPressed: () {
+          //     // TODO: 跳转到规则页面
+          //   },
+          //   child: const Text(
+          //     '规则',
+          //     style: TextStyle(
+          //       fontSize: 16,
+          //       fontWeight: FontWeight.w500,
+          //       color: Colors.black87,
+          //     ),
+          //   ),
+          // ),
         ],
         toolbarHeight: _toolbarHeight,
       ),
@@ -518,12 +524,15 @@ class CashPageState extends State<CashPage> {
           Wrap(
             spacing: 12,
             runSpacing: 12,
-            children: [
-              _buildWithdrawCard('50 元', '5000金币即可兑换', screenWidth),
-              _buildWithdrawCard('20 元', '5000金币即可兑换', screenWidth),
-              _buildWithdrawCard('5 元', '5000金币即可兑换', screenWidth),
-              _buildWithdrawCard('1 元', '1000金币即可兑换', screenWidth),
-            ],
+            children:
+                scoreWithdrawalConfigList.map((item) {
+                  return _buildWithdrawCard(
+                    item.id ?? 0,
+                    item.amount ?? 0,
+                    item.score ?? 0,
+                    screenWidth,
+                  );
+                }).toList(),
           ),
         ],
       ),
@@ -532,75 +541,109 @@ class CashPageState extends State<CashPage> {
 
   /// 提现卡片
   Widget _buildWithdrawCard(
-    String amount,
-    String subtitle,
+    int id,
+    int amount,
+    int requiredScore,
     double screenWidth,
   ) {
-    return Container(
-      width: (screenWidth - 48) / 2,
-      height: 160,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 100,
-            height: 60,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [const Color(0xFFFFE8A8), const Color(0xFFFFD46E)],
+    return GestureDetector(
+      onTap: () {
+        if (score >= requiredScore) {
+          // TODO: 执行提现逻辑
+          showGeneralDialog(
+            context: context,
+            pageBuilder: (
+              BuildContext buildContext,
+              Animation<double> animation,
+              Animation<double> secondaryAnimation,
+            ) {
+              return TDAlertDialog(
+                title: "提醒",
+                content: "兑换后金币将被清零，请问是否需要兑换",
+                buttonStyle: TDDialogButtonStyle.text,
+                rightBtnAction: () async {
+                  Navigator.of(context).pop();
+                  await Api.createWithdrawal({"type": id});
+                  await getCashData();
+                  await getScore();
+                  Fluttertoast.showToast(
+                    msg: "提现成功，将会在三天内到账",
+                    toastLength: Toast.LENGTH_SHORT,
+                  );
+                },
+              );
+            },
+          );
+        } else {
+          Fluttertoast.showToast(msg: "金币不足", toastLength: Toast.LENGTH_SHORT);
+        }
+      },
+      child: Container(
+        width: (screenWidth - 48) / 2,
+        height: 160,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 100,
+              height: 60,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [const Color(0xFFFFE8A8), const Color(0xFFFFD46E)],
+                ),
+                borderRadius: BorderRadius.circular(8),
               ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    width: 20,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFB8924A),
-                      borderRadius: BorderRadius.circular(2),
+              child: Stack(
+                children: [
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      width: 20,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFB8924A),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
-                ),
-                Center(
-                  child: Text(
-                    amount,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFFB8924A),
+                  Center(
+                    child: Text(
+                      amount.toString(),
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFB8924A),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            '提现$amount',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF333333),
+            const SizedBox(height: 16),
+            Text(
+              '提现$amount',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF333333),
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-              color: Color(0xFF999999),
+            const SizedBox(height: 4),
+            Text(
+              "提现需要$requiredScore",
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                color: Color(0xFF999999),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
