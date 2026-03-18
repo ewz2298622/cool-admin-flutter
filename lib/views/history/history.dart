@@ -10,6 +10,8 @@ import '../../components/video_history.dart';
 import '../../db/entity/UserEntity.dart';
 import '../../db/manager/UserDatabaseHelper.dart';
 import '../../entity/views_entity.dart';
+import '../../utils/bus/bus.dart';
+import '../../utils/bus/constant.dart';
 
 class History extends StatefulWidget {
   const History({super.key});
@@ -140,6 +142,13 @@ class HistoryState extends State<History> with SingleTickerProviderStateMixin {
   void dispose() {
     _refreshController.dispose();
     super.dispose();
+  }
+
+  // 页面退出时发送刷新事件
+  @override
+  void deactivate() {
+    eventBus.fire(RefreshViewEvent());
+    super.deactivate();
   }
 
   // 刷新数据的方法
