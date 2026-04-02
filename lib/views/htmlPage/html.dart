@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import '../../services/webview_js_bridge.dart';
 
 // 定义一个名为 HtmlPage 的有状态组件，用于展示一个包含 WebView 的页面
 class HtmlPage extends StatefulWidget {
@@ -17,6 +20,9 @@ class _HtmlPageState extends State<HtmlPage> {
   // 定义一个 WebViewController 类型的变量 controller，用于控制 WebView 的行为
   // late 关键字表示该变量会在使用前被初始化
   late WebViewController controller;
+  
+  // JS 桥接服务实例
+  late WebViewJsBridge jsBridge;
 
   String title = Get.arguments["title"];
   String content = Get.arguments["content"];
@@ -36,6 +42,11 @@ class _HtmlPageState extends State<HtmlPage> {
 
   // 自定义方法，用于初始化 WebView 控制器
   void _initWebViewController() {
+    // 创建 JS 桥接服务实例
+    jsBridge = WebViewJsBridge(
+      context: context,
+    );
+    
     // 创建一个 WebViewController 实例，并对其进行一系列配置
     controller =
         WebViewController()
@@ -43,178 +54,46 @@ class _HtmlPageState extends State<HtmlPage> {
           ..setJavaScriptMode(JavaScriptMode.unrestricted)
           // 设置 WebView 的背景颜色为透明
           ..setBackgroundColor(Colors.transparent)
-          // 设置导航委托，用于监听 WebView 的各种导航事件
-          ..setNavigationDelegate(
-            NavigationDelegate(
-              // 当页面加载进度发生变化时调用该回调函数，参数 progress 表示加载进度百分比
-              onProgress: (int progress) {
-                // 这里可以更新加载进度条，但当前代码中未实现具体逻辑
-                // Update loading bar.
-              },
-              // 当页面开始加载时调用该回调函数，参数 url 表示要加载的页面的 URL
-              onPageStarted: (String url) {},
-              // 当页面加载完成时调用该回调函数，参数 url 表示已加载完成的页面的 URL
-              onPageFinished: (String url) {
-                // 页面加载完成后应用主题样式
-                _applyThemeToWebView();
-              },
-              // 当 Web 资源加载出错时调用该回调函数，参数 error 包含错误信息
-              onWebResourceError: (WebResourceError error) {},
-              // 当有导航请求时调用该回调函数，参数 request 包含导航请求的信息
-              // 根据具体情况返回 NavigationDecision.navigate 或 NavigationDecision.prevent 来决定是否允许导航
-              onNavigationRequest: (NavigationRequest request) {
-                // 如果不是本地内容且不是以特定域名开头的链接，则在系统浏览器中打开
-                if (!request.url.startsWith('data:text/html') &&
-                    !request.url.startsWith('https://www.geekailab.com')) {
-                  _launchURL(request.url);
-                  return NavigationDecision.prevent;
-                }
-                // 允许所有导航请求
-                return NavigationDecision.navigate;
-              },
-            ),
-          )
-          // 加载指定 URL 的网页
-          // ..loadRequest(Uri.parse('https://www.geekailab.com'));
-          ..loadHtmlString(content);
-  }
-
-  // 应用主题到WebView
-  void _applyThemeToWebView() {
-    // 修改: 使用 Theme.of(context).brightness 替代 MediaQuery.platformBrightness
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    if (isDarkMode) {
-      // 黑夜模式CSS样式
-      _cachedDarkModeCSS ??= """
-        <style>
-          body, p, div, span, li, td, th {
-            word-break: break-word;
-            overflow-wrap: anywhere;
-            white-space: normal;
+          ..setJavaScriptMode(JavaScriptMode.unrestricted);
+    
+    // 注册 JS 通道（名称需和前端的 flutterChannel 一致）
+    jsBridge.registerJavaScriptChannel(controller);
+    
+    // 设置导航委托，用于监听 WebView 的各种导航事件
+    controller.setNavigationDelegate(
+      NavigationDelegate(
+        // 当页面加载进度发生变化时调用该回调函数，参数 progress 表示加载进度百分比
+        onProgress: (int progress) {
+          // 这里可以更新加载进度条，但当前代码中未实现具体逻辑
+          // Update loading bar.
+        },
+        // 当页面开始加载时调用该回调函数，参数 url 表示要加载的页面的 URL
+        onPageStarted: (String url) {},
+        // 当页面加载完成时调用该回调函数，参数 url 表示已加载完成的页面的 URL
+        onPageFinished: (String url) {
+          // 页面加载完成后应用主题样式
+          final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+          jsBridge.injectThemeStyles(controller, isDarkMode);
+        },
+        // 当 Web 资源加载出错时调用该回调函数，参数 error 包含错误信息
+        onWebResourceError: (WebResourceError error) {},
+        // 当有导航请求时调用该回调函数，参数 request 包含导航请求的信息
+        // 根据具体情况返回 NavigationDecision.navigate 或 NavigationDecision.prevent 来决定是否允许导航
+        onNavigationRequest: (NavigationRequest request) {
+          // 如果不是本地内容且不是以特定域名开头的链接，则在系统浏览器中打开
+          if (!request.url.startsWith('data:text/html') &&
+              !request.url.startsWith('https://www.geekailab.com')) {
+            _launchURL(request.url);
+            return NavigationDecision.prevent;
           }
-          p {
-              background-color: #424242;
-            color: #ffffff; /* 强制文字为白色 */
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          }
-          body {
-            background-color: #424242;
-            color: #ffffff; /* 强制文字为白色 */
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          }
-          h1, h2, h3, h4, h5, h6 {
-            color: #e0e0e0;
-          }
-          a {
-            color: #bb86fc;
-          }
-          code {
-            background-color: #2d2d2d;
-            color: #f8f8f2;
-          }
-          pre {
-            background-color: #2d2d2d;
-            color: #f8f8f2;
-            padding: 10px;
-            border-radius: 5px;
-            overflow-x: auto;
-          }
-          blockquote {
-            border-left: 4px solid #bb86fc;
-            background-color: #1e1e1e;
-            padding: 10px;
-            margin: 10px 0;
-          }
-          table {
-            border-collapse: collapse;
-            width: 100%;
-          }
-          th, td {
-            border: 1px solid #444;
-            padding: 8px;
-            text-align: left;
-          }
-          th {
-            background-color: #2d2d2d;
-          }
-          tr:nth-child(even) {
-            background-color: #1e1e1e;
-          }
-        </style>
-      """;
-
-      // 注入CSS样式
-      controller.runJavaScript("""
-        (function() {
-          var style = document.createElement('style');
-          style.innerHTML = `${_cachedDarkModeCSS}`;
-          document.head.appendChild(style);
-        })();
-      """);
-    } else {
-      // 白天模式CSS样式
-      _cachedLightModeCSS ??= """
-        <style>
-          body, p, div, span, li, td, th {
-            word-break: break-word;
-            overflow-wrap: anywhere;
-            white-space: normal;
-          }
-          body {
-            background-color: #ffffff;
-            color: #000000;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          }
-          h1, h2, h3, h4, h5, h6 {
-            color: #333333;
-          }
-          a {
-            color: #1976d2;
-          }
-          code {
-            background-color: #f5f5f5;
-            color: #333333;
-          }
-          pre {
-            background-color: #f5f5f5;
-            color: #333333;
-            padding: 10px;
-            border-radius: 5px;
-            overflow-x: auto;
-          }
-          blockquote {
-            border-left: 4px solid #1976d2;
-            background-color: #f9f9f9;
-            padding: 10px;
-            margin: 10px 0;
-          }
-          table {
-            border-collapse: collapse;
-            width: 100%;
-          }
-          th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-          }
-          th {
-            background-color: #f2f2f2;
-          }
-          tr:nth-child(even) {
-            background-color: #f9f9f9;
-          }
-        </style>
-      """;
-
-      controller.runJavaScript("""
-        (function() {
-          var style = document.createElement('style');
-          style.innerHTML = `${_cachedLightModeCSS}`;
-          document.head.appendChild(style);
-        })();
-      """);
-    }
+          // 允许所有导航请求
+          return NavigationDecision.navigate;
+        },
+      ),
+    );
+    
+    // 加载指定 HTML 内容
+    controller.loadHtmlString(content);
   }
 
   // 在系统浏览器中打开链接
