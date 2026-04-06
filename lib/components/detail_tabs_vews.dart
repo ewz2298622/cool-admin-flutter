@@ -31,20 +31,21 @@ class _DetailTabsViewState extends State<DetailTabsView>
   /// 用于跟踪每个tab中选中的项目
   final Map<int, Set<int>> _selectedItems = {};
 
-  // 常量定义
-  static const double _elementWidth = 100.0;
-  static const double _elementHeight = 35.0;
-  static const double _containerPadding = 8.0;
-  static const double _rowMargin = 6.0;
-  static const double _borderRadius = 6.0;
-  static const double _fontSize = 12.0;
-  static const int _minCrossAxisCount = 1;
+  // 布局常量
+  static const double kElementWidth = 100.0;
+  static const double kElementHeight = 35.0;
+  static const double kContainerPadding = 8.0;
+  static const double kRowMargin = 6.0;
+  static const double kBorderRadius = 6.0;
+  static const double kFontSize = 12.0;
+  static const int kMinCrossAxisCount = 1;
 
   // 颜色常量
-  static const Color _selectedColor = Color.fromRGBO(252, 119, 66, 1);
-  static const Color _unselectedColor = Color.fromRGBO(246, 247, 248, 1);
-  static const Color _selectedTextColor = Colors.white;
-  static const Color _unselectedTextColor = Colors.black;
+  static const Color kSelectedColor = Color.fromRGBO(252, 119, 66, 1);
+  static const Color kUnselectedColor = Color.fromRGBO(246, 247, 248, 1);
+  static const Color kSelectedTextColor = Colors.white;
+  static const Color kUnselectedTextColor = Colors.black;
+  static const Color kUnselectedLabelColor = Color.fromRGBO(102, 102, 102, 1);
 
   @override
   bool get wantKeepAlive => true;
@@ -85,10 +86,10 @@ class _DetailTabsViewState extends State<DetailTabsView>
 
   /// 计算每行可以容纳的元素数量
   int _calculateCrossAxisCount(double maxWidth) {
-    if (maxWidth <= 0) return _minCrossAxisCount;
-    final availableWidth = maxWidth - (_containerPadding * 2);
-    final count = (availableWidth / _elementWidth).floor();
-    return count < _minCrossAxisCount ? _minCrossAxisCount : count;
+    if (maxWidth <= 0) return kMinCrossAxisCount;
+    final availableWidth = maxWidth - (kContainerPadding * 2);
+    final count = (availableWidth / kElementWidth).floor();
+    return count < kMinCrossAxisCount ? kMinCrossAxisCount : count;
   }
 
   /// 将播放线路列表分组为行
@@ -155,25 +156,25 @@ class _DetailTabsViewState extends State<DetailTabsView>
         alignment: Alignment.topRight,
         children: [
           SizedBox(
-            width: _elementWidth,
-            height: _elementHeight,
+            width: kElementWidth,
+            height: kElementHeight,
             child: TextButton(
               style: TextButton.styleFrom(
-                backgroundColor: isSelected ? _selectedColor : _unselectedColor,
+                backgroundColor: isSelected ? kSelectedColor : kUnselectedColor,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(_borderRadius),
+                  borderRadius: BorderRadius.circular(kBorderRadius),
                 ),
                 padding: EdgeInsets.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                minimumSize: const Size(80, _elementHeight),
-                maximumSize: const Size(80, _elementHeight),
+                minimumSize: const Size(80, kElementHeight),
+                maximumSize: const Size(80, kElementHeight),
               ),
               onPressed: () => _handleItemTap(tabIndex, itemIndex, item),
               child: Text(
                 item.name ?? '',
                 style: TextStyle(
-                  color: isSelected ? _selectedTextColor : _unselectedTextColor,
-                  fontSize: _fontSize,
+                  color: isSelected ? kSelectedTextColor : kUnselectedTextColor,
+                  fontSize: kFontSize,
                 ),
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
@@ -201,7 +202,7 @@ class _DetailTabsViewState extends State<DetailTabsView>
   Widget _buildEmptyPlaceholder() {
     return const SizedBox(
       width: 80,
-      height: _elementHeight,
+      height: kElementHeight,
     );
   }
 
@@ -232,15 +233,20 @@ class _DetailTabsViewState extends State<DetailTabsView>
         }
 
         return Container(
-          padding: const EdgeInsets.all(_containerPadding),
+          padding: const EdgeInsets.all(kContainerPadding),
           child: ListView.builder(
             itemCount: rows.length,
-            cacheExtent: 200, // 缓存范围，提高滚动性能
+            cacheExtent: 300, // 增加缓存范围，提高滚动性能
+            physics: const BouncingScrollPhysics(), // 使用弹性滚动，提升体验
             itemBuilder: (context, rowIndex) {
               final rowItems = rows[rowIndex];
+              // 为每行创建唯一的key，提高ListView的性能
+              final rowKey = ValueKey('row_$tabIndex$rowIndex');
+              
               return RepaintBoundary(
                 child: Container(
-                  margin: const EdgeInsets.only(bottom: _rowMargin),
+                  key: rowKey,
+                  margin: const EdgeInsets.only(bottom: kRowMargin),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     mainAxisSize: MainAxisSize.max,
@@ -250,8 +256,11 @@ class _DetailTabsViewState extends State<DetailTabsView>
                         final item = rowItems[index];
                         final itemIndex = rowIndex * crossAxisCount + index;
                         final isSelected = _isItemSelected(tabIndex, itemIndex);
+                        // 为每个按钮创建唯一的key，提高渲染性能
+                        final buttonKey = ValueKey('button_$tabIndex$itemIndex');
 
                         return Padding(
+                          key: buttonKey,
                           padding: EdgeInsets.only(right: index < rowItems.length - 1 ? 8.0 : 0),
                           child: _buildPlayLineButton(
                             item: item,
@@ -293,12 +302,12 @@ class _DetailTabsViewState extends State<DetailTabsView>
               color: Colors.transparent,
             ),
           ),
-          labelColor: _selectedColor,
+          labelColor: kSelectedColor,
           unselectedLabelStyle: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w400,
           ),
-          unselectedLabelColor: const Color.fromRGBO(102, 102, 102, 1),
+          unselectedLabelColor: kUnselectedLabelColor,
           labelStyle: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w800,

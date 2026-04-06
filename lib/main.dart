@@ -50,9 +50,18 @@ import 'entity/app_ads_entity.dart';
 import 'services/home_prefetch_service.dart';
 import 'services/video_filter_prefetch_service.dart';
 
+/**
+ * 应用程序入口点
+ * 负责初始化应用环境、设置系统 UI 样式、启动应用并执行预加载任务
+ */
 Future<void> main() async {
+  // 确保 Flutter 绑定已初始化
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // 设置系统 UI 模式为边缘到边缘
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  
+  // 设置系统 UI 覆盖样式
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -65,7 +74,7 @@ Future<void> main() async {
     ),
   );
 
-  // 修复：先启动 App，再执行预加载，避免阻塞首帧
+  // 先启动 App，再执行预加载，避免阻塞首帧
   runApp(const AppBootstrap());
 
   // 使用 addPostFrameCallback 确保在第一帧绘制完成后再开始繁重的预加载任务
@@ -73,17 +82,27 @@ Future<void> main() async {
     // 延迟一点点，让 UI 动画先跑起来
     Future.delayed(const Duration(milliseconds: 500), () {
       // 并行预加载多个服务的数据
-      HomePrefetchService.instance.preload().catchError((e) {
-        debugPrint('Home prefetch failed: $e');
-      });
-
-      VideoFilterPrefetchService.instance.preload().catchError((e) {
-        debugPrint('VideoFilter prefetch failed: $e');
+      Future.wait([
+        HomePrefetchService.instance.preload().catchError((e, stackTrace) {
+          debugPrint('Home prefetch failed: $e');
+          debugPrint('Stack trace: $stackTrace');
+        }),
+        VideoFilterPrefetchService.instance.preload().catchError((e, stackTrace) {
+          debugPrint('VideoFilter prefetch failed: $e');
+          debugPrint('Stack trace: $stackTrace');
+        }),
+      ]).catchError((e, stackTrace) {
+        debugPrint('Prefetch services failed: $e');
+        debugPrint('Stack trace: $stackTrace');
       });
     });
   });
 }
 
+/**
+ * 应用引导类
+ * 负责提供应用所需的状态管理提供者
+ */
 class AppBootstrap extends StatelessWidget {
   const AppBootstrap({super.key});
 
@@ -101,6 +120,10 @@ class AppBootstrap extends StatelessWidget {
   }
 }
 
+/**
+ * 应用主类
+ * 负责初始化广告 SDK 和构建应用的根 Widget
+ */
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -108,6 +131,10 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
+/**
+ * 应用主类状态管理
+ * 负责初始化广告 SDK 和构建应用的根 Widget
+ */
 class _MyAppState extends State<MyApp> {
   @override
   void initState() {
@@ -116,11 +143,16 @@ class _MyAppState extends State<MyApp> {
     _initSDK();
   }
 
+  /**
+   * 初始化广告 SDK
+   */
   Future<void> _initSDK() async {
     try {
       await Ads.initRegister();
-    } catch (e) {
-      debugPrint('初始化失败: $e');
+      debugPrint('Ads SDK initialized successfully');
+    } catch (e, stackTrace) {
+      debugPrint('Ads SDK initialization failed: $e');
+      debugPrint('Stack trace: $stackTrace');
     }
   }
 
@@ -219,6 +251,10 @@ class _MyAppState extends State<MyApp> {
 // 创建全局的 RouteObserver
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
+/**
+ * 主页面
+ * 包含底部导航栏和多个子页面
+ */
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
@@ -226,13 +262,24 @@ class MainPage extends StatefulWidget {
   State<MainPage> createState() => _MainPageState();
 }
 
+/**
+ * 主页面状态管理
+ * 负责初始化页面、处理底部导航栏切换和应用初始化
+ */
 class _MainPageState extends State<MainPage> {
+  // 设备信息
   Map<String, dynamic>? deviceInfo;
+  // 页面列表
   late final List<Widget> _pages;
+  // 当前选中的页面索引
   int _selectedIndex = 0;
-  final GlobalKey<MyState> _myPageKey =
-      GlobalKey<MyState>(); // 添加GlobalKey来访问My页面的状态
+  // 使用 GlobalKey 来访问 My 页面的状态，注意在 dispose 时处理
+  final GlobalKey<MyState> _myPageKey = GlobalKey<MyState>();
 
+  /**
+   * 底部导航栏点击事件处理
+   * @param index 选中的页面索引
+   */
   void onTap(int index) {
     setState(() => _selectedIndex = index);
     TDToast.dismissLoading();
@@ -250,13 +297,18 @@ class _MainPageState extends State<MainPage> {
     return _buildContent();
   }
 
+  /**
+   * 构建内容
+   */
   Widget _buildContent() {
     return AppView();
   }
 
+  /**
+   * 构建应用视图
+   */
   Widget AppView() {
-    bool status =
-        deviceInfo?["checkIsTheDeveloperModeOn"] == true ||
+    bool status = deviceInfo?["checkIsTheDeveloperModeOn"] == true ||
         deviceInfo?["isphysicaldevice"] == false ||
         deviceInfo?["deviceUseVPN"] == true;
     if (false) {
@@ -345,6 +397,10 @@ class _MainPageState extends State<MainPage> {
     }
   }
 
+  /**
+   * 初始化应用
+   * 负责初始化数据库、设备信息、分享图片、登录状态和广告
+   */
   Future<String> init() async {
     try {
       // 修复：给 UI 一点时间来渲染，避免数据库初始化卡住主线程
@@ -352,63 +408,79 @@ class _MainPageState extends State<MainPage> {
 
       // 只等待关键操作：数据库初始化（必需，其他操作依赖它）
       await DBManager.init();
+      debugPrint('Database initialized successfully');
 
       // 其他非关键操作改为后台异步执行，不阻塞应用启动
       // 保持原有业务逻辑不变，只是改变执行时机
       // 设备信息获取（延迟执行，不阻塞启动）
       Future.delayed(const Duration(milliseconds: 500), () {
-        initPlatformState().catchError((e) {
+        initPlatformState().catchError((e, stackTrace) {
           debugPrint('initPlatformState failed: $e');
+          debugPrint('Stack trace: $stackTrace');
         });
       });
 
       // 分享图片准备（延迟执行，在真正需要时再准备）
       Future.delayed(const Duration(milliseconds: 1000), () {
-        ShareUtil.prepareShareImage().catchError((e) {
+        ShareUtil.prepareShareImage().catchError((e, stackTrace) {
           debugPrint('prepareShareImage failed: $e');
+          debugPrint('Stack trace: $stackTrace');
         });
       });
 
       // 登录状态检查（延迟执行）
       Future.delayed(const Duration(milliseconds: 800), () {
-        User.isLogin();
+        try {
+          User.isLogin();
+        } catch (e, stackTrace) {
+          debugPrint('User.isLogin failed: $e');
+          debugPrint('Stack trace: $stackTrace');
+        }
       });
 
       // 广告加载改为后台异步执行，不阻塞应用启动
       // 延迟加载广告，优先展示内容
       Future.delayed(const Duration(milliseconds: 1000), () {
-        getAd().catchError((e) {
+        getAd().catchError((e, stackTrace) {
           debugPrint('getAd failed: $e');
+          debugPrint('Stack trace: $stackTrace');
         });
       });
 
       //跳转到SplashPage组件
       return "init success";
-    } catch (e) {
+    } catch (e, stackTrace) {
       // 数据库初始化失败时记录错误，但不阻塞启动
       debugPrint('DBManager.init failed: $e');
+      debugPrint('Stack trace: $stackTrace');
       return "init success"; // 即使失败也返回成功，让应用继续启动
     }
   }
 
-  // //获取广告（不再缓存，直接请求，后台异步执行，不阻塞启动）
+  // 获取广告（不再缓存，直接请求，后台异步执行，不阻塞启动）
   Future<void> getAd() async {
     try {
-      List<AppAdsDataList> list =
-          (await Api.getAdsList({
-            'status': 1,
-            'adsPage': 896,
-            'type': 682,
-          })).data?.list ??
-          [] as List<AppAdsDataList>;
-      debugPrint('获取广告成功: $list');
-    } catch (e) {
+      final response = await Api.getAdsList({
+        'status': 1,
+        'adsPage': 896,
+        'type': 682,
+      });
+      final List<AppAdsDataList> list = response.data?.list ?? [];
+      debugPrint('获取广告成功: ${list.length} 条');
+    } catch (e, stackTrace) {
       debugPrint('获取广告失败: $e');
+      debugPrint('Stack trace: $stackTrace');
     }
   }
 
   Future<void> initPlatformState() async {
-    deviceInfo = await DeviceInfoUtils().requestDeviceInfo();
+    try {
+      deviceInfo = await DeviceInfoUtils().requestDeviceInfo();
+      debugPrint('Device info initialized successfully');
+    } catch (e, stackTrace) {
+      debugPrint('Failed to initialize device info: $e');
+      debugPrint('Stack trace: $stackTrace');
+    }
   }
 
   @override

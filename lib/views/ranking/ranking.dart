@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // 添加 provider 包
+
+// 第三方库
+import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
+// 本地文件
 import '../../api/api.dart';
 import '../../components/loading.dart';
 import '../../components/no_data.dart';
@@ -10,6 +13,10 @@ import '../../components/video_one.dart';
 import '../../entity/video_page_entity.dart';
 import '../../utils/store/ranking/ranking_background_notifier.dart';
 
+/**
+ * 视频排行榜页面
+ * 展示不同类型的视频排行榜，包括热片榜、新片榜、好评榜和收藏榜
+ */
 class VideoRanking extends StatefulWidget {
   const VideoRanking({super.key});
 
@@ -17,35 +24,51 @@ class VideoRanking extends StatefulWidget {
   VideoRankingState createState() => VideoRankingState();
 }
 
+/**
+ * 视频排行榜页面状态管理
+ * 负责处理排行榜数据的加载、刷新和展示
+ */
 class VideoRankingState extends State<VideoRanking>
     with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   // 提取常量
+  // 布局常量
   static const double _backgroundHeight = 200.0;
   static const double _tabsContentTopMargin = 180.0;
+  static const double _borderRadius = 20.0;
+  static const double _backgroundBorderRadius = 5.0;
+  
+  // 配置常量
   static const int _pageSize = 10;
   static const Duration _animationDuration = Duration(milliseconds: 300);
   static const Duration _backgroundUpdateDelay = Duration(milliseconds: 100);
+  
+  // 颜色常量
   static const Color _selectedTabColor = Color.fromRGBO(252, 119, 66, 1);
   static const Color _unselectedTabColor = Color.fromRGBO(102, 102, 102, 1);
-  static const double _borderRadius = 20.0;
-  static const double _backgroundBorderRadius = 5.0;
+  
+  // 其他常量
+  static const String TAG = "VideoRanking";
 
+  // 视频数据列表
   List<VideoPageDataList> videoPageData = [];
-  List<VideoPageDataList> popularity_day = [];
-  List<VideoPageDataList> popularity_week = [];
-  List<VideoPageDataList> popularity_month = [];
-  List<VideoPageDataList> popularity_sum = [];
-  //定义一个二维数组储存List<VideoPageDataList>
+  List<VideoPageDataList> popularityDay = [];
+  List<VideoPageDataList> popularityWeek = [];
+  List<VideoPageDataList> popularityMonth = [];
+  List<VideoPageDataList> popularitySum = [];
+  // 二维数组储存所有排行榜数据
   List<List<VideoPageDataList>> videoPageDataList = [];
-  List<RefreshController> tabRefreshController = [];
+  // 每个 tab 的刷新控制器
+  List<RefreshController> tabRefreshControllers = [];
 
-  final tabs = [
-    const TDTab(text: '热片榜'),
-    const TDTab(text: '新片榜'),
-    const TDTab(text: '好评榜'),
-    const TDTab(text: '收藏榜'),
+  // 使用 const 构造器创建 tabs 列表
+  static const List<TDTab> tabs = [
+    TDTab(text: '热片榜'),
+    TDTab(text: '新片榜'),
+    TDTab(text: '好评榜'),
+    TDTab(text: '收藏榜'),
   ];
-  final PageController pageController = PageController(initialPage: 0);
+  // 使用 late 修饰符延迟初始化 PageController
+  late final PageController pageController;
   TabController? _tabController;
   int currentPage = 1;
   int currentIndex = 0;
@@ -65,6 +88,9 @@ class VideoRankingState extends State<VideoRanking>
   // 添加加载状态
   bool _isInitializing = true;
 
+  // 添加数据缓存，避免重复请求
+  final Map<String, List<VideoPageDataList>> _dataCache = {};
+
   // 新增共用函数，根据index添加不同分类的数据
   Future<List<VideoPageDataList>> _fetchDataByIndex(
     int index, {
@@ -77,7 +103,17 @@ class VideoRankingState extends State<VideoRanking>
       return [];
     }
 
+    // 生成缓存键
+    final cacheKey = '${sort[index]}_$page';
+    
+    // 检查缓存中是否有数据
+    if (_dataCache.containsKey(cacheKey)) {
+      debugPrint('$TAG: 使用缓存数据 for $cacheKey');
+      return _dataCache[cacheKey]!;
+    }
+
     try {
+      debugPrint('$TAG: 开始获取数据 for index $index, page $page');
       final response = await Api.getVideoSortPage({
         "page": page,
         "sort": sort[index],
@@ -85,15 +121,21 @@ class VideoRankingState extends State<VideoRanking>
       });
 
       final list = response.data?.list ?? <VideoPageDataList>[];
+      debugPrint('$TAG: 获取到 ${list.length} 条数据 for index $index, page $page');
 
       // 检查是否还有更多数据
       if (list.length < _pageSize) {
         hasMoreList[index] = false;
+        debugPrint('$TAG: 没有更多数据 for index $index');
       }
 
+      // 缓存数据
+      _dataCache[cacheKey] = list;
+
       return list;
-    } catch (e) {
-      debugPrint('_fetchDataByIndex failed for index $index: $e');
+    } catch (e, stackTrace) {
+      debugPrint('$TAG: 获取数据失败 for index $index: $e');
+      debugPrint('$TAG: 堆栈跟踪: $stackTrace');
       return [];
     }
   }
@@ -101,83 +143,112 @@ class VideoRankingState extends State<VideoRanking>
   Future<void> initRequest() async {
     if (!mounted) return;
 
-    // 重置状态
-    pageList = [1, 1, 1, 1];
-    hasMoreList = [true, true, true, true];
+    try {
+      debugPrint('$TAG: 开始初始化请求数据');
+      // 重置状态
+      pageList = [1, 1, 1, 1];
+      hasMoreList = [true, true, true, true];
 
-    // 并行加载所有数据，提高初始化速度
-    final results = await Future.wait([
-      _fetchDataByIndex(0, page: 1),
-      _fetchDataByIndex(1, page: 1),
-      _fetchDataByIndex(2, page: 1),
-      _fetchDataByIndex(3, page: 1),
-    ]);
+      // 并行加载所有数据，提高初始化速度
+      debugPrint('$TAG: 并行加载所有排行榜数据');
+      final results = await Future.wait([
+        _fetchDataByIndex(0, page: 1),
+        _fetchDataByIndex(1, page: 1),
+        _fetchDataByIndex(2, page: 1),
+        _fetchDataByIndex(3, page: 1),
+      ]);
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    popularity_day = results[0];
-    popularity_week = results[1];
-    popularity_month = results[2];
-    popularity_sum = results[3];
+      popularityDay = results[0];
+      popularityWeek = results[1];
+      popularityMonth = results[2];
+      popularitySum = results[3];
 
-    videoPageDataList = [
-      popularity_day,
-      popularity_week,
-      popularity_month,
-      popularity_sum,
-    ];
+      videoPageDataList = [
+        popularityDay,
+        popularityWeek,
+        popularityMonth,
+        popularitySum,
+      ];
+
+      debugPrint('$TAG: 初始化请求数据完成');
+    } catch (e, stackTrace) {
+      debugPrint('$TAG: 初始化请求数据失败: $e');
+      debugPrint('$TAG: 堆栈跟踪: $stackTrace');
+    }
   }
 
   // 新增加载更多数据的函数
   Future<void> loadMoreData(int index) async {
     if (!mounted || !hasMoreList[index]) return;
 
-    pageList[index]++;
-    final dataList = await _fetchDataByIndex(index, page: pageList[index]);
+    try {
+      debugPrint('$TAG: 开始加载更多数据 for index $index');
+      pageList[index]++;
+      final dataList = await _fetchDataByIndex(index, page: pageList[index]);
 
-    if (!mounted || dataList.isEmpty) return;
+      if (!mounted || dataList.isEmpty) {
+        debugPrint('$TAG: 没有更多数据或页面已销毁 for index $index');
+        return;
+      }
 
-    // 使用更高效的方式更新列表
-    switch (index) {
-      case 0:
-        popularity_day = [...popularity_day, ...dataList];
-        break;
-      case 1:
-        popularity_week = [...popularity_week, ...dataList];
-        break;
-      case 2:
-        popularity_month = [...popularity_month, ...dataList];
-        break;
-      case 3:
-        popularity_sum = [...popularity_sum, ...dataList];
-        break;
-    }
+      debugPrint('$TAG: 加载到 ${dataList.length} 条数据 for index $index');
+      // 使用更高效的方式更新列表
+      switch (index) {
+        case 0:
+          popularityDay = [...popularityDay, ...dataList];
+          break;
+        case 1:
+          popularityWeek = [...popularityWeek, ...dataList];
+          break;
+        case 2:
+          popularityMonth = [...popularityMonth, ...dataList];
+          break;
+        case 3:
+          popularitySum = [...popularitySum, ...dataList];
+          break;
+      }
 
-    videoPageDataList = [
-      popularity_day,
-      popularity_week,
-      popularity_month,
-      popularity_sum,
-    ];
+      videoPageDataList = [
+        popularityDay,
+        popularityWeek,
+        popularityMonth,
+        popularitySum,
+      ];
 
-    if (mounted) {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+        debugPrint('$TAG: 加载更多数据完成 for index $index');
+      }
+    } catch (e, stackTrace) {
+      debugPrint('$TAG: 加载更多数据失败 for index $index: $e');
+      debugPrint('$TAG: 堆栈跟踪: $stackTrace');
+      // 恢复页码，以便下次加载
+      pageList[index]--;
     }
   }
 
+/**
+ * 初始化数据
+ * 初始化标签控制器和请求排行榜数据
+ */
   Future<void> _initData() async {
     if (!mounted) return;
 
     try {
+      debugPrint('$TAG: 开始初始化数据');
       _initTabController(0);
       await initRequest();
       _isInitializing = false;
       if (mounted) {
         setState(() {});
       }
-    } catch (e) {
+      debugPrint('$TAG: 初始化数据完成');
+    } catch (e, stackTrace) {
       _isInitializing = false;
-      debugPrint('_initData failed: $e');
+      debugPrint('$TAG: 初始化数据失败: $e');
+      debugPrint('$TAG: 堆栈跟踪: $stackTrace');
       if (mounted) {
         setState(() {});
       }
@@ -187,6 +258,8 @@ class VideoRankingState extends State<VideoRanking>
   @override
   void initState() {
     super.initState();
+    // 初始化 PageController
+    pageController = PageController(initialPage: 0);
     _backgroundNotifier = RankingBackgroundNotifier();
     _initData();
   }
@@ -198,10 +271,10 @@ class VideoRankingState extends State<VideoRanking>
     // 释放 PageController
     pageController.dispose();
     // 释放所有 RefreshController
-    for (final controller in tabRefreshController) {
+    for (final controller in tabRefreshControllers) {
       controller.dispose();
     }
-    tabRefreshController.clear();
+    tabRefreshControllers.clear();
     // 释放 BackgroundNotifier
     _backgroundNotifier.dispose();
     super.dispose();
@@ -225,73 +298,88 @@ class VideoRankingState extends State<VideoRanking>
       child: Stack(
         children: [
           // 使用 Consumer 监听背景图片索引变化
-          Consumer<RankingBackgroundNotifier>(
-            builder: (context, notifier, child) {
-              return RepaintBoundary(
-                child: AnimatedSwitcher(
-                  duration: _animationDuration,
-                  transitionBuilder: (child, animation) {
-                    return FadeTransition(opacity: animation, child: child);
-                  },
-                  child: TDImage(
-                    key: ValueKey('bg_${notifier.backgroundIndex}'),
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: _backgroundHeight,
-                    imgUrl:
-                        videoPageDataList.length > notifier.backgroundIndex &&
-                                videoPageDataList[notifier.backgroundIndex]
-                                    .isNotEmpty
-                            ? videoPageDataList[notifier.backgroundIndex][0]
-                                    .surfacePlot ??
-                                ""
-                            : "",
-                    errorWidget: const TDImage(
-                      width: 150,
-                      assetUrl: 'assets/images/loading.gif',
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
+          _buildBackgroundImage(),
           // 渐变遮罩层
-          Container(
-            height: _backgroundHeight,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(_backgroundBorderRadius),
-              gradient: const LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.transparent, Colors.black],
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20, top: 60),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 10,
-                children: const [
-                  Text(
-                    "排行榜",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    "根据内容热点排名，每小时更新一次",
-                    style: TextStyle(color: Colors.white, fontSize: 15),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          _buildGradientOverlay(),
           _buildTabsContent(),
         ],
       ),
+    );
+  }
+
+  /// 构建背景图片
+  Widget _buildBackgroundImage() {
+    return Consumer<RankingBackgroundNotifier>(
+      builder: (context, notifier, child) {
+        return RepaintBoundary(
+          child: AnimatedSwitcher(
+            duration: _animationDuration,
+            transitionBuilder: (child, animation) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            child: TDImage(
+              key: ValueKey('bg_${notifier.backgroundIndex}'),
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: _backgroundHeight,
+              imgUrl:
+                  videoPageDataList.length > notifier.backgroundIndex &&
+                          videoPageDataList[notifier.backgroundIndex]
+                              .isNotEmpty
+                      ? videoPageDataList[notifier.backgroundIndex][0]
+                              .surfacePlot ??
+                          ""
+                      : "",
+              errorWidget: const TDImage(
+                width: 150,
+                assetUrl: 'assets/images/loading.gif',
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// 构建渐变遮罩层
+  Widget _buildGradientOverlay() {
+    return Container(
+      height: _backgroundHeight,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(_backgroundBorderRadius),
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.transparent, Colors.black],
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 60),
+        child: _buildTitleText(),
+      ),
+    );
+  }
+
+  /// 构建标题文本
+  Widget _buildTitleText() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 10,
+      children: const [
+        Text(
+          "排行榜",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Text(
+          "根据内容热点排名，每小时更新一次",
+          style: TextStyle(color: Colors.white, fontSize: 15),
+        ),
+      ],
     );
   }
 
@@ -374,8 +462,8 @@ class VideoRankingState extends State<VideoRanking>
             onPageChanged: _onPageChanged,
             children: List.generate(tabs.length, (index) {
               // 确保每个tab都有独立的RefreshController
-              while (tabRefreshController.length <= index) {
-                tabRefreshController.add(RefreshController());
+              while (tabRefreshControllers.length <= index) {
+                tabRefreshControllers.add(RefreshController());
               }
               return _buildTabContent(index);
             }),
@@ -387,7 +475,7 @@ class VideoRankingState extends State<VideoRanking>
 
   Widget _buildTabContent(int index) {
     return SmartRefresher(
-      controller: tabRefreshController[index],
+      controller: tabRefreshControllers[index],
       onRefresh: () => _onRefresh(index),
       onLoading: () => _onLoadMore(index),
       enablePullUp: true,
@@ -417,6 +505,10 @@ class VideoRankingState extends State<VideoRanking>
 
     pageList[index] = 1;
     hasMoreList[index] = true;
+    
+    // 清除对应分类的缓存
+    final sortKey = sort[index];
+    _dataCache.removeWhere((key, value) => key.startsWith(sortKey));
 
     final dataList = await _fetchDataByIndex(index, page: 1);
 
@@ -424,29 +516,29 @@ class VideoRankingState extends State<VideoRanking>
 
     switch (index) {
       case 0:
-        popularity_day = dataList;
+        popularityDay = dataList;
         break;
       case 1:
-        popularity_week = dataList;
+        popularityWeek = dataList;
         break;
       case 2:
-        popularity_month = dataList;
+        popularityMonth = dataList;
         break;
       case 3:
-        popularity_sum = dataList;
+        popularitySum = dataList;
         break;
     }
 
     videoPageDataList = [
-      popularity_day,
-      popularity_week,
-      popularity_month,
-      popularity_sum,
+      popularityDay,
+      popularityWeek,
+      popularityMonth,
+      popularitySum,
     ];
 
     if (mounted) {
       setState(() {});
-      tabRefreshController[index].refreshCompleted();
+      tabRefreshControllers[index].refreshCompleted();
     }
   }
 
@@ -455,12 +547,12 @@ class VideoRankingState extends State<VideoRanking>
 
     await loadMoreData(index);
 
-    if (!mounted || index >= tabRefreshController.length) return;
+    if (!mounted || index >= tabRefreshControllers.length) return;
 
     if (hasMoreList[index]) {
-      tabRefreshController[index].loadComplete();
+      tabRefreshControllers[index].loadComplete();
     } else {
-      tabRefreshController[index].loadNoData();
+      tabRefreshControllers[index].loadNoData();
     }
   }
 

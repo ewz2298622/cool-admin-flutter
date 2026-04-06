@@ -240,9 +240,11 @@ class _Video_DetailState extends State<Video_Detail>
 
   // 停止监听播放进度
   void _stopPositionListener() {
-    _positionTimer?.cancel();
-    _positionTimer = null;
-    debugPrint('Position listener stopped');
+    if (_positionTimer != null) {
+      _positionTimer!.cancel();
+      _positionTimer = null;
+      debugPrint('Position listener stopped');
+    }
   }
 
   // 在页面离开时调用addViews的方法
@@ -256,40 +258,67 @@ class _Video_DetailState extends State<Video_Detail>
 
   Future<void> getDictAreaData() async {
     try {
-      area =
-          ((await Api.getDictData({
-                    "types": ["area"],
-                  })).data
-                  as DictDataData)
-              .area;
-    } catch (e) {
+      debugPrint('Starting getDictAreaData');
+      final response = await Api.getDictData({
+                "types": ["area"],
+              }).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('Get dict area data timeout');
+          throw TimeoutException('Get dict area data timeout');
+        },
+      );
+      final dictData = response.data as DictDataData;
+      area = dictData.area;
+      debugPrint('Get dict area data success, count: ${area?.length ?? 0}');
+    } catch (e, stackTrace) {
       // 捕获并处理异常
-      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+      debugPrint('Initialization getDictAreaData failed: $e');
+      debugPrint('Stack trace: $stackTrace');
+      // 确保 area 不为 null
+      area = [];
     }
   }
 
   Future<void> getDictVideoCategoryData() async {
     try {
-      videoCategory =
-          ((await Api.getDictData({
-                    "types": ["video_category"],
-                  })).data
-                  as DictDataData)
-              .videoCategory;
-    } catch (e) {
+      debugPrint('Starting getDictVideoCategoryData');
+      final response = await Api.getDictData({
+                "types": ["video_category"],
+              }).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('Get dict video category data timeout');
+          throw TimeoutException('Get dict video category data timeout');
+        },
+      );
+      final dictData = response.data as DictDataData;
+      videoCategory = dictData.videoCategory;
+      debugPrint('Get dict video category data success, count: ${videoCategory?.length ?? 0}');
+    } catch (e, stackTrace) {
       // 捕获并处理异常
-      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+      debugPrint('Initialization getDictVideoCategoryData failed: $e');
+      debugPrint('Stack trace: $stackTrace');
+      // 确保 videoCategory 不为 null
+      videoCategory = [];
     }
   }
 
-  getVideoDetail() async {
+  Future<void> getVideoDetail() async {
     try {
       // 清空之前的数据以防止数据污染
       tabs.clear();
       videoList.clear();
 
-      videoInfoData =
-          ((await Api.getVideoDetail({"id": id})).data as VideoDetailDataData);
+      // 添加超时处理，确保视频详情获取不会阻塞 UI 线程
+      final response = await Api.getVideoDetail({"id": id}).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          debugPrint('Get video detail timeout');
+          throw TimeoutException('Get video detail timeout');
+        },
+      );
+      videoInfoData = (response.data as VideoDetailDataData);
       // 添加容错处理：确保lines存在且不为空
       if (videoInfoData.lines != null && videoInfoData.lines!.isNotEmpty) {
         for (var element in videoInfoData.lines!) {
@@ -325,57 +354,108 @@ class _Video_DetailState extends State<Video_Detail>
           ),
         ];
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       // 捕获并处理异常
       debugPrint('Initialization getVideoDetail failed: $e');
+      debugPrint('Stack trace: $stackTrace');
+      // 设置默认值，确保UI能够正常显示
+      tabs = [TDTab(text: "默认线路")];
+      videoList = [
+        VideoItem(
+          title: "视频",
+          url: "",
+          subTitle: "暂无播放链接",
+        ),
+      ];
     }
   }
 
   Future<void> getDictLanguageData() async {
     try {
-      language =
-          ((await Api.getDictData({
-                    "types": ["language"],
-                  })).data
-                  as DictDataData)
-              .language;
-    } catch (e) {
+      debugPrint('Starting getDictLanguageData');
+      final response = await Api.getDictData({
+                "types": ["language"],
+              }).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('Get dict language data timeout');
+          throw TimeoutException('Get dict language data timeout');
+        },
+      );
+      final dictData = response.data as DictDataData;
+      language = dictData.language;
+      debugPrint('Get dict language data success, count: ${language?.length ?? 0}');
+    } catch (e, stackTrace) {
       // 捕获并处理异常
-      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+      debugPrint('Initialization getDictLanguageData failed: $e');
+      debugPrint('Stack trace: $stackTrace');
+      // 确保 language 不为 null
+      language = [];
     }
   }
 
   Future<void> getVideoPages() async {
     try {
-      List<VideoPageDataList> list =
-          (await Api.getVideoPages({
-            "category_id": videoInfoData.video?.categoryId ?? 0,
-            //page参数随机1-20整数
-            "page": Random().nextInt(2) + 1,
-          })).data?.list ??
-          [] as List<VideoPageDataList>;
+      debugPrint('Starting getVideoPages');
+      final response = await Api.getVideoPages({
+        "category_id": videoInfoData.video?.categoryId ?? 0,
+        //page参数随机1-20整数
+        "page": Random().nextInt(2) + 1,
+      }).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('Get video pages timeout');
+          throw TimeoutException('Get video pages timeout');
+        },
+      );
+      List<VideoPageDataList> list = response.data?.list ?? [] as List<VideoPageDataList>;
+      debugPrint('Get video pages success, count: ${list.length}');
       if (mounted) {
         setState(() {
           videoPageData = list;
         });
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       // 捕获并处理异常
       debugPrint('Initialization getVideoPages failed: $e');
+      debugPrint('Stack trace: $stackTrace');
+      // 确保 videoPageData 不为 null
+      if (mounted) {
+        setState(() {
+          videoPageData = [];
+        });
+      }
     }
   }
 
   Future<String> getSelectVideoPages(Map<String, dynamic> params) async {
     try {
-      List<VideoPageDataList> list =
-          (await Api.getVideoPages(params)).data?.list ??
-          [] as List<VideoPageDataList>;
+      debugPrint('Starting getSelectVideoPages');
+      final response = await Api.getVideoPages(params).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('Get select video pages timeout');
+          throw TimeoutException('Get select video pages timeout');
+        },
+      );
+      List<VideoPageDataList> list = response.data?.list ?? [] as List<VideoPageDataList>;
+      debugPrint('Get select video pages success, count: ${list.length}');
       selectVideoPageData = list;
-      setState(() {
-        selectVideoPageData = list;
-      });
+      if (mounted) {
+        setState(() {
+          selectVideoPageData = list;
+        });
+      }
       return "init success";
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('Get select video pages failed: $e');
+      debugPrint('Stack trace: $stackTrace');
+      // 确保 selectVideoPageData 不为 null
+      if (mounted) {
+        setState(() {
+          selectVideoPageData = [];
+        });
+      }
       return "init error";
     }
   }
@@ -415,12 +495,20 @@ class _Video_DetailState extends State<Video_Detail>
           "type": 19,
           "cover": videoInfoData.video?.surfacePlot ?? "",
           "videoIndex": currentPlay.value,
-        });
+        }).timeout(
+          const Duration(seconds: 5),
+          onTimeout: () {
+            debugPrint('Add views timeout');
+            throw TimeoutException('Add views timeout');
+          },
+        );
         eventBus.fire(RefreshViewEvent());
+        debugPrint('Add views success');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       // 捕获并处理异常
       debugPrint('Initialization addViews failed: $e');
+      debugPrint('Stack trace: $stackTrace');
     }
   }
 
@@ -434,22 +522,38 @@ class _Video_DetailState extends State<Video_Detail>
       videoList.clear();
 
       _initTabController();
-      await getVideoDetail();
+      // 添加超时处理，确保视频详情获取不会阻塞 UI 线程
+      await getVideoDetail().timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          debugPrint('Video detail initialization timeout');
+          throw TimeoutException('Video detail initialization timeout');
+        },
+      );
+      // 并行获取其他数据，添加超时处理
       await Future.wait([
         getDictVideoCategoryData(),
         getDictLanguageData(),
         getDictAreaData(),
         getVideoPages(),
-      ]);
+      ]).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('Additional data initialization timeout');
+          return [];
+        },
+      );
       _errorListener();
-      await _loadAd();
+      // 广告加载单独处理，不阻塞初始化
+      _loadAd();
       _videoListener();
       _isPlayerInitialized = true;
       _isPlayerReleased = false;
       return "init success";
-    } catch (e) {
+    } catch (e, stackTrace) {
       // 捕获并处理异常
       debugPrint('Initialization error in init(): $e');
+      debugPrint('Stack trace: $stackTrace');
       return "init success";
     }
   }
@@ -546,6 +650,11 @@ class _Video_DetailState extends State<Video_Detail>
     }
   }
 
+/**
+ * 设置视频播放地址
+ * @param url 视频播放地址
+ * 处理视频播放的核心方法，包括播放器状态管理、数据源设置和错误处理
+ */
   Future<void> setVideoUrl(String url) async {
     try {
       debugPrint('Setting video URL: $url');
@@ -575,8 +684,9 @@ class _Video_DetailState extends State<Video_Detail>
       if (mounted) {
         setState(() {});
       }
-    } catch (error) {
+    } catch (error, stackTrace) {
       debugPrint('setVideoUrl error: $error');
+      debugPrint('Stack trace: $stackTrace');
       // 出错时确保播放器处于暂停状态
       try {
         if (player.isPlayable()) {
@@ -688,7 +798,7 @@ class _Video_DetailState extends State<Video_Detail>
     );
   }
 
-  removeVideo() {
+  void removeVideo() {
     debugPrint('Video_Detail: removeVideo called');
     // 立即暂停播放
     _pausePlayerImmediately();
@@ -698,7 +808,9 @@ class _Video_DetailState extends State<Video_Detail>
     _stopPositionListener();
     // 重置播放器
     try {
-      player.reset();
+      if (player.isPlayable()) {
+        player.reset();
+      }
     } catch (e) {
       debugPrint('Error resetting player in removeVideo: $e');
     }
