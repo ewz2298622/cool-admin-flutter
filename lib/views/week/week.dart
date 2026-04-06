@@ -19,7 +19,7 @@ class WeekPage extends StatefulWidget {
 }
 
 class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
-  var _futureBuilderFuture;
+  late Future<String> _futureBuilderFuture;
   late TabController _tabController;
   List<TDTab> tabs = [];
 
@@ -29,37 +29,42 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
 
   /// 存储星期字典数据
   List<DictDataDataWeek> week = [];
-  List<RefreshController> tabRefreshController = [];
+  List<RefreshController> tabRefreshControllers = [];
 
   /// 获取字典信息和对应的星期数据
   ///
   /// 从 API 获取星期分类数据，并为每个分类获取对应的视频列表
-  /// 通过并行请求优化数据加载性能
+  /// 通过单次请求获取所有星期的数据，减少网络请求次数
   Future<void> getDictInfoPages() async {
     try {
-      week =
-          ((await Api.getDictData({
-                    "types": ["week"],
-                  })).data
-                  as DictDataData)
-              .week!;
+      final dictResponse = await Api.getDictData({
+        "types": ["week"],
+      });
+      
+      final dictData = dictResponse.data;
+      if (dictData == null || dictData.week == null) {
+        throw Exception('Failed to get week data');
+      }
+      
+      week = dictData.week!;
 
       tabs.clear();
       weekList.clear();
 
-      // 并行获取所有星期的视频列表，提高加载性能
-      final futures = <Future>[];
+      // 为每个星期创建一个空列表
       for (var element in week) {
         tabs.add(TDTab(text: element.name));
-        // 创建并行请求（移除 await 以实现真正的并发）
-        futures.add(getWeekList(element.id ?? 0));
+        weekList.add([]);
       }
-      // 等待所有请求完成
-      await Future.wait(futures);
+
+      // 单次请求获取所有星期的数据
+      await getAllWeekList();
     } catch (e) {
       // 清空数据以防止不一致
       tabs.clear();
       weekList.clear();
+      // 可以在这里添加日志记录
+      debugPrint('Error in getDictInfoPages: $e');
     }
   }
 
@@ -199,19 +204,54 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
     );
   }
 
+  /// 获取所有星期的视频列表
+  ///
+  /// 一次性获取所有星期的数据，减少网络请求次数
+  Future<void> getAllWeekList() async {
+    try {
+      // 构建包含所有星期ID的数组
+      List<int> weekIds = week.map((element) => element.id ?? 0).toList();
+      
+      // 单次请求获取所有星期的数据
+      final response = await Api.getWeek({
+        "page": 1,
+        "size": 100,
+        "week": weekIds,
+      });
+      
+      final allList = response.data?.list ?? [];
+
+      // 为每个星期分配对应的数据
+      for (int i = 0; i < week.length; i++) {
+        int weekId = week[i].id ?? 0;
+        // 筛选出当前星期的数据
+        List<WeekDataList> weekData = allList.where((item) => item.week == weekId).toList();
+        weekList[i] = weekData;
+      }
+    } catch (e) {
+      // 发生错误时，保持空列表
+      for (int i = 0; i < weekList.length; i++) {
+        weekList[i] = [];
+      }
+      // 记录错误日志
+      debugPrint('Error in getAllWeekList: $e');
+    }
+  }
+
   /// 获取指定星期的视频列表
   ///
   /// [weekId] 星期ID，用于查询对应日期的视频
   /// 从API获取视频列表并添加到weekList中
   Future<void> getWeekList(int weekId) async {
     try {
-      List<WeekDataList> list =
-          ((await Api.getWeek({
-                "page": 1,
-                "size": 100,
-                "week": weekId,
-              })).data?.list
-              as List<WeekDataList>);
+      // 单次请求获取指定星期的数据
+      final response = await Api.getWeek({
+        "page": 1,
+        "size": 100,
+        "week": weekId,
+      });
+      
+      final list = response.data?.list ?? [];
 
       // 在初始化阶段添加新列表
       if (weekList.length < week.length) {
@@ -234,6 +274,8 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
           weekList[index] = [];
         }
       }
+      // 记录错误日志
+      debugPrint('Error in getWeekList for weekId $weekId: $e');
     }
   }
 
@@ -247,8 +289,8 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
       // 确保在有数据的情况下才初始化TabController
       if (tabs.isNotEmpty) {
         _tabController = TabController(length: tabs.length, vsync: this);
-        // 初始化tabRefreshController数组
-        tabRefreshController = List.generate(
+        // 初始化tabRefreshControllers数组
+        tabRefreshControllers = List.generate(
           tabs.length,
           (index) => RefreshController(),
         );
@@ -271,7 +313,7 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
     _tabController.dispose();
 
     // 释放所有RefreshController资源
-    for (var controller in tabRefreshController) {
+    for (var controller in tabRefreshControllers) {
       controller.dispose();
     }
 
@@ -376,32 +418,21 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
   /// [day] 日期索引
   /// 使用ListView.builder构建可滚动的视频列表
   Widget _buildAnimeList(int day) {
-    // 添加空状态检查
-    if (day >= weekList.length) {
+    // 检查空状态
+    if (_isAnimeListEmpty(day)) {
       return NoData();
     }
 
-    // 检查当前tab是否有数据，如果没有则显示NoData组件
-    if (weekList[day].isEmpty) {
-      return NoData();
-    }
+    debugPrint('weekList[day]: $day');
 
-    debugPrint('weekList[day]: ${day}');
-
-    // 确保tabRefreshController数组有足够的元素
-    while (tabRefreshController.length <= day) {
-      tabRefreshController.add(RefreshController());
-    }
+    // 确保刷新控制器存在
+    _ensureRefreshControllerExists(day);
 
     return SmartRefresher(
-      controller: tabRefreshController[day],
+      controller: tabRefreshControllers[day],
       onRefresh: () async {
         // 刷新当前tab的数据
-        await getWeekList(week[day].id ?? 0);
-        if (mounted) {
-          setState(() {});
-        }
-        tabRefreshController[day].refreshCompleted();
+        await _refreshAnimeList(day);
       },
       child: ListView.builder(
         padding: EdgeInsets.all(16),
@@ -411,5 +442,33 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
         },
       ),
     );
+  }
+
+  /// 检查动漫列表是否为空
+  ///
+  /// [day] 日期索引
+  /// 返回是否为空
+  bool _isAnimeListEmpty(int day) {
+    return day >= weekList.length || weekList[day].isEmpty;
+  }
+
+  /// 确保刷新控制器存在
+  ///
+  /// [day] 日期索引
+  void _ensureRefreshControllerExists(int day) {
+    while (tabRefreshControllers.length <= day) {
+      tabRefreshControllers.add(RefreshController());
+    }
+  }
+
+  /// 刷新动漫列表数据
+  ///
+  /// [day] 日期索引
+  Future<void> _refreshAnimeList(int day) async {
+    await getWeekList(week[day].id ?? 0);
+    if (mounted) {
+      setState(() {});
+    }
+    tabRefreshControllers[day].refreshCompleted();
   }
 }

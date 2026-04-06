@@ -158,32 +158,36 @@ class Api {
     List<int> videoCategoryIds,
   ) async {
     try {
-      // 使用 Future.wait 并发请求每个分类的轮播图列表
-      List<Future<MapEntry<int, List<SwiperDataList>>>> futures =
-          videoCategoryIds.map((id) async {
-            SwiperEntity swiperData = (await Api.getSwiperPage({
-              "page": 1,
-              "category": id,
-              "status": 1,
-              "size": 5,
-            }));
+      // 一次性请求所有分类的轮播图列表，减少HTTP请求次数
+      SwiperEntity swiperData = (await Api.getSwiperPage({
+        "page": 1,
+        "category": videoCategoryIds,
+        "status": 1,
+        "size": videoCategoryIds.length * 5,
+      }));
 
-            // 假设服务器返回的数据结构为 {"data": [...]}
-            List<SwiperDataList> responseData = List.from(
-              swiperData.data?.list as List<SwiperDataList>,
-            );
-
-            return MapEntry(id, responseData);
-          }).toList();
-
-      // 等待所有请求完成
-
-      List<MapEntry<int, List<SwiperDataList>>> results = await Future.wait(
-        futures,
+      // 假设服务器返回的数据结构为 {"data": [...], "category": id}
+      List<SwiperDataList> allSwiperData = List.from(
+        swiperData.data?.list as List<SwiperDataList>,
       );
 
-      // 将结果转换为 Map<int, List<SwiperEntity>>
-      Map<int, List<SwiperDataList>> swiperMap = Map.fromEntries(results);
+      // 将结果按分类ID分组
+      Map<int, List<SwiperDataList>> swiperMap = {};
+
+      // 初始化每个分类的空列表
+      for (int id in videoCategoryIds) {
+        swiperMap[id] = [];
+      }
+
+      // 将轮播图数据分配到对应的分类
+      for (SwiperDataList item in allSwiperData) {
+        if (item.category != null) {
+          int categoryId = item.category!;
+          if (swiperMap.containsKey(categoryId)) {
+            swiperMap[categoryId]?.add(item);
+          }
+        }
+      }
 
       return swiperMap;
     } catch (error) {
