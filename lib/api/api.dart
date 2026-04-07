@@ -200,30 +200,30 @@ class Api {
     List<int> videoCategoryIds,
   ) async {
     try {
-      // 使用 Future.wait 并发请求每个分类的轮播图列表
-      List<Future<MapEntry<int, List<AlbumDataList>>>> futures =
-          videoCategoryIds.map((id) async {
-            AlbumEntity videoAlbumData = (await Api.getVideoAlbumPages({
-              "page": 1,
-              "category_id": id,
-              "status": 1,
-              "size": 1000,
-              "videoSize": 15,
-            }));
-            List<AlbumDataList> responseData = List.from(
-              videoAlbumData.data?.list as List<AlbumDataList>,
-            );
-            return MapEntry(id, responseData);
-          }).toList();
+      AlbumEntity videoAlbumData = await Api.getVideoAlbumPages({
+        "page": 1,
+        "category_id": videoCategoryIds,
+        "status": 1,
+        "size": 1000,
+        "videoSize": 15,
+      });
 
-      List<MapEntry<int, List<AlbumDataList>>> results = await Future.wait(
-        futures,
-      );
+      List<AlbumDataList> allData = videoAlbumData.data?.list ?? [];
 
-      Map<int, List<AlbumDataList>> albumMap = Map.fromEntries(results);
+      Map<int, List<AlbumDataList>> albumMap = {};
+      for (var album in allData) {
+        int? categoryId = album.categoryId;
+        if (categoryId != null) {
+          albumMap.putIfAbsent(categoryId, () => []).add(album);
+        }
+      }
+
+      for (var id in videoCategoryIds) {
+        albumMap.putIfAbsent(id, () => []);
+      }
+
       return albumMap;
     } catch (error) {
-      // 打印错误信息用于调试
       rethrow;
     }
   }
