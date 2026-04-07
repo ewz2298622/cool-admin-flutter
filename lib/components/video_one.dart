@@ -31,215 +31,282 @@ class VideoItem extends StatelessWidget {
     ],
   );
   static const EdgeInsets _hdTagPadding = EdgeInsets.symmetric(horizontal: 4, vertical: 2);
+  static const EdgeInsets _itemPadding = EdgeInsets.only(left: 4, right: 4, bottom: 10);
+  static const double _itemSpacing = 5;
+  static const double _topPadding = 5;
+  static const double _tagSpacing = 10;
+  static const double _hotWidgetWidth = 60;
+  static const double _remarksRightPadding = 10;
+  static const double _remarksBottomPadding = 5;
+  static const double _hdTagRightMargin = 10;
+  static const double _hdTagTopMargin = 5;
+  static const double _smallFontSize = 10;
+  static const double _mediumFontSize = 12;
+  static const Color _hotTextColor = Color.fromRGBO(255, 101, 39, 1);
+  static const Color _introTextColor = Color.fromRGBO(153, 153, 153, 1);
+  static const String _videoDetailRoute = "/video_detail";
+  static const String _errorAssetUrl = 'assets/images/loading.gif';
+  static const String _hotIconAsset = 'assets/images/hot_surface.svg';
+  static const int _maxCountLength = 4;
+  static const int _maxIntroLines = 4;
+  static const int _maxActorLines = 2;
 
   final VideoPageDataList videoData;
   const VideoItem({super.key, required this.videoData});
 
-  Widget _buildAlbumItems(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     return RepaintBoundary(
       child: GestureDetector(
-        onTap:
-            () => Get.toNamed("/video_detail", arguments: {"id": videoData.id}),
-
+        onTap: _handleTap,
         child: Container(
-        padding: const EdgeInsets.only(left: 4, right: 4, bottom: 10),
-        child: Row(
-          spacing: 5,
-          children: [
-            ClipRRect(
-              borderRadius: _posterBorderRadius,
-              child: SizedBox(
-                width: _posterWidth,
-                height: _posterHeight,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    TDImage(
-                      fit: BoxFit.cover,
-                      width: _posterWidth,
-                      height: _posterHeight,
-                      imgUrl: videoData.surfacePlot ?? "",
-                      errorWidget: const TDImage(
-                        width: _posterWidth,
-                        height: _posterHeight,
-                        assetUrl: 'assets/images/loading.gif',
-                      ),
-                    ),
-                    _buildVideoItemOverlay(videoData),
-                  ],
-                ),
-              ),
-            ),
-            Expanded(
-              // 使用 Expanded 替代 SizedBox
-              child: SizedBox(
-                height: _posterHeight,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          flex: 1,
-                          child: Text(
-                            videoData.title ?? "",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 60,
-                          child: Row(
-                            //右对齐
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text(
-                                _formatCount((videoData.up ?? 0).toString()),
-                                //最长四个 字
-                                maxLines: 1,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: Color.fromRGBO(255, 101, 39, 1),
-                                ),
-                              ),
-                              SvgPicture.asset(
-                                'assets/images/hot_surface.svg',
-                                width: _hotIconSize,
-                                height: _hotIconSize,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    Padding(
-                      padding: const EdgeInsets.only(top: 5),
-                      child: Text(
-                        "${videoData.videoClass ?? ''} / ${videoData.videoTag ?? ''}",
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 5),
-                      child: Text(
-                        "${videoData.year ?? ''} / ${videoData.actors ?? ''}",
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ),
-                    // 修改: 使用Expanded包装Html组件以防止溢出
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 5),
-                        child: Text(
-                          VideoUtil.extractPlainText(videoData.introduce ?? ""),
-                          maxLines: 4,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color.fromRGBO(153, 153, 153, 1),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Row(
-                      spacing: 10,
-                      children: [
-                        TDTag(
-                          '${videoData.popularity ?? 0}万热度',
-                          isLight: true,
-                          backgroundColor: _tagBackgroundColor,
-                          textColor: _tagTextColor,
-                          shape: TDTagShape.round,
-                          isOutline: true,
-                          style: TDTagStyle(
-                            borderColor: Colors.transparent,
-                            borderRadius: _tagBorderRadius,
-                          ),
-                        ),
-                        TDTag(
-                          '${videoData.popularitySum ?? 0}万点赞',
-                          isLight: true,
-                          backgroundColor: _tagBackgroundColor,
-                          textColor: _tagTextColor,
-                          shape: TDTagShape.round,
-                          isOutline: true,
-                          style: TDTagStyle(
-                            borderColor: Colors.transparent,
-                            borderRadius: _tagBorderRadius,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+          padding: _itemPadding,
+          child: Row(
+            spacing: _itemSpacing,
+            children: [
+              _buildPoster(),
+              _buildContent(),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
-  //实现一个字符串格式化函数 最长截取四个字
-  String _formatCount(String str) {
-    return str.length > 4 ? str.substring(0, 4) : str;
+
+  void _handleTap() {
+    Get.toNamed(_videoDetailRoute, arguments: {"id": videoData.id});
   }
 
-  Widget _buildVideoItemOverlay(VideoPageDataList item) {
-    return IgnorePointer(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+  Widget _buildPoster() {
+    return ClipRRect(
+      borderRadius: _posterBorderRadius,
+      child: SizedBox(
+        width: _posterWidth,
+        height: _posterHeight,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _buildImage(),
+            _buildVideoItemOverlay(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImage() {
+    return TDImage(
+      fit: BoxFit.cover,
+      width: _posterWidth,
+      height: _posterHeight,
+      imgUrl: videoData.surfacePlot ?? "",
+      errorWidget: const TDImage(
+        width: _posterWidth,
+        height: _posterHeight,
+        assetUrl: _errorAssetUrl,
+      ),
+    );
+  }
+
+  Widget _buildContent() {
+    return Expanded(
+      child: SizedBox(
+        height: _posterHeight,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            _buildTitleRow(),
+            _buildCategoryRow(),
+            _buildYearActorRow(),
+            _buildIntroduction(),
+            _buildTagsRow(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTitleRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildTitle(),
+        _buildHotWidget(),
+      ],
+    );
+  }
+
+  Widget _buildTitle() {
+    return Flexible(
+      flex: 1,
+      child: Text(
+        videoData.title ?? "",
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+
+  Widget _buildHotWidget() {
+    return SizedBox(
+      width: _hotWidgetWidth,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          _buildVideoItemHDTag(item),
-          Container(
-            decoration: const BoxDecoration(
-              gradient: _overlayGradient,
-            ),
-            child: _buildVideoItemNote(item),
-          ),
+          _buildHotText(),
+          _buildHotIcon(),
         ],
       ),
     );
   }
 
-  Widget _buildVideoItemNote(VideoPageDataList item) {
-    final remarks = item.remarks?.trim();
-    if (remarks == null || remarks.isEmpty) {
-      return const SizedBox.shrink();
-    }
+  Widget _buildHotText() {
+    return Text(
+      _formatCount((videoData.up ?? 0).toString()),
+      maxLines: 1,
+      style: const TextStyle(
+        fontWeight: FontWeight.w600,
+        color: _hotTextColor,
+      ),
+    );
+  }
+
+  Widget _buildHotIcon() {
+    return SvgPicture.asset(
+      _hotIconAsset,
+      width: _hotIconSize,
+      height: _hotIconSize,
+    );
+  }
+
+  Widget _buildCategoryRow() {
     return Padding(
-      padding: const EdgeInsets.only(right: 10, bottom: 5),
+      padding: const EdgeInsets.only(top: _topPadding),
       child: Text(
-        remarks,
-        textAlign: TextAlign.right,
-        //缩进
-        maxLines: 1, // 限制最大显示一行
-        overflow: TextOverflow.ellipsis, // 溢出时显示省略号
+        "${videoData.videoClass ?? ''} / ${videoData.videoTag ?? ''}",
         style: const TextStyle(
-          fontSize: 10,
-          color: Colors.white,
+          fontSize: _mediumFontSize,
           fontWeight: FontWeight.w400,
-          //文字缩进
         ),
       ),
     );
   }
 
-  Widget _buildVideoItemHDTag(VideoPageDataList item) {
-    final tag = VideoUtil.formatTag(item.pubdate ?? "");
+  Widget _buildYearActorRow() {
+    return Padding(
+      padding: const EdgeInsets.only(top: _topPadding),
+      child: Text(
+        "${videoData.year ?? ''} / ${videoData.actors ?? ''}",
+        maxLines: _maxActorLines,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          fontSize: _mediumFontSize,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIntroduction() {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.only(top: _topPadding),
+        child: Text(
+          VideoUtil.extractPlainText(videoData.introduce ?? ""),
+          maxLines: _maxIntroLines,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: _mediumFontSize,
+            color: _introTextColor,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTagsRow() {
+    return Row(
+      spacing: _tagSpacing,
+      children: [
+        _buildPopularityTag(),
+        _buildLikesTag(),
+      ],
+    );
+  }
+
+  Widget _buildPopularityTag() {
+    return TDTag(
+      '${videoData.popularity ?? 0}万热度',
+      isLight: true,
+      backgroundColor: _tagBackgroundColor,
+      textColor: _tagTextColor,
+      shape: TDTagShape.round,
+      isOutline: true,
+      style: TDTagStyle(
+        borderColor: Colors.transparent,
+        borderRadius: _tagBorderRadius,
+      ),
+    );
+  }
+
+  Widget _buildLikesTag() {
+    return TDTag(
+      '${videoData.popularitySum ?? 0}万点赞',
+      isLight: true,
+      backgroundColor: _tagBackgroundColor,
+      textColor: _tagTextColor,
+      shape: TDTagShape.round,
+      isOutline: true,
+      style: TDTagStyle(
+        borderColor: Colors.transparent,
+        borderRadius: _tagBorderRadius,
+      ),
+    );
+  }
+
+  Widget _buildVideoItemOverlay() {
+    return IgnorePointer(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildVideoItemHDTag(),
+          _buildVideoItemNote(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVideoItemNote() {
+    final remarks = videoData.remarks?.trim();
+    if (remarks == null || remarks.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: _overlayGradient,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(right: _remarksRightPadding, bottom: _remarksBottomPadding),
+        child: Text(
+          remarks,
+          textAlign: TextAlign.right,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: _smallFontSize,
+            color: Colors.white,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVideoItemHDTag() {
+    final tag = VideoUtil.formatTag(videoData.pubdate ?? "");
     if (tag.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -247,7 +314,7 @@ class VideoItem extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Container(
-          margin: const EdgeInsets.only(right: 10, top: 5),
+          margin: const EdgeInsets.only(right: _hdTagRightMargin, top: _hdTagTopMargin),
           padding: _hdTagPadding,
           decoration: const BoxDecoration(
             borderRadius: _posterBorderRadius,
@@ -256,7 +323,7 @@ class VideoItem extends StatelessWidget {
           child: Text(
             tag,
             style: const TextStyle(
-              fontSize: 11,
+              fontSize: _smallFontSize,
               color: Colors.white,
               fontWeight: FontWeight.w400,
             ),
@@ -266,9 +333,8 @@ class VideoItem extends StatelessWidget {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return _buildAlbumItems(context);
+  String _formatCount(String str) {
+    return str.length > _maxCountLength ? str.substring(0, _maxCountLength) : str;
   }
 }
 

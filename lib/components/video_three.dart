@@ -6,88 +6,100 @@ import '../entity/video_page_entity.dart';
 import '../utils/video.dart';
 
 class Video extends StatelessWidget {
-  final VideoPageDataList videoData; // 使用 dynamic 类型
+  static const double itemWidth = 130;
+  static const double itemHeight = 205;
+  static const double imageHeight = 180;
+  static const double borderRadius = 5;
+  static const double tagBorderRadius = 3;
+
+  final VideoPageDataList videoData;
 
   const Video({super.key, required this.videoData});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 130,
-      height: 205,
+      width: itemWidth,
+      height: itemHeight,
       child: Column(
         children: [
           Stack(
             children: [
-              TDImage(
-                fit: BoxFit.cover,
-                width: 130,
-                height: 180,
-                imgUrl: videoData.surfacePlot ?? "",
-                errorWidget: const TDImage(
-                  fit: BoxFit.fill,
-                  width: 130,
-                  height: 180,
-                  assetUrl: 'assets/images/loading.gif',
-                ),
-              ),
-              _buildVideoItemOverlay(videoData, context),
+              _VideoImage(),
+              _VideoOverlay(),
             ],
           ),
-          Text(
-            videoData.title ?? "",
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.w500),
-          ),
+          _VideoTitle(),
         ],
       ),
     );
   }
 
-  Widget _buildVideoItemOverlay(dynamic item, BuildContext context) {
+  Widget _VideoImage() {
+    return TDImage(
+      fit: BoxFit.cover,
+      width: itemWidth,
+      height: imageHeight,
+      imgUrl: videoData.surfacePlot ?? "",
+      errorWidget: const TDImage(
+        fit: BoxFit.fill,
+        width: itemWidth,
+        height: imageHeight,
+        assetUrl: 'assets/images/loading.gif',
+      ),
+    );
+  }
+
+  Widget _VideoOverlay() {
     return GestureDetector(
-      onTap: () => {_buildvideo_onClick(item, context)},
+      onTap: () => _onVideoClick(),
       child: Container(
-        width: 130,
-        height: 180,
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
+        width: itemWidth,
+        height: imageHeight,
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(borderRadius)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
-          children: [_buildVideoItemHDTag(item), _buildVideoItemNote(item)],
+          children: [_buildVideoItemHDTag(), _buildVideoItemNote()],
         ),
       ),
     );
   }
 
-  Widget _buildVideoItemNote(VideoPageDataList item) {
-    if (item.remarks == null) {
+  Widget _VideoTitle() {
+    return Text(
+      videoData.title ?? "",
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(fontWeight: FontWeight.w500),
+    );
+  }
+
+  Widget _buildVideoItemNote() {
+    if (videoData.remarks == null) {
       return Container();
     }
     return Container(
-      width: 130,
+      width: itemWidth,
       padding: const EdgeInsets.only(right: 4, bottom: 3),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(5),
-        gradient: LinearGradient(
+        borderRadius: BorderRadius.circular(borderRadius),
+        gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.transparent, // 顶部透明
-            Colors.black.withOpacity(0.7), // 底部黑色
+            Colors.transparent,
+            Colors.black38,
           ],
         ),
       ),
       child: Row(
-        //右对齐
         mainAxisAlignment: MainAxisAlignment.end,
-        spacing: 5,
         children: [
           Flexible(
             flex: 1,
             child: Text(
-              item.remarks ?? '',
+              videoData.remarks ?? '',
               textAlign: TextAlign.right,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -99,10 +111,11 @@ class Video extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(width: 5),
           SizedBox(
             width: 30,
             child: Text(
-              VideoUtil.formatScore(item.doubanScore),
+              VideoUtil.formatScore(videoData.doubanScore),
               textAlign: TextAlign.right,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -119,27 +132,27 @@ class Video extends StatelessWidget {
     );
   }
 
-  Widget _buildVideoItemHDTag(VideoPageDataList item) {
+  Widget _buildVideoItemHDTag() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-          margin: const EdgeInsets.only(right: 4, top: 4), // 调整内边距
+          margin: const EdgeInsets.only(right: 4, top: 4),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(3),
+            borderRadius: BorderRadius.circular(tagBorderRadius),
             gradient: const LinearGradient(
-              begin: Alignment.centerLeft, // 对应 90deg (从左到右)
+              begin: Alignment.centerLeft,
               end: Alignment.centerRight,
               colors: [
-                Color(0xFFFFA35C), // rgb(255, 163, 92)
-                Color(0xFFFF5821), // rgb(255, 88, 33)
+                Color(0xFFFFA35C),
+                Color(0xFFFF5821),
               ],
             ),
           ),
-          alignment: Alignment.center, // 关键：强制内容居中
+          alignment: Alignment.center,
           child: Text(
-            VideoUtil.formatTag(item.pubdate ?? ""),
+            VideoUtil.formatTag(videoData.pubdate ?? ""),
             style: const TextStyle(
               fontSize: 11,
               color: Colors.white,
@@ -151,18 +164,23 @@ class Video extends StatelessWidget {
     );
   }
 
-  void _buildvideo_onClick(VideoPageDataList item, BuildContext context) {
-    if (item.categoryPid == 551) {
-      Get.toNamed("/short_drama", arguments: {"id": item.id});
+  void _onVideoClick() {
+    if (videoData.categoryPid == 551) {
+      Get.toNamed("/short_drama", arguments: {"id": videoData.id});
     } else {
-      Get.toNamed("/video_detail", arguments: {"id": item.id});
+      Get.toNamed("/video_detail", arguments: {"id": videoData.id});
     }
   }
 }
 
 class VideoThree extends StatelessWidget {
-  // final List<VideoPageDataList> videoPageData;
-  final List<VideoPageDataList> videoPageData; // 使用 dynamic 类型
+  static const double maxCrossAxisExtent = 150.0;
+  static const double crossAxisSpacing = 4.0;
+  static const double mainAxisSpacing = 4.0;
+  static const double mainAxisExtent = 205;
+  static const int cacheExtent = 200;
+
+  final List<VideoPageDataList> videoPageData;
 
   const VideoThree({super.key, required this.videoPageData});
 
@@ -170,23 +188,22 @@ class VideoThree extends StatelessWidget {
   Widget build(BuildContext context) {
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 150.0, // 每个 item 的最大宽度
-        crossAxisSpacing: 4.0,
-        mainAxisSpacing: 4.0,
-        mainAxisExtent: 205,
+        maxCrossAxisExtent: maxCrossAxisExtent,
+        crossAxisSpacing: crossAxisSpacing,
+        mainAxisSpacing: mainAxisSpacing,
+        mainAxisExtent: mainAxisExtent,
       ),
-      itemBuilder:
-          (context, i) => RepaintBoundary(
-            key: ValueKey('video_three_$i'),
-            child: GridTile(
-              child: Center(child: Video(videoData: videoPageData[i])),
-            ),
-          ),
+      itemBuilder: (context, index) => RepaintBoundary(
+        key: ValueKey('video_three_$index'),
+        child: GridTile(
+          child: Center(child: Video(videoData: videoPageData[index])),
+        ),
+      ),
       itemCount: videoPageData.length,
       padding: EdgeInsets.zero,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      cacheExtent: 200, // 优化缓存范围
+      cacheExtent: cacheExtent.toDouble(),
       addAutomaticKeepAlives: true,
       addRepaintBoundaries: true,
       addSemanticIndexes: false,

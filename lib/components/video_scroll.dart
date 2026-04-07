@@ -5,9 +5,18 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 import '../utils/video.dart';
 
 class HorizontalVideoList extends StatelessWidget {
-  final List<dynamic> videoPageData;
+  static const double itemHeight = 160.0;
+  static const double itemWidth = 120.0;
+  static const double rightPadding = 10.0;
+  static const double borderRadius = 5.0;
+  static const double cacheExtent = 200.0;
+  static const double tagRightMargin = 10.0;
+  static const double tagTopMargin = 5.0;
+  static const double tagHorizontalPadding = 4.0;
+  static const double tagVerticalPadding = 2.0;
+  static const double titleHorizontalPadding = 5.0;
 
-  //接受一个可选回调函数
+  final List<dynamic> videoPageData;
   final Function()? onTap;
 
   const HorizontalVideoList({
@@ -19,76 +28,45 @@ class HorizontalVideoList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 160,
+      height: itemHeight,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: videoPageData.length,
-        cacheExtent: 200, // 优化缓存范围
-        itemBuilder: (context, i) => RepaintBoundary(
-          key: ValueKey('video_scroll_$i'),
+        cacheExtent: cacheExtent,
+        itemBuilder: (context, index) => RepaintBoundary(
+          key: ValueKey('video_scroll_$index'),
           child: GestureDetector(
-              onTap: () {
-                if (onTap != null) {
-                  onTap!();
-                }
-                Get.toNamed(
-                  "/video_detail",
-                  arguments: {"id": videoPageData[i].id},
-                  preventDuplicates: false,
-                );
-              },
-              child: Container(
-                width: 120,
-                height: 160,
-                padding: const EdgeInsets.only(right: 10),
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: TDImage(
-                        width: 120,
-                        height: 160,
-                        fit: BoxFit.cover,
-                        imgUrl: videoPageData[i].surfacePlot ?? "",
-                        errorWidget: const TDImage(
-                          width: 120,
-                          height: 160,
-                          fit: BoxFit.cover,
-                          assetUrl: 'assets/images/loading.gif',
-                        ),
-                      ),
-                    ),
-                    _buildVideoItemHDTag(videoPageData[i]),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Container(
-                          width: MediaQuery.of(context).size.width,
-                          padding: const EdgeInsets.only(left: 5, right: 5),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(5),
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Color.fromRGBO(217, 217, 217, 0), // 顶部透明
-                                Color.fromRGBO(88, 88, 88, 1), // 部黑
-                              ],
-                            ),
-                          ),
-                          child: Text(
-                            videoPageData[i].title ?? "",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+            onTap: () => _handleItemTap(videoPageData[index]),
+            child: Container(
+              width: itemWidth,
+              height: itemHeight,
+              padding: const EdgeInsets.only(right: rightPadding),
+              child: Stack(
+                children: [
+                  _buildVideoImage(videoPageData[index]),
+                  _buildVideoItemHDTag(videoPageData[index]),
+                  _buildVideoTitle(videoPageData[index], context),
+                ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVideoImage(dynamic item) {
+    return Positioned.fill(
+      child: TDImage(
+        width: itemWidth,
+        height: itemHeight,
+        fit: BoxFit.cover,
+        imgUrl: item.surfacePlot ?? "",
+        errorWidget: const TDImage(
+          width: itemWidth,
+          height: itemHeight,
+          fit: BoxFit.cover,
+          assetUrl: 'assets/images/loading.gif',
         ),
       ),
     );
@@ -99,22 +77,27 @@ class HorizontalVideoList extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Container(
-          margin: const EdgeInsets.only(right: 10, top: 5),
-          padding: const EdgeInsets.only(top: 2, bottom: 2, left: 4, right: 4),
+          margin: const EdgeInsets.only(right: tagRightMargin, top: tagTopMargin),
+          padding: const EdgeInsets.only(
+            top: tagVerticalPadding,
+            bottom: tagVerticalPadding,
+            left: tagHorizontalPadding,
+            right: tagHorizontalPadding,
+          ),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
+            borderRadius: BorderRadius.circular(borderRadius),
             gradient: const LinearGradient(
-              begin: Alignment.centerLeft, // 对应 90deg (从左到右)
+              begin: Alignment.centerLeft,
               end: Alignment.centerRight,
               colors: [
-                Color(0xFFFFA35C), // rgb(255, 163, 92)
-                Color(0xFFFF5821), // rgb(255, 88, 33)
+                Color(0xFFFFA35C),
+                Color(0xFFFF5821),
               ],
             ),
           ),
           child: Text(
             VideoUtil.formatTag(item.pubdate ?? ""),
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 11,
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -122,6 +105,50 @@ class HorizontalVideoList extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildVideoTitle(dynamic item, BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Container(
+          width: MediaQuery.of(context).size.width,
+          padding: const EdgeInsets.only(
+            left: titleHorizontalPadding,
+            right: titleHorizontalPadding,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(borderRadius),
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color.fromRGBO(217, 217, 217, 0),
+                Color.fromRGBO(88, 88, 88, 1),
+              ],
+            ),
+          ),
+          child: Text(
+            item.title ?? "",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _handleItemTap(dynamic item) {
+    if (onTap != null) {
+      onTap!();
+    }
+    Get.toNamed(
+      "/video_detail",
+      arguments: {"id": item.id},
+      preventDuplicates: false,
     );
   }
 }

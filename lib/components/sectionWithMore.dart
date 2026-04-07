@@ -3,6 +3,22 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 /// 通用的分区标题组件，支持自定义"更多"操作或自定义尾部组件
 class SectionWithMore extends StatelessWidget {
+  static const EdgeInsetsGeometry _defaultPadding = EdgeInsets.symmetric(horizontal: 0, vertical: 4);
+  static const double _defaultSpacing = 8;
+  static const double _iconSize = 16;
+  static const double _arrowIconSize = 14;
+  static const double _inkWellBorderRadius = 16;
+  static const EdgeInsetsGeometry _inkWellPadding = EdgeInsets.symmetric(horizontal: 8, vertical: 4);
+  static const double _textIconSpacing = 4;
+  static const String _moreText = '更多';
+  static const String _defaultAssetUrl = 'assets/images/kMAfmcQvtjAhwk72KQvTn.png';
+  static const TextStyle _defaultTitleStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.w500);
+  static const TextStyle _defaultTextStyle = TextStyle(
+    fontSize: 13,
+    fontWeight: FontWeight.w500,
+    color: Color(0xFF666666),
+  );
+
   final String title;
   final VoidCallback? onMorePressed;
   final Widget? trailing;
@@ -17,8 +33,8 @@ class SectionWithMore extends StatelessWidget {
     required this.title,
     this.onMorePressed,
     this.trailing,
-    this.padding = const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-    this.spacing = 8,
+    this.padding = _defaultPadding,
+    this.spacing = _defaultSpacing,
     this.titleStyle,
     this.semanticsLabel,
     this.showIcon = false,
@@ -34,10 +50,9 @@ class SectionWithMore extends StatelessWidget {
     }
 
     final theme = Theme.of(context);
-    final effectiveTitleStyle =
-        titleStyle ??
+    final effectiveTitleStyle = titleStyle ??
         theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500) ??
-        const TextStyle(fontSize: 16, fontWeight: FontWeight.w500);
+        _defaultTitleStyle;
 
     return Padding(
       padding: padding,
@@ -49,12 +64,7 @@ class SectionWithMore extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              if (showIcon)
-                TDImage(
-                  assetUrl: 'assets/images/kMAfmcQvtjAhwk72KQvTn.png',
-                  width: 16,
-                  height: 16,
-                ),
+              if (showIcon) _buildIcon(),
               Expanded(
                 child: Text(
                   title,
@@ -72,6 +82,14 @@ class SectionWithMore extends StatelessWidget {
     );
   }
 
+  Widget _buildIcon() {
+    return TDImage(
+      assetUrl: _defaultAssetUrl,
+      width: _iconSize,
+      height: _iconSize,
+    );
+  }
+
   Widget _buildTrailing(ThemeData theme) {
     if (trailing != null) {
       return trailing!;
@@ -81,29 +99,24 @@ class SectionWithMore extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final textStyle =
-        theme.textTheme.labelMedium?.copyWith(
+    final textStyle = theme.textTheme.labelMedium?.copyWith(
           color: theme.colorScheme.onSurface.withOpacity(0.6),
         ) ??
-        const TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w500,
-          color: Color(0xFF666666),
-        );
+        _defaultTextStyle;
 
     return InkWell(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(_inkWellBorderRadius),
       onTap: onMorePressed,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: _inkWellPadding,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('更多', style: textStyle),
-            const SizedBox(width: 4),
+            Text(_moreText, style: textStyle),
+            const SizedBox(width: _textIconSpacing),
             Icon(
               Icons.arrow_forward_ios,
-              size: 14,
+              size: _arrowIconSize,
               color: theme.colorScheme.onSurface.withOpacity(0.4),
             ),
           ],

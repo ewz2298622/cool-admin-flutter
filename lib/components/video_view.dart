@@ -4,11 +4,6 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 /// 视频横向滚动列表组件
 class VideoViews extends StatelessWidget {
-  final List<dynamic> videoPageData;
-
-  const VideoViews({super.key, required this.videoPageData});
-
-  // 常量定义
   static const double _listHeight = 80.0;
   static const double _itemWidth = 120.0;
   static const double _itemHeight = 80.0;
@@ -16,6 +11,14 @@ class VideoViews extends StatelessWidget {
   static const double _titlePaddingHorizontal = 5.0;
   static const double _borderRadius = 5.0;
   static const double _overlayOpacity = 0.302;
+  static const double _cacheExtent = 200.0;
+  static const String _videoDetailRoute = "/video_detail";
+  static const String _errorAssetUrl = 'assets/images/loading.gif';
+  static const Color _overlayColor = Color.fromRGBO(0, 0, 0, _overlayOpacity);
+
+  final List<dynamic> videoPageData;
+
+  const VideoViews({super.key, required this.videoPageData});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +30,7 @@ class VideoViews extends StatelessWidget {
       height: _listHeight,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        cacheExtent: 200, // 缓存范围，提高滚动性能
+        cacheExtent: _cacheExtent,
         itemCount: videoPageData.length,
         itemBuilder: (context, index) {
           return RepaintBoundary(
@@ -48,60 +51,63 @@ class _VideoViewItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap:
-          () => Get.toNamed("/video_detail", arguments: {"id": videoData.id}),
+      onTap: _handleTap,
       child: Container(
         width: VideoViews._itemWidth,
         height: VideoViews._itemHeight,
         padding: const EdgeInsets.only(right: VideoViews._itemPaddingRight),
         child: Stack(
           children: [
-            Positioned.fill(
-              child: TDImage(
-                width: VideoViews._itemWidth,
-                height: VideoViews._itemHeight,
-                fit: BoxFit.cover,
-                imgUrl: videoData.cover ?? "",
-                errorWidget: const TDImage(
-                  width: VideoViews._itemWidth,
-                  height: VideoViews._itemHeight,
-                  fit: BoxFit.cover,
-                  assetUrl: 'assets/images/loading.gif',
-                ),
-              ),
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Align(
-                alignment: Alignment.bottomRight,
-                child: Container(
-                  padding: const EdgeInsets.only(
-                    left: VideoViews._titlePaddingHorizontal,
-                    right: VideoViews._titlePaddingHorizontal,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(
-                      VideoViews._borderRadius,
-                    ),
-                    color: const Color.fromRGBO(
-                      0,
-                      0,
-                      0,
-                      VideoViews._overlayOpacity,
-                    ),
-                  ),
-                  child: Text(
-                    videoData.title ?? "",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
-            ),
+            _buildImage(),
+            _buildTitleOverlay(),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _handleTap() {
+    Get.toNamed(VideoViews._videoDetailRoute, arguments: {"id": videoData.id});
+  }
+
+  Widget _buildImage() {
+    return Positioned.fill(
+      child: TDImage(
+        width: VideoViews._itemWidth,
+        height: VideoViews._itemHeight,
+        fit: BoxFit.cover,
+        imgUrl: videoData.cover ?? "",
+        errorWidget: const TDImage(
+          width: VideoViews._itemWidth,
+          height: VideoViews._itemHeight,
+          fit: BoxFit.cover,
+          assetUrl: VideoViews._errorAssetUrl,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTitleOverlay() {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Align(
+        alignment: Alignment.bottomRight,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: VideoViews._titlePaddingHorizontal,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(VideoViews._borderRadius),
+            color: VideoViews._overlayColor,
+          ),
+          child: Text(
+            videoData.title ?? "",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Colors.white),
+          ),
         ),
       ),
     );

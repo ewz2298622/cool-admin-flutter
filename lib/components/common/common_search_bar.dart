@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
+/// 通用搜索栏组件
 class CommonSearchBar extends StatelessWidget {
-  const CommonSearchBar({
-    super.key,
-    this.placeholder = '',
-    this.readOnly = true,
-    this.padding = const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
-    this.onTap,
-    this.onChanged,
-    this.onSubmitted,
-    this.controller,
-    this.backgroundColor = Colors.transparent,
-    this.height = 45,
-  });
+  static const String _defaultPlaceholder = '';
+  static const bool _defaultReadOnly = true;
+  static const EdgeInsets _defaultPadding = EdgeInsets.symmetric(horizontal: 0, vertical: 4);
+  static const Color _defaultBackgroundColor = Colors.transparent;
+  static const double _defaultHeight = 45.0;
+  static const TDSearchStyle _searchStyle = TDSearchStyle.round;
 
   final String placeholder;
   final bool readOnly;
@@ -25,21 +20,38 @@ class CommonSearchBar extends StatelessWidget {
   final Color backgroundColor;
   final double height;
 
+  const CommonSearchBar({
+    super.key,
+    this.placeholder = _defaultPlaceholder,
+    this.readOnly = _defaultReadOnly,
+    this.padding = _defaultPadding,
+    this.onTap,
+    this.onChanged,
+    this.onSubmitted,
+    this.controller,
+    this.backgroundColor = _defaultBackgroundColor,
+    this.height = _defaultHeight,
+  });
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: height,
-      child: TDSearchBar(
-        controller: controller,
-        placeHolder: placeholder,
-        backgroundColor: backgroundColor,
-        readOnly: readOnly,
-        style: TDSearchStyle.round,
-        padding: padding,
-        onInputClick: onTap,
-        onTextChanged: onChanged,
-        onSubmitted: onSubmitted,
-      ),
+      child: _buildSearchBar(),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return TDSearchBar(
+      controller: controller,
+      placeHolder: placeholder,
+      backgroundColor: backgroundColor,
+      readOnly: readOnly,
+      style: _searchStyle,
+      padding: padding,
+      onInputClick: onTap,
+      onTextChanged: onChanged,
+      onSubmitted: onSubmitted,
     );
   }
 }

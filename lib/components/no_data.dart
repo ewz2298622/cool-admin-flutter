@@ -3,6 +3,15 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 /// 通用空状态组件
 class NoData extends StatelessWidget {
+  static const String _defaultMessage = '找不到相关内容';
+  static const double _defaultImageSize = 200.0;
+  static const EdgeInsetsGeometry _defaultPadding = EdgeInsets.symmetric(horizontal: 24, vertical: 16);
+  static const double _defaultSpacing = 12.0;
+  static const bool _defaultShowImage = true;
+  static const double _textOpacity = 0.8;
+  static const double _defaultFontSize = 14.0;
+  static const String _noDataAssetUrl = 'assets/images/no_data.png';
+
   /// 显示的提示文案
   final String message;
 
@@ -23,11 +32,11 @@ class NoData extends StatelessWidget {
 
   const NoData({
     super.key,
-    this.message = '找不到相关内容',
-    this.imageSize = 200,
-    this.padding = const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-    this.spacing = 12,
-    this.showImage = true,
+    this.message = _defaultMessage,
+    this.imageSize = _defaultImageSize,
+    this.padding = _defaultPadding,
+    this.spacing = _defaultSpacing,
+    this.showImage = _defaultShowImage,
     this.action,
   });
 
@@ -47,23 +56,12 @@ class NoData extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 if (showImage) ...[
-                  TDImage(
-                    assetUrl: 'assets/images/no_data.png',
-                    width: imageSize,
-                    height: imageSize,
-                  ),
-                  SizedBox(height: spacing),
+                  _buildImage(),
+                  _buildSpacing(),
                 ],
-                Text(
-                  message,
-                  textAlign: TextAlign.center,
-                  style: textTheme.bodyMedium?.copyWith(
-                        color: textTheme.bodyMedium?.color?.withOpacity(0.8),
-                      ) ??
-                      const TextStyle(fontSize: 14),
-                ),
+                _buildMessage(textTheme),
                 if (action != null) ...[
-                  SizedBox(height: spacing),
+                  _buildSpacing(),
                   action!,
                 ],
               ],
@@ -71,6 +69,29 @@ class NoData extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildImage() {
+    return TDImage(
+      assetUrl: _noDataAssetUrl,
+      width: imageSize,
+      height: imageSize,
+    );
+  }
+
+  Widget _buildSpacing() {
+    return SizedBox(height: spacing);
+  }
+
+  Widget _buildMessage(TextTheme textTheme) {
+    return Text(
+      message,
+      textAlign: TextAlign.center,
+      style: textTheme.bodyMedium?.copyWith(
+            color: textTheme.bodyMedium?.color?.withValues(alpha: _textOpacity),
+          ) ??
+          const TextStyle(fontSize: _defaultFontSize),
     );
   }
 }

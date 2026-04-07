@@ -24,11 +24,6 @@ class VideoHistory extends StatelessWidget {
 
 /// 视频历史记录项组件
 class VideoHistoryItem extends StatelessWidget {
-  final ViewsDataList videoData;
-
-  const VideoHistoryItem({super.key, required this.videoData});
-
-  // 常量定义
   static const double _itemHeight = 80.0;
   static const double _imageWidth = 150.0;
   static const double _imageHeight = 80.0;
@@ -41,10 +36,19 @@ class VideoHistoryItem extends StatelessWidget {
   static const double _overlayPaddingHorizontal = 4.0;
   static const double _fontSize = 12.0;
   static const double _overlayFontSize = 11.0;
+  static const EdgeInsetsGeometry _itemPadding = EdgeInsets.only(left: 4, right: 4, bottom: 15);
+  static const String _videoDetailRoute = "/video_detail";
+  static const String _errorAssetUrl = 'assets/images/loading.gif';
+  static const String _remainingTimePrefix = "剩余";
+  static const String _defaultTime = '00:00:00';
+
+  final ViewsDataList videoData;
+
+  const VideoHistoryItem({super.key, required this.videoData});
 
   /// 格式化秒数为 HH:MM:SS 格式（静态方法，可复用）
   static String formatSeconds(int seconds) {
-    if (seconds < 0) return '00:00:00';
+    if (seconds < 0) return _defaultTime;
     
     final int hours = seconds ~/ 3600;
     final int remainingSeconds = seconds % 3600;
@@ -71,23 +75,16 @@ class VideoHistoryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 预先计算时间字符串，避免在 build 中重复计算
     final remainingTime = _getRemainingTime();
     final viewingDuration = _getViewingDuration();
 
     return RepaintBoundary(
       child: GestureDetector(
-        onTap: () => Get.toNamed(
-          "/video_detail",
-          arguments: {
-            "id": videoData.associationId,
-            "viewingDuration": videoData.viewingDuration,
-          },
-        ),
+        onTap: _handleTap,
         child: Container(
           height: _itemHeight,
           width: MediaQuery.of(context).size.width,
-          padding: const EdgeInsets.only(left: 4, right: 4, bottom: 15),
+          padding: _itemPadding,
           child: Row(
             spacing: _spacing,
             children: [
@@ -102,6 +99,16 @@ class VideoHistoryItem extends StatelessWidget {
     );
   }
 
+  void _handleTap() {
+    Get.toNamed(
+      _videoDetailRoute,
+      arguments: {
+        "id": videoData.associationId,
+        "viewingDuration": videoData.viewingDuration,
+      },
+    );
+  }
+
   /// 构建图片堆栈（包含图片和覆盖层）
   Widget _buildImageStack(String viewingDuration) {
     return Stack(
@@ -113,7 +120,7 @@ class VideoHistoryItem extends StatelessWidget {
           imgUrl: videoData.cover ?? "",
           errorWidget: const TDImage(
             width: _imageWidth,
-            assetUrl: 'assets/images/loading.gif',
+            assetUrl: _errorAssetUrl,
           ),
         ),
         _buildVideoItemOverlay(viewingDuration),
@@ -127,18 +134,26 @@ class VideoHistoryItem extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        Text(
-          videoData.title ?? "",
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontWeight: FontWeight.w500),
-        ),
+        _buildTitle(),
         const SizedBox(height: _titleSpacing),
-        Text(
-          "剩余$remainingTime",
-          style: const TextStyle(fontSize: _fontSize),
-        ),
+        _buildRemainingTime(remainingTime),
       ],
+    );
+  }
+
+  Widget _buildTitle() {
+    return Text(
+      videoData.title ?? "",
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(fontWeight: FontWeight.w500),
+    );
+  }
+
+  Widget _buildRemainingTime(String remainingTime) {
+    return Text(
+      "$_remainingTimePrefix$remainingTime",
+      style: const TextStyle(fontSize: _fontSize),
     );
   }
 
@@ -154,28 +169,32 @@ class VideoHistoryItem extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Container(
-            margin: const EdgeInsets.only(
-              right: _overlayMarginRight,
-              bottom: _overlayMarginBottom,
-            ),
-            padding: const EdgeInsets.symmetric(
-              vertical: _overlayPaddingVertical,
-              horizontal: _overlayPaddingHorizontal,
-            ),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(_borderRadius),
-            ),
-            child: Text(
-              duration,
-              style: const TextStyle(
-                fontSize: _overlayFontSize,
-                color: Colors.white,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ),
+          _buildDurationOverlay(duration),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDurationOverlay(String duration) {
+    return Container(
+      margin: const EdgeInsets.only(
+        right: _overlayMarginRight,
+        bottom: _overlayMarginBottom,
+      ),
+      padding: const EdgeInsets.symmetric(
+        vertical: _overlayPaddingVertical,
+        horizontal: _overlayPaddingHorizontal,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(_borderRadius),
+      ),
+      child: Text(
+        duration,
+        style: const TextStyle(
+          fontSize: _overlayFontSize,
+          color: Colors.white,
+          fontWeight: FontWeight.w400,
+        ),
       ),
     );
   }

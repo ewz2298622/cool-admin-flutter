@@ -6,6 +6,16 @@ import '../entity/album_entity.dart';
 import '../utils/video.dart';
 
 class HomeTwoVideo extends StatelessWidget {
+  static const double maxItemWidthPortrait = 150.0;
+  static const double maxItemWidthLandscape = 200.0;
+  static const double crossAxisSpacingPortrait = 10.0;
+  static const double crossAxisSpacingLandscape = 15.0;
+  static const double runSpacing = 5.0;
+  static const double borderRadius = 5.0;
+  static const double tagBorderRadius = 3.0;
+  static const double imageHeight = 100.0;
+  static const double containerBorderRadius = 8.0;
+
   final List<dynamic> videoPageData;
 
   const HomeTwoVideo({super.key, required this.videoPageData});
@@ -18,56 +28,37 @@ class HomeTwoVideo extends StatelessWidget {
   Widget _buildAlbumItems(List<dynamic> album, BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // 获取当前屏幕方向
         final mediaQuery = MediaQuery.of(context);
         final isPortrait = mediaQuery.orientation == Orientation.portrait;
 
-        // 根据屏幕方向设置最大宽度和间距
-        const double maxItemWidthPortrait = 150.0;
-        const double maxItemWidthLandscape = 200.0;
-        const double crossAxisSpacingPortrait = 10.0;
-        const double crossAxisSpacingLandscape = 15.0;
+        final double maxItemWidth = isPortrait ? maxItemWidthPortrait : maxItemWidthLandscape;
+        final double crossAxisSpacing = isPortrait ? crossAxisSpacingPortrait : crossAxisSpacingLandscape;
 
-        final double maxItemWidth =
-            isPortrait ? maxItemWidthPortrait : maxItemWidthLandscape;
-        final double crossAxisSpacing =
-            isPortrait ? crossAxisSpacingPortrait : crossAxisSpacingLandscape;
-
-        // 计算每行能放多少个 item
         final screenWidth = constraints.maxWidth;
-        final crossAxisCount =
-            (screenWidth / (maxItemWidth + crossAxisSpacing)).floor();
+        final crossAxisCount = (screenWidth / (maxItemWidth + crossAxisSpacing)).floor();
         final finalCrossAxisCount = crossAxisCount >= 1 ? crossAxisCount : 1;
 
-        // 重构album 从0开始截取到finalCrossAxisCount的整数倍
         final itemCount = finalCrossAxisCount * 2;
-        final actualItemCount =
-            album.length > itemCount ? itemCount : album.length;
-        album = album.sublist(0, actualItemCount);
+        final actualItemCount = album.length > itemCount ? itemCount : album.length;
+        final truncatedAlbum = album.sublist(0, actualItemCount);
 
-        // 计算实际 item 宽度（考虑间距）
-        final itemWidth =
-            (screenWidth - (finalCrossAxisCount - 1) * crossAxisSpacing) /
-            finalCrossAxisCount;
+        final itemWidth = (screenWidth - (finalCrossAxisCount - 1) * crossAxisSpacing) / finalCrossAxisCount;
 
         return SizedBox(
           width: double.infinity,
           child: Wrap(
-            //添加自动换行
-            spacing: crossAxisSpacing, // 横向间距
-            runSpacing: 5, // 纵向间距（可调整）
-            // 添加换行参数以解决换行报错问题
+            spacing: crossAxisSpacing,
+            runSpacing: runSpacing,
             alignment: WrapAlignment.start,
             crossAxisAlignment: WrapCrossAlignment.start,
-            //自动换行
             children: List.generate(
-              album.length,
+              truncatedAlbum.length,
               (index) => RepaintBoundary(
                 key: ValueKey('home_two_video_$index'),
                 child: SizedBox(
-                  width: itemWidth, // 固定宽度
+                  width: itemWidth,
                   child: _buildAlbumItem(
-                    album[index] ?? AlbumDataListList(),
+                    truncatedAlbum[index] ?? AlbumDataListList(),
                     context,
                   ),
                 ),
@@ -81,11 +72,11 @@ class HomeTwoVideo extends StatelessWidget {
 
   Widget _buildAlbumItemImage(AlbumDataListList item) {
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxHeight: 100),
+      constraints: const BoxConstraints(maxHeight: imageHeight),
       child: SizedBox(
         child: TDImage(
           width: double.infinity,
-          height: 100,
+          height: imageHeight,
           fit: BoxFit.cover,
           imgUrl: item.surfacePlot ?? '',
           errorWidget: const TDImage(
@@ -102,33 +93,30 @@ class HomeTwoVideo extends StatelessWidget {
   Widget _buildAlbumItemOverlay(AlbumDataListList item) {
     return Container(
       width: double.infinity,
-      height: 100,
+      height: imageHeight,
       decoration: BoxDecoration(
-        //圆角
-        borderRadius: BorderRadius.circular(5),
+        borderRadius: BorderRadius.circular(borderRadius),
       ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _buildAlbumItemHDTag(item),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color.fromRGBO(217, 217, 217, 0), // 顶部透明
-                    Color.fromRGBO(88, 88, 88, 1), // 部黑色
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(5),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _buildAlbumItemHDTag(item),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color.fromRGBO(217, 217, 217, 0),
+                  Color.fromRGBO(88, 88, 88, 1),
+                ],
               ),
-              child: _buildAlbumItemNote(item),
+              borderRadius: BorderRadius.circular(borderRadius),
             ),
-          ],
-        ),
+            child: _buildAlbumItemNote(item),
+          ),
+        ],
       ),
     );
   }
@@ -138,23 +126,23 @@ class HomeTwoVideo extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-          margin: EdgeInsets.only(right: 4, top: 4), // 调整内边距
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          margin: const EdgeInsets.only(right: 4, top: 4),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(3),
+            borderRadius: BorderRadius.circular(tagBorderRadius),
             gradient: const LinearGradient(
-              begin: Alignment.centerLeft, // 对应 90deg (从左到右)
+              begin: Alignment.centerLeft,
               end: Alignment.centerRight,
               colors: [
-                Color(0xFFFFA35C), // rgb(255, 163, 92)
-                Color(0xFFFF5821), // rgb(255, 88, 33)
+                Color(0xFFFFA35C),
+                Color(0xFFFF5821),
               ],
             ),
           ),
-          alignment: Alignment.center, // 关键：强制内容居中
+          alignment: Alignment.center,
           child: Text(
             VideoUtil.formatTag(item.pubdate ?? ""),
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 11,
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -178,10 +166,10 @@ class HomeTwoVideo extends StatelessWidget {
               left: 4,
               right: 4,
             ),
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(borderRadius)),
             child: Text(
               item.remarks ?? "",
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: 'PingFang SC',
                 fontWeight: FontWeight.w500,
                 fontSize: 11.0,
@@ -192,7 +180,7 @@ class HomeTwoVideo extends StatelessWidget {
         ],
       );
     } else {
-      double doubanScore = item.doubanScore!.toDouble() / 100;
+      final doubanScore = item.doubanScore!.toDouble() / 100;
       return Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
@@ -204,7 +192,7 @@ class HomeTwoVideo extends StatelessWidget {
               left: 4,
               right: 4,
             ),
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(borderRadius)),
             child: Text(
               doubanScore.toString(),
               style: const TextStyle(
@@ -235,9 +223,7 @@ class HomeTwoVideo extends StatelessWidget {
   }
 
   Widget _buildAlbumItemSubTitle(AlbumDataListList item) {
-    //定义一个变量如果item.subTitle不为空则显示item.subTitle，否则显示item.videoTag
-    String subTitle =
-        item.subTitle ?? VideoUtil.extractPlainText(item.introduce ?? "");
+    String subTitle = item.subTitle ?? VideoUtil.extractPlainText(item.introduce ?? "");
     subTitle = subTitle.isEmpty ? item.videoTag ?? '' : subTitle;
     return SizedBox(
       width: double.infinity,
@@ -257,25 +243,22 @@ class HomeTwoVideo extends StatelessWidget {
 
   Widget _buildAlbumItem(AlbumDataListList item, BuildContext context) {
     return GestureDetector(
-      onTap:
-          () => Get.toNamed(
-            "/video_detail",
-            arguments: {"id": item.id},
-          ), //写入方法名称就可以了，但是是无参的
+      onTap: () => Get.toNamed(
+        "/video_detail",
+        arguments: {"id": item.id},
+      ),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8), // 可选：添加圆角
-        ), // 可选：添加内边距
+          borderRadius: BorderRadius.circular(containerBorderRadius),
+        ),
         child: Column(
-          mainAxisSize: MainAxisSize.min, // 高度自适应
-          //添加点击事件
+          mainAxisSize: MainAxisSize.min,
           children: [
             Stack(
               children: [
                 _buildAlbumItemImage(item),
                 _buildAlbumItemOverlay(item),
               ],
-              //添加点击事件
             ),
             _buildAlbumItemTitle(item),
             _buildAlbumItemSubTitle(item),

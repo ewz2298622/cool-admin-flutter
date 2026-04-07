@@ -8,7 +8,24 @@ import '../../entity/dict_info_list_entity.dart';
 typedef FilterLabelBuilder<T> = String Function(T? item);
 typedef FilterSelectionCallback<T> = void Function(T? item);
 
+/// 筛选行组件
 class FilterRow<T> extends StatelessWidget {
+  static const Color _defaultActiveColor = Color.fromRGBO(255, 122, 27, 1);
+  static const Color _defaultActiveBgColor = Color.fromRGBO(244, 244, 244, 1);
+  static const double _defaultTagBorderRadius = 15.0;
+  static const double _defaultTagSpacing = 1.0;
+  static const double _defaultTagListHeight = 40.0;
+  static const int _defaultId = 0;
+  static const int _defaultIndexOffset = 1;
+  static const double _selectedHorizontalPadding = 8.0;
+  static const double _unselectedHorizontalPadding = 6.0;
+  static const double _verticalPadding = 6.0;
+  static const TDTagShape _tagShape = TDTagShape.round;
+  static const bool _isLight = true;
+  static const TDTagSize _tagSize = TDTagSize.large;
+  static const bool _isOutline = true;
+  static const Color _borderColor = Colors.transparent;
+
   final String title;
   final List<T> items;
   final ValueNotifier<int> notifier;
@@ -21,18 +38,18 @@ class FilterRow<T> extends StatelessWidget {
   final double tagListHeight;
 
   const FilterRow({
-    Key? key,
+    super.key,
     required this.title,
     required this.items,
     required this.notifier,
     required this.labelBuilder,
     required this.onTap,
-    this.activeColor = const Color.fromRGBO(255, 122, 27, 1),
-    this.activeBgColor = const Color.fromRGBO(244, 244, 244, 1),
-    this.tagBorderRadius = 15.0,
-    this.tagSpacing = 1.0,
-    this.tagListHeight = 40.0,
-  }) : super(key: key);
+    this.activeColor = _defaultActiveColor,
+    this.activeBgColor = _defaultActiveBgColor,
+    this.tagBorderRadius = _defaultTagBorderRadius,
+    this.tagSpacing = _defaultTagSpacing,
+    this.tagListHeight = _defaultTagListHeight,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -43,21 +60,12 @@ class FilterRow<T> extends StatelessWidget {
     return ValueListenableBuilder<int>(
       valueListenable: notifier,
       builder: (context, selectedId, child) {
-        // 生成缓存键
-        final brightnessKey =
-            Theme.of(context).brightness == Brightness.dark ? 'dark' : 'light';
-        final cacheKey = '$title-$selectedId-${items.length}-$brightnessKey';
-
-        // 缓存 Theme 值，避免重复获取
-        final theme = TDTheme.of(context);
-        final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
-        final Color unselectedColor =
-            isDarkMode ? Colors.white70 : theme.fontGyColor2;
+        final unselectedColor = _getUnselectedColor(context);
 
         return CommonFilterBar<T>(
           items: items,
           labelBuilder: (item) => item == null ? title : labelBuilder(item),
-          isSelected: (item) =>
+          isSelected: (item) => 
               item == null ? selectedId == 0 : _getId(item) == selectedId,
           onTap: onTap,
           chipBuilder: (label, isSelected) => _buildTagChip(
@@ -75,19 +83,24 @@ class FilterRow<T> extends StatelessWidget {
     );
   }
 
+  Color _getUnselectedColor(BuildContext context) {
+    final theme = TDTheme.of(context);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    return isDarkMode ? Colors.white70 : theme.fontGyColor2;
+  }
+
   int _getId(T item) {
     if (item is int) {
       return item;
     } else if (item is DictDataDataVideoCategory) {
-      return item.id ?? 0;
+      return item.id ?? _defaultId;
     } else if (item is DictDataDataVideoTag) {
-      return item.id ?? 0;
+      return item.id ?? _defaultId;
     } else if (item is DictInfoListData) {
-      return item.id ?? 0;
+      return item.id ?? _defaultId;
     } else {
-      // 如果无法获取ID，则使用列表索引
       final index = items.indexOf(item);
-      return index >= 0 ? index + 1 : 0;
+      return index >= 0 ? index + _defaultIndexOffset : _defaultId;
     }
   }
 
@@ -99,25 +112,29 @@ class FilterRow<T> extends StatelessWidget {
     required Color selectedBgColor,
     required double borderRadius,
   }) {
-    final padding = EdgeInsets.symmetric(
-      horizontal: selected ? 8 : 6,
-      vertical: 6,
-    );
+    final padding = _getTagPadding(selected);
     return Padding(
       padding: padding,
       child: TDTag(
         text,
-        shape: TDTagShape.round,
-        isLight: true,
-        size: TDTagSize.large,
+        shape: _tagShape,
+        isLight: _isLight,
+        size: _tagSize,
         textColor: selected ? selectedTextColor : unselectedTextColor,
         backgroundColor: selected ? selectedBgColor : Colors.transparent,
-        isOutline: true,
+        isOutline: _isOutline,
         style: TDTagStyle(
-          borderColor: Colors.transparent,
+          borderColor: _borderColor,
           borderRadius: BorderRadius.circular(borderRadius),
         ),
       ),
+    );
+  }
+
+  EdgeInsets _getTagPadding(bool selected) {
+    return EdgeInsets.symmetric(
+      horizontal: selected ? _selectedHorizontalPadding : _unselectedHorizontalPadding,
+      vertical: _verticalPadding,
     );
   }
 }
