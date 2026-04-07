@@ -23,7 +23,7 @@ class SearchResult extends StatefulWidget {
 
 class SearchResultState extends State<SearchResult>
     with SingleTickerProviderStateMixin {
-  var _futureBuilderFuture;
+  late Future<String> _futureBuilderFuture;
   String inputText = "";
   List<VideoPageDataList> videoPageData = [];
   TextEditingController searchController = TextEditingController();
@@ -41,18 +41,46 @@ class SearchResultState extends State<SearchResult>
   // 添加搜索加载状态
   bool _isLoading = false;
 
+  // 常量定义
+  static const String _searchText = '搜索';
+  static const String _searchResultText = '搜索结果';
+  static const String _noDataAvailableText = 'No data available';
+  static const double _navBarHeight = 36.0;
+  static const double _navBarTitleMargin = 5.0;
+  static const double _searchBarPaddingTop = 2.0;
+  static const double _searchBarPaddingBottom = 2.0;
+  static const double _searchResultPaddingLeft = 10.0;
+  static const double _searchResultPaddingRight = 10.0;
+  static const double _searchResultPaddingTop = 10.0;
+  static const double _searchResultFontSize = 18.0;
+  static const double _videoListPaddingTop = 10.0;
+  static const int _pageSize = 10;
+  static const int _apiTimeout = 10;
+
+  // 布局常量
+  static const EdgeInsets _navBarPadding = EdgeInsets.only(left: 0, right: 0);
+  static const EdgeInsets _searchBarPadding = EdgeInsets.only(left: 0, right: 0, bottom: _searchBarPaddingBottom, top: _searchBarPaddingTop);
+  static const EdgeInsets _searchResultPadding = EdgeInsets.only(
+    left: _searchResultPaddingLeft,
+    right: _searchResultPaddingRight,
+    top: _searchResultPaddingTop,
+  );
+  static const EdgeInsets _videoListPadding = EdgeInsets.only(top: _videoListPaddingTop);
+  static const TextStyle _searchResultTextStyle = TextStyle(
+    fontSize: _searchResultFontSize,
+    fontWeight: FontWeight.bold,
+  );
+
   Future<void> getVideoPages() async {
     try {
-      Map<String, dynamic>? data = {"page": currentPage};
-      data = {"page": currentPage, "keyWord": inputText};
+      final data = {"page": currentPage, "keyWord": inputText};
 
-      List<VideoPageDataList> list =
-          (await Api.getVideoPages(data)).data?.list ??
-          [] as List<VideoPageDataList>;
+      final response = await Api.getVideoPages(data).timeout(const Duration(seconds: _apiTimeout));
+      final list = response.data?.list ?? [] as List<VideoPageDataList>;
       videoPageData = [...videoPageData, ...list];
     } catch (e) {
       // 捕获并处理异常
-      debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
+      debugPrint('getVideoPages failed: $e');
     }
   }
 
@@ -74,7 +102,7 @@ class SearchResultState extends State<SearchResult>
       return "init success";
     } catch (e) {
       // 捕获并处理异常
-      print('Initialization failed: $e');
+      debugPrint('Initialization failed: $e');
       return "init success";
     }
   }
@@ -83,6 +111,15 @@ class SearchResultState extends State<SearchResult>
   void initState() {
     _futureBuilderFuture = init();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    // 释放资源
+    _refreshController.dispose();
+    searchController.dispose();
+    disposed = true;
+    super.dispose();
   }
 
   Future<void> loadMore() async {
@@ -101,17 +138,17 @@ class SearchResultState extends State<SearchResult>
       useDefaultBack: true,
       screenAdaptation: false,
       backgroundColor: Colors.transparent,
-      titleMargin: 5,
-      height: 36,
+      titleMargin: _navBarTitleMargin,
+      height: _navBarHeight,
       centerTitle: false,
-      padding: EdgeInsets.only(left: 0, right: 0),
+      padding: _navBarPadding,
       titleWidget: TDSearchBar(
         backgroundColor: Colors.transparent,
         controller: searchController,
         placeHolder: '',
-        action: "搜索",
+        action: _searchText,
         style: TDSearchStyle.round,
-        padding: EdgeInsets.only(left: 0, right: 0, bottom: 2, top: 2),
+        padding: _searchBarPadding,
         onTextChanged: (String text) {
           inputText = text; // 直接更新变量，不需要立即setState
         },
@@ -123,23 +160,30 @@ class SearchResultState extends State<SearchResult>
   Future<void> search(BuildContext context) async {
     // 关闭键盘
     FocusScope.of(context).unfocus();
-    searchHistory.insertSearchHistory(
-      SearchHistoryEntity(query: inputText, timestamp: DateTime.now()),
-    );
+    
+    // 保存搜索历史
+    if (inputText.isNotEmpty) {
+      searchHistory.insertSearchHistory(
+        SearchHistoryEntity(query: inputText, timestamp: DateTime.now()),
+      );
+    }
 
     // 设置加载状态为true
     setState(() {
       _isLoading = true;
     });
 
+    // 重置分页并加载数据
     currentPage = 1;
     videoPageData.clear();
     await getVideoPages();
 
     // 设置加载状态为false
-    setState(() {
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
 
     if (disposed) {
       return;
@@ -171,7 +215,7 @@ class SearchResultState extends State<SearchResult>
     _updateUI();
 
     // 判断是否还有更多数据
-    if (videoPageData.length < currentPage * 10) {
+    if (videoPageData.length < currentPage * _pageSize) {
       // 假设每页10条数据
       _refreshController.loadNoData();
     } else {
@@ -179,7 +223,34 @@ class SearchResultState extends State<SearchResult>
     }
   }
 
-  Widget isShowContent() {
+  Widget _buildLoadingWidget() {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.6,
+      child: Center(child: PageLoading()),
+    );
+  }
+
+  Widget _buildNoDataWidget() {
+    return NoData();
+  }
+
+  Widget _buildVideoListWidget() {
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Container(
+            padding: _videoListPadding,
+            width: double.infinity,
+            child: Column(
+              children: [VideoOneSmall(videoPageData: videoPageData)],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContentWidget() {
     // 使用 SmartRefresher 包装内容，始终使用SmartRefresher
     return SmartRefresher(
       controller: _refreshController,
@@ -188,25 +259,10 @@ class SearchResultState extends State<SearchResult>
       onLoading: _onLoading,
       child:
           _isLoading
-              ? Container(
-                height: MediaQuery.of(context).size.height * 0.6,
-                child: Center(child: PageLoading()),
-              )
+              ? _buildLoadingWidget()
               : videoPageData.isEmpty
-              ? NoData()
-              : CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: Container(
-                      padding: const EdgeInsets.only(top: 10),
-                      width: double.infinity,
-                      child: Column(
-                        children: [VideoOneSmall(videoPageData: videoPageData)],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              ? _buildNoDataWidget()
+              : _buildVideoListWidget(),
     );
   }
 
@@ -219,7 +275,7 @@ class SearchResultState extends State<SearchResult>
         if (snapshot.connectionState == ConnectionState.waiting) {
           return PageLoading();
         } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}'); // 显示错误信息
+          return Center(child: Text('Error: ${snapshot.error}')); // 显示错误信息
         } else if (snapshot.hasData) {
           return Column(
             children: [
@@ -229,28 +285,21 @@ class SearchResultState extends State<SearchResult>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(
-                        left: 10,
-                        right: 10,
-                        top: 10,
-                      ),
+                      padding: _searchResultPadding,
                       child: Text(
-                        '搜索结果',
+                        _searchResultText,
                         textAlign: TextAlign.left,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: _searchResultTextStyle,
                       ),
                     ),
-                    Expanded(child: isShowContent()),
+                    Expanded(child: _buildContentWidget()),
                   ],
                 ),
               ),
             ],
           );
         } else {
-          return Text('No data available');
+          return Center(child: Text(_noDataAvailableText));
         }
       },
     );
@@ -265,12 +314,5 @@ class SearchResultState extends State<SearchResult>
       ),
       body: Container(child: _buildContent()),
     );
-  }
-
-  @override
-  void dispose() {
-    // 释放 RefreshController 资源
-    _refreshController.dispose();
-    super.dispose();
   }
 }

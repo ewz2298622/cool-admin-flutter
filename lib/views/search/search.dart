@@ -18,14 +18,17 @@ import '../../utils/video.dart';
 
 /// 渐变标签指示器
 class GradientTabIndicator extends Decoration {
+  static const double _defaultHeight = 2.0;
+  static const double _defaultRadius = 2.0;
+
   final Gradient gradient;
   final double height;
   final double radius;
 
   const GradientTabIndicator({
     required this.gradient,
-    this.height = 2.0,
-    this.radius = 2.0,
+    this.height = _defaultHeight,
+    this.radius = _defaultRadius,
   });
 
   @override
@@ -88,6 +91,36 @@ class VideoSearchState extends State<VideoSearch>
   static const int _searchHistoryPageSize = 4;
   static const int _hotKeyWordPageSize = 8;
   static const int _searchTypeVideoPageSize = 7;
+  static const String _defaultTabText = '默认';
+  static const String _defaultColor = '#77A1D3';
+  static const String _darkColor = '#242424';
+  static const String _noDataText = '暂无数据';
+  static const double _indicatorHeight = 3.0;
+  static const double _indicatorRadius = 4.0;
+  static const double _tabFontSize = 16.0;
+  static const double _hotKeyWordFontSize = 14.0;
+  static const double _hotKeyWordTagFontSize = 12.0;
+  static const double _rankFontSize = 16.0;
+  static const double _videoTitleFontSize = 16.0;
+  static const double _videoIntroFontSize = 12.0;
+  static const double _searchHistoryHeight = 30.0;
+  static const double _searchHistorySpacing = 5.0;
+  static const double _searchHistoryPadding = 12.0;
+  static const double _searchHistoryBorderRadius = 15.0;
+  static const double _searchHistoryIconSize = 24.0;
+  static const double _searchHistoryCloseIconSize = 14.0;
+  static const double _searchHistoryDividerHeight = 1.0;
+  static const double _pageViewHorizontalPadding = 8.0;
+  static const double _pageViewVerticalPadding = 10.0;
+  static const double _pageViewBorderRadius = 8.0;
+  static const double _videoItemHorizontalPadding = 4.0;
+  static const double _videoItemSpacing = 8.0;
+  static const double _videoItemImageBorderRadius = 3.0;
+  static const double _videoItemImageShadowBlurRadius = 4.0;
+  static const Offset _videoItemImageShadowOffset = Offset(0, 2);
+  static const double _videoItemTitleSpacing = 5.0;
+  static const int _initializationTimeout = 15;
+  static const int _apiTimeout = 10;
 
   // 颜色常量
   static const Color _selectedTabColor = Color.fromRGBO(252, 119, 66, 1);
@@ -101,6 +134,24 @@ class VideoSearchState extends State<VideoSearch>
   static const Color _borderColor = Color.fromRGBO(243, 241, 240, 1);
   static const Color _darkBackgroundColor = Color.fromRGBO(51, 51, 51, 1);
   static const Color _lightBackgroundColor = Color.fromRGBO(239, 239, 239, 1);
+  static const Color _searchHistoryCloseIconColor = Color.fromRGBO(151, 151, 151, 1);
+  static const Color _hotKeyWordNumberColor = Colors.grey;
+  static const Color _videoItemImageShadowColor = Colors.black;
+  static const double _videoItemImageShadowOpacity = 0.1;
+
+  // 布局常量
+  static const EdgeInsets _searchBarPadding = EdgeInsets.only(left: 0, right: 0, bottom: 2, top: 2);
+  static const EdgeInsets _pageViewPadding = EdgeInsets.symmetric(horizontal: _pageViewHorizontalPadding, vertical: _pageViewVerticalPadding);
+  static const EdgeInsets _videoItemPadding = EdgeInsets.symmetric(horizontal: _videoItemHorizontalPadding);
+  static const EdgeInsets _hotKeyWordItemPadding = EdgeInsets.symmetric(horizontal: 4);
+  static const SizedBox _hotKeyWordNumberSpacing = SizedBox(width: 4);
+  static const SizedBox _hotKeyWordTagSpacing = SizedBox(width: 4);
+  static const SliverGridDelegateWithFixedCrossAxisCount _hotKeyWordGridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: 2,
+    mainAxisExtent: 24,
+    mainAxisSpacing: 8,
+    crossAxisSpacing: 8,
+  );
 
   @override
   bool get wantKeepAlive => true;
@@ -126,38 +177,42 @@ class VideoSearchState extends State<VideoSearch>
           getDictCategoryInfoPages(),
           getSearchHistoryEntity(),
           getDictSearchTypeInfoPages(),
-        ]).timeout(const Duration(seconds: 15));
+        ]).timeout(const Duration(seconds: _initializationTimeout));
       } on TimeoutException {
         debugPrint('Initialization timeout');
         // 超时后继续执行，使用默认值
       }
 
       // 容错处理：确保 tabs 不为空
-      if (tabs.isEmpty) {
-        tabs = [const TDTab(text: '默认')];
-        hotKeyWordList.add(<VideoHotWordsDataListList>[]);
-      }
+      _ensureDefaultTab();
 
       // 确保 TabController 长度与 tabs 一致
-      final tabLength = tabs.length;
-      if (_tabController == null || _tabController!.length != tabLength) {
-        _tabController?.dispose();
-        _tabController = TabController(length: tabLength, vsync: this);
-      }
+      _ensureTabController();
 
       return "init success";
     } catch (e) {
       debugPrint('Initialization failed: $e');
       // 即使失败也创建 TabController，避免崩溃
-      if (tabs.isEmpty) {
-        tabs = [const TDTab(text: '默认')];
-        hotKeyWordList.add(<VideoHotWordsDataListList>[]);
-      }
-      if (_tabController == null || _tabController!.length != tabs.length) {
-        _tabController?.dispose();
-        _tabController = TabController(length: tabs.length, vsync: this);
-      }
+      _ensureDefaultTab();
+      _ensureTabController();
       return "init success";
+    }
+  }
+
+  /// 确保至少有一个默认 tab
+  void _ensureDefaultTab() {
+    if (tabs.isEmpty) {
+      tabs = [const TDTab(text: _defaultTabText)];
+      hotKeyWordList.add(<VideoHotWordsDataListList>[]);
+    }
+  }
+
+  /// 确保 TabController 长度与 tabs 一致
+  void _ensureTabController() {
+    final tabLength = tabs.length;
+    if (_tabController == null || _tabController!.length != tabLength) {
+      _tabController?.dispose();
+      _tabController = TabController(length: tabLength, vsync: this);
     }
   }
 
@@ -166,7 +221,7 @@ class VideoSearchState extends State<VideoSearch>
     try {
       final hotWordsEntity = await Api.getSearchHotKeyWord(
         {},
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: _apiTimeout));
       final hotWordsList = hotWordsEntity.data?.list ?? [];
 
       tabs.clear();
@@ -188,10 +243,7 @@ class VideoSearchState extends State<VideoSearch>
     } catch (e) {
       debugPrint('getDictCategoryInfoPages failed: $e');
       // 容错处理：确保至少有一个默认 tab
-      if (tabs.isEmpty) {
-        tabs = [const TDTab(text: '默认')];
-        hotKeyWordList.add(<VideoHotWordsDataListList>[]);
-      }
+      _ensureDefaultTab();
     }
   }
 
@@ -200,7 +252,7 @@ class VideoSearchState extends State<VideoSearch>
     try {
       final rankEntity = await Api.getSearchVideoRank(
         {},
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: _apiTimeout));
       searchType = rankEntity.data?.list ?? [];
       searchTypeVideoPageDataList.clear();
 
@@ -273,9 +325,8 @@ class VideoSearchState extends State<VideoSearch>
         placeHolder: '',
         action: "搜索",
         style: TDSearchStyle.round,
-        padding: const EdgeInsets.only(left: 0, right: 0, bottom: 2, top: 2),
+        padding: _searchBarPadding,
         onTextChanged: (String text) {
-          // 使用ValueNotifier等更精细的状态管理，避免整个页面重建
           setState(() {
             inputText = text;
           });
@@ -308,21 +359,7 @@ class VideoSearchState extends State<VideoSearch>
                       children: [
                         _buildSearchHistory(),
                         _buildTabs(),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              left: Layout.paddingL,
-                              right: Layout.paddingR,
-                              top: Layout.paddingT,
-                            ),
-                            child: Row(
-                              spacing: 10,
-                              children: _buildPageViewContentList(),
-                            ),
-                          ),
-                        ),
+                        _buildHorizontalScrollView(),
                       ],
                     ),
                   ),
@@ -333,6 +370,25 @@ class VideoSearchState extends State<VideoSearch>
             return const PageLoading();
         }
       },
+    );
+  }
+
+  /// 构建水平滚动视图
+  Widget _buildHorizontalScrollView() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: Layout.paddingL,
+          right: Layout.paddingR,
+          top: Layout.paddingT,
+        ),
+        child: Row(
+          spacing: 10,
+          children: _buildPageViewContentList(),
+        ),
+      ),
     );
   }
 
@@ -349,9 +405,9 @@ class VideoSearchState extends State<VideoSearch>
       final searchTypeItem = searchType[i];
       final color = HexColor(
         (Theme.of(context).brightness == Brightness.dark
-                ? "#242424"
+                ? _darkColor
                 : searchTypeItem.color) ??
-            "#77A1D3",
+            _defaultColor,
       );
 
       return _buildPageViewContent(
@@ -380,12 +436,12 @@ class VideoSearchState extends State<VideoSearch>
               gradient: const LinearGradient(
                 colors: [_indicatorStartColor, _indicatorEndColor],
               ),
-              height: 3.0,
-              radius: 4.0,
+              height: _indicatorHeight,
+              radius: _indicatorRadius,
             ),
             labelColor: _selectedTabColor,
             unselectedLabelStyle: const TextStyle(
-              fontSize: 16,
+              fontSize: _tabFontSize,
               fontWeight: FontWeight.w500,
             ),
             unselectedLabelColor:
@@ -393,7 +449,7 @@ class VideoSearchState extends State<VideoSearch>
                     ? Colors.white
                     : Colors.black87,
             labelStyle: const TextStyle(
-              fontSize: 16,
+              fontSize: _tabFontSize,
               fontWeight: FontWeight.w800,
             ),
             tabs: tabs,
@@ -408,19 +464,14 @@ class VideoSearchState extends State<VideoSearch>
               // 容错处理：检查索引是否有效
               if (index >= hotKeyWordList.length ||
                   hotKeyWordList[index].isEmpty) {
-                return const Center(child: Text('暂无数据'));
+                return const Center(child: Text(_noDataText));
               }
 
               return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 cacheExtent: 200,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisExtent: 24,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                ),
+                gridDelegate: _hotKeyWordGridDelegate,
                 itemCount: hotKeyWordList[index].length,
                 itemBuilder: (context, keyWordIndex) {
                   final item = hotKeyWordList[index][keyWordIndex];
@@ -446,9 +497,9 @@ class VideoSearchState extends State<VideoSearch>
         children: [
           Text(
             '${keyWordIndex + 1}',
-            style: const TextStyle(color: Colors.grey, fontSize: 14),
+            style: const TextStyle(color: _hotKeyWordNumberColor, fontSize: _hotKeyWordFontSize),
           ),
-          const SizedBox(width: 4),
+          _hotKeyWordNumberSpacing,
           Expanded(
             child: GestureDetector(
               child: Row(
@@ -458,33 +509,15 @@ class VideoSearchState extends State<VideoSearch>
                       item.keyWord ?? "",
                       style: const TextStyle(
                         fontWeight: FontWeight.w500,
-                        fontSize: 14,
+                        fontSize: _hotKeyWordFontSize,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(width: 4),
+                  _hotKeyWordTagSpacing,
                   if ((item.tag ?? "").isNotEmpty)
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: HexColor(item.bgColor ?? "#77A1D3"),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Text(
-                          item.tag ?? "",
-                          style: TextStyle(
-                            color: HexColor(item.fontColor ?? "#77A1D3"),
-                            fontWeight: FontWeight.w500,
-                            fontSize: 12,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
+                    _buildHotKeyWordTag(item),
                 ],
               ),
               onTap:
@@ -495,6 +528,29 @@ class VideoSearchState extends State<VideoSearch>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// 构建热门关键词标签
+  Widget _buildHotKeyWordTag(VideoHotWordsDataListList item) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: HexColor(item.bgColor ?? _defaultColor),
+        borderRadius: BorderRadius.circular(2),
+      ),
+      child: Padding(
+        padding: _hotKeyWordItemPadding,
+        child: Text(
+          item.tag ?? "",
+          style: TextStyle(
+            color: HexColor(item.fontColor ?? _defaultColor),
+            fontWeight: FontWeight.w500,
+            fontSize: _hotKeyWordTagFontSize,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     );
   }
@@ -510,38 +566,20 @@ class VideoSearchState extends State<VideoSearch>
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      padding: _pageViewPadding,
       width: MediaQuery.of(context).size.width * _pageViewWidthRatio,
       constraints: BoxConstraints(
         maxWidth: MediaQuery.of(context).size.width * _pageViewWidthRatio,
       ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(_pageViewBorderRadius),
         border: Border.all(
           color:
               Theme.of(context).brightness == Brightness.dark
                   ? Colors.white
                   : _borderColor,
         ),
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            color,
-            color.withAlpha(
-              Theme.of(context).brightness == Brightness.dark ? 1 : 0,
-            ),
-            color.withAlpha(
-              Theme.of(context).brightness == Brightness.dark ? 1 : 0,
-            ),
-            color.withAlpha(
-              Theme.of(context).brightness == Brightness.dark ? 1 : 0,
-            ),
-            color.withAlpha(
-              Theme.of(context).brightness == Brightness.dark ? 1 : 0,
-            ),
-          ],
-        ),
+        gradient: _buildPageViewGradient(color),
       ),
       child: Column(
         children: [
@@ -562,101 +600,139 @@ class VideoSearchState extends State<VideoSearch>
     );
   }
 
+  /// 构建页面视图渐变
+  LinearGradient _buildPageViewGradient(Color color) {
+    return LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        color,
+        color.withAlpha(
+          Theme.of(context).brightness == Brightness.dark ? 1 : 0,
+        ),
+        color.withAlpha(
+          Theme.of(context).brightness == Brightness.dark ? 1 : 0,
+        ),
+        color.withAlpha(
+          Theme.of(context).brightness == Brightness.dark ? 1 : 0,
+        ),
+        color.withAlpha(
+          Theme.of(context).brightness == Brightness.dark ? 1 : 0,
+        ),
+      ],
+    );
+  }
+
   /// 构建视频项
   Widget _buildVideoItem(VideoRankDataListList item, int index) {
     return GestureDetector(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        padding: _videoItemPadding,
         child: Row(
-          spacing: 8,
+          spacing: _videoItemSpacing,
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(
-              width: _rankIconSize,
-              height: _rankIconSize,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
-                color: _getColor(index),
-              ),
-              child: Center(
-                child: Text(
-                  "${index + 1}",
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                    height: 1.0,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-            Container(
-              width: _imageWidth,
-              height: _imageHeight,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(3),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(3),
-                child: TDImage(
-                  fit: BoxFit.cover,
-                  width: _imageWidth,
-                  height: _imageHeight,
-                  imgUrl: item.surfacePlot ?? "",
-                  errorWidget: const TDImage(
-                    width: _imageWidth,
-                    height: _imageHeight,
-                    assetUrl: 'assets/images/loading.gif',
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 5,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    item.title ?? "",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color:
-                          Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : Colors.black,
-                    ),
-                  ),
-                  Text(
-                    VideoUtil.extractPlainText(item.introduce ?? ""),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color:
-                          Theme.of(context).brightness == Brightness.dark
-                              ? Colors.grey[400]
-                              : _textGreyColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _buildRankIcon(index),
+            _buildVideoImage(item),
+            _buildVideoInfo(item),
           ],
         ),
       ),
       onTap: () => Get.toNamed("/video_detail", arguments: {"id": item.id}),
+    );
+  }
+
+  /// 构建排名图标
+  Widget _buildRankIcon(int index) {
+    return Container(
+      width: _rankIconSize,
+      height: _rankIconSize,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5),
+        color: _getColor(index),
+      ),
+      child: Center(
+        child: Text(
+          "${index + 1}",
+          style: const TextStyle(
+            fontSize: _rankFontSize,
+            color: Colors.white,
+            height: 1.0,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
+  /// 构建视频图片
+  Widget _buildVideoImage(VideoRankDataListList item) {
+    return Container(
+      width: _imageWidth,
+      height: _imageHeight,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(_videoItemImageBorderRadius),
+        boxShadow: [
+          BoxShadow(
+            color: _videoItemImageShadowColor.withValues(alpha: _videoItemImageShadowOpacity),
+            blurRadius: _videoItemImageShadowBlurRadius,
+            offset: _videoItemImageShadowOffset,
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(_videoItemImageBorderRadius),
+        child: TDImage(
+          fit: BoxFit.cover,
+          width: _imageWidth,
+          height: _imageHeight,
+          imgUrl: item.surfacePlot ?? "",
+          errorWidget: const TDImage(
+            width: _imageWidth,
+            height: _imageHeight,
+            assetUrl: 'assets/images/loading.gif',
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 构建视频信息
+  Widget _buildVideoInfo(VideoRankDataListList item) {
+    return Expanded(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: _videoItemTitleSpacing,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            item.title ?? "",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: _videoTitleFontSize,
+              color:
+                  Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black,
+            ),
+          ),
+          Text(
+            VideoUtil.extractPlainText(item.introduce ?? ""),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: _videoIntroFontSize,
+              color:
+                  Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey[400]
+                      : _textGreyColor,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -695,88 +771,107 @@ class VideoSearchState extends State<VideoSearch>
           child: Row(
             spacing: 10,
             children: [
-              Icon(Icons.access_time, size: 24, color: Colors.grey[400]),
-              Flexible(
-                child: SizedBox(
-                  height: 30,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    cacheExtent: 200,
-                    itemCount: searchHistoryList.length,
-                    separatorBuilder:
-                        (context, index) => const SizedBox(width: 5),
-                    itemBuilder: (context, index) {
-                      final entity = searchHistoryList.elementAt(index);
-                      return GestureDetector(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? _darkBackgroundColor
-                                    : _lightBackgroundColor,
-                            borderRadius: BorderRadius.circular(15.0),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            spacing: 5,
-                            children: [
-                              Text(
-                                entity.query,
-                                style: TextStyle(
-                                  color:
-                                      Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? Colors.white
-                                          : Colors.black,
-                                ),
-                              ),
-                              GestureDetector(
-                                child: const Icon(
-                                  Icons.close,
-                                  size: 14,
-                                  color: Color.fromRGBO(151, 151, 151, 1),
-                                ),
-                                onTap: () {
-                                  searchHistory.deleteSearchHistoryById(
-                                    entity.id ?? 0,
-                                  );
-                                  getSearchHistoryEntity().then((_) {
-                                    if (mounted) setState(() {});
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        onTap: () {
-                          inputText = entity.query;
-                          goToSearchResult();
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ),
-              //点击组件
-              GestureDetector(
-                child: SvgPicture.asset(
-                  'assets/images/clear.svg',
-                  width: 24,
-                  height: 24,
-                ),
-                onTap: () {
-                  searchHistory.deleteAll();
-                  getSearchHistoryEntity().then((_) {
-                    if (mounted) setState(() {});
-                  });
-                },
-              ),
+              Icon(Icons.access_time, size: _searchHistoryIconSize, color: Colors.grey[400]),
+              _buildSearchHistoryList(),
+              _buildClearButton(),
             ],
           ),
         ),
-        Divider(height: 1, color: Colors.grey[300]),
+        Divider(height: _searchHistoryDividerHeight, color: Colors.grey[300]),
       ],
+    );
+  }
+
+  /// 构建搜索历史列表
+  Widget _buildSearchHistoryList() {
+    return Flexible(
+      child: SizedBox(
+        height: _searchHistoryHeight,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          cacheExtent: 200,
+          itemCount: searchHistoryList.length,
+          separatorBuilder:
+              (context, index) => const SizedBox(width: _searchHistorySpacing),
+          itemBuilder: (context, index) {
+            final entity = searchHistoryList.elementAt(index);
+            return _buildSearchHistoryItem(entity);
+          },
+        ),
+      ),
+    );
+  }
+
+  /// 构建搜索历史项
+  Widget _buildSearchHistoryItem(SearchHistoryEntity entity) {
+    return GestureDetector(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: _searchHistoryPadding),
+        decoration: BoxDecoration(
+          color:
+              Theme.of(context).brightness == Brightness.dark
+                  ? _darkBackgroundColor
+                  : _lightBackgroundColor,
+          borderRadius: BorderRadius.circular(_searchHistoryBorderRadius),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: _searchHistorySpacing,
+          children: [
+            Text(
+              entity.query,
+              style: TextStyle(
+                color:
+                    Theme.of(context).brightness ==
+                            Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
+              ),
+            ),
+            _buildSearchHistoryCloseButton(entity),
+          ],
+        ),
+      ),
+      onTap: () {
+        inputText = entity.query;
+        goToSearchResult();
+      },
+    );
+  }
+
+  /// 构建搜索历史关闭按钮
+  Widget _buildSearchHistoryCloseButton(SearchHistoryEntity entity) {
+    return GestureDetector(
+      child: const Icon(
+        Icons.close,
+        size: _searchHistoryCloseIconSize,
+        color: _searchHistoryCloseIconColor,
+      ),
+      onTap: () {
+        searchHistory.deleteSearchHistoryById(
+          entity.id ?? 0,
+        );
+        getSearchHistoryEntity().then((_) {
+          if (mounted) setState(() {});
+        });
+      },
+    );
+  }
+
+  /// 构建清除按钮
+  Widget _buildClearButton() {
+    return GestureDetector(
+      child: SvgPicture.asset(
+        'assets/images/clear.svg',
+        width: _searchHistoryIconSize,
+        height: _searchHistoryIconSize,
+      ),
+      onTap: () {
+        searchHistory.deleteAll();
+        getSearchHistoryEntity().then((_) {
+          if (mounted) setState(() {});
+        });
+      },
     );
   }
 
@@ -800,8 +895,5 @@ class VideoSearchState extends State<VideoSearch>
     super.didChangeDependencies();
     // 仅在首次加载或需要强制刷新时才重新初始化
     // 避免因输入框聚焦等常规操作触发不必要的刷新
-    if (_futureBuilderFuture == null) {
-      _futureBuilderFuture = init();
-    }
   }
 }
