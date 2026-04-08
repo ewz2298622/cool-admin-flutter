@@ -357,13 +357,23 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
   ///
   /// 包含可滚动的TabBar和对应的TabBarView内容区域
   Widget _buildTabs(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final tabCount = week.length;
+    // 计算每个tab的最小宽度，假设每个tab至少需要80像素
+    const double minTabWidth = 80.0;
+    // 计算当所有tab平均分布时需要的最小屏幕宽度
+    final double requiredWidth = tabCount * minTabWidth;
+    
+    // 判断是否需要平均分布
+    final bool shouldDistributeEvenly = screenWidth >= requiredWidth;
+
     return Column(
       children: [
         // 顶部Tab导航栏
         Container(
           color: Theme.of(context).appBarTheme.backgroundColor, // 使用主题背景色
           child: TabBar(
-            tabAlignment: TabAlignment.center,
+            tabAlignment: shouldDistributeEvenly ? TabAlignment.fill : TabAlignment.center,
             controller: _tabController,
             indicatorColor: Color.fromRGBO(255, 153, 0, 1),
             indicatorWeight: 3.0,
@@ -373,7 +383,7 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
             labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             unselectedLabelStyle: TextStyle(fontSize: 16),
             tabs: week.map((e) => Tab(text: e.name)).toList(),
-            isScrollable: true,
+            isScrollable: !shouldDistributeEvenly,
           ),
         ),
         // Tab内容区域

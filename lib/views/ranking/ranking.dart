@@ -429,6 +429,16 @@ class VideoRankingState extends State<VideoRanking>
   }
 
   Widget _buildTabs() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final tabCount = tabs.length;
+    // 计算每个tab的最小宽度，假设每个tab至少需要80像素
+    const double minTabWidth = 80.0;
+    // 计算当所有tab平均分布时需要的最小屏幕宽度
+    final double requiredWidth = tabCount * minTabWidth;
+    
+    // 判断是否需要平均分布
+    final bool shouldDistributeEvenly = screenWidth >= requiredWidth;
+
     return Column(
       children: [
         RepaintBoundary(
@@ -436,8 +446,8 @@ class VideoRankingState extends State<VideoRanking>
             margin: EdgeInsets.zero,
             child: TabBar(
               controller: _tabController,
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
+              isScrollable: !shouldDistributeEvenly,
+              tabAlignment: shouldDistributeEvenly ? TabAlignment.fill : TabAlignment.start,
               dividerHeight: 0,
               indicator: const UnderlineTabIndicator(
                 borderSide: BorderSide(width: 0.0, color: Colors.transparent),

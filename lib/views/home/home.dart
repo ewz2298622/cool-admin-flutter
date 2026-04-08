@@ -699,13 +699,23 @@ class _HomePageState extends State<Home>
   }
 
   Widget _buildTabBar() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final tabCount = tabs.length;
+    // 计算每个tab的最小宽度，假设每个tab至少需要80像素
+    const double minTabWidth = 80.0;
+    // 计算当所有tab平均分布时需要的最小屏幕宽度
+    final double requiredWidth = tabCount * minTabWidth;
+    
+    // 判断是否需要平均分布
+    final bool shouldDistributeEvenly = screenWidth >= requiredWidth;
+
     return SizedBox(
       height: _tabBarHeight,
       child: TabBar(
         padding: const EdgeInsets.only(top: 2),
         controller: _tabController,
-        isScrollable: true,
-        tabAlignment: TabAlignment.center,
+        isScrollable: !shouldDistributeEvenly,
+        tabAlignment: shouldDistributeEvenly ? TabAlignment.fill : TabAlignment.center,
         dividerHeight: 0,
         indicator: _tabIndicator,
         labelColor: _selectedTabColor,

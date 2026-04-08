@@ -193,21 +193,6 @@ class Live_DetailState extends State<Live_Detail>
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFD700),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  '切换线路',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -337,7 +322,7 @@ class Live_DetailState extends State<Live_Detail>
             ),
           ),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: const BoxDecoration(
               border: Border(
                 top: BorderSide(
@@ -465,27 +450,11 @@ class Live_DetailState extends State<Live_Detail>
           ),
         ),
         actions: [
-          Text(
-            _currentTime,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(width: 16),
-          IconButton(
-            icon: const Icon(
-              Icons.settings_outlined,
-              color: Colors.white,
-            ),
-            onPressed: () {
-              // 设置功能
-            },
-          ),
+         
           const SizedBox(width: 8),
         ],
       ),
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       body: _buildContent(),
     );
   }
@@ -512,14 +481,11 @@ class Live_DetailState extends State<Live_Detail>
     });
   }
 
-  static const double _playerHeight = 250.0;
-
   Widget _buildVideo(BuildContext context) {
     final cover = videoData?.image ?? '';
 
-    return SizedBox(
-      height: _playerHeight,
-      width: double.infinity,
+    return AspectRatio(
+      aspectRatio: 16 / 9,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -534,7 +500,7 @@ class Live_DetailState extends State<Live_Detail>
           FView(
             player: player,
             width: double.infinity,
-            height: _playerHeight,
+            height: double.infinity,
             color: Colors.transparent,
             fsFit: FFit.contain,
             fit: FFit.fill,
@@ -545,19 +511,27 @@ class Live_DetailState extends State<Live_Detail>
               Size viewSize,
               Rect texturePos,
             ) {
-              return Stack(
-                children: [
-                  // 加载动画
-                  Center(
-                    child: Container(
-                      width: 48,
-                      height: 48,
-                      child: const CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 3,
+              // 只有在视频加载中时才显示加载动画
+              if (player.state == FState.asyncPreparing) {
+                return Stack(
+                  children: [
+                    // 加载动画
+                    Center(
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        child: const CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 3,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
+                );
+              }
+              // 视频加载完成后只显示控制按钮
+              return Stack(
+                children: [
                   // 播放控制按钮
                   Positioned(
                     bottom: 16,
@@ -601,6 +575,21 @@ class Live_DetailState extends State<Live_Detail>
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  // 全屏按钮
+                  Positioned(
+                    bottom: 16,
+                    right: 16,
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.fullscreen,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                      onPressed: () {
+                        player.enterFullScreen();
+                      },
                     ),
                   ),
                 ],

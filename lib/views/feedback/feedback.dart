@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -6,164 +8,258 @@ import '../../api/api.dart';
 import '../../components/loading.dart';
 import '../../entity/dict_data_entity.dart';
 
-// 定义一个名为 Setting 的有状态组件，用于展示一个包含 WebView 的页面
+/// 反馈/求片页面常量类
+class FeedbackConstants {
+  // 布局常量
+  static const double padding = 10.0;
+  static const double spacingSmall = 10.0;
+  static const double spacingMedium = 20.0;
+  static const double spacingLarge = 40.0;
+  
+  // 网格布局常量
+  static const int gridCrossAxisCount = 3;
+  static const double gridMainAxisSpacing = 10.0;
+  static const double gridCrossAxisSpacing = 10.0;
+  static const double gridChildAspectRatio = 3.5;
+  
+  // 文本域常量
+  static const int textareaMaxLines = 4;
+  static const int textareaMinLines = 4;
+  static const int textareaMaxLength = 500;
+  
+  // 防抖常量
+  static const int debounceDuration = 1000; // 防抖时间间隔(毫秒)
+  
+  // 文本常量
+  static const String pageTitle = "反馈/求片";
+  static const String problemTypeTitle = "请选择遇到的问题类型";
+  static const String problemDescriptionTitle = "详细问题描述(必填)";
+  static const String submitButtonText = "提交";
+  static const String textareaHintText = "输入您遇到的问题和意见以便我们提供更好的服务";
+  static const String feedbackSuccessMessage = "反馈成功";
+  static const String noDataText = "No data available";
+  
+  // API 相关常量
+  static const String feedbackTypeKey = "feedback_type";
+}
+
+/// 反馈/求片页面
+///
+/// 用户可以选择问题类型并提交详细描述，支持视频相关反馈
 class FeedbackPage extends StatefulWidget {
   const FeedbackPage({super.key});
 
-  // 创建该组件对应的状态类实例
   @override
   State<FeedbackPage> createState() => _FeedbackState();
 }
 
-// 定义 Setting 组件对应的状态类
+/// 反馈/求片页面状态管理
 class _FeedbackState extends State<FeedbackPage> {
-  TextEditingController TDTextareaController = TextEditingController();
-  var _futureBuilderFuture;
+  // 控制器
+  final TextEditingController _textareaController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  // 组件状态初始化方法，在组件创建时调用
-  final ValueNotifier<int> currentIndex = ValueNotifier<int>(0);
-  List<DictDataDataFeedbackType> feedback_type = [];
-  String content = "";
-  final videoId = Get.arguments?["videoId"]?.toString() ?? "";
-  final videoName = Get.arguments?["videoName"]?.toString() ?? "";
-  final playLineId = Get.arguments?["playLineId"]?.toString() ?? "";
-  final videoUrl = Get.arguments?["videoUrl"]?.toString() ?? "";
+  
+  // 状态变量
+  late Future<String> _futureBuilderFuture;
+  final ValueNotifier<int> _currentIndex = ValueNotifier<int>(0);
+  List<DictDataDataFeedbackType> _feedbackTypeList = [];
+  String _content = "";
+  
+  // 视频相关参数
+  final String _videoId = Get.arguments?["videoId"]?.toString() ?? "";
+  final String _videoName = Get.arguments?["videoName"]?.toString() ?? "";
+  final String _playLineId = Get.arguments?["playLineId"]?.toString() ?? "";
+  final String _videoUrl = Get.arguments?["videoUrl"]?.toString() ?? "";
 
-  // 添加防抖相关的变量
+  // 防抖相关的变量
   DateTime? _lastSubmitTime;
-  static const int _debounceDuration = 1000; // 防抖时间间隔(毫秒)
 
   @override
   void initState() {
-    _futureBuilderFuture = init();
-    // 调用父类的 initState 方法，确保父类的初始化逻辑正常执行
     super.initState();
+    _futureBuilderFuture = _init();
   }
 
-  Future<String> init() async {
+  @override
+  void dispose() {
+    _textareaController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  /// 初始化数据
+  ///
+  /// 加载反馈类型数据
+  Future<String> _init() async {
     try {
-      await getDictInfoPages();
+      await _getFeedbackTypeList();
       return "init success";
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('初始化失败: $e');
+      debugPrint('堆栈跟踪: $stackTrace');
       return "init success";
     }
   }
 
-  Future<void> getDictInfoPages() async {
+  /// 获取反馈类型列表
+  ///
+  /// 从 API 获取反馈分类数据
+  Future<void> _getFeedbackTypeList() async {
     try {
-      feedback_type =
-          ((await Api.getDictData({
-                    "types": ["feedback_type"],
-                  })).data
-                  as DictDataData)
-              .feedbackType!
-              .cast<DictDataDataFeedbackType>();
-    } catch (e) {
-      // 捕获并处理异常
-      print('获取反馈分类数据失败: $e');
+      final response = await Api.getDictData({
+        "types": [FeedbackConstants.feedbackTypeKey],
+      });
+      
+      final data = response.data as DictDataData;
+      _feedbackTypeList = data.feedbackType?.cast<DictDataDataFeedbackType>() ?? [];
+    } catch (e, stackTrace) {
+      debugPrint('获取反馈分类数据失败: $e');
+      debugPrint('堆栈跟踪: $stackTrace');
+      _feedbackTypeList = [];
     }
   }
 
-  /// 返回一个Widget自动填充剩余高度 且可以滑动
+  /// 构建页面内容
+  ///
+  /// 包含问题类型选择和详细描述输入
   Widget _buildContent(BuildContext context) {
     return FutureBuilder<String>(
       future: _futureBuilderFuture,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return PageLoading();
-        } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        } else if (snapshot.hasData) {
-          return SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
-            controller: _scrollController,
-            child: SingleChildScrollView(
-              child: Container(
-                height: MediaQuery.of(context).size.height,
-                padding: EdgeInsets.only(left: 10, right: 10),
-                child: Column(
-                  children: [
-                    Column(
-                      spacing: 10,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Column(
-                          spacing: 10,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("请选择遇到的问题类型"),
-                            _horizontalCardStyle(context),
-                          ],
-                        ),
-                        Column(
-                          spacing: 10,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [Text("详细问题描述(必填)"), _cardStyle(context)],
-                        ),
-                        TDButton(
-                          text: '提交',
-                          size: TDButtonSize.large,
-                          isBlock: true,
-                          disabled: content.isEmpty ? true : false,
-                          type: TDButtonType.fill,
-                          shape: TDButtonShape.rectangle,
-                          theme: TDButtonTheme.primary,
-                          onTap: () async {
-                            addFeedback(context);
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        } else {
-          return Text('No data available');
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return const PageLoading();
+          case ConnectionState.done:
+            if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}');
+            }
+            return _buildFeedbackForm(context);
+          default:
+            return const Text(FeedbackConstants.noDataText);
         }
       },
     );
   }
 
-  /// addFeedback 防抖函数
-  Future<void> addFeedback(BuildContext context) async {
+  /// 构建反馈表单
+  Widget _buildFeedbackForm(BuildContext context) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      controller: _scrollController,
+      padding: const EdgeInsets.all(FeedbackConstants.padding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 问题类型选择
+          _buildProblemTypeSection(context),
+          
+          const SizedBox(height: FeedbackConstants.spacingSmall),
+          
+          // 详细描述输入
+          _buildProblemDescriptionSection(context),
+          
+          const SizedBox(height: FeedbackConstants.spacingMedium),
+          
+          // 提交按钮
+          _buildSubmitButton(context),
+          
+          const SizedBox(height: FeedbackConstants.spacingLarge), // 添加底部空间，确保内容不被遮挡
+        ],
+      ),
+    );
+  }
+
+  /// 构建问题类型选择部分
+  Widget _buildProblemTypeSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(FeedbackConstants.problemTypeTitle),
+        const SizedBox(height: FeedbackConstants.spacingSmall),
+        _buildFeedbackTypeGrid(context),
+      ],
+    );
+  }
+
+  /// 构建问题描述输入部分
+  Widget _buildProblemDescriptionSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(FeedbackConstants.problemDescriptionTitle),
+        const SizedBox(height: FeedbackConstants.spacingSmall),
+        _buildTextarea(context),
+      ],
+    );
+  }
+
+  /// 构建提交按钮
+  Widget _buildSubmitButton(BuildContext context) {
+    return TDButton(
+      text: FeedbackConstants.submitButtonText,
+      size: TDButtonSize.large,
+      isBlock: true,
+      disabled: _content.isEmpty,
+      type: TDButtonType.fill,
+      shape: TDButtonShape.rectangle,
+      theme: TDButtonTheme.primary,
+      onTap: () async {
+        await _submitFeedback(context);
+      },
+    );
+  }
+
+  /// 提交反馈
+  ///
+  /// 添加防抖逻辑，防止重复提交
+  Future<void> _submitFeedback(BuildContext context) async {
     // 添加防抖逻辑
     final now = DateTime.now();
     if (_lastSubmitTime != null &&
-        now.difference(_lastSubmitTime!).inMilliseconds < _debounceDuration) {
-      // 如果距离上次提交时间小于防抖间隔，则忽略此次提交
+        now.difference(_lastSubmitTime!).inMilliseconds < FeedbackConstants.debounceDuration) {
       return;
     }
 
     // 更新上次提交时间
     _lastSubmitTime = now;
-    if (videoId.isEmpty) {
-      await Api.addFeedback({
-        "feedbackType": feedback_type[currentIndex.value].id,
-        "content": content,
-      });
-    } else {
-      await Api.addFeedback({
-        "videoId": videoId.isNotEmpty ? videoId : null,
-        "videoName": videoName.isNotEmpty ? videoName : null,
-        "playLineId": playLineId.isNotEmpty ? playLineId : null,
-        "videoUrl": videoUrl.isNotEmpty ? videoUrl : null,
-        "feedbackType": feedback_type[currentIndex.value].id,
-        "content": content,
-      });
-    }
+    
+    try {
+      if (_videoId.isEmpty) {
+        await Api.addFeedback({
+          "feedbackType": _feedbackTypeList[_currentIndex.value].id,
+          "content": _content,
+        });
+      } else {
+        await Api.addFeedback({
+          "videoId": _videoId.isNotEmpty ? _videoId : null,
+          "videoName": _videoName.isNotEmpty ? _videoName : null,
+          "playLineId": _playLineId.isNotEmpty ? _playLineId : null,
+          "videoUrl": _videoUrl.isNotEmpty ? _videoUrl : null,
+          "feedbackType": _feedbackTypeList[_currentIndex.value].id,
+          "content": _content,
+        });
+      }
 
-    TDToast.showText('反馈成功', context: context);
+      if (mounted) {
+        TDToast.showText(FeedbackConstants.feedbackSuccessMessage, context: context);
+      }
+    } catch (e, stackTrace) {
+      debugPrint('提交反馈失败: $e');
+      debugPrint('堆栈跟踪: $stackTrace');
+      if (mounted) {
+        TDToast.showText('提交失败，请稍后重试', context: context);
+      }
+    }
   }
 
-  Widget _cardStyle(BuildContext context) {
+  /// 构建文本输入区域
+  Widget _buildTextarea(BuildContext context) {
     return TDTextarea(
-      controller: TDTextareaController,
-      hintText: '输入您遇到的问题和意见以便我们提供更好的服务',
-      maxLines: 4,
-      minLines: 4,
-      maxLength: 500,
+      controller: _textareaController,
+      hintText: FeedbackConstants.textareaHintText,
+      maxLines: FeedbackConstants.textareaMaxLines,
+      minLines: FeedbackConstants.textareaMinLines,
+      maxLength: FeedbackConstants.textareaMaxLength,
       indicator: true,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -172,55 +268,60 @@ class _FeedbackState extends State<FeedbackPage> {
         ),
       ),
       onChanged: (value) {
-        content = value;
+        _content = value;
         setState(() {});
       },
     );
   }
 
-  Widget _horizontalCardStyle(BuildContext context) {
+  /// 构建反馈类型网格
+  Widget _buildFeedbackTypeGrid(BuildContext context) {
     return ValueListenableBuilder<int>(
-      valueListenable: currentIndex,
+      valueListenable: _currentIndex,
       builder: (BuildContext context, int value, Widget? child) {
         return GridView.builder(
           shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 3.5,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: FeedbackConstants.gridCrossAxisCount,
+            mainAxisSpacing: FeedbackConstants.gridMainAxisSpacing,
+            crossAxisSpacing: FeedbackConstants.gridCrossAxisSpacing,
+            childAspectRatio: FeedbackConstants.gridChildAspectRatio,
           ),
-          itemCount: feedback_type.length,
+          itemCount: _feedbackTypeList.length,
           itemBuilder: (BuildContext context, int index) {
-            return GestureDetector(
-              onTap: () {
-                currentIndex.value = index;
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  color:
-                      currentIndex.value == index
-                          ? TDTheme.of(context).brandNormalColor
-                          : TDTheme.of(context).grayColor1,
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Center(
-                  child: Text(
-                    feedback_type[index].name!,
-                    style: TextStyle(
-                      color:
-                          currentIndex.value == index
-                              ? TDTheme.of(context).whiteColor1
-                              : TDTheme.of(context).grayColor14,
-                    ),
-                  ),
-                ),
-              ),
-            );
+            return _buildFeedbackTypeItem(context, index, value);
           },
         );
       },
+    );
+  }
+
+  /// 构建反馈类型项
+  Widget _buildFeedbackTypeItem(BuildContext context, int index, int currentValue) {
+    final isSelected = currentValue == index;
+    return GestureDetector(
+      onTap: () {
+        _currentIndex.value = index;
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: isSelected
+              ? TDTheme.of(context).brandNormalColor
+              : TDTheme.of(context).grayColor1,
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: Center(
+          child: Text(
+            _feedbackTypeList[index].name ?? "",
+            style: TextStyle(
+              color: isSelected
+                  ? TDTheme.of(context).whiteColor1
+                  : TDTheme.of(context).grayColor14,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -228,18 +329,16 @@ class _FeedbackState extends State<FeedbackPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("反馈/求片", style: TextStyle(fontSize: 16)),
-        //返回
+        title: const Text(FeedbackConstants.pageTitle, style: TextStyle(fontSize: 16)),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, size: 20),
+          icon: const Icon(Icons.arrow_back_ios, size: 20),
           onPressed: () => Get.back(),
         ),
-        //标题居中
         centerTitle: true,
         toolbarHeight: 40,
-        automaticallyImplyLeading: false, //设置为false
+        automaticallyImplyLeading: false,
       ),
-      body: Container(child: _buildContent(context)),
+      body: _buildContent(context),
     );
   }
 }
