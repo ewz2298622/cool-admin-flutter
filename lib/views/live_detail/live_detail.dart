@@ -9,8 +9,11 @@ import 'package:get/get.dart';
 
 import '../../api/api.dart';
 import '../../components/loading.dart';
+import '../../db/entity/LiveCommentEntity.dart';
+import '../../db/manager/LiveCommentDatabaseHelper.dart';
 import '../../entity/live_info_entity.dart';
 import '../../entity/video_page_entity.dart';
+import '../../utils/user.dart';
 
 String TAG = 'Video_Detail';
 
@@ -37,6 +40,10 @@ class Live_DetailState extends State<Live_Detail>
   late final int _viewerSeed;
   String _currentTime = '';
   Timer? _timeTimer;
+
+  final LiveCommentDatabaseHelper _commentDatabaseHelper = LiveCommentDatabaseHelper();
+  List<LiveCommentEntity> _commentList = [];
+  final TextEditingController _commentController = TextEditingController();
 
   Future<void> liveInfo() async {
     try {
@@ -68,6 +75,7 @@ class Live_DetailState extends State<Live_Detail>
         debugPrint('Live detail pullUrl is empty.');
       }
       debugPrint('videoData: $streamUrl');
+      _loadComments();
       if (mounted) {
         setState(() {});
       }
@@ -76,6 +84,15 @@ class Live_DetailState extends State<Live_Detail>
       debugPrint('Initialization failed: $e');
       debugPrint('$stackTrace');
       rethrow;
+    }
+  }
+
+  void _loadComments() {
+    try {
+      _commentList = _commentDatabaseHelper.findByLiveId(id).toList();
+    } catch (e) {
+      debugPrint('Failed to load comments: $e');
+      _commentList = [];
     }
   }
 
@@ -112,6 +129,7 @@ class Live_DetailState extends State<Live_Detail>
     currentPlay.dispose();
     player.release();
     _timeTimer?.cancel();
+    _commentController.dispose();
     super.dispose();
   }
 
@@ -309,60 +327,177 @@ class Live_DetailState extends State<Live_Detail>
   }
 
   Widget _buildCommentSection(BuildContext context) {
-    return Container(
-      color: const Color(0xFF121212),
-      child: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: 0,
-              itemBuilder: (context, index) {
-                return const SizedBox.shrink();
-              },
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: const BoxDecoration(
-              border: Border(
-                top: BorderSide(
-                  color: Color(0xFF333333),
-                  width: 1,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+        
+        return Container(
+          color: const Color(0xFF121212),
+          child: Column(
+            children: [
+              Expanded(
+                child: _commentList.isEmpty
+                    ? const Center(
+                        child: Text(
+                          '暂无留言，快来抢沙发吧~',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        itemCount: _commentList.length,
+                        itemBuilder: (context, index) {
+                          final comment = _commentList[index];
+                          return _buildCommentItem(comment);
+                        },
+                      ),
+              ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+                padding: EdgeInsets.only(
+                  left: 12,
+                  right: 12,
+                  top: 8,
+                  bottom: 8 + keyboardHeight,
+                ),
+                decoration: const BoxDecoration(
+                  border: Border(
+                    top: BorderSide(
+                      color: Color(0xFF333333),
+                      width: 1,
+                    ),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF333333),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: TextField(
+                          controller: _commentController,
+                          style: const TextStyle(color: Colors.white, fontSize: 14),
+                          decoration: const InputDecoration(
+                            hintText: '请输入留言内容~',
+                            hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          maxLines: 1,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    GestureDetector(
+                      onTap: () => _submitComment(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD700),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          '发表',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCommentItem(LiveCommentEntity comment) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey[700],
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF333333),
-                      borderRadius: BorderRadius.circular(20),
+            child: comment.avatarUrl != null && comment.avatarUrl!.isNotEmpty
+                ? ClipOval(
+                    child: Image.network(
+                      comment.avatarUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Center(
+                          child: Text(
+                            comment.nickName?.substring(0, 1) ?? '用',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                    child: const Text(
-                      '请先登录才能进行评论~',
-                      style: TextStyle(
-                        color: Colors.grey,
+                  )
+                : Center(
+                    child: Text(
+                      comment.nickName?.substring(0, 1) ?? '用',
+                      style: const TextStyle(
+                        color: Colors.white,
                         fontSize: 14,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFD700),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    '发表',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      User.getPhoneNumber(comment.nickName) ?? '用户',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _formatTime(comment.createTime),
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  comment.content ?? '',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
                   ),
                 ),
               ],
@@ -371,6 +506,75 @@ class Live_DetailState extends State<Live_Detail>
         ],
       ),
     );
+  }
+
+  String _formatTime(String? time) {
+    if (time == null || time.isEmpty) return '';
+    try {
+      final dateTime = DateTime.parse(time);
+      final now = DateTime.now();
+      final difference = now.difference(dateTime);
+
+      if (difference.inMinutes < 1) {
+        return '刚刚';
+      } else if (difference.inMinutes < 60) {
+        return '${difference.inMinutes}分钟前';
+      } else if (difference.inHours < 24) {
+        return '${difference.inHours}小时前';
+      } else {
+        return '${difference.inDays}天前';
+      }
+    } catch (e) {
+      return '';
+    }
+  }
+
+  void _submitComment(BuildContext context) {
+    if (!User.isUserLoginView(context)) {
+      return;
+    }
+
+    final content = _commentController.text.trim();
+    if (content.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('请输入留言内容'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final userInfo = User.userInfoData;
+      final comment = LiveCommentEntity(
+        liveId: id,
+        userId: userInfo?.userId,
+        nickName: userInfo?.nickName ?? '用户',
+        avatarUrl: userInfo?.avatarUrl,
+        content: content,
+      );
+
+      _commentDatabaseHelper.insert(comment);
+      _commentController.clear();
+      _loadComments();
+      setState(() {});
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('留言成功'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      debugPrint('Failed to submit comment: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('留言失败，请稍后重试'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Widget _buildErrorView(String message) {
@@ -454,7 +658,7 @@ class Live_DetailState extends State<Live_Detail>
           const SizedBox(width: 8),
         ],
       ),
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       body: _buildContent(),
     );
   }
