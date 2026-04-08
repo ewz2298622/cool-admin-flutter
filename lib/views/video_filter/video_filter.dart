@@ -3,6 +3,8 @@ import 'dart:async';
 
 // Flutter 核心库
 import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 
 // 第三方库
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -357,10 +359,7 @@ class VideoFilterState extends State<VideoFilter>
   Widget _buildDefaultSearchBar() {
     return CommonSearchBar(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const VideoSearch()),
-        );
+      Get.toNamed("/search");
       },
     );
   }
