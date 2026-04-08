@@ -20,81 +20,183 @@ import '../../entity/user_info_entity.dart';
 import '../../style/layout.dart';
 import '../../utils/store/user/user.dart';
 
+/// 登录页面常量定义
+class LoginConstants {
+  // 颜色常量
+  static const Color inputBackgroundColor = Color.fromRGBO(238, 238, 238, 1);
+  static const Color inputBorderColor = Color.fromRGBO(238, 238, 238, 1);
+  static const Color primaryButtonBackgroundColor = Color.fromRGBO(247, 219, 74, 1);
+  static const Color primaryButtonTextColor = Color.fromRGBO(30, 33, 33, 1);
+  static const Color linkTextColor = Color.fromRGBO(22, 93, 255, 1);
+  static const Color normalTextColor = Color.fromRGBO(30, 33, 33, 1);
+  static const Color hintTextColor = Color.fromRGBO(150, 151, 153, 1);
+  static const Color captchaLoadingColor = Color.fromRGBO(255, 162, 16, 1);
+  static const Color errorTextColor = Colors.grey;
+  
+  // 尺寸常量
+  static const double inputBorderRadius = 25.0;
+  static const double inputPaddingHorizontal = 15.0;
+  static const double inputMarginBottom = 10.0;
+  static const double formTopPadding = 100.0;
+  static const double titleBottomPadding = 30.0;
+  static const double agreementBottomPadding = 40.0;
+  static const double buttonWidthRatio = 0.9;
+  static const double captchaContainerWidth = 150.0;
+  static const double captchaContainerHeight = 50.0;
+  static const double captchaLoadingSize = 20.0;
+  
+  // 字体大小
+  static const double titleFontSize = 20.0;
+  static const double subTitleFontSize = 12.0;
+  static const double errorTextFontSize = 12.0;
+  
+  // 文本常量
+  static const String pageTitle = "验证码登录/注册";
+  static const String pageSubTitle = "未注册的手机号将自动注册并登录";
+  static const String phoneHintText = '请输入手机号';
+  static const String passwordHintText = '请输入密码';
+  static const String captchaHintText = '请输入验证码';
+  static const String inviteCodeHintText = '请输入邀请码(可选)';
+  static const String loginButtonText = '登录';
+  static const String captchaLoadingText = '加载失败';
+  static const String phoneEmptyError = '账号或密码不能为空';
+  static const String captchaEmptyError = "请输入验证码";
+  static const String phoneInvalidError = '请输入合法手机号';
+  static const String captchaLoadError = '验证码加载失败，请重试';
+  static const String loginSuccessText = '登录成功';
+  static const String loginFailedText = '登录失败';
+  static const String agreementPrefix = "登录代表您已同意 ";
+  static const String agreementSeparator = " 和 ";
+  static const String privacyPolicyDefault = "隐私政策";
+  static const String serviceAgreementDefault = "服务协议";
+  
+  // 通知类型常量
+  static const int privacyType = 642; // 隐私政策类型
+  static const int serviceType = 641; // 服务协议类型
+  
+  // 其他常量
+  static const Duration loginSuccessDelay = Duration(milliseconds: 500);
+  static const int phoneNumberLength = 11;
+  static const String phoneNumberPrefix = '1';
+}
+
+/// 登录页面
 class Login extends StatefulWidget {
+  /// 构造函数
   const Login({super.key});
 
   @override
-  LoginState createState() => LoginState();
+  State<Login> createState() => LoginState();
 }
 
-class LoginState extends State<Login> with SingleTickerProviderStateMixin {
-  var _futureBuilderFuture;
+/// 登录页面状态
+class LoginState extends State<Login>
+    with SingleTickerProviderStateMixin {
+  /// 异步初始化任务
+  late Future<String> _futureBuilderFuture;
 
+  /// 输入框控制器列表
+  /// controller[0]: 手机号
+  /// controller[1]: 密码
+  /// controller[2]: 验证码
+  /// controller[3]: 邀请码
   var controller = [
     TextEditingController(),
     TextEditingController(),
     TextEditingController(),
     TextEditingController(),
   ];
+  
+  /// 密码是否可见
   var browseOn = false;
+  
+  /// 验证码数据
   CaptchaData? captchaData;
+  
+  /// 验证码加载状态
   bool _isCaptchaLoading = true; // 验证码默认加载状态
+  
+  /// 隐私政策数据
   List<NoticeInfoDataList>? privacyData = [];
+  
+  /// 服务协议数据
   List<NoticeInfoDataList>? serviceData = [];
+  
+  /// 上下文
   BuildContext? _context;
+  /// 初始化数据
+  /// 
+  /// 初始化其他必要数据（不包括验证码）
+  /// 
+  /// Returns: 初始化结果，"init success" 表示成功，"init failed" 表示失败
   Future<String> init() async {
     try {
       /// 初始化其他必要数据（不包括验证码）
       await noticeInfo();
       return "init success";
-    } catch (e) {
-      debugPrint('初始化失败: $e');
+    } catch (e, stackTrace) {
+      _handleApiError('init', e, stackTrace);
       return "init failed";
     }
   }
 
-  // 数据加载逻辑分离
+  /// 获取通知信息
+  /// 
+  /// 并行获取隐私政策和服务协议数据
+  /// 提高性能，避免串行请求
   Future<void> noticeInfo() async {
-    // 通知类型常量
-    const int privacyType = 642; // 隐私政策类型
-    const int serviceType = 641; // 服务协议类型
-
     try {
       // 并行执行两个 API 调用以提高性能
       final results = await Future.wait([
         Api.noticeInfo({
           "page": 1,
           "size": 1,
-          "type": privacyType,
+          "type": LoginConstants.privacyType,
           "status": 1,
         }),
         Api.noticeInfo({
           "page": 1,
           "size": 1,
-          "type": serviceType,
+          "type": LoginConstants.serviceType,
           "status": 1,
         }),
       ]);
+
+      // 检查组件是否仍然挂载
+      if (!mounted) {
+        debugPrint('Component unmounted, skipping noticeInfo state update');
+        return;
+      }
 
       // 安全地提取数据，避免类型转换异常
       privacyData = results[0].data?.list ?? [];
       serviceData = results[1].data?.list ?? [];
 
-      if (mounted) {
-        setState(() {});
-      }
+      setState(() {});
     } catch (e, stackTrace) {
-      debugPrint('获取通知信息失败 (noticeInfo): $e');
-      debugPrint('错误堆栈: $stackTrace');
+      _handleApiError('noticeInfo', e, stackTrace);
       // 发生错误时设置为空列表，避免后续使用 null
       privacyData = [];
       serviceData = [];
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 
+  /// 获取验证码
+  /// 
+  /// 防止重复请求，只有在验证码未加载或加载失败时才允许重试
+  /// 
+  /// 加载成功后更新验证码数据并刷新 UI
+  /// 加载失败时显示错误提示
   Future<void> getCaptcha() async {
     // 防止重复请求，但如果当前正在加载则允许重试
     if (_isCaptchaLoading && captchaData != null) return;
+
+    if (!mounted) {
+      return;
+    }
 
     setState(() {
       _isCaptchaLoading = true;
@@ -107,14 +209,14 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
           _isCaptchaLoading = false;
         });
       }
-    } catch (e) {
-      debugPrint('获取验证码失败: $e');
+    } catch (e, stackTrace) {
+      _handleApiError('getCaptcha', e, stackTrace);
       if (mounted) {
         setState(() {
           _isCaptchaLoading = false;
         });
         // 显示错误提示
-        TDToast.showText('验证码加载失败，请重试', context: context);
+        TDToast.showText(LoginConstants.captchaLoadError, context: context);
       }
     }
   }
@@ -129,6 +231,10 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
     });
   }
 
+  /// 构建页面内容
+  /// 
+  /// 使用 FutureBuilder 处理初始化异步操作
+  /// 无论初始化结果如何，都显示登录表单
   Widget _buildContent(BuildContext context) {
     return FutureBuilder<String>(
       future: _futureBuilderFuture, // 异步操作
@@ -138,7 +244,33 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
     );
   }
 
-  //获取用户信息
+  /// 构建输入框容器
+  Widget _buildInputContainer(Widget child) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: LoginConstants.inputMarginBottom),
+      padding: EdgeInsets.only(left: LoginConstants.inputPaddingHorizontal, right: LoginConstants.inputPaddingHorizontal),
+      decoration: BoxDecoration(
+        color: LoginConstants.inputBackgroundColor,
+        border: Border.all(
+          color: LoginConstants.inputBorderColor,
+          width: 0.5,
+        ),
+        borderRadius: BorderRadius.circular(LoginConstants.inputBorderRadius),
+      ),
+      child: child,
+    );
+  }
+
+  /// 统一处理 API 错误
+  void _handleApiError(String methodName, dynamic error, StackTrace stackTrace) {
+    debugPrint('$methodName failed: $error');
+    debugPrint('Stack trace: $stackTrace');
+  }
+
+  /// 构建登录表单
+  /// 
+  /// 包含手机号、密码、验证码和邀请码输入框
+  /// 以及登录按钮和协议文本
   Widget _buildForm(BuildContext context) {
     return SingleChildScrollView(
       physics: BouncingScrollPhysics(),
@@ -147,48 +279,38 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
           //top 为页面的30%
           left: Layout.paddingL,
           right: Layout.paddingB,
-          top: 100,
+          top: LoginConstants.formTopPadding,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Padding(
-              padding: EdgeInsets.only(bottom: 30),
+              padding: EdgeInsets.only(bottom: LoginConstants.titleBottomPadding),
               child: Center(
                 child: Column(
                   spacing: 5,
                   children: [
                     Text(
-                      "验证码登录/注册",
+                      LoginConstants.pageTitle,
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: LoginConstants.titleFontSize,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
-                      "未注册的手机号将自动注册并登录",
+                      LoginConstants.pageSubTitle,
                       style: TextStyle(
-                        fontSize: 12,
-                        color: Color.fromRGBO(150, 151, 153, 1),
+                        fontSize: LoginConstants.subTitleFontSize,
+                        color: LoginConstants.hintTextColor,
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: EdgeInsets.only(left: 15, right: 15),
-              decoration: BoxDecoration(
-                color: Color.fromRGBO(238, 238, 238, 1),
-                border: Border.all(
-                  color: Color.fromRGBO(238, 238, 238, 1),
-                  width: 0.5,
-                ),
-                borderRadius: BorderRadius.circular((25.0)),
-              ),
-              child: TDInput(
+            _buildInputContainer(
+              TDInput(
                 size: TDInputSize.small,
                 controller: controller[0],
                 leftIcon: TDImage(
@@ -196,7 +318,7 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
                   height: 20,
                   assetUrl: "assets/images/phone.png",
                 ),
-                hintText: '请输入手机号',
+                hintText: LoginConstants.phoneHintText,
                 onBtnTap: () {
                   TDToast.showText('点击右侧按钮', context: context);
                 },
@@ -209,18 +331,8 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
                 },
               ),
             ),
-            Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: EdgeInsets.only(left: 15, right: 15),
-              decoration: BoxDecoration(
-                color: Color.fromRGBO(238, 238, 238, 1),
-                border: Border.all(
-                  color: Color.fromRGBO(238, 238, 238, 1),
-                  width: 0.5,
-                ),
-                borderRadius: BorderRadius.circular((25.0)),
-              ),
-              child: TDInput(
+            _buildInputContainer(
+              TDInput(
                 size: TDInputSize.small,
                 controller: controller[1],
                 obscureText: !browseOn,
@@ -229,7 +341,7 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
                   height: 20,
                   assetUrl: "assets/images/password.png",
                 ),
-                hintText: '请输入密码',
+                hintText: LoginConstants.passwordHintText,
                 rightBtn:
                     browseOn
                         ? Icon(
@@ -255,18 +367,8 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
                 },
               ),
             ),
-            Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: EdgeInsets.only(left: 15, right: 15),
-              decoration: BoxDecoration(
-                color: Color.fromRGBO(238, 238, 238, 1),
-                border: Border.all(
-                  color: Color.fromRGBO(238, 238, 238, 1),
-                  width: 0.5,
-                ),
-                borderRadius: BorderRadius.circular((25.0)),
-              ),
-              child: Flex(
+            _buildInputContainer(
+              Flex(
                 direction: Axis.horizontal,
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -281,7 +383,7 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
                         assetUrl: "assets/images/code.png",
                       ),
                       controller: controller[2],
-                      hintText: '请输入验证码',
+                      hintText: LoginConstants.captchaHintText,
                       onBtnTap: () {
                         TDToast.showText('点击右侧按钮', context: context);
                       },
@@ -295,19 +397,19 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
                     ),
                   ),
                   GestureDetector(
-                    child: Container(
-                      width: 150,
-                      height: 50,
+                    child: SizedBox(
+                      width: LoginConstants.captchaContainerWidth,
+                      height: LoginConstants.captchaContainerHeight,
                       child:
                           _isCaptchaLoading
                               ? Center(
                                 child: SizedBox(
-                                  width: 20,
-                                  height: 20,
+                                  width: LoginConstants.captchaLoadingSize,
+                                  height: LoginConstants.captchaLoadingSize,
                                   child: TDLoading(
                                     size: TDLoadingSize.small,
                                     icon: TDLoadingIcon.circle,
-                                    iconColor: Color.fromRGBO(255, 162, 16, 1),
+                                    iconColor: LoginConstants.captchaLoadingColor,
                                   ),
                                 ),
                               )
@@ -322,10 +424,10 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
                               )
                               : Center(
                                 child: Text(
-                                  '加载失败',
+                                  LoginConstants.captchaLoadingText,
                                   style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
+                                    color: LoginConstants.errorTextColor,
+                                    fontSize: LoginConstants.errorTextFontSize,
                                   ),
                                 ),
                               ),
@@ -339,18 +441,8 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
                 ],
               ),
             ),
-            Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: EdgeInsets.only(left: 15, right: 15),
-              decoration: BoxDecoration(
-                color: Color.fromRGBO(238, 238, 238, 1),
-                border: Border.all(
-                  color: Color.fromRGBO(238, 238, 238, 1),
-                  width: 0.5,
-                ),
-                borderRadius: BorderRadius.circular((25.0)),
-              ),
-              child: Flex(
+            _buildInputContainer(
+              Flex(
                 direction: Axis.horizontal,
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -365,7 +457,7 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
                         assetUrl: "assets/images/inviteCode.png",
                       ),
                       controller: controller[3],
-                      hintText: '请输入邀请码(可选)',
+                      hintText: LoginConstants.inviteCodeHintText,
                       onChanged: (text) {
                         setState(() {});
                       },
@@ -387,27 +479,27 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
               child: _buildAgreementText(),
             ),
             TDButton(
-              text: '登录',
+              text: LoginConstants.loginButtonText,
               theme: TDButtonTheme.primary,
               size: TDButtonSize.large,
               shape: TDButtonShape.round,
               //设置宽度90%
-              width: MediaQuery.of(context).size.width * 0.9,
+              width: MediaQuery.of(context).size.width * LoginConstants.buttonWidthRatio,
               //设置背景色
               style: TDButtonStyle(
-                backgroundColor: Color.fromRGBO(247, 219, 74, 1),
-                textColor: Color.fromRGBO(30, 33, 33, 1),
+                backgroundColor: LoginConstants.primaryButtonBackgroundColor,
+                textColor: LoginConstants.primaryButtonTextColor,
               ),
               onTap: () {
                 String phone = controller[0].text;
                 String password = controller[1].text;
                 String verifyCode = controller[2].text;
                 if (phone.isEmpty || password.isEmpty) {
-                  TDToast.showText('账号或密码不能为空', context: context);
+                  TDToast.showText(LoginConstants.phoneEmptyError, context: context);
                   return;
                 }
                 if (verifyCode.isEmpty) {
-                  TDToast.showText("请输入验证码", context: context);
+                  TDToast.showText(LoginConstants.captchaEmptyError, context: context);
                   return;
                 }
 
@@ -415,7 +507,7 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
                   // 处理登录逻辑
                   _login();
                 } else {
-                  TDToast.showText('请输入合法手机号', context: context);
+                  TDToast.showText(LoginConstants.phoneInvalidError, context: context);
                 }
               },
             ),
@@ -425,51 +517,83 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
     );
   }
 
-  //验证手机号是否合法
+  /// 验证手机号是否合法
+  /// 
+  /// 规则：
+  /// 1. 手机号长度为 11 位
+  /// 2. 手机号以 '1' 开头
+  /// 
+  /// Returns: 手机号是否合法
   bool isPhoneNumberValid(String phoneNumber) {
-    return phoneNumber.length == 11 && phoneNumber.startsWith('1');
+    return phoneNumber.length == LoginConstants.phoneNumberLength && 
+           phoneNumber.startsWith(LoginConstants.phoneNumberPrefix);
   }
 
+  /// 获取用户信息
+  /// 
+  /// 登录成功后获取用户信息并存储到本地数据库
+  /// 同时更新全局用户状态并跳转到首页
+  /// 
+  /// 失败时显示错误提示并刷新验证码
   Future<void> getUserInfo() async {
-    UserDatabaseHelper userDatabaseHelper = UserDatabaseHelper();
-    userDatabaseHelper.deleteAll();
-    UserInfoData? userInfoData = (await Api.getUserInfo({})).data;
-    if (userInfoData != null) {
-      try {
-        userDatabaseHelper.insert(
-          UserEntity(
-            unionid: userInfoData.unionid,
-            avatarUrl: userInfoData.avatarUrl,
-            nickName: userInfoData.nickName,
-            phone: userInfoData.phone,
-            gender: userInfoData.gender,
-            status: userInfoData.status,
-            loginType: userInfoData.loginType,
-            password: userInfoData.password,
-            userId: userInfoData.id,
-          ),
-        );
-        TDToast.showText('登录成功', context: context);
-        _context?.read<UserState>().updateUserInfoData(
-          UserEntity(
-            unionid: userInfoData.unionid,
-            avatarUrl: userInfoData.avatarUrl,
-            nickName: userInfoData.nickName,
-            phone: userInfoData.phone,
-            gender: userInfoData.gender,
-            status: userInfoData.status,
-            loginType: userInfoData.loginType,
-            password: userInfoData.password,
-            userId: userInfoData.id,
-          ),
-        );
-        //等待500ms
-        await Future.delayed(Duration(milliseconds: 500));
-        Navigator.of(context).pushReplacementNamed('/');
-      } catch (e) {
-        debugPrint("登录失败${e.toString()}");
+    try {
+      UserDatabaseHelper userDatabaseHelper = UserDatabaseHelper();
+      userDatabaseHelper.deleteAll();
+      UserInfoData? userInfoData = (await Api.getUserInfo({})).data;
+      if (userInfoData != null) {
+        try {
+          userDatabaseHelper.insert(
+            UserEntity(
+              unionid: userInfoData.unionid,
+              avatarUrl: userInfoData.avatarUrl,
+              nickName: userInfoData.nickName,
+              phone: userInfoData.phone,
+              gender: userInfoData.gender,
+              status: userInfoData.status,
+              loginType: userInfoData.loginType,
+              password: userInfoData.password,
+              userId: userInfoData.id,
+            ),
+          );
+          if (mounted) {
+            TDToast.showText(LoginConstants.loginSuccessText, context: context);
+            _context?.read<UserState>().updateUserInfoData(
+              UserEntity(
+                unionid: userInfoData.unionid,
+                avatarUrl: userInfoData.avatarUrl,
+                nickName: userInfoData.nickName,
+                phone: userInfoData.phone,
+                gender: userInfoData.gender,
+                status: userInfoData.status,
+                loginType: userInfoData.loginType,
+                password: userInfoData.password,
+                userId: userInfoData.id,
+              ),
+            );
+            //等待500ms
+            await Future.delayed(LoginConstants.loginSuccessDelay);
+            if (mounted) {
+              Navigator.of(context).pushReplacementNamed('/');
+            }
+          }
+        } catch (e, stackTrace) {
+          _handleApiError('getUserInfo (insert)', e, stackTrace);
+          getCaptcha();
+          if (mounted) {
+            TDToast.showText(LoginConstants.loginFailedText, context: context);
+          }
+        }
+      } else {
         getCaptcha();
-        TDToast.showText('登录失败', context: context);
+        if (mounted) {
+          TDToast.showText(LoginConstants.loginFailedText, context: context);
+        }
+      }
+    } catch (e, stackTrace) {
+      _handleApiError('getUserInfo', e, stackTrace);
+      getCaptcha();
+      if (mounted) {
+        TDToast.showText(LoginConstants.loginFailedText, context: context);
       }
     }
   }
@@ -482,17 +606,32 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
-  //实现登录
+  /// 执行登录操作
+  /// 
+  /// 1. 验证输入参数
+  /// 2. 调用登录 API
+  /// 3. 存储 token 到本地数据库
+  /// 4. 获取用户信息
+  /// 
+  /// 失败时显示错误提示并刷新验证码
   Future<void> _login() async {
+    if (!mounted) {
+      return;
+    }
+
     try {
-      LoginData? data =
-          (await Api.getLogin({
+      LoginData? data = (await Api.getLogin({
             'phone': controller[0].text.replaceAll(' ', ''),
             'password': controller[1].text.replaceAll(' ', ''),
             'code': controller[2].text.replaceAll(' ', ''),
             'captchaId': captchaData?.captchaId,
             'inviteCode': controller[3].text.replaceAll(' ', ''),
           })).data;
+      
+      if (!mounted) {
+        return;
+      }
+      
       debugPrint(
         "登录成功邀请码 inviteCode ${controller[3].text.replaceAll(' ', '')}",
       );
@@ -512,10 +651,16 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
         await getUserInfo();
       } else {
         getCaptcha();
+        if (mounted) {
+          TDToast.showText(LoginConstants.loginFailedText, context: context);
+        }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      _handleApiError('_login', e, stackTrace);
       getCaptcha();
-      debugPrint("登录失败${e.toString()}");
+      if (mounted) {
+        TDToast.showText(LoginConstants.loginFailedText, context: context);
+      }
     }
     // EventBus().emit(Constant.UserBusId, null);
   }
@@ -556,23 +701,27 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
     );
   }
 
+  /// 构建协议文本
+  /// 
+  /// 显示登录协议，包含隐私政策和服务协议链接
+  /// 点击链接跳转到对应的协议详情页面
   Widget _buildAgreementText() {
     return RichText(
       textAlign: TextAlign.center,
       text: TextSpan(
         style: const TextStyle(color: Colors.grey),
         children: [
-          const TextSpan(
-            text: "登录代表您已同意 ",
-            style: TextStyle(color: Color.fromRGBO(30, 33, 33, 1)),
+          TextSpan(
+            text: LoginConstants.agreementPrefix,
+            style: TextStyle(color: LoginConstants.normalTextColor),
           ),
           TextSpan(
             text:
                 privacyData?.isNotEmpty == true
-                    ? (privacyData![0].title ?? "隐私政策")
-                    : "隐私政策",
-            style: const TextStyle(
-              color: Color.fromRGBO(22, 93, 255, 1),
+                    ? (privacyData![0].title ?? LoginConstants.privacyPolicyDefault)
+                    : LoginConstants.privacyPolicyDefault,
+            style: TextStyle(
+              color: LoginConstants.linkTextColor,
               decoration: TextDecoration.underline,
             ),
             recognizer:
@@ -589,17 +738,17 @@ class LoginState extends State<Login> with SingleTickerProviderStateMixin {
                     }
                   },
           ),
-          const TextSpan(
-            text: " 和 ",
-            style: TextStyle(color: Color.fromRGBO(30, 33, 33, 1)),
+          TextSpan(
+            text: LoginConstants.agreementSeparator,
+            style: TextStyle(color: LoginConstants.normalTextColor),
           ),
           TextSpan(
             text:
                 serviceData?.isNotEmpty == true
-                    ? (serviceData![0].title ?? "服务协议")
-                    : "服务协议",
-            style: const TextStyle(
-              color: Color.fromRGBO(22, 93, 255, 1),
+                    ? (serviceData![0].title ?? LoginConstants.serviceAgreementDefault)
+                    : LoginConstants.serviceAgreementDefault,
+            style: TextStyle(
+              color: LoginConstants.linkTextColor,
               decoration: TextDecoration.underline,
             ),
             recognizer:

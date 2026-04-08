@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:dlna_dart/dlna.dart';
 import 'package:flutter/material.dart';
@@ -8,11 +9,8 @@ import 'package:get/get.dart';
 
 import '../../api/api.dart';
 import '../../components/loading.dart';
-import '../../components/sectionWithMore.dart';
-import '../../components/video_three.dart';
 import '../../entity/live_info_entity.dart';
 import '../../entity/video_page_entity.dart';
-import '../../style/layout.dart';
 
 String TAG = 'Video_Detail';
 
@@ -25,12 +23,9 @@ class Live_Detail extends StatefulWidget {
 
 class Live_DetailState extends State<Live_Detail>
     with SingleTickerProviderStateMixin {
-  final int id = Get.arguments?["id"] ?? "";
+  final int id = Get.arguments?["id"] ?? 0;
 
   final ValueNotifier<int> currentPlay = ValueNotifier<int>(0);
-  //获取当前时间戳
-  final int currentTimeStamp = DateTime.now().millisecondsSinceEpoch;
-
   late Future<void> _loadFuture;
   LiveInfoData? videoData;
   List<VideoPageDataList> videoPageData = [];
@@ -40,12 +35,13 @@ class Live_DetailState extends State<Live_Detail>
   StateSetter? TVshowModalBottomSheetListSate;
   String? _errorMessage;
   late final int _viewerSeed;
+  String _currentTime = '';
+  Timer? _timeTimer;
 
   Future<void> liveInfo() async {
     try {
       videoData = (await Api.liveInfo({"id": id})).data as LiveInfoData;
     } catch (e) {
-      // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
     }
   }
@@ -57,7 +53,6 @@ class Live_DetailState extends State<Live_Detail>
           [] as List<VideoPageDataList>;
       videoPageData = list;
     } catch (e) {
-      // 捕获并处理异常
       debugPrint('Initialization getAlbumListByCategoryIds failed: $e');
     }
   }
@@ -109,36 +104,29 @@ class Live_DetailState extends State<Live_Detail>
     super.initState();
     _viewerSeed = 1200 + (id % 7300);
     _loadFuture = _loadInitialData();
+    _startTimeTimer();
   }
 
   @override
   void dispose() {
     currentPlay.dispose();
     player.release();
+    _timeTimer?.cancel();
     super.dispose();
   }
 
-  Widget _buildRecommendations(BuildContext context) {
-    if (videoPageData.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        Layout.paddingL,
-        0,
-        Layout.paddingR,
-        Layout.paddingB,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SectionWithMore(title: "猜你喜欢", padding: EdgeInsets.zero),
-          const SizedBox(height: 12),
-          VideoThree(videoPageData: videoPageData),
-        ],
-      ),
-    );
+  void _startTimeTimer() {
+    _updateTime();
+    _timeTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _updateTime();
+    });
+  }
+
+  void _updateTime() {
+    final now = DateTime.now();
+    setState(() {
+      _currentTime = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
+    });
   }
 
   Widget _buildContent() {
@@ -156,19 +144,11 @@ class Live_DetailState extends State<Live_Detail>
         if (videoData == null) {
           return _buildErrorView('暂未获取到直播间信息');
         }
-        return Stack(
-          fit: StackFit.expand,
+        return Column(
           children: [
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              height: _playerHeight,
-              child: _buildVideo(context),
-            ),
-            Positioned.fill(
-              top: _playerHeight - 22,
-              child: _buildScrollableSheet(context),
+            _buildLiveSection(context),
+            Expanded(
+              child: _buildCommentSection(context),
             ),
           ],
         );
@@ -176,147 +156,164 @@ class Live_DetailState extends State<Live_Detail>
     );
   }
 
-  //实现一个格式化函数 判断传入的字符串是否含有,或者/ 如果有就按照这两个字符串分割返回一个list
-  List<String> formatString(String str) {
-    if (str.contains(',')) {
-      return str.split(',');
-    }
-    if (str.contains('/')) {
-      return str.split('/');
-    }
-    return [str];
-  }
-
-  Widget _buildScrollableSheet(BuildContext context) {
-    final theme = Theme.of(context);
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(28),
-          topRight: Radius.circular(28),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(
-              theme.brightness == Brightness.dark ? 0.3 : 0.09,
-            ),
-            blurRadius: 24,
-            offset: const Offset(0, -12),
-          ),
-        ],
-      ),
-      child: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
-            sliver: SliverToBoxAdapter(child: _buildMetaSection(context)),
-          ),
-          if (videoPageData.isNotEmpty)
-            SliverToBoxAdapter(child: _buildRecommendations(context)),
-          SliverToBoxAdapter(
-            child: SizedBox(height: MediaQuery.of(context).padding.bottom + 24),
-          ),
-        ],
-      ),
+  Widget _buildLiveSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildVideo(context),
+        _buildVideoInfoSection(context),
+      ],
     );
   }
 
-  Widget _buildMetaSection(BuildContext context) {
+  Widget _buildVideoInfoSection(BuildContext context) {
     final live = videoData;
     if (live == null) {
       return const SizedBox.shrink();
     }
 
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
-    final viewersLabel =
-        '${_formatViewers(_viewerSeed + DateTime.now().second * 12)} 人正在观看';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          live.title ?? '精彩直播',
-          style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 48,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            children: [
-              _buildStatsChip(
-                context,
-                icon: Icons.visibility_outlined,
-                label: viewersLabel,
-              ),
-              const SizedBox(width: 12),
-              _buildStatsChip(
-                context,
-                icon: Icons.live_tv_rounded,
-                label: _formatLiveStatus(live.status),
-              ),
-              // const SizedBox(width: 12),
-              // if (live.categoryId != null)
-              //   _buildStatsChip(
-              //     context,
-              //     icon: Icons.category_outlined,
-              //     label: '#${_formatLiveStatus(live.categoryId)}',
-              //   ),
-              const SizedBox(width: 12),
-              if (live.updateTime != null)
-                _buildStatsChip(
-                  context,
-                  icon: Icons.shield_outlined,
-                  label: '已同步',
-                ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAttributeCell(ThemeData theme, _AttributeItem item) {
-    final bool isDark = theme.brightness == Brightness.dark;
-    final background =
-        isDark
-            ? theme.colorScheme.surfaceVariant.withOpacity(0.22)
-            : theme.colorScheme.surfaceVariant.withOpacity(0.7);
-
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
+      padding: const EdgeInsets.all(16),
+      color: const Color(0xFF1A1A1A),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(item.icon, size: 18, color: theme.colorScheme.primary),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.label,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
-                    fontWeight: FontWeight.w500,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  live.title ?? 'CCTV5+体育赛事',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  item.value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFD700),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  '切换线路',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
                   ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '在线: ${_viewerSeed + DateTime.now().second * 12}人',
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 12,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(
+                  Icons.star_border,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                onPressed: () {
+                  // 收藏功能
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2A2A2A),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.blue,
+                  ),
+                  child: const Center(
+                    child: Text(
+                      '官',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Text(
+                            '官方',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFF4F5A),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              '置顶',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        '亲爱的用户：\n影片卡顿、加载缓慢、内容错误、跳进度等请先切换线路尝试观看，谢谢！',
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.thumb_up_off_alt,
+                    color: Colors.grey,
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    // 点赞功能
+                  },
                 ),
               ],
             ),
@@ -326,31 +323,64 @@ class Live_DetailState extends State<Live_Detail>
     );
   }
 
-  Widget _buildStatsChip(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-  }) {
-    final theme = Theme.of(context);
-    final bool isDark = theme.brightness == Brightness.dark;
+  Widget _buildCommentSection(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.only(left: 12, right: 12),
-      decoration: BoxDecoration(
-        color:
-            isDark
-                ? Colors.white.withOpacity(0.08)
-                : theme.colorScheme.primary.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      color: const Color(0xFF121212),
+      child: Column(
         children: [
-          Icon(icon, size: 18, color: theme.colorScheme.primary),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: theme.textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.w600,
+          Expanded(
+            child: ListView.builder(
+              itemCount: 0,
+              itemBuilder: (context, index) {
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: const BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: Color(0xFF333333),
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF333333),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      '请先登录才能进行评论~',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    '发表',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -411,117 +441,10 @@ class Live_DetailState extends State<Live_Detail>
     );
   }
 
-  Widget _buildPanelButton(
-    BuildContext context, {
-    required IconData icon,
-    BorderRadius? shape,
-  }) {
-    final theme = Theme.of(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.35),
-        borderRadius: shape ?? BorderRadius.circular(8),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Icon(icon, color: theme.colorScheme.onPrimary),
-      ),
-    );
-  }
-
-  Widget _buildLiveBadge(ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(999),
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFF4F5A), Color(0xFFFF8D46)],
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 6),
-          const Text(
-            'LIVE',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildViewerBadge(ThemeData theme) {
-    final viewers = _formatViewers(_viewerSeed + DateTime.now().second * 12);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.4),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.visibility_outlined, size: 16, color: Colors.white),
-          const SizedBox(width: 6),
-          Text(
-            viewers,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatViewers(int count) {
-    if (count >= 10000) {
-      final double wan = count / 10000.0;
-      final String formatted =
-          wan >= 10 ? wan.toStringAsFixed(0) : wan.toStringAsFixed(1);
-      return '$formatted万';
-    }
-    return count.toString();
-  }
-
-  String _formatLiveStatus(int? status) {
-    if (status == 1) {
-      return '直播中';
-    }
-    if (status == 0) {
-      return '已结束';
-    }
-    return '未开播';
-  }
-
-  String _formatDate(String? dateTime) {
-    if (dateTime == null || dateTime.isEmpty) {
-      return '--';
-    }
-    if (dateTime.contains(' ')) {
-      return dateTime.split(' ').first;
-    }
-    return dateTime;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle.light,
         backgroundColor: Colors.transparent,
@@ -533,6 +456,34 @@ class Live_DetailState extends State<Live_Detail>
           ),
           onPressed: () => Get.back(),
         ),
+        title: Text(
+          videoData?.title ?? 'CCTV5+体育赛事',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          Text(
+            _currentTime,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(width: 16),
+          IconButton(
+            icon: const Icon(
+              Icons.settings_outlined,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              // 设置功能
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       resizeToAvoidBottomInset: false,
       body: _buildContent(),
@@ -564,84 +515,99 @@ class Live_DetailState extends State<Live_Detail>
   static const double _playerHeight = 250.0;
 
   Widget _buildVideo(BuildContext context) {
-    final theme = Theme.of(context);
     final cover = videoData?.image ?? '';
 
     return SizedBox(
       height: _playerHeight,
       width: double.infinity,
-      child: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
-        ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (cover.isNotEmpty)
-              FadeInImage.assetNetwork(
-                placeholder: 'assets/images/loading.gif',
-                image: cover,
-                fit: BoxFit.cover,
-              )
-            else
-              Container(color: Colors.black),
-            FView(
-              player: player,
-              width: double.infinity,
-              height: _playerHeight,
-              color: Colors.transparent,
-              fsFit: FFit.contain,
-              fit: FFit.fill,
-              panelBuilder: (
-                FPlayer player,
-                FData data,
-                BuildContext context,
-                Size viewSize,
-                Rect texturePos,
-              ) {
-                // 自定义面板，隐藏播放/暂停按钮和全屏按钮
-                // 直播流不需要显示进度条和播放控制按钮
-                return Stack(
-                  children: [
-                    // 右侧自定义按钮
-                    // Positioned(
-                    //   right: 8,
-                    //   top: 8,
-                    //   child: Column(
-                    //     children: [
-                    //       _buildPanelButton(
-                    //         context,
-                    //         icon: Icons.favorite_border_rounded,
-                    //         shape: const BorderRadius.vertical(top: Radius.circular(8)),
-                    //       ),
-                    //       _buildPanelButton(
-                    //         context,
-                    //         icon: Icons.thumb_up_alt_outlined,
-                    //         shape: const BorderRadius.vertical(bottom: Radius.circular(8)),
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
-                  ],
-                );
-              },
-            ),
-            IgnorePointer(
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0x66000000), Color(0x00000000)],
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (cover.isNotEmpty)
+            FadeInImage.assetNetwork(
+              placeholder: 'assets/images/loading.gif',
+              image: cover,
+              fit: BoxFit.cover,
+            )
+          else
+            Container(color: Colors.black),
+          FView(
+            player: player,
+            width: double.infinity,
+            height: _playerHeight,
+            color: Colors.transparent,
+            fsFit: FFit.contain,
+            fit: FFit.fill,
+            panelBuilder: (
+              FPlayer player,
+              FData data,
+              BuildContext context,
+              Size viewSize,
+              Rect texturePos,
+            ) {
+              return Stack(
+                children: [
+                  // 加载动画
+                  Center(
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      child: const CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 3,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
-            Positioned(left: 16, bottom: 30, child: _buildLiveBadge(theme)),
-            Positioned(right: 16, bottom: 30, child: _buildViewerBadge(theme)),
-          ],
-        ),
+                  // 播放控制按钮
+                  Positioned(
+                    bottom: 16,
+                    left: 16,
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.pause,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                          onPressed: () {
+                            player.pause();
+                          },
+                        ),
+                        const SizedBox(width: 16),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.volume_up,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                          onPressed: () {
+                            // 音量控制
+                          },
+                        ),
+                        const SizedBox(width: 16),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            '默认',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
       ),
     );
   }
