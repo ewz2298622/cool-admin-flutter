@@ -847,7 +847,6 @@ class _Video_DetailState extends State<Video_Detail>
           left: Layout.paddingL,
           right: Layout.paddingR,
         ),
-        // child: _buildNavigationTabs(),
         child: Padding(
           padding: const EdgeInsets.only(top: 0),
           child: DefaultTabController(
@@ -859,36 +858,42 @@ class _Video_DetailState extends State<Video_Detail>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(
-                      width: 150,
-                      child: TabBar(
-                        dividerHeight: 0,
-                        isScrollable: true,
-                        tabAlignment: TabAlignment.start,
-                        indicatorPadding: const EdgeInsets.all(0),
-                        indicator: UnderlineTabIndicator(
-                          borderSide: BorderSide(
-                            width: 0.0,
-                            color: Colors.transparent,
-                          ), // 将宽度设置为0来隐藏下划线
+                    TabBar(
+                      dividerHeight: 0,
+                      isScrollable: true,
+                      tabAlignment: TabAlignment.start,
+                      indicatorPadding: const EdgeInsets.all(0),
+                      indicator: UnderlineTabIndicator(
+                        borderSide: BorderSide(
+                          width: 0.0,
+                          color: Colors.transparent,
                         ),
-                        //设置未选中的字体颜色
-                        unselectedLabelColor: const Color.fromRGBO(
-                          153,
-                          153,
-                          153,
-                          1,
-                        ),
-                        //选中的字体颜色
-                        labelColor: const Color.fromRGBO(252, 119, 66, 1),
-                        tabs: [Tab(text: '详情'), Tab(text: '简介')],
                       ),
+                      unselectedLabelColor: Color(0xFF9CA3AF),
+                      labelColor: Color(0xFF111827),
+                      labelStyle: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      unselectedLabelStyle: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      tabs: [
+                        Tab(text: '详情'),
+                        Tab(text: '简介'),
+                      ],
                     ),
                     IconButton(
                       onPressed: goFeedbackPage,
-                      icon: Icon(Icons.warning_rounded),
+                      icon: Icon(
+                        Icons.warning_rounded,
+                        color: Color(0xFF6B7280),
+                      ),
+                      iconSize: 24,
+                      padding: EdgeInsets.all(8),
+                      constraints: BoxConstraints(),
                     ),
-                    // _buildPopFromBottomWithCloseAndLeftTitle(context),
                   ],
                 ),
                 Expanded(
@@ -899,11 +904,8 @@ class _Video_DetailState extends State<Video_Detail>
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           children: [
-                            // 视频信息
                             _buildVideoInfo(),
-                            // 广告横幅
                             _buildBanner(),
-                            // 猜你喜欢
                             _buildRecommendations(),
                           ],
                         ),
@@ -925,19 +927,39 @@ class _Video_DetailState extends State<Video_Detail>
   Widget _buildSponsorBar() {
     return Padding(
       padding: const EdgeInsets.only(
-        // left: Layout.paddingL,
-        // right: Layout.paddingR,
-        top: 5,
+        top: 8,
+        bottom: 8,
       ),
-      child: TDNoticeBar(
-        context: '本片仅供学习参考，请勿用于商业用途。切勿传播违法信息。视频中的广告不参与本片制作，仅供学习参考。谨防上当受骗',
-        speed: 50,
-        height: 15,
-        prefixIcon: TDIcons.sound,
-        style: TDNoticeBarStyle(
-          backgroundColor: Color.fromRGBO(247, 247, 247, 1),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Color(0xFFFFF7ED),
+          borderRadius: BorderRadius.circular(12),
         ),
-        marquee: true,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 10,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              TDIcons.sound,
+              size: 18,
+              color: Color(0xFFD97706),
+            ),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '本片仅供学习参考，请勿用于商业用途。切勿传播违法信息。视频中的广告不参与本片制作，仅供学习参考。谨防上当受骗',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF92400E),
+                  height: 1.5,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -950,37 +972,43 @@ class _Video_DetailState extends State<Video_Detail>
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 10,
+        spacing: 16,
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              SizedBox(
-                width: MediaQuery.of(context).size.width - 120,
+              Expanded(
                 child: Text(
                   videoInfoData.video?.title ?? "",
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    height: 1.3,
+                    letterSpacing: -0.3,
+                  ),
                 ),
               ),
+              SizedBox(width: 12),
               ShaderMask(
                 shaderCallback:
                     (bounds) => LinearGradient(
-                      begin: Alignment.bottomCenter, // 从底部开始
-                      end: Alignment.topCenter, // 到顶部结束
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
                       colors: [
-                        Color.fromRGBO(255, 153, 0, 0),
-                        Color.fromRGBO(255, 153, 0, 1), // 完全不透明的橙色
-                      ], // 黑色到白色
+                        Color.fromRGBO(255, 153, 0, 0.1),
+                        Color.fromRGBO(255, 153, 0, 1),
+                      ],
                     ).createShader(bounds),
                 child: Text(
                   VideoUtil.formatScore(videoInfoData.video?.doubanScore),
                   style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 48,
+                    fontWeight: FontWeight.w700,
                     color: Color.fromRGBO(255, 153, 0, 1),
+                    letterSpacing: -2,
                   ),
                 ),
               ),
@@ -991,39 +1019,56 @@ class _Video_DetailState extends State<Video_Detail>
             child: Row(
               children:
                   [
-                        Text(videoInfoData.video?.year.toString() ?? "暂无数据"),
+                        Text(videoInfoData.video?.year.toString() ?? "暂无数据",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF1F2937),
+                            )),
                         Text(
                           Dict.getDictName(
                             videoInfoData.video?.region ?? 0,
                             area ?? [],
                           ),
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF6B7280),
+                          ),
                         ),
                         Text(
                           Dict.getDictName(
                             videoInfoData.video?.categoryId ?? 0,
                             videoCategory ?? [],
                           ),
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF6B7280),
+                          ),
                         ),
                         Text(
                           Dict.getDictName(
                             videoInfoData.video?.language ?? 0,
                             language ?? [],
                           ),
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF6B7280),
+                          ),
                         ),
                         Text(
                           (videoInfoData.video?.videoTag ?? "暂无标签").replaceAll(
                             ",",
                             "/",
                           ),
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF6B7280),
+                          ),
                         ),
                       ]
                       .map(
                         (e) => Padding(
-                          padding: EdgeInsets.only(right: Layout.paddingR),
+                          padding: EdgeInsets.only(right: 12),
                           child: e,
                         ),
                       )
@@ -1039,9 +1084,9 @@ class _Video_DetailState extends State<Video_Detail>
 
   Widget _buildEpisodeList() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
+      padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
       child: Column(
-        spacing: 5,
+        spacing: 12,
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -1049,7 +1094,11 @@ class _Video_DetailState extends State<Video_Detail>
             children: [
               Text(
                 '选集',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                ),
               ),
               Flexible(
                 child: Row(
@@ -1068,15 +1117,16 @@ class _Video_DetailState extends State<Video_Detail>
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontSize: 12,
-                                color: Color.fromRGBO(162, 162, 162, 1),
+                                fontSize: 13,
+                                color: Color(0xFF6B7280),
                               ),
                             ),
                           ),
+                          SizedBox(width: 4),
                           Icon(
                             Icons.arrow_forward_ios,
                             size: 14,
-                            color: Color.fromRGBO(203, 203, 203, 1),
+                            color: Color(0xFF9CA3AF),
                           ),
                         ],
                       ),
@@ -1086,7 +1136,6 @@ class _Video_DetailState extends State<Video_Detail>
               ),
             ],
           ),
-          // 自定义小屏列表
           _buildPlayer(),
         ],
       ),
@@ -1094,12 +1143,10 @@ class _Video_DetailState extends State<Video_Detail>
   }
 
   Widget _buildPlayer() {
-    // 添加容错处理：检查lines是否存在且不为空
     if (videoInfoData.lines != null && videoInfoData.lines!.isNotEmpty) {
       return ValueListenableBuilder<int>(
         valueListenable: currentLine,
         builder: (context, lineIndex, child) {
-          // 在builder内部获取当前线路的playLines，确保数据是最新的
           final selectedLine = videoInfoData.lines?[lineIndex];
           final playLines = selectedLine?.playLines ?? [];
 
@@ -1108,21 +1155,20 @@ class _Video_DetailState extends State<Video_Detail>
               valueListenable: currentPlay,
               builder: (context, playIndex, child) {
                 return SizedBox(
-                  height: 40,
-                  //最小宽度
+                  height: 44,
                   child: ListView.builder(
-                    scrollDirection: Axis.horizontal, // 水平滚动
-                    itemCount: playLines.length, // 列表项数量
+                    scrollDirection: Axis.horizontal,
+                    itemCount: playLines.length,
                     itemBuilder: (context, index) {
-                      final item = playLines[index]; // 获取当前项
+                      final item = playLines[index];
                       return Container(
-                        margin: const EdgeInsets.only(right: 6),
+                        margin: const EdgeInsets.only(right: 8),
                         child: Stack(
                           alignment: Alignment.topRight,
                           children: [
                             SizedBox(
-                              width: 100,
-                              height: 35,
+                              width: 108,
+                              height: 40,
                               child: TextButton(
                                 style: TextButton.styleFrom(
                                   backgroundColor:
@@ -1133,15 +1179,14 @@ class _Video_DetailState extends State<Video_Detail>
                                             66,
                                             1,
                                           )
-                                          : const Color.fromRGBO(
-                                            246,
-                                            247,
-                                            248,
-                                            1,
-                                          ),
+                                          : const Color(0xFFF3F4F6),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.0),
+                                    borderRadius: BorderRadius.circular(10.0),
                                   ),
+                                  elevation: playIndex == index ? 2 : 0,
+                                  shadowColor: playIndex == index
+                                      ? Color.fromRGBO(252, 119, 66, 0.3)
+                                      : Colors.transparent,
                                 ),
                                 onPressed: () {
                                   try {
@@ -1153,9 +1198,7 @@ class _Video_DetailState extends State<Video_Detail>
                                       );
                                       return;
                                     }
-                                    // 更新当前选集
                                     currentPlay.value = index;
-                                    // 设置新的视频URL - 确保使用最新的playLines数据
                                     final currentSelectedLine =
                                         videoInfoData.lines?[currentLine.value];
                                     final currentPlayLines =
@@ -1172,23 +1215,42 @@ class _Video_DetailState extends State<Video_Detail>
                                 child: Text(
                                   item.name ?? '',
                                   style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: playIndex == index
+                                        ? FontWeight.w600
+                                        : FontWeight.w500,
                                     color:
                                         playIndex == index
                                             ? Colors.white
-                                            : Colors.black,
+                                            : Color(0xFF111827),
                                   ),
                                 ),
                               ),
                             ),
-                            //VIP角标右上角位置
                             if (item.vip == 1)
                               Positioned(
                                 right: 0,
                                 top: 0,
-                                child: const TDBadge(
-                                  TDBadgeType.subscript,
-                                  size: TDBadgeSize.large,
-                                  message: 'VIP',
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFFEAB308),
+                                    borderRadius: BorderRadius.only(
+                                      topRight: Radius.circular(10),
+                                      bottomLeft: Radius.circular(10),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'VIP',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ),
                               ),
                           ],
@@ -1201,9 +1263,8 @@ class _Video_DetailState extends State<Video_Detail>
             );
           } else {
             return Container(
-              height: 40,
+              height: 44,
               alignment: Alignment.center,
-              //居中
               child: GestureDetector(
                 onTap: () {
                   showModalBottomSheetList();
@@ -1229,13 +1290,15 @@ class _Video_DetailState extends State<Video_Detail>
         },
       );
     } else {
-      // 当没有播放线路时显示提示信息
       return Container(
-        height: 40,
+        height: 44,
         alignment: Alignment.centerLeft,
         child: Text(
           "暂无播放线路",
-          style: TextStyle(color: Colors.grey, fontSize: 14),
+          style: TextStyle(
+            color: Color(0xFF6B7280),
+            fontSize: 14,
+          ),
         ),
       );
     }
@@ -1250,85 +1313,117 @@ class _Video_DetailState extends State<Video_Detail>
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             showModalBottomSheetListSate = setState;
-            return Card(
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                padding: const EdgeInsets.only(top: 10),
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20.0),
-                    topRight: Radius.circular(20.0),
-                  ),
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24.0),
+                  topRight: Radius.circular(24.0),
                 ),
-                height: 650,
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    left: 20,
-                    right: 20,
-                    bottom: 10,
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x14000000),
+                    blurRadius: 24,
+                    offset: Offset(0, -4),
                   ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "切换线路",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 14),
+                ],
+              ),
+              width: MediaQuery.of(context).size.width,
+              padding: const EdgeInsets.only(top: 16),
+              height: 650,
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  bottom: 20,
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Color(0xFFE5E7EB),
+                            borderRadius: BorderRadius.circular(2),
                           ),
-                          GestureDetector(
-                            onTap: Navigator.of(context).pop,
-                            child: const Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "切换线路",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF111827),
                           ),
-                        ],
-                      ),
-                      Flexible(
-                        flex: 1,
-                        child: DetailTabsView(
-                          // 添加容错处理
-                          tabData: videoInfoData.lines ?? [],
-                          onSelectionChanged: (tabIndex, selectedIndices) {
-                            try {
-                              // 添加容错处理
-                              if (videoInfoData.lines != null &&
-                                  tabIndex < videoInfoData.lines!.length) {
-                                // 更新当前线路
+                        ),
+                        GestureDetector(
+                          onTap: Navigator.of(context).pop,
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: Color(0xFFF3F4F6),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.close,
+                              size: 18,
+                              color: Color(0xFF6B7280),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    Flexible(
+                      flex: 1,
+                      child: DetailTabsView(
+                        tabData: videoInfoData.lines ?? [],
+                        onSelectionChanged: (tabIndex, selectedIndices) {
+                          try {
+                            if (videoInfoData.lines != null &&
+                                tabIndex < videoInfoData.lines!.length) {
+                              setState(() {
+                                currentLine.value = tabIndex;
+                              });
+
+                              final selectedLine =
+                                  videoInfoData.lines?[tabIndex];
+                              if (selectedLine?.playLines != null &&
+                                  selectedIndices.isNotEmpty &&
+                                  selectedIndices.first <
+                                      (selectedLine?.playLines?.length ??
+                                          0)) {
                                 setState(() {
-                                  currentLine.value = tabIndex;
+                                  currentPlay.value = selectedIndices.first;
                                 });
 
-                                // 修复类型错误，正确获取选中的播放链接
-                                final selectedLine =
-                                    videoInfoData.lines?[tabIndex];
-                                if (selectedLine?.playLines != null &&
-                                    selectedIndices.isNotEmpty &&
-                                    selectedIndices.first <
-                                        (selectedLine?.playLines?.length ??
-                                            0)) {
-                                  // 更新当前播放索引
-                                  setState(() {
-                                    currentPlay.value = selectedIndices.first;
-                                  });
-
-                                  final selectedPlayLine =
-                                      selectedLine?.playLines?[selectedIndices
-                                          .first];
-                                  setVideoUrl(selectedPlayLine?.file ?? "");
-                                }
+                                final selectedPlayLine =
+                                    selectedLine?.playLines?[selectedIndices
+                                        .first];
+                                setVideoUrl(selectedPlayLine?.file ?? "");
                               }
-                            } catch (e) {
-                              debugPrint("切换选集错误：${e.toString()}");
                             }
-                          },
-                          defaultSelectedItems: {
-                            currentLine.value: {currentPlay.value},
-                          },
-                        ),
+                          } catch (e) {
+                            debugPrint("切换选集错误：${e.toString()}");
+                          }
+                        },
+                        defaultSelectedItems: {
+                          currentLine.value: {currentPlay.value},
+                        },
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             );
@@ -1367,7 +1462,7 @@ class _Video_DetailState extends State<Video_Detail>
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 16,
+        spacing: 20,
         children: [
           SectionWithMore(title: "猜你喜欢"),
           HorizontalVideoList(videoPageData: videoPageData, onTap: removeVideo),
@@ -1381,43 +1476,59 @@ class _Video_DetailState extends State<Video_Detail>
       padding: const EdgeInsets.only(
         left: Layout.paddingL,
         right: Layout.paddingR,
+        top: 8,
       ),
       child: Column(
-        // 使用 Column 替代 ListView
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 12,
+        spacing: 20,
         children: [
-          // 标题部分
           Row(
-            spacing: 6,
+            spacing: 12,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TDImage(
-                width: 150,
-                height: 100,
-                fit: BoxFit.cover,
-                imgUrl: videoInfoData.video?.surfacePlot ?? "",
-                errorWidget: const TDImage(
-                  width: 150,
-                  height: 100,
-                  fit: BoxFit.cover,
-                  assetUrl: 'assets/images/loading.gif',
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x0F000000),
+                      blurRadius: 12,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: TDImage(
+                    width: 140,
+                    height: 100,
+                    fit: BoxFit.cover,
+                    imgUrl: videoInfoData.video?.surfacePlot ?? "",
+                    errorWidget: const TDImage(
+                      width: 140,
+                      height: 100,
+                      fit: BoxFit.cover,
+                      assetUrl: 'assets/images/loading.gif',
+                    ),
+                  ),
                 ),
               ),
               Expanded(
                 child: Column(
-                  //从上到下排列
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
-                  spacing: 4,
+                  spacing: 8,
                   children: [
                     Text(
                       videoInfoData.video?.title ?? "",
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.left,
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                        height: 1.3,
                       ),
                     ),
                     TDRate(
@@ -1427,16 +1538,22 @@ class _Video_DetailState extends State<Video_Detail>
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        spacing: 5,
+                        spacing: 6,
                         children: [
                           Text(
                             videoInfoData.video?.videoClass ?? "暂无分类",
-                            style: TextStyle(color: Colors.grey),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF6B7280),
+                            ),
                           ),
                           Text(
                             (videoInfoData.video?.videoTag ?? "暂无标签")
                                 .replaceAll(",", "/"),
-                            style: TextStyle(color: Colors.grey),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF6B7280),
+                            ),
                           ),
                         ],
                       ),
@@ -1444,14 +1561,13 @@ class _Video_DetailState extends State<Video_Detail>
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        //可以水平滚动
                         mainAxisSize: MainAxisSize.min,
-                        spacing: 5,
+                        spacing: 8,
                         children: [
                           TDTag(
                             videoInfoData.video?.year.toString() ?? "暂无上映时间",
                             isLight: true,
-                            theme: TDTagTheme.success,
+                            theme: TDTagTheme.primary,
                           ),
                           TDTag(
                             Dict.getDictName(
@@ -1459,7 +1575,7 @@ class _Video_DetailState extends State<Video_Detail>
                               area ?? [],
                             ),
                             isLight: true,
-                            theme: TDTagTheme.success,
+                            theme: TDTagTheme.primary,
                           ),
                           TDTag(
                             Dict.getDictName(
@@ -1467,7 +1583,7 @@ class _Video_DetailState extends State<Video_Detail>
                               videoCategory ?? [],
                             ),
                             isLight: true,
-                            theme: TDTagTheme.success,
+                            theme: TDTagTheme.primary,
                           ),
                           TDTag(
                             Dict.getDictName(
@@ -1475,7 +1591,7 @@ class _Video_DetailState extends State<Video_Detail>
                               language ?? [],
                             ),
                             isLight: true,
-                            theme: TDTagTheme.success,
+                            theme: TDTagTheme.primary,
                           ),
                         ],
                       ),
@@ -1485,7 +1601,6 @@ class _Video_DetailState extends State<Video_Detail>
               ),
             ],
           ),
-          // 导演
           DynamicSelectOption(
             title: '导演',
             items: formatString(videoInfoData.video?.directors ?? ""),
@@ -1508,7 +1623,6 @@ class _Video_DetailState extends State<Video_Detail>
               return list;
             },
           ),
-          // 剧情
           _buildPlotSection(),
         ],
       ),
@@ -1534,27 +1648,33 @@ class _Video_DetailState extends State<Video_Detail>
           '剧情',
           style: TextStyle(
             fontSize: 18,
-            fontWeight: FontWeight.bold,
-            height: 2,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF111827),
+            height: 1.4,
           ),
         ),
+        SizedBox(height: 12),
         Html(
           data: videoInfoData.video?.introduce ?? "",
           style: {
             "body": Style(
-              // maxLines: 4, // 限制最大行数
-              // textOverflow: TextOverflow.ellipsis, // 溢出显示省略号
-              color: Color.fromRGBO(153, 153, 153, 1),
+              color: Color(0xFF4B5563),
               backgroundColor: Colors.transparent,
+              fontSize: FontSize(15),
+              lineHeight: LineHeight(1.6),
             ),
             "p": Style(
-              color: Color.fromRGBO(153, 153, 153, 1),
+              color: Color(0xFF4B5563),
               backgroundColor: Colors.transparent,
+              fontSize: FontSize(15),
+              lineHeight: LineHeight(1.6),
+              margin: Margins.only(bottom: 8),
             ),
-            //设置所有html元素字体的颜色
             "span": Style(
-              color: Color.fromRGBO(153, 153, 153, 1),
+              color: Color(0xFF4B5563),
               backgroundColor: Colors.transparent,
+              fontSize: FontSize(15),
+              lineHeight: LineHeight(1.6),
             ),
           },
         ),
