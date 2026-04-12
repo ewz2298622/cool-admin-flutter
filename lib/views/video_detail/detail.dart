@@ -30,6 +30,7 @@ import '../../utils/user.dart';
 import '../../utils/video.dart';
 import 'Components/guess_you_like.dart';
 import 'Components/video_info_view.dart';
+import 'Components/sponsor_bar.dart';
 
 String TAG = 'Video_Detail';
 
@@ -924,43 +925,7 @@ class _Video_DetailState extends State<Video_Detail>
   }
 
   Widget _buildSponsorBar() {
-    return Padding(
-      padding: const EdgeInsets.only(
-        top: 8,
-        bottom: 8,
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Color(0xFFFFF7ED),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 10,
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(
-              TDIcons.sound,
-              size: 18,
-              color: Color(0xFFD97706),
-            ),
-            SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                '本片仅供学习参考，请勿用于商业用途。切勿传播违法信息。视频中的广告不参与本片制作，仅供学习参考。谨防上当受骗',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF92400E),
-                  height: 1.5,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    return const SponsorBar();
   }
 
   Widget _buildVideoInfo() {
