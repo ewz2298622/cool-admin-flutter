@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-import '../../entity/video_detail_data_entity.dart';
+import '../../../entity/video_detail_data_entity.dart';
+
 
 /// 视频下载助手类
 /// 负责处理视频下载相关的业务逻辑

@@ -51,6 +51,9 @@ class _Video_DetailState extends State<Video_Detail>
   
   // 投屏助手
   late final CastingHelper _castingHelper;
+  
+  // 线路切换对话框状态
+  StateSetter? showModalBottomSheetListSate;
 
   //获取当前时间戳
   final int currentTimeStamp = DateTime.now().millisecondsSinceEpoch;
@@ -1465,6 +1468,7 @@ class _Video_DetailState extends State<Video_Detail>
         ],
       ),
     );
+  }
 
   /// 显示投屏对话框
   void tvDevice() {

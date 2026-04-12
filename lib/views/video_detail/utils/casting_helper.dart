@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
+import '../../../entity/video_detail_data_entity.dart';
 import '../../../utils/cast_screen_manager.dart';
-import '../../entity/video_detail_data_entity.dart';
 
 /// 投屏助手类
 /// 负责管理投屏相关的业务逻辑和 UI 展示
