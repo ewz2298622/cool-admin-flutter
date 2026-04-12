@@ -22,7 +22,7 @@ import '../../entity/play_line_entity.dart';
 import '../../entity/video_detail_data_entity.dart';
 import '../../entity/video_detail_entity.dart';
 import '../../entity/video_page_entity.dart';
-import '../../main.dart'; // 导入main.dart以访问routeObserver
+import '../../main.dart'; // 导入 main.dart 以访问 routeObserver
 import '../../style/layout.dart';
 import '../../utils/ads_config.dart';
 import '../../utils/bus/bus.dart';
@@ -31,6 +31,8 @@ import '../../utils/cast_screen_manager.dart'; // 导入投屏管理类
 import '../../utils/dict.dart';
 import '../../utils/user.dart';
 import '../../utils/video.dart';
+import 'Components/guess_you_like.dart';
+import 'Components/video_info_view.dart';
 
 String TAG = 'Video_Detail';
 
@@ -1453,179 +1455,18 @@ class _Video_DetailState extends State<Video_Detail>
   }
 
   Widget _buildRecommendations() {
-    return Container(
-      padding: const EdgeInsets.only(
-        left: Layout.paddingL,
-        right: Layout.paddingR,
-        top: Layout.paddingT,
-        bottom: Layout.paddingB,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 20,
-        children: [
-          SectionWithMore(title: "猜你喜欢"),
-          HorizontalVideoList(videoPageData: videoPageData, onTap: removeVideo),
-        ],
-      ),
+    return GuessYouLike(
+      videoPageData: videoPageData,
+      onVideoTap: removeVideo,
     );
   }
 
   Widget _buildTabsVideoInfo() {
-    return Padding(
-      padding: const EdgeInsets.only(
-        left: Layout.paddingL,
-        right: Layout.paddingR,
-        top: 8,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 20,
-        children: [
-          Row(
-            spacing: 12,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Color(0x0F000000),
-                      blurRadius: 12,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: TDImage(
-                    width: 140,
-                    height: 100,
-                    fit: BoxFit.cover,
-                    imgUrl: videoInfoData.video?.surfacePlot ?? "",
-                    errorWidget: const TDImage(
-                      width: 140,
-                      height: 100,
-                      fit: BoxFit.cover,
-                      assetUrl: 'assets/images/loading.gif',
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  spacing: 8,
-                  children: [
-                    Text(
-                      videoInfoData.video?.title ?? "",
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF111827),
-                        height: 1.3,
-                      ),
-                    ),
-                    TDRate(
-                      value: (videoInfoData.video?.doubanScore ?? 0).toDouble(),
-                      disabled: true,
-                    ),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        spacing: 6,
-                        children: [
-                          Text(
-                            videoInfoData.video?.videoClass ?? "暂无分类",
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF6B7280),
-                            ),
-                          ),
-                          Text(
-                            (videoInfoData.video?.videoTag ?? "暂无标签")
-                                .replaceAll(",", "/"),
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF6B7280),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        spacing: 8,
-                        children: [
-                          TDTag(
-                            videoInfoData.video?.year.toString() ?? "暂无上映时间",
-                            isLight: true,
-                            theme: TDTagTheme.primary,
-                          ),
-                          TDTag(
-                            Dict.getDictName(
-                              videoInfoData.video?.region ?? 0,
-                              area ?? [],
-                            ),
-                            isLight: true,
-                            theme: TDTagTheme.primary,
-                          ),
-                          TDTag(
-                            Dict.getDictName(
-                              videoInfoData.video?.categoryId ?? 0,
-                              videoCategory ?? [],
-                            ),
-                            isLight: true,
-                            theme: TDTagTheme.primary,
-                          ),
-                          TDTag(
-                            Dict.getDictName(
-                              videoInfoData.video?.language ?? 0,
-                              language ?? [],
-                            ),
-                            isLight: true,
-                            theme: TDTagTheme.primary,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          DynamicSelectOption(
-            title: '导演',
-            items: formatString(videoInfoData.video?.directors ?? ""),
-            paramsKey: 'directors',
-            loadData: (params) async {
-              List<VideoPageDataList> list =
-                  (await Api.getVideoPages(params)).data?.list ??
-                  [] as List<VideoPageDataList>;
-              return list;
-            },
-          ),
-          DynamicSelectOption(
-            title: '演员',
-            items: formatString(videoInfoData.video?.actors ?? ""),
-            paramsKey: 'actors',
-            loadData: (params) async {
-              List<VideoPageDataList> list =
-                  (await Api.getVideoPages(params)).data?.list ??
-                  [] as List<VideoPageDataList>;
-              return list;
-            },
-          ),
-          _buildPlotSection(),
-        ],
-      ),
+    return VideoInfoView(
+      videoInfoData: videoInfoData,
+      area: area,
+      videoCategory: videoCategory,
+      language: language,
     );
   }
 
