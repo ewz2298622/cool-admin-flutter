@@ -31,6 +31,8 @@ import '../../utils/video.dart';
 import 'Components/guess_you_like.dart';
 import 'Components/video_info_view.dart';
 import 'Components/sponsor_bar.dart';
+import 'utils/casting_helper.dart';
+import 'utils/video_download_helper.dart';
 
 String TAG = 'Video_Detail';
 
@@ -41,12 +43,14 @@ class Video_Detail extends StatefulWidget {
   _Video_DetailState createState() => _Video_DetailState();
 }
 
-// 1. 【修改】: 混入 WidgetsBindingObserver 以监听App生命周期
+// 1. 【修改】: 混入 WidgetsBindingObserver 以监听 App 生命周期
 class _Video_DetailState extends State<Video_Detail>
     with RouteAware, WidgetsBindingObserver {
   final ValueNotifier<int> currentLine = ValueNotifier<int>(0);
   final ValueNotifier<int> currentPlay = ValueNotifier<int>(0);
-  StateSetter? showModalBottomSheetListSate;
+  
+  // 投屏助手
+  late final CastingHelper _castingHelper;
 
   //获取当前时间戳
   final int currentTimeStamp = DateTime.now().millisecondsSinceEpoch;
@@ -68,22 +72,22 @@ class _Video_DetailState extends State<Video_Detail>
     // 2. 【修改】: super.initState() 推荐放在最前面
     super.initState();
 
-    // 3. 【修改】: 注册App生命周期监听器
+    // 3. 【修改】: 注册 App 生命周期监听器
     WidgetsBinding.instance.addObserver(this);
     
     // 初始化页面活跃状态
     _isPageActive = true;
 
+    // 初始化投屏助手
+    _castingHelper = CastingHelper(
+      onDeviceListUpdate: () {
+        if (!mounted) return;
+        setState(() {});
+      },
+    );
+
     player = FPlayer();
     _futureBuilderFuture = init();
-    // 设置投屏设备列表更新回调
-    _castScreenManager.onDeviceListUpdate = (devices) {
-      if (!mounted) return;
-      setState(() {
-        deviceList = devices;
-      });
-      TVshowModalBottomSheetListSate?.call(() {});
-    };
   }
 
   @override
@@ -103,7 +107,7 @@ class _Video_DetailState extends State<Video_Detail>
     WidgetsBinding.instance.removeObserver(this);
     routeObserver.unsubscribe(this);
 
-    // 在组件销毁前调用addViews
+    // 在组件销毁前调用 addViews
     _onPageLeave();
     // 停止监听播放进度
     _stopPositionListener();
@@ -116,8 +120,8 @@ class _Video_DetailState extends State<Video_Detail>
       debugPrint('Video_Detail: Error disposing player: $e');
     }
     
-    // 释放投屏管理器资源
-    _castScreenManager.dispose();
+    // 释放投屏助手资源
+    _castingHelper.dispose();
 
     // 5. 【修改】: super.dispose() 必须放在最后
     super.dispose();
@@ -191,9 +195,6 @@ class _Video_DetailState extends State<Video_Detail>
     }
   }
 
-  List<dynamic> deviceList = [];
-  StateSetter? TVshowModalBottomSheetListSate;
-  final CastScreenManager _castScreenManager = CastScreenManager(); // 添加投屏管理器
   final id = Get.arguments?["id"];
   final viewingDuration = Get.arguments?["viewingDuration"];
   String androidCodeId = AdsConfig.INTERSTITIAL_AD_ANDROID;
@@ -1443,47 +1444,6 @@ class _Video_DetailState extends State<Video_Detail>
     return [str];
   }
 
-  Widget _buildPlotSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '剧情',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF111827),
-            height: 1.4,
-          ),
-        ),
-        SizedBox(height: 12),
-        Html(
-          data: videoInfoData.video?.introduce ?? "",
-          style: {
-            "body": Style(
-              color: Color(0xFF4B5563),
-              backgroundColor: Colors.transparent,
-              fontSize: FontSize(15),
-              lineHeight: LineHeight(1.6),
-            ),
-            "p": Style(
-              color: Color(0xFF4B5563),
-              backgroundColor: Colors.transparent,
-              fontSize: FontSize(15),
-              lineHeight: LineHeight(1.6),
-              margin: Margins.only(bottom: 8),
-            ),
-            "span": Style(
-              color: Color(0xFF4B5563),
-              backgroundColor: Colors.transparent,
-              fontSize: FontSize(15),
-              lineHeight: LineHeight(1.6),
-            ),
-          },
-        ),
-      ],
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -1505,182 +1465,24 @@ class _Video_DetailState extends State<Video_Detail>
         ],
       ),
     );
-  }
 
-  //搜索设备
-  Future<void> searchDevice() async {
-    await _castScreenManager.startSearchDevices();
-  }
-
-  tvDevice() {
-    searchDevice();
-    showModalBottomSheet(
-      backgroundColor: Colors.transparent,
+  /// 显示投屏对话框
+  void tvDevice() {
+    _castingHelper.showCastingDialog(
       context: context,
-      isScrollControlled: true,
-      builder: (builder) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            TVshowModalBottomSheetListSate = setState;
-            return Card(
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                padding: const EdgeInsets.only(top: 10),
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20.0),
-                    topRight: Radius.circular(20.0),
-                  ),
-                ),
-                height: 650,
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 10, right: 10),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: Center(
-                                child: Text(
-                                  "投屏",
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: Navigator.of(context).pop,
-                              child: const Icon(Icons.close),
-                            ),
-                          ],
-                        ),
-                        //定位组件
-                        Container(
-                          margin: const EdgeInsets.only(top: 30),
-                          child: SingleChildScrollView(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              spacing: 10,
-                              children: [
-                                Text(
-                                  "注意:",
-                                  style: TextStyle(
-                                    color: Color.fromARGB(142, 142, 142, 0),
-                                  ),
-                                ),
-                                Text(
-                                  "1、电视投屏的广告与本APP无关",
-                                  style: TextStyle(
-                                    color: Color.fromARGB(142, 142, 142, 0),
-                                  ),
-                                ),
-                                Text(
-                                  "2、投屏后无法再次投屏，请重置投屏或者退出投屏",
-                                  style: TextStyle(
-                                    color: Color.fromARGB(142, 142, 142, 0),
-                                  ),
-                                ),
-                                Text(
-                                  "3、设备扫描过程是持续的请静心等待10秒左右",
-                                  style: TextStyle(
-                                    color: Color.fromARGB(142, 142, 142, 0),
-                                  ),
-                                ),
-
-                                // 修改: 解决Row可能存在的布局溢出问题
-                                tvDeviceLoading(),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
+      videoInfoData: videoInfoData,
+      currentLine: currentLine.value,
+      currentPlay: currentPlay.value,
     );
   }
 
-  Widget tvDeviceLoading() {
-    if (deviceList.isEmpty) {
-      return SizedBox(
-        height: 300,
-        child: Center(
-          child: TDLoading(
-            size: TDLoadingSize.large,
-            icon: TDLoadingIcon.circle,
-          ),
-        ),
-      );
-    } else {
-      return ListView.builder(
-        shrinkWrap: true,
-        itemCount: deviceList.length,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.only(top: 15),
-            child: TDButton(
-              text: deviceList[index]["value"].info.friendlyName,
-              size: TDButtonSize.large,
-              onTap: () {
-                try {
-                  // 添加容错处理
-                  if (videoInfoData.lines != null &&
-                      videoInfoData.lines!.isNotEmpty &&
-                      currentLine.value < videoInfoData.lines!.length) {
-                    // 修复类型错误，正确获取选中的播放链接
-                    final selectedLine =
-                        videoInfoData.lines?[currentLine.value];
-                    if (selectedLine?.playLines != null &&
-                        currentPlay.value <
-                            (selectedLine?.playLines?.length ?? 0)) {
-                      final selectedPlayLine =
-                          selectedLine?.playLines?[currentPlay.value];
-                      _castScreenManager.castToDevice(
-                        deviceList[index],
-                        selectedPlayLine?.file ?? "",
-                        "${videoInfoData.video?.title ?? ""}  ${selectedPlayLine?.name ?? ""} ",
-                      );
-                    }
-                  }
-                } catch (e) {
-                  debugPrint("投屏错误：${e.toString()}");
-                }
-              },
-              type: TDButtonType.outline,
-              shape: TDButtonShape.rectangle,
-              theme: TDButtonTheme.primary,
-            ),
-          );
-        },
-      );
-    }
-  }
-
-  videoDownload() async {
-    // 开始下载
-    try {
-      final selectedLine = videoInfoData.lines?[currentLine.value];
-      if (selectedLine?.playLines != null &&
-          currentPlay.value < (selectedLine?.playLines?.length ?? 0)) {
-        final selectedPlayLine = selectedLine?.playLines?[currentPlay.value];
-        //将selectedPlayLine?.file复制粘贴到剪贴板中
-        Clipboard.setData(ClipboardData(text: selectedPlayLine?.file ?? ""));
-        Fluttertoast.showToast(
-          msg: "请打开迅雷app",
-          toastLength: Toast.LENGTH_SHORT,
-        );
-      }
-    } catch (e) {
-      debugPrint('videoDownload 下载失败: $e');
-    }
+  /// 下载视频
+  void videoDownload() async {
+    await VideoDownloadHelper.downloadVideo(
+      videoInfoData: videoInfoData,
+      currentLine: currentLine.value,
+      currentPlay: currentPlay.value,
+    );
   }
 
   Widget _buildVideo() {
