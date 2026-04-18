@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/components/video_one_small.dart';
+import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../components/loading.dart';
@@ -232,7 +233,7 @@ class _DynamicSelectOptionState extends State<DynamicSelectOption> {
           ],
         ),
         GestureDetector(
-          onTap: Navigator.of(context).pop,
+          onTap: () => Get.back(),
           child: const Icon(Icons.close),
         ),
       ],

@@ -764,7 +764,7 @@ class MyState extends State<My>
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, size: _appBarIconSize, color: _whiteColor),
           onPressed: () {
-            Navigator.pop(context);
+            Get.back();
           },
         ),
         centerTitle: true,

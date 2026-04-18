@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 /// WebView JS 桥接服务类
@@ -61,9 +62,7 @@ class WebViewJsBridge {
 
   /// 处理返回按钮点击
   void _handleBackClick() {
-    if (Navigator.canPop(context)) {
-      Navigator.pop(context);
-    }
+    Get.back();
   }
 
   /// 处理播放/暂停事件

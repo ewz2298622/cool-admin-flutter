@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../../entity/video_detail_data_entity.dart';
@@ -73,7 +74,7 @@ class CastingHelper {
                               ),
                             ),
                             GestureDetector(
-                              onTap: Navigator.of(context).pop,
+                              onTap: () => Get.back(),
                               child: const Icon(Icons.close),
                             ),
                           ],

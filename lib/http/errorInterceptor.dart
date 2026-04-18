@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 
 import '../utils/context_manager.dart';
 import '../utils/user.dart';
@@ -19,10 +20,7 @@ class ErrorInterceptor extends InterceptorsWrapper {
       _handleError(err, handler);
     }
     if (err.type == DioExceptionType.connectionError) {
-      Navigator.pushReplacement(
-        ContextManager.getNavigatorKey()?.currentState!.context as BuildContext,
-        MaterialPageRoute(builder: (context) => ConnectionError()),
-      );
+      Get.offAll(() => ConnectionError());
     } else if (err.type == DioExceptionType.connectionTimeout) {
       _showToast("网络连接超时");
     }

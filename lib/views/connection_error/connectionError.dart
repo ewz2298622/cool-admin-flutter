@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 // 定义一个名为 ConnectionError 的有状态组件，用于展示一个包含 WebView 的页面
@@ -53,9 +54,7 @@ class _ConnectionErrorState extends State<ConnectionError> {
               shape: TDButtonShape.rectangle,
               onTap: () {
                 // 跳转到首页
-                Navigator.of(
-                  context,
-                ).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
+                Get.offAllNamed('/main');
               },
             ),
           ],

@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/api/api.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../db/entity/UserEntity.dart';
@@ -70,7 +71,7 @@ class registerState extends State<register>
             children: [
               GestureDetector(
                 onTap: () {
-                  Navigator.pop(context);
+                  Get.back();
                 },
                 child: Row(
                   children: [
@@ -97,7 +98,7 @@ class registerState extends State<register>
           ),
           GestureDetector(
             onTap: () {
-              Navigator.pop(context);
+              Get.back();
             },
             child: Icon(Icons.close),
           ),

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/utils/requestMultiplePermissions.dart';
+import 'package:get/get.dart';
 import 'package:open_file/open_file.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -253,7 +254,7 @@ class AppUpdater {
                     size: TDButtonSize.large,
                     theme: TDButtonTheme.defaultTheme,
                     type: TDButtonType.outline,
-                    onTap: () => Navigator.of(dialogContext).pop(),
+                    onTap: () => Get.back(),
                     style: TDButtonStyle(
                       textColor: theme.primaryColor,
                       radius: BorderRadius.circular(20),
@@ -267,7 +268,7 @@ class AppUpdater {
                   type: TDButtonType.fill,
                   theme: TDButtonTheme.defaultTheme,
                   onTap: () {
-                    Navigator.of(dialogContext).pop();
+                    Get.back();
                     onConfirm();
                   },
                   style: TDButtonStyle(
@@ -318,7 +319,7 @@ class AppUpdater {
                   size: TDButtonSize.large,
                   type: TDButtonType.fill,
                   theme: TDButtonTheme.defaultTheme,
-                  onTap: () => Navigator.of(dialogContext).pop(),
+                  onTap: () => Get.back(),
                   style: TDButtonStyle(
                     backgroundColor: const Color.fromRGBO(255, 95, 1, 1),
                     textColor: Colors.white,
@@ -367,7 +368,7 @@ class AppUpdater {
                   size: TDButtonSize.large,
                   type: TDButtonType.fill,
                   theme: TDButtonTheme.defaultTheme,
-                  onTap: () => Navigator.of(dialogContext).pop(),
+                  onTap: () => Get.back(),
                   style: TDButtonStyle(
                     backgroundColor: const Color.fromRGBO(255, 95, 1, 1),
                     textColor: Colors.white,

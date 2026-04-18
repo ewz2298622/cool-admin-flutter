@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -127,7 +128,7 @@ class _SettingState extends State<Setting> {
               aldultDatabaseHelper.insertAldult(
                 AldultEntity(status: teenagerModel, timestamp: DateTime.now()),
               );
-              Navigator.of(context).pushReplacementNamed('/');
+              Get.offAllNamed('/main');
               return value;
             },
           ),
@@ -160,12 +161,12 @@ class _SettingState extends State<Setting> {
   Future<void> logout(BuildContext context) async {
     User.deleteUser();
     context.read<UserState>().deleteUserInfoData();
-    Navigator.of(context, rootNavigator: true).pop(context);
+    Get.back();
   }
 
   Future<void> deleteAll(BuildContext context) async {
     Helper.deleteAll();
-    Navigator.of(context, rootNavigator: true).pop(context);
+    Get.back();
     context.read<UserState>().deleteUserInfoData();
     final appState = Provider.of<AppState>(context, listen: false);
     appState.reset();
@@ -181,7 +182,7 @@ class _SettingState extends State<Setting> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, size: 20),
           onPressed: () {
-            Navigator.pop(context);
+            Get.back();
           },
         ),
         //标题居中

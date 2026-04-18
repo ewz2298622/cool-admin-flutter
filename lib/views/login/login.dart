@@ -573,7 +573,7 @@ class LoginState extends State<Login>
             //等待500ms
             await Future.delayed(LoginConstants.loginSuccessDelay);
             if (mounted) {
-              Navigator.of(context).pushReplacementNamed('/');
+              Get.offAllNamed('/main');
             }
           }
         } catch (e, stackTrace) {

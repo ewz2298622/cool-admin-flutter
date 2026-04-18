@@ -562,7 +562,7 @@ class CashPageState extends State<CashPage> {
                 content: "兑换后金币将被清零，请问是否需要兑换",
                 buttonStyle: TDDialogButtonStyle.text,
                 rightBtnAction: () async {
-                  Navigator.of(context).pop();
+                  Get.back();
                   await Api.createWithdrawal({"type": id});
                   await getCashData();
                   await getScore();

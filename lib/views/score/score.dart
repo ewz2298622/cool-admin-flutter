@@ -160,7 +160,7 @@ class TaskCenterPageState extends State<TaskCenterPage> with RouteAware {
             size: _iconSize,
             color: Colors.white,
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Get.back(),
         ),
         centerTitle: true,
         toolbarHeight: _toolbarHeight,

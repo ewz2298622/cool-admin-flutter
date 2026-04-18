@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app/api/api.dart';
+import 'package:get/get.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -84,7 +85,7 @@ class InviteCenterPageState extends State<InviteCenterPage> {
             size: _iconSize,
             color: Colors.white,
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Get.back(),
         ),
         title: const Text(
           "邀请好友",

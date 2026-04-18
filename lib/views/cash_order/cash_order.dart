@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../api/api.dart';
@@ -268,7 +269,7 @@ class CashOrderState extends State<CashOrder>
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, size: 20, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context);
+            Get.back();
           },
         ),
         //标题居中

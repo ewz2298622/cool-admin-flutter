@@ -1335,7 +1335,7 @@ class _Video_DetailState extends State<Video_Detail>
                           ),
                         ),
                         GestureDetector(
-                          onTap: Navigator.of(context).pop,
+                          onTap: () => Get.back(),
                           child: Container(
                             width: 32,
                             height: 32,
