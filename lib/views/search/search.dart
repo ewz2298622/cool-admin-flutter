@@ -14,6 +14,7 @@ import '../../entity/video_hot_words_entity.dart';
 import '../../entity/video_rank_entity.dart';
 import '../../style/layout.dart';
 import '../../utils/color.dart';
+import '../../utils/routes.dart';
 import '../../utils/video.dart';
 
 /// 渐变标签指示器
@@ -306,7 +307,7 @@ class VideoSearchState extends State<VideoSearch>
         if (mounted) setState(() {});
       });
     }
-    Get.toNamed("/search_result", arguments: {"keyWord": inputText});
+    Get.toNamed(AppRoutes.searchResult, arguments: {"keyWord": inputText});
   }
 
   /// 构建搜索栏
@@ -649,7 +650,7 @@ class VideoSearchState extends State<VideoSearch>
           ],
         ),
       ),
-      onTap: () => Get.toNamed("/video_detail", arguments: {"id": item.id}),
+      onTap: () => Get.toNamed(AppRoutes.videoDetail, arguments: {"id": item.id}),
     );
   }
 

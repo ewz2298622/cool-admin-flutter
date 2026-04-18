@@ -18,6 +18,7 @@ import '../../entity/login_entity.dart';
 import '../../entity/notice_Info_entity.dart';
 import '../../entity/user_info_entity.dart';
 import '../../style/layout.dart';
+import '../../utils/routes.dart';
 import '../../utils/store/user/user.dart';
 
 /// 登录页面常量定义
@@ -573,7 +574,7 @@ class LoginState extends State<Login>
             //等待500ms
             await Future.delayed(LoginConstants.loginSuccessDelay);
             if (mounted) {
-              Get.offAllNamed('/main');
+              Get.offAllNamed(AppRoutes.main);
             }
           }
         } catch (e, stackTrace) {

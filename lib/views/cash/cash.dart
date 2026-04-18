@@ -8,6 +8,7 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 import '../../api/api.dart';
 import '../../components/loading.dart';
 import '../../entity/score_withdrawal_config_entity.dart';
+import '../../utils/routes.dart';
 
 /// 现金页面
 class CashPage extends StatefulWidget {
@@ -113,7 +114,7 @@ class CashPageState extends State<CashPage> {
         actions: [
           TextButton(
             onPressed: () {
-              Get.toNamed("/cash_order");
+              Get.toNamed(AppRoutes.cashOrder);
             },
             child: const Text(
               '收益明细',

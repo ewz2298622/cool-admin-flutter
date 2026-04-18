@@ -27,6 +27,7 @@ import '../../entity/dict_data_entity.dart';
 import '../../entity/dict_info_list_entity.dart';
 import '../../entity/notice_Info_entity.dart';
 import '../../entity/swiper_entity.dart';
+import '../../utils/routes.dart';
 import '../../services/home_prefetch_service.dart';
 import '../../style/layout.dart';
 import '../../utils/appUpdater.dart';
@@ -638,11 +639,11 @@ class _HomePageState extends State<Home>
           children: [
             Expanded(
               flex: 5,
-              child: CommonSearchBar(onTap: () => Get.toNamed("/search")),
+              child: CommonSearchBar(onTap: () => Get.toNamed(AppRoutes.search)),
             ),
             const SizedBox(width: 10),
             GestureDetector(
-              onTap: () => Get.toNamed("/week"),
+              onTap: () => Get.toNamed(AppRoutes.week),
               child: SvgPicture.asset(
                 'assets/images/zhou.svg',
                 width: 30,
@@ -906,7 +907,7 @@ class _HomePageState extends State<Home>
       title: album.title ?? "",
       showIcon: true,
       onMorePressed: () {
-        Get.toNamed("/video_album", arguments: {"id": album.id});
+        Get.toNamed(AppRoutes.videoAlbum, arguments: {"id": album.id});
       },
     );
   }

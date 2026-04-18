@@ -48,6 +48,7 @@ import 'components/loading.dart';
 import 'db/manager/DBManager.dart';
 import 'entity/app_ads_entity.dart';
 import 'services/home_prefetch_service.dart';
+import 'utils/routes.dart';
 import 'services/video_filter_prefetch_service.dart';
 
 /**
@@ -213,29 +214,29 @@ class _MyAppState extends State<MyApp> {
                 elevation: 0,
               ),
             ),
-            initialRoute: '/',
+            initialRoute: AppRoutes.splash,
             getPages: [
-              GetPage(name: '/', page: () => SplashPage()),
-              GetPage(name: '/main', page: () => MainPage()),
-              GetPage(name: '/video_detail', page: () => Video_Detail()),
-              GetPage(name: '/short_drama', page: () => ShortDrama()),
-              GetPage(name: '/notice', page: () => Notice()),
-              GetPage(name: '/html', page: () => HtmlPage()),
-              GetPage(name: '/week', page: () => WeekPage()),
-              GetPage(name: '/search', page: () => VideoSearch()),
-              GetPage(name: '/search_result', page: () => SearchResult()),
-              GetPage(name: '/login', page: () => Login()),
-              GetPage(name: '/feedback', page: () => FeedbackPage()),
-              GetPage(name: '/score', page: () => TaskCenterPage()),
-              GetPage(name: '/score_order', page: () => ScoreOrder()),
-              GetPage(name: '/connection_error', page: () => ConnectionError()),
-              GetPage(name: '/video_album', page: () => VideoAlbum()),
-              GetPage(name: '/live_detail', page: () => Live_Detail()),
-              GetPage(name: '/invite_record', page: () => InviteCenterPage()),
-              GetPage(name: '/cashPage', page: () => CashPage()),
-              GetPage(name: '/cash_order', page: () => CashOrder()),
+              GetPage(name: AppRoutes.splash, page: () => SplashPage()),
+              GetPage(name: AppRoutes.main, page: () => MainPage()),
+              GetPage(name: AppRoutes.videoDetail, page: () => Video_Detail()),
+              GetPage(name: AppRoutes.shortDrama, page: () => ShortDrama()),
+              GetPage(name: AppRoutes.notice, page: () => Notice()),
+              GetPage(name: AppRoutes.html, page: () => HtmlPage()),
+              GetPage(name: AppRoutes.week, page: () => WeekPage()),
+              GetPage(name: AppRoutes.search, page: () => VideoSearch()),
+              GetPage(name: AppRoutes.searchResult, page: () => SearchResult()),
+              GetPage(name: AppRoutes.login, page: () => Login()),
+              GetPage(name: AppRoutes.feedback, page: () => FeedbackPage()),
+              GetPage(name: AppRoutes.score, page: () => TaskCenterPage()),
+              GetPage(name: AppRoutes.scoreOrder, page: () => ScoreOrder()),
+              GetPage(name: AppRoutes.connectionError, page: () => ConnectionError()),
+              GetPage(name: AppRoutes.videoAlbum, page: () => VideoAlbum()),
+              GetPage(name: AppRoutes.liveDetail, page: () => Live_Detail()),
+              GetPage(name: AppRoutes.inviteRecord, page: () => InviteCenterPage()),
+              GetPage(name: AppRoutes.cashPage, page: () => CashPage()),
+              GetPage(name: AppRoutes.cashOrder, page: () => CashOrder()),
               GetPage(
-                name: '/environment_error',
+                name: AppRoutes.environmentError,
                 page: () => EnvironmentError(),
               ),
             ],

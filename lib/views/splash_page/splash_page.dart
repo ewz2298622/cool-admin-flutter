@@ -9,6 +9,7 @@ import '../../api/api.dart';
 import '../../entity/app_ads_entity.dart';
 import '../../utils/ads.dart';
 import '../../utils/ads_config.dart';
+import '../../utils/routes.dart';
 
 /// 描述：开屏广告页
 /// @author guozi
@@ -55,7 +56,7 @@ class _SplashPageState extends State<SplashPage> {
     if (_hasNavigated) return;
     _hasNavigated = true;
     _timeoutTimer?.cancel();
-    Get.offAllNamed('/main');
+    Get.offAllNamed(AppRoutes.main);
   }
 
   @override
@@ -129,7 +130,7 @@ class _SplashPageState extends State<SplashPage> {
       if (mounted && !_hasNavigated) {
         _hasNavigated = true;
         _timeoutTimer?.cancel();
-        Get.offAllNamed('/main');
+        Get.offAllNamed(AppRoutes.main);
       }
     }
   }
@@ -180,7 +181,7 @@ class _SplashPageState extends State<SplashPage> {
                           if (!_hasNavigated && mounted) {
                             _hasNavigated = true;
                             _timeoutTimer?.cancel();
-                            Get.offAllNamed('/main');
+                            Get.offAllNamed(AppRoutes.main);
                           }
                         },
                         onFinish: () {
@@ -196,7 +197,7 @@ class _SplashPageState extends State<SplashPage> {
                           if (!_hasNavigated && mounted) {
                             _hasNavigated = true;
                             _timeoutTimer?.cancel();
-                            Get.offAllNamed('/main');
+                            Get.offAllNamed(AppRoutes.main);
                           }
                         },
                         onEcpm: (info) {

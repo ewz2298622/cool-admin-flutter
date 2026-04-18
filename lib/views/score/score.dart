@@ -12,6 +12,7 @@ import '../../entity/member_exchange_config_entity.dart';
 import '../../entity/monthly_checkinConfig_entity.dart';
 import '../../utils/ads.dart';
 import '../../utils/requestMultiplePermissions.dart';
+import '../../utils/routes.dart';
 import '../../main.dart' show routeObserver;
 
 /// 任务中心页面
@@ -331,7 +332,7 @@ class TaskCenterPageState extends State<TaskCenterPage> with RouteAware {
             children: [
               GestureDetector(
                 onTap: () {
-                  Get.toNamed("/score_order");
+                  Get.toNamed(AppRoutes.scoreOrder);
                 },
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -384,7 +385,7 @@ class TaskCenterPageState extends State<TaskCenterPage> with RouteAware {
               ),
               GestureDetector(
                 onTap: () async {
-                  await Get.toNamed("/cashPage");
+                  await Get.toNamed(AppRoutes.cashPage);
                 },
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,

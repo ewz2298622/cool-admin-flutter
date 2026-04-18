@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
+import '../../utils/routes.dart';
+
 // 定义一个名为 ConnectionError 的有状态组件，用于展示一个包含 WebView 的页面
 class EnvironmentError extends StatefulWidget {
   // 构造函数，Key? key 是可选参数，用于在组件树中唯一标识该组件
@@ -55,7 +57,7 @@ class _EnvErrorState extends State<EnvironmentError> {
               shape: TDButtonShape.rectangle,
               onTap: () {
                 // 跳转到首页
-                Get.offAllNamed('/main');
+                Get.offAllNamed(AppRoutes.main);
               },
             ),
             Center(

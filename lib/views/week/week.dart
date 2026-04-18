@@ -8,6 +8,7 @@ import '../../components/loading.dart';
 import '../../components/no_data.dart';
 import '../../entity/dict_data_entity.dart';
 import '../../entity/week_entity.dart';
+import '../../utils/routes.dart';
 import '../../utils/video.dart';
 
 /// 周播放时间表页面
@@ -200,7 +201,7 @@ class _WeekPageState extends State<WeekPage> with TickerProviderStateMixin {
         ),
       ),
       onTap:
-          () => Get.toNamed("/video_detail", arguments: {"id": item.videoId}),
+          () => Get.toNamed(AppRoutes.videoDetail, arguments: {"id": item.videoId}),
     );
   }
 

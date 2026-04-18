@@ -23,6 +23,7 @@ import '../../utils/ads.dart';
 import '../../utils/ads_config.dart';
 import '../../utils/bus/bus.dart';
 import '../../utils/bus/constant.dart';
+import '../../utils/routes.dart';
 import '../../utils/user.dart';
 import '../history/history.dart';
 import '../login/login.dart';
@@ -539,7 +540,7 @@ class MyState extends State<My>
       ),
       onTap: () {
         // 跳转/score
-        Get.toNamed("/score");
+        Get.toNamed(AppRoutes.score);
         checkMember();
       },
     );
@@ -718,10 +719,10 @@ class MyState extends State<My>
   void _handleModelItemClick(String label) {
     switch (label) {
       case "系统通知":
-        Get.toNamed("/notice");
+        Get.toNamed(AppRoutes.notice);
         break;
       case "分享好友":
-        Get.toNamed("/invite_record");
+        Get.toNamed(AppRoutes.inviteRecord);
         break;
       case "应用设置":
         Get.to(() => Setting(userStatus: user != null));
@@ -741,7 +742,7 @@ class MyState extends State<My>
         break;
       case "意见反馈":
         if (User.isUserLoginView(context)) {
-          Get.toNamed("/feedback");
+          Get.toNamed(AppRoutes.feedback);
         }
         break;
     }
