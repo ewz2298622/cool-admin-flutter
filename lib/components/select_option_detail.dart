@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../components/loading.dart';
+import '../components/no_data.dart';
 import '../entity/video_page_entity.dart';
 
 typedef Future<List<dynamic>> DataLoader(Map<String, dynamic> params);
@@ -95,7 +96,7 @@ class _DynamicSelectOptionState extends State<DynamicSelectOption> {
     if (selectData.isNotEmpty) {
       return VideoOneSmall(videoPageData: selectData);
     }
-    return const Center();
+    return const NoData(message: '暂无相关影片');
   }
 
   Widget _buildPopFromCenter(BuildContext context, String name) {
