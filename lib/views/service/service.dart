@@ -248,7 +248,6 @@ class _LiveStreamPageState extends State<VideoService> {
     if (videoLiveData.isEmpty) {
       return const NoData();
     }
-    // 使用 SmartRefresher 包装 GridView
     return SmartRefresher(
       controller: _refreshController,
       enablePullUp: true,
@@ -257,7 +256,7 @@ class _LiveStreamPageState extends State<VideoService> {
       child: GridView.builder(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 1,
-          childAspectRatio: 4.2,
+          mainAxisExtent: 60,
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
         ),
@@ -275,34 +274,35 @@ class _LiveStreamPageState extends State<VideoService> {
       onTap: () {
         Get.toNamed('/live_detail', arguments: {"id": item.id ?? 0});
       },
-      child: Card(
-        // 添加黑夜模式支持
-        color:
-            Theme.of(context).brightness == Brightness.dark
-                ? Colors.grey[850]
-                : Colors.white,
-        child: Row(
-          spacing: 10,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(width: 5),
-            TDImage(width: 40, height: 40, imgUrl: item.image),
-            SizedBox(
-              width: 150,
-              child: Text(
-                item.title ?? "",
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                // 添加黑夜模式支持
-                style: TextStyle(
-                  color:
-                      Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black,
+      child: SizedBox(
+        height: 60,
+        child: Card(
+          color:
+              Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[850]
+                  : Colors.white,
+          child: Row(
+            spacing: 10,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(width: 5),
+              TDImage(width: 40, height: 40, imgUrl: item.image),
+              SizedBox(
+                width: 150,
+                child: Text(
+                  item.title ?? "",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
