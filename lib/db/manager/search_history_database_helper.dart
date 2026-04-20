@@ -1,7 +1,7 @@
 import 'package:sqlite3/sqlite3.dart';
 
 import '../entity/SearchHistoryEntity.dart';
-import 'DBManager.dart';
+import 'db_manager.dart';
 
 class SearchHistoryDatabaseHelper {
   late Database _database;

@@ -1,7 +1,7 @@
 import 'package:sqlite3/sqlite3.dart';
 
 import '../entity/AldultEntity.dart';
-import 'DBManager.dart';
+import 'db_manager.dart';
 
 class AldultDatabaseHelper {
   late Database _database;

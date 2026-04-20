@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_app/http/print_log_interceptor.dart';
-import 'package:flutter_app/http/requestConfig.dart';
-import 'package:flutter_app/http/responseInterceptor.dart';
-import 'package:flutter_app/http/tokenInterceptors.dart';
-import 'package:flutter_app/http/whitelistPaths.dart';
+import 'package:flutter_app/http/request_config.dart';
+import 'package:flutter_app/http/response_interceptor.dart';
+import 'package:flutter_app/http/token_interceptors.dart';
+import 'package:flutter_app/http/whitelist_paths.dart';
 
-import 'cacheInterceptor.dart';
-import 'errorInterceptor.dart';
+import 'cache_interceptor.dart';
+import 'error_interceptor.dart';
 import 'http_method.dart';
 
 class DioHttp {
@@ -26,7 +26,7 @@ class DioHttp {
     debugPrint('DioInstance init');
     _dio.interceptors.add(
       CacheInterceptor(
-        cacheDuration: const Duration(minutes: 5), // 设置5分钟缓存
+        cacheDuration: const Duration(minutes: 5), // 设置 5 分钟缓存
         // forceRefresh: true, // 强制刷新时取消注释
         whitelistPaths: whitelistPaths,
       ),

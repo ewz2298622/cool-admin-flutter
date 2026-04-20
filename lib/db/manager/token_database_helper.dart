@@ -1,7 +1,7 @@
 import 'package:sqlite3/sqlite3.dart';
 
 import '../entity/TokenEntity.dart';
-import 'DBManager.dart';
+import 'db_manager.dart';
 
 class TokenDatabaseHelper {
   late Database _database;

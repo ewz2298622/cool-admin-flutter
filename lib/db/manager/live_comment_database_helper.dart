@@ -1,7 +1,7 @@
 import 'package:sqlite3/sqlite3.dart';
 
 import '../entity/LiveCommentEntity.dart';
-import 'DBManager.dart';
+import 'db_manager.dart';
 
 class LiveCommentDatabaseHelper {
   late Database _database;
