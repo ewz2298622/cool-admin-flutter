@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../db/entity/UserEntity.dart';
-import '../../db/manager/UserDatabaseHelper.dart';
+import '../../db/manager/user_database_helper.dart';
 import '../../entity/captcha_entity.dart';
 import '../../entity/user_info_entity.dart';
 

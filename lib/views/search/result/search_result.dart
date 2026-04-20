@@ -10,7 +10,7 @@ import '../../../api/api.dart';
 import '../../../components/loading.dart';
 import '../../../components/video_one_small.dart';
 import '../../../db/entity/SearchHistoryEntity.dart';
-import '../../../db/manager/SearchHistoryDatabaseHelper.dart';
+import '../../../db/manager/search_history_database_helper.dart';
 import '../../../entity/video_page_entity.dart';
 
 class SearchResult extends StatefulWidget {

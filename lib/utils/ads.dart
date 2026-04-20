@@ -6,7 +6,7 @@ import 'package:flutter_unionad/flutter_unionad.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import '../db/entity/UserEntity.dart';
-import '../db/manager/UserDatabaseHelper.dart';
+import '../db/manager/user_database_helper.dart';
 import '../entity/app_ads_entity.dart';
 import 'ads_config.dart';
 

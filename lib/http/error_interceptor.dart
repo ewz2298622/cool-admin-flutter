@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 
 import '../utils/context_manager.dart';
 import '../utils/user.dart';
-import '../views/connection_error/connectionError.dart';
+import '../views/connection_error/connection_error.dart';
 
 String TAG = "ErrorInterceptor";
 

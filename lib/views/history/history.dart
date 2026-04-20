@@ -8,7 +8,7 @@ import '../../api/api.dart';
 import '../../components/no_data.dart';
 import '../../components/video_history.dart';
 import '../../db/entity/UserEntity.dart';
-import '../../db/manager/UserDatabaseHelper.dart';
+import '../../db/manager/user_database_helper.dart';
 import '../../entity/views_entity.dart';
 import '../../utils/bus/bus.dart';
 import '../../utils/bus/constant.dart';

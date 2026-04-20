@@ -11,7 +11,7 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
 import '../../components/banner_ads.dart';
-import '../../components/detail_tabs_vews.dart';
+import '../../components/detail_tabs_views.dart';
 import '../../components/loading.dart';
 import '../../entity/app_ads_entity.dart';
 import '../../entity/dict_data_entity.dart';

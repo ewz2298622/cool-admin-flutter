@@ -5,11 +5,11 @@ import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../db/entity/AldultEntity.dart';
-import '../../db/manager/AldultDatabaseHelper.dart';
+import '../../db/manager/aldult_database_helper.dart';
 import '../../db/manager/helper.dart';
 import '../../http/cacheInterceptor.dart';
 import '../../utils/routes.dart';
-import '../../utils/store/app/appState.dart';
+import '../../utils/store/app/app_state.dart';
 import '../../utils/store/theme/theme.dart';
 import '../../utils/store/user/user.dart';
 import '../../utils/user.dart';

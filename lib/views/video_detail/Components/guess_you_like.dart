@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
-import '../../../../components/sectionWithMore.dart';
+import '../../../../components/section_with_more.dart';
 import '../../../../components/video_scroll.dart';
 import '../../../../style/layout.dart';
 

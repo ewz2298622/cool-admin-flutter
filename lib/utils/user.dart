@@ -6,8 +6,8 @@ import 'package:provider/provider.dart';
 import '../api/api.dart';
 import '../db/entity/TokenEntity.dart';
 import '../db/entity/UserEntity.dart';
-import '../db/manager/TokenDatabaseHelper.dart';
-import '../db/manager/UserDatabaseHelper.dart';
+import '../db/manager/token_database_helper.dart';
+import '../db/manager/user_database_helper.dart';
 import '../entity/login_entity.dart';
 import 'context_manager.dart';
 

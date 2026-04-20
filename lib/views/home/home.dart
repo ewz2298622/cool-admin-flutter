@@ -15,12 +15,12 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 // 本地文件
 import '../../api/api.dart';
-import '../../components/buildSwiperItem.dart';
+import '../../components/build_swiper_item.dart';
 import '../../components/common/common_search_bar.dart';
 import '../../components/home_two_video.dart';
 import '../../components/loading.dart';
 import '../../components/no_data.dart';
-import '../../components/sectionWithMore.dart';
+import '../../components/section_with_more.dart';
 import '../../components/video_scroll.dart';
 import '../../entity/album_entity.dart';
 import '../../entity/dict_data_entity.dart';
@@ -30,7 +30,7 @@ import '../../entity/swiper_entity.dart';
 import '../../utils/routes.dart';
 import '../../services/home_prefetch_service.dart';
 import '../../style/layout.dart';
-import '../../utils/appUpdater.dart';
+import '../../utils/app_updater.dart';
 import '../../utils/color.dart';
 import '../../utils/context_manager.dart';
 import '../../utils/store/home/color_notifier.dart';

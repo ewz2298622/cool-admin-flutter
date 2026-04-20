@@ -1,15 +1,14 @@
 //实现一个数据库管理器
-import 'AldultDatabaseHelper.dart';
-import 'SearchHistoryDatabaseHelper.dart';
-import 'TokenDatabaseHelper.dart';
-import 'UserDatabaseHelper.dart';
+import 'aldult_database_helper.dart';
+import 'search_history_database_helper.dart';
+import 'token_database_helper.dart';
+import 'user_database_helper.dart';
 
 class Helper {
   static final searchHistory = SearchHistoryDatabaseHelper();
-  static final TokenDatabaseHelper tokenDatabaseHelper = TokenDatabaseHelper();
-  static final UserDatabaseHelper userDatabaseHelper = UserDatabaseHelper();
-  static final AldultDatabaseHelper aldultDatabaseHelper =
-      AldultDatabaseHelper();
+  static final tokenDatabaseHelper = TokenDatabaseHelper();
+  static final userDatabaseHelper = UserDatabaseHelper();
+  static final aldultDatabaseHelper = AldultDatabaseHelper();
   //删除所有
   static void deleteAll() async {
     searchHistory.deleteAll();

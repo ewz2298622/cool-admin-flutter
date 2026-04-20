@@ -10,7 +10,7 @@ import 'package:get/get.dart';
 import '../../api/api.dart';
 import '../../components/loading.dart';
 import '../../db/entity/LiveCommentEntity.dart';
-import '../../db/manager/LiveCommentDatabaseHelper.dart';
+import '../../db/manager/live_comment_database_helper.dart';
 import '../../entity/live_info_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../utils/user.dart';

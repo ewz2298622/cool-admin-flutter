@@ -11,7 +11,7 @@ import '../../components/loading.dart';
 import '../../entity/member_exchange_config_entity.dart';
 import '../../entity/monthly_checkinConfig_entity.dart';
 import '../../utils/ads.dart';
-import '../../utils/requestMultiplePermissions.dart';
+import '../../utils/request_multiple_permissions.dart';
 import '../../utils/routes.dart';
 import '../../main.dart' show routeObserver;
 

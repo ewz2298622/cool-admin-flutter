@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 
-import '../db/manager/AldultDatabaseHelper.dart';
-import '../db/manager/TokenDatabaseHelper.dart';
+import '../db/manager/aldult_database_helper.dart';
+import '../db/manager/token_database_helper.dart';
 import '../utils/device_info.dart';
 
 String TAG = "TokenDatabaseHelper";

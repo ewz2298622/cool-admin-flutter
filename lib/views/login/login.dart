@@ -8,11 +8,11 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
-import '../../components/bouncingBallsScreen.dart';
+import '../../components/bouncing_balls_screen.dart';
 import '../../db/entity/TokenEntity.dart';
 import '../../db/entity/UserEntity.dart';
-import '../../db/manager/TokenDatabaseHelper.dart';
-import '../../db/manager/UserDatabaseHelper.dart';
+import '../../db/manager/token_database_helper.dart';
+import '../../db/manager/user_database_helper.dart';
 import '../../entity/captcha_entity.dart';
 import '../../entity/login_entity.dart';
 import '../../entity/notice_Info_entity.dart';

@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/utils/requestMultiplePermissions.dart';
+import 'package:flutter_app/utils/request_multiple_permissions.dart';
 import 'package:get/get.dart';
 import 'package:open_file/open_file.dart';
 import 'package:package_info_plus/package_info_plus.dart';

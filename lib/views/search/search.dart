@@ -7,9 +7,9 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
 import '../../components/loading.dart';
-import '../../components/sectionWithMore.dart';
+import '../../components/section_with_more.dart';
 import '../../db/entity/SearchHistoryEntity.dart';
-import '../../db/manager/SearchHistoryDatabaseHelper.dart';
+import '../../db/manager/search_history_database_helper.dart';
 import '../../entity/video_hot_words_entity.dart';
 import '../../entity/video_rank_entity.dart';
 import '../../style/layout.dart';
