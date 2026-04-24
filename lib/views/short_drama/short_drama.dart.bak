@@ -1,0 +1,1184 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:video_player/video_player.dart';
+
+import '../../api/api.dart';
+import '../../components/loading.dart';
+import '../../entity/dict_data_entity.dart';
+import '../../entity/play_line_entity.dart';
+import '../../entity/video_detail_entity.dart';
+import '../../entity/video_line_entity.dart';
+import '../../style/color_styles.dart';
+import '../../utils/video.dart';
+
+class ShortDrama extends StatefulWidget {
+  const ShortDrama({super.key});
+
+  @override
+  _ShortDramaState createState() => _ShortDramaState();
+}
+
+class _ShortDramaState extends State<ShortDrama> with TickerProviderStateMixin {
+  late final Future<String> _futureBuilderFuture;
+  final PageController _pageController = PageController();
+  VideoDetailData? videoData;
+  List<VideoLineDataList> videoLineData = [];
+  List<PlayLineDataList> playerLineData = [];
+  List<DictDataDataArea>? area = [];
+  List<DictDataDataVideoCategory>? videoCategory = [];
+  List<DictDataDataLanguage>? language = [];
+  final ValueNotifier<int> currentLine = ValueNotifier<int>(0);
+  List<VideoItem> _videoList = [];
+  final id = Get.arguments["id"];
+
+  int _currentIndex = 0;
+  bool _isFollowing = false;
+  bool _isLiked = false;
+  bool _isFavorited = false;
+  int _likeCount = 0;
+  int _commentCount = 0;
+  int _shareCount = 0;
+  bool _isExpanded = false;
+  bool _showEpisodePanel = false;
+  String _selectedTab = '选集';
+  int _episodeRangeIndex = 0;
+  final List<String> _episodeRanges = [];
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _futureBuilderFuture = init();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _scrollController.dispose();
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: SystemUiOverlay.values,
+    );
+    super.dispose();
+  }
+
+  Future<String> init() async {
+    try {
+      await Future.wait([
+        getVideoById(),
+        getVideoLinePages(),
+      ]);
+      await getPlayLinePages();
+      _buildEpisodeRanges();
+      return "success";
+    } catch (e) {
+      return "success";
+    }
+  }
+
+  void _buildEpisodeRanges() {
+    _episodeRanges.clear();
+    final total = playerLineData.length;
+    if (total <= 30) {
+      _episodeRanges.add('1-$total');
+    } else {
+      for (int i = 0; i < total; i += 30) {
+        final end = (i + 30) < total ? (i + 30) : total;
+        _episodeRanges.add('${i + 1}-$end');
+      }
+    }
+  }
+
+  Future<void> getVideoById() async {
+    try {
+      final response = await Api.getVideoById({"id": id});
+      videoData = response.data as VideoDetailData;
+      _likeCount = videoData?.popularity != null ? int.tryParse(videoData!.popularity!) ?? 0 : 0;
+      _commentCount = 120;
+      _shareCount = 396;
+    } catch (e) {
+      debugPrint('getVideoById failed: $e');
+    }
+  }
+
+  Future<void> getVideoLinePages() async {
+    try {
+      final response = await Api.getVideoLinePages({"video_id": id});
+      videoLineData = response.data?.list ?? [];
+    } catch (e) {
+      debugPrint('getVideoLinePages failed: $e');
+      videoLineData = [];
+    }
+  }
+
+  Future<void> getPlayLinePages() async {
+    try {
+      playerLineData.clear();
+      if (videoLineData.isEmpty) {
+        _videoList = [];
+        return;
+      }
+      final safeIndex = currentLine.value.clamp(0, videoLineData.length - 1);
+      final currentVideoLineId = videoLineData[safeIndex].id;
+      if (currentVideoLineId == null) {
+        _videoList = [];
+        return;
+      }
+      final response = await Api.getPlayLinePages({
+        "video_id": id,
+        "video_line_id": currentVideoLineId,
+        "size": 10000,
+      });
+      final rawList = response.data?.list;
+      playerLineData = rawList ?? [];
+      _videoList = List.generate(
+        playerLineData.length,
+        (index) => VideoItem(
+          id: index,
+          title: videoData?.title ?? "",
+          subTitle: playerLineData[index].subTitle ?? "",
+          videoUrl: playerLineData[index].file ?? "",
+          coverUrl: videoData?.surfacePlot ?? "",
+        ),
+      );
+    } catch (e) {
+      debugPrint('getPlayLinePages failed: $e');
+      playerLineData = [];
+      _videoList = [];
+    }
+  }
+
+  void _toggleLike() {
+    setState(() {
+      _isLiked = !_isLiked;
+      _likeCount += _isLiked ? 1 : -1;
+    });
+  }
+
+  void _toggleFollow() {
+    setState(() {
+      _isFollowing = !_isFollowing;
+    });
+  }
+
+  void _toggleFavorite() {
+    setState(() {
+      _isFavorited = !_isFavorited;
+    });
+  }
+
+  void _toggleEpisodePanel() {
+    setState(() {
+      _showEpisodePanel = !_showEpisodePanel;
+    });
+  }
+
+  void _selectEpisode(int index) {
+    setState(() {
+      _showEpisodePanel = false;
+    });
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final panelHeight = screenHeight * 0.65;
+
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: false,
+      backgroundColor: Colors.black,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          _buildContent(),
+          _buildTopBar(),
+          if (_showEpisodePanel) ...[
+            _buildEpisodePanelOverlay(),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: panelHeight,
+              child: EpisodePanel(
+                episodes: playerLineData,
+                currentIndex: _currentIndex,
+                totalCount: _videoList.length,
+                title: videoData?.title ?? '',
+                coverUrl: videoData?.surfacePlot,
+                onEpisodeSelected: _selectEpisode,
+                onFavorite: _toggleFavorite,
+                isFavorited: _isFavorited,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContent() {
+    return FutureBuilder<String>(
+      future: _futureBuilderFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const PageLoading();
+        } else if (snapshot.hasError || !snapshot.hasData) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white54, size: 48),
+                const SizedBox(height: 16),
+                const Text('加载失败', style: TextStyle(color: Colors.white70, fontSize: 16)),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => Get.back(),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.white24),
+                  child: const Text('返回', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            ),
+          );
+        } else if (_videoList.isEmpty) {
+          return const Center(
+            child: Text('暂无数据', style: TextStyle(color: Colors.white70, fontSize: 16)),
+          );
+        }
+
+        return PageView.builder(
+          controller: _pageController,
+          itemCount: _videoList.length,
+          scrollDirection: Axis.vertical,
+          physics: const BouncingScrollPhysics(),
+          onPageChanged: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          itemBuilder: (context, index) {
+            final videoItem = _videoList[index];
+            return ShortVideoItemWidget(
+              key: ValueKey(videoItem.id),
+              videoItem: videoItem,
+              isActive: index == _currentIndex,
+              videoData: videoData!,
+              currentIndex: index,
+              totalCount: _videoList.length,
+              isFollowing: _isFollowing,
+              isLiked: _isLiked,
+              isFavorited: _isFavorited,
+              likeCount: _likeCount,
+              commentCount: _commentCount,
+              shareCount: _shareCount,
+              onLike: _toggleLike,
+              onFollow: _toggleFollow,
+              onFavorite: _toggleFavorite,
+              onEpisodeTap: _toggleEpisodePanel,
+              isExpanded: _isExpanded,
+              onExpandToggle: () {
+                setState(() {
+                  _isExpanded = !_isExpanded;
+                });
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildTopBar() {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        padding: EdgeInsets.only(
+          top: MediaQuery.of(context).padding.top + 8,
+          left: 16,
+          right: 16,
+          bottom: 8,
+        ),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.black54, Colors.transparent],
+          ),
+        ),
+        child: Row(
+          children: [
+            GestureDetector(
+              onTap: () => Get.back(),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
+                  const SizedBox(width: 4),
+                  Text(
+                    '第${_currentIndex + 1}集',
+                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+            const Spacer(),
+            GestureDetector(
+              onTap: () {},
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.av_timer, color: Colors.white, size: 22),
+                  SizedBox(width: 4),
+                  Text('倍速', style: TextStyle(color: Colors.white, fontSize: 14)),
+                ],
+              ),
+            ),
+            const SizedBox(width: 20),
+            GestureDetector(
+              onTap: () {},
+              child: const Icon(Icons.more_vert, color: Colors.white, size: 22),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEpisodePanelOverlay() {
+    return Positioned.fill(
+      child: GestureDetector(
+        onTap: () => setState(() => _showEpisodePanel = false),
+        child: Container(color: Colors.black54),
+      ),
+    );
+  }
+}
+
+class VideoItem {
+  final int id;
+  final String title;
+  final String subTitle;
+  final String videoUrl;
+  final String coverUrl;
+
+  VideoItem({
+    required this.id,
+    required this.title,
+    required this.subTitle,
+    required this.videoUrl,
+    required this.coverUrl,
+  });
+}
+
+class ShortVideoItemWidget extends StatefulWidget {
+  final VideoItem videoItem;
+  final bool isActive;
+  final VideoDetailData videoData;
+  final int currentIndex;
+  final int totalCount;
+  final bool isFollowing;
+  final bool isLiked;
+  final bool isFavorited;
+  final int likeCount;
+  final int commentCount;
+  final int shareCount;
+  final VoidCallback onLike;
+  final VoidCallback onFollow;
+  final VoidCallback onFavorite;
+  final VoidCallback onEpisodeTap;
+  final bool isExpanded;
+  final VoidCallback onExpandToggle;
+
+  const ShortVideoItemWidget({
+    Key? key,
+    required this.videoItem,
+    required this.isActive,
+    required this.videoData,
+    required this.currentIndex,
+    required this.totalCount,
+    required this.isFollowing,
+    required this.isLiked,
+    required this.isFavorited,
+    required this.likeCount,
+    required this.commentCount,
+    required this.shareCount,
+    required this.onLike,
+    required this.onFollow,
+    required this.onFavorite,
+    required this.onEpisodeTap,
+    required this.isExpanded,
+    required this.onExpandToggle,
+  }) : super(key: key);
+
+  @override
+  State<ShortVideoItemWidget> createState() => _ShortVideoItemWidgetState();
+}
+
+class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
+  VideoPlayerController? _videoPlayerController;
+  bool _isPlaying = false;
+  bool _isLoading = true;
+  double _playbackSpeed = 1.0;
+  bool _showSpeedIndicator = false;
+  bool _showControls = true;
+  Timer? _hideTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializePlayer();
+  }
+
+  @override
+  void dispose() {
+    _hideTimer?.cancel();
+    _disposePlayer();
+    super.dispose();
+  }
+
+  Future<void> _initializePlayer() async {
+    if (widget.videoItem.videoUrl.isEmpty) {
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    _videoPlayerController = VideoPlayerController.networkUrl(
+      Uri.parse(widget.videoItem.videoUrl),
+    );
+
+    if (!mounted) return;
+    await _videoPlayerController?.initialize();
+    _videoPlayerController?.addListener(_videoListener);
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+      if (widget.isActive) _startPlaying();
+    }
+  }
+
+  void _videoListener() {
+    if (_videoPlayerController == null) return;
+    final playing = _videoPlayerController!.value.isPlaying;
+    if (playing != _isPlaying) {
+      setState(() => _isPlaying = playing);
+    }
+  }
+
+  void _disposePlayer() {
+    _videoPlayerController?.removeListener(_videoListener);
+    _videoPlayerController?.pause();
+    _videoPlayerController?.dispose();
+    _videoPlayerController = null;
+  }
+
+  void _startPlaying() {
+    _videoPlayerController?.play();
+    _videoPlayerController?.setPlaybackSpeed(_playbackSpeed);
+  }
+
+  void _pausePlaying() {
+    _videoPlayerController?.pause();
+  }
+
+  void _togglePlayPause() {
+    if (_isPlaying) {
+      _pausePlaying();
+    } else {
+      _startPlaying();
+    }
+    setState(() => _showControls = true);
+    _scheduleHideControls();
+  }
+
+  void _toggleSpeed() {
+    setState(() {
+      _playbackSpeed = _playbackSpeed == 1.0 ? 2.0 : 1.0;
+      _videoPlayerController?.setPlaybackSpeed(_playbackSpeed);
+      _showSpeedIndicator = true;
+    });
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted) setState(() => _showSpeedIndicator = false);
+    });
+  }
+
+  void _scheduleHideControls() {
+    _hideTimer?.cancel();
+    _hideTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted && _isPlaying) {
+        setState(() => _showControls = false);
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant ShortVideoItemWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && !oldWidget.isActive) {
+      _startPlaying();
+    } else if (!widget.isActive && oldWidget.isActive) {
+      _pausePlaying();
+    }
+    if (oldWidget.videoItem.videoUrl != widget.videoItem.videoUrl) {
+      _disposePlayer();
+      _initializePlayer();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _togglePlayPause,
+      onLongPress: _toggleSpeed,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          _buildVideoContent(),
+          if (_showControls) ...[
+            _buildPlayPauseIndicator(),
+            _buildRightActionBar(),
+            _buildBottomInfo(),
+            _buildBottomBar(),
+            _buildProgressIndicator(),
+          ],
+          if (_showSpeedIndicator) _buildSpeedIndicator(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVideoContent() {
+    final controller = _videoPlayerController;
+    if (controller != null && controller.value.isInitialized) {
+      return Center(
+        child: AspectRatio(
+          aspectRatio: controller.value.aspectRatio,
+          child: VideoPlayer(controller),
+        ),
+      );
+    }
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.network(
+          widget.videoItem.coverUrl,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(color: Colors.black),
+        ),
+        if (_isLoading)
+          Container(
+            color: Colors.black45,
+            child: const Center(
+              child: SizedBox(
+                width: 48,
+                height: 48,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 3,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildPlayPauseIndicator() {
+    return Center(
+      child: AnimatedOpacity(
+        opacity: _isPlaying ? 0 : 1,
+        duration: const Duration(milliseconds: 200),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.black45,
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: const Icon(Icons.play_arrow, color: Colors.white, size: 50),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressIndicator() {
+    final controller = _videoPlayerController;
+    if (controller == null || !controller.value.isInitialized) {
+      return const SizedBox.shrink();
+    }
+    final position = controller.value.position;
+    final duration = controller.value.duration;
+    final progress = duration.inMilliseconds > 0
+        ? position.inMilliseconds / duration.inMilliseconds
+        : 0.0;
+
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Container(
+        height: 2,
+        color: Colors.white24,
+        child: FractionallySizedBox(
+          alignment: Alignment.centerLeft,
+          widthFactor: progress,
+          child: Container(color: ColorStyles.colorPrimary),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRightActionBar() {
+    return Positioned(
+      right: 12,
+      bottom: 120,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _SideActionItem(
+            icon: Icons.star,
+            filledIcon: Icons.star,
+            label: _formatCount(19000),
+            isActive: widget.isFavorited,
+            activeColor: Colors.amber,
+            onTap: widget.onFavorite,
+          ),
+          const SizedBox(height: 20),
+          _SideActionItem(
+            icon: Icons.chat_bubble_outline,
+            filledIcon: Icons.chat_bubble,
+            label: _formatCount(widget.commentCount),
+            isActive: false,
+            onTap: () {},
+          ),
+          const SizedBox(height: 20),
+          _SideActionItem(
+            icon: Icons.favorite_border,
+            filledIcon: Icons.favorite,
+            label: _formatCount(widget.likeCount),
+            isActive: widget.isLiked,
+            activeColor: Colors.red,
+            onTap: widget.onLike,
+          ),
+          const SizedBox(height: 20),
+          _SideActionItem(
+            icon: Icons.send,
+            filledIcon: Icons.send,
+            label: _formatCount(widget.shareCount),
+            isActive: false,
+            onTap: () {},
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomInfo() {
+    final intro = VideoUtil.extractPlainText(widget.videoData.introduce ?? "");
+    final displayIntro = widget.isExpanded ? intro : (intro.length > 30 ? '${intro.substring(0, 30)}...' : intro);
+
+    return Positioned(
+      left: 16,
+      right: 80,
+      bottom: 56,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00C853),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Text(
+                  '新剧',
+                  style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: GestureDetector(
+                  onTap: widget.onEpisodeTap,
+                  child: Text(
+                    widget.videoItem.subTitle,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              const Icon(Icons.keyboard_arrow_right, color: Colors.white, size: 18),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  '第${widget.currentIndex + 1}集 | $displayIntro',
+                  style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+                  maxLines: widget.isExpanded ? 4 : 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (intro.length > 30)
+                GestureDetector(
+                  onTap: widget.onExpandToggle,
+                  child: Text(
+                    widget.isExpanded ? '收起' : '展开',
+                    style: const TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomBar() {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: GestureDetector(
+        onTap: widget.onEpisodeTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          margin: const EdgeInsets.only(bottom: 4),
+          decoration: BoxDecoration(
+            color: Colors.black45,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.list, color: Colors.white, size: 16),
+              const SizedBox(width: 8),
+              Text(
+                '选集 · 已完结 · 全${widget.totalCount}集',
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+              ),
+              const Spacer(),
+              Icon(
+                widget.onEpisodeTap != null ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                color: Colors.white,
+                size: 18,
+              ),
+              const SizedBox(width: 4),
+              const Icon(Icons.picture_in_picture_alt, color: Colors.white, size: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatCount(int count) {
+    if (count >= 10000) {
+      return '${(count / 10000).toStringAsFixed(1)}万';
+    } else if (count >= 1000) {
+      return '${(count / 1000).toStringAsFixed(1)}k';
+    }
+    return count.toString();
+  }
+
+  Widget _buildSpeedIndicator() {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xB3000000),
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Text(
+          '${_playbackSpeed}x',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SideActionItem extends StatelessWidget {
+  final IconData icon;
+  final IconData filledIcon;
+  final String label;
+  final bool isActive;
+  final Color? activeColor;
+  final VoidCallback onTap;
+
+  const _SideActionItem({
+    required this.icon,
+    required this.filledIcon,
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+    this.activeColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isActive ? (activeColor ?? ColorStyles.colorPrimary) : Colors.white;
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isActive ? filledIcon : icon,
+            color: color,
+            size: 30,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class EpisodePanel extends StatelessWidget {
+  final List<PlayLineDataList> episodes;
+  final int currentIndex;
+  final int totalCount;
+  final String title;
+  final String? coverUrl;
+  final Function(int) onEpisodeSelected;
+  final VoidCallback onFavorite;
+  final bool isFavorited;
+
+  const EpisodePanel({
+    Key? key,
+    required this.episodes,
+    required this.currentIndex,
+    required this.totalCount,
+    required this.title,
+    required this.coverUrl,
+    required this.onEpisodeSelected,
+    required this.onFavorite,
+    required this.isFavorited,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final ranges = <String>[];
+    if (totalCount <= 30) {
+      ranges.add('1-$totalCount');
+    } else {
+      for (int i = 0; i < totalCount; i += 30) {
+        final end = (i + 30) < totalCount ? (i + 30) : totalCount;
+        ranges.add('${i + 1}-$end');
+      }
+    }
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 8),
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          _buildHeader(),
+          _buildTabs(),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildRangeTabs(ranges),
+                  _buildEpisodeGrid(ranges),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          ),
+          _buildBottomButton(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              coverUrl ?? '',
+              width: 48,
+              height: 64,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                width: 48,
+                height: 64,
+                color: Colors.grey.shade300,
+                child: const Icon(Icons.movie, color: Colors.grey),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '已完结 共$totalCount集',
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabs() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          _TabItem(label: '简介', isActive: false, onTap: () {}),
+          const SizedBox(width: 24),
+          _TabItem(label: '选集', isActive: true, onTap: () {}),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRangeTabs(List<String> ranges) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      child: Row(
+        children: ranges.asMap().entries.map((entry) {
+          final index = entry.key;
+          final range = entry.value;
+          return Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: _RangeTab(label: range, isActive: index == 0, onTap: () {}),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildEpisodeGrid(List<String> ranges) {
+    final startRange = ranges[0];
+    final parts = startRange.split('-');
+    final start = int.tryParse(parts[0]) ?? 1;
+    final end = int.tryParse(parts[1]) ?? episodes.length;
+    final displayCount = (end - start + 1).clamp(0, episodes.length);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 6,
+          childAspectRatio: 1.3,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+        ),
+        itemCount: displayCount,
+        itemBuilder: (context, index) {
+          final episodeNum = start + index;
+          final isSelected = episodeNum - 1 == currentIndex;
+          final isCurrent = episodeNum == 1;
+
+          return GestureDetector(
+            onTap: () => onEpisodeSelected(episodeNum - 1),
+            child: Container(
+              decoration: BoxDecoration(
+                color: isSelected ? const Color(0xFFFFF3E0) : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+                border: isSelected ? Border.all(color: ColorStyles.colorPrimary, width: 1) : null,
+              ),
+              child: Stack(
+                children: [
+                  Center(
+                    child: Text(
+                      '$episodeNum',
+                      style: TextStyle(
+                        color: isSelected ? ColorStyles.colorPrimary : Colors.black87,
+                        fontSize: 14,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                  ),
+                  if (isCurrent)
+                    Positioned(
+                      top: 2,
+                      right: 2,
+                      child: Text(
+                        '小',
+                        style: TextStyle(
+                          color: ColorStyles.colorPrimary,
+                          fontSize: 8,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildBottomButton() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      child: SizedBox(
+        width: double.infinity,
+        height: 44,
+        child: ElevatedButton(
+          onPressed: onFavorite,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: ColorStyles.colorPrimary,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(22),
+            ),
+            elevation: 0,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                isFavorited ? Icons.star : Icons.star_border,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                isFavorited ? '已收藏' : '收藏',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TabItem extends StatelessWidget {
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _TabItem({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isActive ? Colors.black87 : Colors.grey.shade500,
+            fontSize: 15,
+            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RangeTab extends StatelessWidget {
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _RangeTab({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFFFFF3E0) : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isActive ? ColorStyles.colorPrimary : Colors.grey.shade600,
+            fontSize: 13,
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+}

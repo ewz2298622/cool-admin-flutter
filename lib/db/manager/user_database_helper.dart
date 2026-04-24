@@ -1,0 +1,130 @@
+import 'package:sqlite3/sqlite3.dart';
+
+import '../entity/UserEntity.dart';
+import 'db_manager.dart';
+
+class UserDatabaseHelper {
+  late Database _database;
+
+  // 初始化数据库
+  UserDatabaseHelper() {
+    _database = DBManager.getDataBase();
+    _createTable();
+  }
+
+  // 创建用户表 - 优化：添加索引提升查询性能
+  void _createTable() {
+    _database.execute('''
+    CREATE TABLE IF NOT EXISTS user (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      createTime TEXT,
+      updateTime TEXT,
+      unionid TEXT NOT NULL,
+      avatarUrl TEXT,
+      nickName TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      gender INTEGER,
+      status INTEGER,
+      loginType INTEGER,
+      password TEXT,
+      userId INTEGER
+    );
+  ''');
+    // 为 createTime 字段添加索引，提升排序查询性能
+    _database.execute('''
+      CREATE INDEX IF NOT EXISTS idx_user_createTime 
+      ON user(createTime DESC);
+    ''');
+    // 为 userId 字段添加索引，提升查询性能
+    _database.execute('''
+      CREATE INDEX IF NOT EXISTS idx_user_userId 
+      ON user(userId);
+    ''');
+  }
+
+  // 插入记录
+  void insert(UserEntity data) {
+    final query = '''
+    INSERT INTO user 
+    (createTime, updateTime, unionid, avatarUrl, nickName, phone, gender, status, loginType, password, userId)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?);
+  ''';
+
+    final now = DateTime.now().toIso8601String();
+
+    try {
+      _database.execute(query, [
+        now,
+        now,
+        data.unionid,
+        data.avatarUrl,
+        data.nickName,
+        data.phone,
+        data.gender,
+        data.status,
+        data.loginType,
+        data.password,
+        data.userId,
+      ]);
+    } catch (e) {
+      // 处理异常，例如记录日志或抛出自定义异常
+      print('Error inserting user data: $e');
+      throw Exception('Failed to insert user data');
+    }
+  }
+
+  //查询记录
+  Iterable<UserEntity> list() {
+    final query = 'SELECT * FROM user;';
+    final result = _database.select(query);
+
+    return result.map((row) {
+      return UserEntity(
+        id: row.columnAt(0),
+        createTime: row.columnAt(1),
+        updateTime: row.columnAt(2),
+        unionid: row.columnAt(3),
+        avatarUrl: row.columnAt(4),
+        nickName: row.columnAt(5),
+        phone: row.columnAt(6),
+        gender: row.columnAt(7),
+        status: row.columnAt(8),
+        loginType: row.columnAt(9),
+        password: row.columnAt(10),
+        userId: row.columnAt(11),
+      );
+    });
+  }
+
+  // 根据 createTime 字段查询最新的一条数据 - 优化：修复查询逻辑
+  UserEntity? findByNewUserInfo() {
+    // 查询 createTime 最大的记录（最新的记录）
+    final query = 'SELECT * FROM user ORDER BY createTime DESC LIMIT 1;';
+    final result = _database.select(query);
+
+    if (result.isEmpty) {
+      return null;
+    }
+
+    return UserEntity(
+      id: result.first.columnAt(0),
+      createTime: result.first.columnAt(1),
+      updateTime: result.first.columnAt(2),
+      unionid: result.first.columnAt(3),
+      avatarUrl: result.first.columnAt(4),
+      nickName: result.first.columnAt(5),
+      phone: result.first.columnAt(6),
+      gender: result.first.columnAt(7),
+      status: result.first.columnAt(8),
+      loginType: result.first.columnAt(9),
+      password: result.first.columnAt(10),
+      userId: result.first.columnAt(11),
+    );
+  }
+
+  //删除表里面所有数据
+  void deleteAll() {
+    final query = 'DELETE FROM user;';
+    _database.execute(query);
+  }
+}
