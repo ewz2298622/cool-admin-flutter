@@ -336,7 +336,10 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
             CupertinoButton(
               padding: EdgeInsets.zero,
               onPressed: () {
-                setState(() => _showSettings = true);
+                setState(() {
+                  _showSettings = true;
+                  _showControls = false;
+                });
                 _hideTimer?.cancel();
               },
               child: const Icon(
@@ -451,16 +454,18 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
             ),
             const SizedBox(width: 8),
             const SizedBox(width: 8),
-            GestureDetector(
+            SizedBox(
+              width: 40,
+              child: GestureDetector(
               onTap: widget.onRateChanged,
               child: Text(
                 '${_currentRate}x',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 13,
-                  fontWeight: FontWeight.w500,
                 ),
               ),
+            ),
             ),
               const SizedBox(width: 8),
             CupertinoButton(
