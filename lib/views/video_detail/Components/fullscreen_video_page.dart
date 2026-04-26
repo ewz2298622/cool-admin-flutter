@@ -305,7 +305,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
                 child: Video(
                   controller: widget.videoController,
                   fill: Colors.black,
-                  fit: _getBoxFit(_videoFit),
+                  fit: _isInPipMode ? BoxFit.fill : _getBoxFit(_videoFit),
                   controls: null,
                   subtitleViewConfiguration: const SubtitleViewConfiguration(
                     visible: false,

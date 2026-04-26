@@ -283,15 +283,13 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         color: Colors.black,
         child: Stack(
           children: [
-            Center(
-              child: Video(
-                controller: widget.videoController,
-                fill: Colors.black,
-                fit: _getBoxFit(widget.videoFit),
-                controls: null,
-                subtitleViewConfiguration: const SubtitleViewConfiguration(
-                  visible: false,
-                ),
+            Video(
+              controller: widget.videoController,
+              fill: Colors.black,
+              fit: _isInPipMode ? BoxFit.fill : _getBoxFit(widget.videoFit),
+              controls: null,
+              subtitleViewConfiguration: const SubtitleViewConfiguration(
+                visible: false,
               ),
             ),
             if (_localShowControls) ...[
