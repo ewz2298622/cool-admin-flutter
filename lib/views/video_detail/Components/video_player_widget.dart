@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:pip/pip.dart';
 
 class VideoPlayerWidget extends StatefulWidget {
   final Player player;
@@ -16,6 +18,8 @@ class VideoPlayerWidget extends StatefulWidget {
   final VoidCallback? onFullScreenPressed;
   final VoidCallback? onCastingPressed;
   final VoidCallback? onPipPressed;
+  final ValueChanged<bool>? onPipModeChanged;
+  final VoidCallback? onPipEntering;
   final ValueChanged<double>? onRateChanged;
   final ValueChanged<int>? onVideoFitChanged;
   final bool showControls;
@@ -37,6 +41,8 @@ class VideoPlayerWidget extends StatefulWidget {
     this.onFullScreenPressed,
     this.onCastingPressed,
     this.onPipPressed,
+    this.onPipModeChanged,
+    this.onPipEntering,
     this.onRateChanged,
     this.onVideoFitChanged,
     this.showControls = true,
@@ -62,6 +68,9 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   StreamSubscription<bool>? _playingSubscription;
   StreamSubscription<Duration>? _durationSubscription;
   StreamSubscription<Duration>? _positionSubscription;
+  final Pip _pip = Pip();
+  bool _isPipSupported = false;
+  bool _isInPipMode = false;
 
   @override
   void initState() {
@@ -70,6 +79,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     _totalDuration = widget.player.state.duration;
     _currentPosition = widget.player.state.position;
     _isPlaying = widget.player.state.playing;
+    _initPip();
     _playingSubscription = widget.player.stream.playing.listen((playing) {
       if (mounted) {
         setState(() => _isPlaying = playing);
@@ -87,6 +97,44 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     });
   }
 
+  Future<void> _initPip() async {
+    _isPipSupported = await _pip.isSupported();
+    if (_isPipSupported) {
+      await _pip.setup(
+        PipOptions(
+          autoEnterEnabled: true,
+          aspectRatioX: 16,
+          aspectRatioY: 9,
+          controlStyle: 2,
+        ),
+      );
+      await _pip.registerStateChangedObserver(
+        PipStateChangedObserver(
+          onPipStateChanged: (state, error) {
+            if (mounted) {
+              final wasInPipMode = _isInPipMode;
+              setState(() {
+                _isInPipMode = state == PipState.pipStateStarted;
+                if (_isInPipMode) {
+                  _localShowControls = false;
+                }
+              });
+              if (_isInPipMode != wasInPipMode) {
+                widget.onPipModeChanged?.call(_isInPipMode);
+              }
+              if (state == PipState.pipStateStarted) {
+                _hideTimer?.cancel();
+                widget.player.play();
+              } else if (state == PipState.pipStateStopped) {
+                _startHideTimer();
+              }
+            }
+          },
+        ),
+      );
+    }
+  }
+
   @override
   void didUpdateWidget(VideoPlayerWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -101,6 +149,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     _playingSubscription?.cancel();
     _durationSubscription?.cancel();
     _positionSubscription?.cancel();
+    _pip.dispose();
     super.dispose();
   }
 
@@ -198,6 +247,32 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     }
   }
 
+  Future<void> _togglePipMode() async {
+    if (!_isPipSupported) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('当前设备不支持画中画功能')),
+        );
+      }
+      return;
+    }
+
+    if (_isInPipMode) {
+      await _pip.stop();
+    } else {
+      widget.onPipEntering?.call();
+      final result = await _pip.start();
+      if (result && mounted) {
+        widget.player.play();
+      } else if (!result && mounted) {
+        widget.onPipModeChanged?.call(false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('进入画中画模式失败')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -256,33 +331,34 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
               ),
             ),
             const Spacer(),
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: widget.onPipPressed,
-              child: const Icon(
-                CupertinoIcons.rectangle_on_rectangle,
-                color: Colors.white,
-                size: 24,
+            if (_isPipSupported)
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: _togglePipMode,
+                child: Icon(
+                  _isInPipMode
+                      ? CupertinoIcons.rectangle_on_rectangle_angled
+                      : CupertinoIcons.rectangle_on_rectangle,
+                  color: _isInPipMode ? Colors.blue : Colors.white,
+                  size: 22,
+                ),
               ),
-            ),
-            const SizedBox(width: 16),
             CupertinoButton(
               padding: EdgeInsets.zero,
               onPressed: widget.onCastingPressed,
               child: const Icon(
                 CupertinoIcons.tv,
                 color: Colors.white,
-                size: 24,
+                size: 22,
               ),
             ),
-            const SizedBox(width: 16),
             CupertinoButton(
               padding: EdgeInsets.zero,
               onPressed: widget.onSettingsPressed,
               child: const Icon(
                 CupertinoIcons.settings,
                 color: Colors.white,
-                size: 24,
+                size: 22,
               ),
             ),
           ],

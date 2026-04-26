@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:pip/pip.dart';
 
 class FullScreenVideoPage extends StatefulWidget {
   final Player player;
@@ -69,6 +70,9 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   StreamSubscription<Duration>? _durationSubscription;
   StreamSubscription<double>? _rateSubscription;
   StreamSubscription<double>? _volumeSubscription;
+  final Pip _pip = Pip();
+  bool _isPipSupported = false;
+  bool _isInPipMode = false;
 
   @override
   void initState() {
@@ -77,6 +81,43 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
     _startHideTimer();
     _initializeState();
     _setupListeners();
+    _initPip();
+  }
+
+  Future<void> _initPip() async {
+    _isPipSupported = await _pip.isSupported();
+    if (_isPipSupported) {
+      await _pip.setup(
+        PipOptions(
+          autoEnterEnabled: true,
+          aspectRatioX: 16,
+          aspectRatioY: 9,
+          controlStyle: 2,
+        ),
+      );
+      await _pip.registerStateChangedObserver(
+        PipStateChangedObserver(
+          onPipStateChanged: (state, error) {
+            if (mounted) {
+              setState(() {
+                _isInPipMode = state == PipState.pipStateStarted;
+                if (_isInPipMode) {
+                  _showControls = false;
+                }
+              });
+              if (state == PipState.pipStateStarted) {
+                _hideTimer?.cancel();
+                if (!_isPlaying) {
+                  widget.player.play();
+                }
+              } else if (state == PipState.pipStateStopped) {
+                _startHideTimer();
+              }
+            }
+          },
+        ),
+      );
+    }
   }
 
   void _initializeState() {
@@ -124,6 +165,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
     _durationSubscription?.cancel();
     _rateSubscription?.cancel();
     _volumeSubscription?.cancel();
+    _pip.dispose();
     _exitFullScreenMode();
     super.dispose();
   }
@@ -221,6 +263,32 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
     }
   }
 
+  Future<void> _togglePipMode() async {
+    if (!_isPipSupported) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('当前设备不支持画中画功能')),
+        );
+      }
+      return;
+    }
+
+    if (_isInPipMode) {
+      await _pip.stop();
+    } else {
+      final result = await _pip.start();
+      if (result && mounted) {
+        if (!_isPlaying) {
+          widget.player.play();
+        }
+      } else if (!result && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('进入画中画模式失败')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -313,26 +381,27 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
               ),
             ),
             const SizedBox(width: 8),
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: widget.onPipPressed,
-              child: const Icon(
-                CupertinoIcons.rectangle_on_rectangle,
-                color: Colors.white,
-                size: 24,
+            if (_isPipSupported)
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: _togglePipMode,
+                child: Icon(
+                  _isInPipMode
+                      ? CupertinoIcons.rectangle_on_rectangle_angled
+                      : CupertinoIcons.rectangle_on_rectangle,
+                  color: _isInPipMode ? Colors.blue : Colors.white,
+                  size: 22,
+                ),
               ),
-            ),
-            const SizedBox(width: 16),
             CupertinoButton(
               padding: EdgeInsets.zero,
               onPressed: widget.onCastingPressed,
               child: const Icon(
                 CupertinoIcons.tv,
                 color: Colors.white,
-                size: 24,
+                size: 22,
               ),
             ),
-            const SizedBox(width: 16),
             CupertinoButton(
               padding: EdgeInsets.zero,
               onPressed: () {
@@ -345,7 +414,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
               child: const Icon(
                 CupertinoIcons.settings,
                 color: Colors.white,
-                size: 24,
+                size: 22,
               ),
             ),
           ],

@@ -153,9 +153,13 @@ class _Video_DetailState extends State<Video_Detail>
     // 执行安全检查
     _ensurePlayerSafety();
 
-    // 当App进入后台或失去焦点时，立即暂停播放
+    // 当App进入后台或失去焦点时，立即暂停播放（画中画模式除外）
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
+      if (_isInPipMode || _isEnteringPipMode) {
+        debugPrint('App is in background/inactive but in PiP mode, keeping player playing.');
+        return;
+      }
       debugPrint('App is in background/inactive, pausing player.');
       _pausePlayerImmediately();
     }
@@ -234,6 +238,8 @@ class _Video_DetailState extends State<Video_Detail>
   bool _isPlayerInitialized = false;
   bool _isPlayerReleased = false;
   bool _isPageActive = true; // 跟踪页面是否处于活跃状态
+  bool _isInPipMode = false; // 跟踪是否处于画中画模式
+  bool _isEnteringPipMode = false; // 跟踪是否正在进入画中画模式
 
   // 开始监听播放进度
   void _startPositionListener() {
@@ -1439,6 +1445,22 @@ class _Video_DetailState extends State<Video_Detail>
       onSettingsPressed: _showSettingsSheet,
       onFullScreenPressed: _enterFullScreen,
       onCastingPressed: tvDevice,
+      onPipEntering: () {
+        setState(() {
+          _isEnteringPipMode = true;
+        });
+      },
+      onPipModeChanged: (isInPipMode) {
+        setState(() {
+          if (isInPipMode) {
+            _isInPipMode = true;
+            _isEnteringPipMode = false;
+          } else {
+            _isInPipMode = false;
+            _isEnteringPipMode = false;
+          }
+        });
+      },
       onPlayPause: () {
         if (player.state.playing) {
           player.pause();

@@ -151,4 +151,10 @@ class VideoUtil {
     // 计算总秒数
     return hours * 3600 + minutes * 60 + seconds;
   }
+
+    String _formatDuration(double seconds) {
+    final mins = (seconds / 60).floor();
+    final secs = (seconds % 60).floor();
+    return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
 }
