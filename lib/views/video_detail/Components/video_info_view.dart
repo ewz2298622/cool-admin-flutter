@@ -5,6 +5,7 @@ import '../../../../api/api.dart';
 import '../../../../entity/video_page_entity.dart';
 import '../../../../entity/dict_data_entity.dart';
 import '../../../../components/select_option_detail.dart';
+import '../../../../utils/video_player_utils.dart';
 import 'video_info_card.dart';
 import 'plot_section.dart';
 
@@ -44,13 +45,13 @@ class VideoInfoView extends StatelessWidget {
           ),
           DynamicSelectOption(
             title: '导演',
-            items: _formatString(videoInfoData.video?.directors ?? ""),
+            items: VideoPlayerUtils.formatString(videoInfoData.video?.directors ?? ""),
             paramsKey: 'directors',
             loadData: _loadDirectorData,
           ),
           DynamicSelectOption(
             title: '演员',
-            items: _formatString(videoInfoData.video?.actors ?? ""),
+            items: VideoPlayerUtils.formatString(videoInfoData.video?.actors ?? ""),
             paramsKey: 'actors',
             loadData: _loadActorData,
           ),
@@ -74,16 +75,5 @@ class VideoInfoView extends StatelessWidget {
         (await Api.getVideoPages(params)).data?.list ??
         [] as List<VideoPageDataList>;
     return list;
-  }
-
-  /// 格式化字符串，支持逗号和斜杠分隔
-  List<String> _formatString(String str) {
-    if (str.contains(',')) {
-      return str.split(',');
-    }
-    if (str.contains('/')) {
-      return str.split('/');
-    }
-    return [str];
   }
 }

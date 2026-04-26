@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
-import 'package:pip/pip.dart';
+
+import '../../../utils/video_player_utils.dart';
 
 class VideoPlayerWidget extends StatefulWidget {
   final Player player;
@@ -59,18 +59,14 @@ class VideoPlayerWidget extends StatefulWidget {
 
 class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   bool _localShowControls = true;
-  Timer? _hideTimer;
+  final ControlsHideManager _hideManager = ControlsHideManager();
   Duration _currentPosition = Duration.zero;
   Duration _totalDuration = Duration.zero;
   Duration _pendingSeekPosition = Duration.zero;
   bool _isDragging = false;
   bool _isPlaying = false;
-  StreamSubscription<bool>? _playingSubscription;
-  StreamSubscription<Duration>? _durationSubscription;
-  StreamSubscription<Duration>? _positionSubscription;
-  final Pip _pip = Pip();
-  bool _isPipSupported = false;
-  bool _isInPipMode = false;
+  final PlayerStateManager _playerStateManager = PlayerStateManager();
+  final PipManager _pipManager = PipManager();
 
   @override
   void initState() {
@@ -80,59 +76,50 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     _currentPosition = widget.player.state.position;
     _isPlaying = widget.player.state.playing;
     _initPip();
-    _playingSubscription = widget.player.stream.playing.listen((playing) {
-      if (mounted) {
-        setState(() => _isPlaying = playing);
-      }
-    });
-    _durationSubscription = widget.player.stream.duration.listen((duration) {
-      if (duration > Duration.zero && _totalDuration != duration) {
-        setState(() => _totalDuration = duration);
-      }
-    });
-    _positionSubscription = widget.player.stream.position.listen((position) {
-      if (mounted && !_isDragging) {
-        setState(() => _currentPosition = position);
-      }
-    });
+    _playerStateManager.setupListeners(
+      player: widget.player,
+      onPlayingChanged: (playing) {
+        if (mounted) {
+          setState(() => _isPlaying = playing);
+        }
+      },
+      onDurationChanged: (duration) {
+        if (duration > Duration.zero && _totalDuration != duration) {
+          setState(() => _totalDuration = duration);
+        }
+      },
+      onPositionChanged: (position) {
+        if (mounted && !_isDragging) {
+          setState(() => _currentPosition = position);
+        }
+      },
+    );
   }
 
   Future<void> _initPip() async {
-    _isPipSupported = await _pip.isSupported();
-    if (_isPipSupported) {
-      await _pip.setup(
-        PipOptions(
-          autoEnterEnabled: true,
-          aspectRatioX: 16,
-          aspectRatioY: 9,
-          controlStyle: 2,
-        ),
-      );
-      await _pip.registerStateChangedObserver(
-        PipStateChangedObserver(
-          onPipStateChanged: (state, error) {
+    await _pipManager.initialize();
+    await _pipManager.registerStateObserver(
+      onPipStarted: () {
+        if (mounted) {
+          setState(() => _localShowControls = false);
+        }
+      },
+      onPipStopped: () {
+        _hideManager.startTimer(
+          onHide: () {
             if (mounted) {
-              final wasInPipMode = _isInPipMode;
-              setState(() {
-                _isInPipMode = state == PipState.pipStateStarted;
-                if (_isInPipMode) {
-                  _localShowControls = false;
-                }
-              });
-              if (_isInPipMode != wasInPipMode) {
-                widget.onPipModeChanged?.call(_isInPipMode);
-              }
-              if (state == PipState.pipStateStarted) {
-                _hideTimer?.cancel();
-                widget.player.play();
-              } else if (state == PipState.pipStateStopped) {
-                _startHideTimer();
-              }
+              setState(() => _localShowControls = false);
             }
           },
-        ),
-      );
-    }
+        );
+      },
+      onPipModeChanged: (isInPipMode) {
+        widget.onPipModeChanged?.call(isInPipMode);
+      },
+      onAutoPlay: () {
+        widget.player.play();
+      },
+    );
   }
 
   @override
@@ -145,21 +132,20 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   @override
   void dispose() {
-    _hideTimer?.cancel();
-    _playingSubscription?.cancel();
-    _durationSubscription?.cancel();
-    _positionSubscription?.cancel();
-    _pip.dispose();
+    _hideManager.dispose();
+    _playerStateManager.dispose();
+    _pipManager.dispose();
     super.dispose();
   }
 
   void _startHideTimer() {
-    _hideTimer?.cancel();
-    _hideTimer = Timer(const Duration(seconds: 4), () {
-      if (mounted) {
-        setState(() => _localShowControls = false);
-      }
-    });
+    _hideManager.startTimer(
+      onHide: () {
+        if (mounted) {
+          setState(() => _localShowControls = false);
+        }
+      },
+    );
   }
 
   void _onTapVideo() {
@@ -167,7 +153,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     if (_localShowControls) {
       _startHideTimer();
     } else {
-      _hideTimer?.cancel();
+      _hideManager.cancelTimer();
     }
   }
 
@@ -178,34 +164,6 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   void _confirmSeek() {
     widget.player.seek(_pendingSeekPosition);
-  }
-
-  BoxFit _getBoxFit(int fitIndex) {
-    switch (fitIndex) {
-      case 0:
-        return BoxFit.contain;
-      case 1:
-        return BoxFit.fitWidth;
-      case 2:
-        return BoxFit.fill;
-      case 3:
-        return BoxFit.cover;
-      case 4:
-        return BoxFit.fill;
-      default:
-        return BoxFit.contain;
-    }
-  }
-
-  String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-    final seconds = duration.inSeconds.remainder(60);
-    if (hours > 0) {
-      return '$hours:${twoDigits(minutes)}:${twoDigits(seconds)}';
-    }
-    return '${twoDigits(minutes)}:${twoDigits(seconds)}';
   }
 
   void _skipForward() {
@@ -248,29 +206,18 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   }
 
   Future<void> _togglePipMode() async {
-    if (!_isPipSupported) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('当前设备不支持画中画功能')),
-        );
-      }
-      return;
-    }
-
-    if (_isInPipMode) {
-      await _pip.stop();
-    } else {
-      widget.onPipEntering?.call();
-      final result = await _pip.start();
-      if (result && mounted) {
-        widget.player.play();
-      } else if (!result && mounted) {
-        widget.onPipModeChanged?.call(false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('进入画中画模式失败')),
-        );
-      }
-    }
+    await _pipManager.togglePipMode(
+      onPipEntering: () => widget.onPipEntering?.call(),
+      onPipSuccess: () => widget.player.play(),
+      onPipFailed: (message) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
+          );
+          widget.onPipModeChanged?.call(false);
+        }
+      },
+    );
   }
 
   @override
@@ -287,7 +234,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
             Video(
               controller: widget.videoController,
               fill: Colors.black,
-              fit: _isInPipMode ? BoxFit.fill : _getBoxFit(widget.videoFit),
+              fit: _pipManager.isInPipMode ? BoxFit.fill : VideoPlayerUtils.getBoxFit(widget.videoFit),
               controls: null,
               subtitleViewConfiguration: const SubtitleViewConfiguration(
                 visible: false,
@@ -330,15 +277,15 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
               ),
             ),
             const Spacer(),
-            if (_isPipSupported)
+            if (_pipManager.isPipSupported)
               CupertinoButton(
                 padding: EdgeInsets.zero,
                 onPressed: _togglePipMode,
                 child: Icon(
-                  _isInPipMode
+                  _pipManager.isInPipMode
                       ? CupertinoIcons.rectangle_on_rectangle_angled
                       : CupertinoIcons.rectangle_on_rectangle,
-                  color: _isInPipMode ? Colors.blue : Colors.white,
+                  color: _pipManager.isInPipMode ? Colors.blue : Colors.white,
                   size: 22,
                 ),
               ),
@@ -419,12 +366,12 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
               ),
             ),
             Text(
-              _formatDuration(_currentPosition),
+              VideoPlayerUtils.formatDuration(_currentPosition),
               style: const TextStyle(color: Colors.white, fontSize: 13),
             ),
             Expanded(child: _buildProgressBar()),
             Text(
-              _formatDuration(_totalDuration),
+              VideoPlayerUtils.formatDuration(_totalDuration),
               style: const TextStyle(color: Colors.white, fontSize: 13),
             ),
             const SizedBox(width: 8),
@@ -459,7 +406,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
           onHorizontalDragStart: (_) {
-            _hideTimer?.cancel();
+            _hideManager.cancelTimer();
             _isDragging = true;
           },
           onHorizontalDragUpdate: (details) {

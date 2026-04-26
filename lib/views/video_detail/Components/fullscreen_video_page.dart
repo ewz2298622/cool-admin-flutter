@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
-import 'package:pip/pip.dart';
+
+import '../../../utils/video_player_utils.dart';
 
 class FullScreenVideoPage extends StatefulWidget {
   final Player player;
@@ -47,7 +48,7 @@ class FullScreenVideoPage extends StatefulWidget {
 
 class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   bool _showControls = true;
-  Timer? _hideTimer;
+  final ControlsHideManager _hideManager = ControlsHideManager();
   bool _wasPlaying = false;
   bool _userIsDraggingSlider = false;
   Duration _pendingSeekPosition = Duration.zero;
@@ -61,18 +62,8 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   int _videoFit = 0;
   double _skipOpening = 0.0;
   double _skipEnding = 0.0;
-  double _longPressRate = 2.0;
-
-  final List<double> _longPressRates = [1.25, 1.5, 2.0, 2.5, 3.0];
-
-  StreamSubscription<bool>? _playingSubscription;
-  StreamSubscription<Duration>? _positionSubscription;
-  StreamSubscription<Duration>? _durationSubscription;
-  StreamSubscription<double>? _rateSubscription;
-  StreamSubscription<double>? _volumeSubscription;
-  final Pip _pip = Pip();
-  bool _isPipSupported = false;
-  bool _isInPipMode = false;
+  final PlayerStateManager _playerStateManager = PlayerStateManager();
+  final PipManager _pipManager = PipManager();
 
   @override
   void initState() {
@@ -85,39 +76,30 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   }
 
   Future<void> _initPip() async {
-    _isPipSupported = await _pip.isSupported();
-    if (_isPipSupported) {
-      await _pip.setup(
-        PipOptions(
-          autoEnterEnabled: true,
-          aspectRatioX: 16,
-          aspectRatioY: 9,
-          controlStyle: 2,
-        ),
-      );
-      await _pip.registerStateChangedObserver(
-        PipStateChangedObserver(
-          onPipStateChanged: (state, error) {
+    await _pipManager.initialize();
+    await _pipManager.registerStateObserver(
+      onPipStarted: () {
+        if (mounted) {
+          setState(() {
+            _showControls = false;
+          });
+        }
+      },
+      onPipStopped: () {
+        _hideManager.startTimer(
+          onHide: () {
             if (mounted) {
-              setState(() {
-                _isInPipMode = state == PipState.pipStateStarted;
-                if (_isInPipMode) {
-                  _showControls = false;
-                }
-              });
-              if (state == PipState.pipStateStarted) {
-                _hideTimer?.cancel();
-                if (!_isPlaying) {
-                  widget.player.play();
-                }
-              } else if (state == PipState.pipStateStopped) {
-                _startHideTimer();
-              }
+              setState(() => _showControls = false);
             }
           },
-        ),
-      );
-    }
+        );
+      },
+      onAutoPlay: () {
+        if (!_isPlaying) {
+          widget.player.play();
+        }
+      },
+    );
   }
 
   void _initializeState() {
@@ -130,42 +112,41 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   }
 
   void _setupListeners() {
-    _playingSubscription = widget.player.stream.playing.listen((playing) {
-      if (mounted) {
-        setState(() => _isPlaying = playing);
-      }
-    });
-    _positionSubscription = widget.player.stream.position.listen((position) {
-      if (mounted && !_userIsDraggingSlider) {
-        setState(() => _currentPosition = position);
-      }
-    });
-    _durationSubscription = widget.player.stream.duration.listen((duration) {
-      if (mounted && duration > Duration.zero) {
-        setState(() => _totalDuration = duration);
-      }
-    });
-    _rateSubscription = widget.player.stream.rate.listen((rate) {
-      if (mounted) {
-        setState(() => _currentRate = rate);
-      }
-    });
-    _volumeSubscription = widget.player.stream.volume.listen((volume) {
-      if (mounted) {
-        setState(() => _selectedVolume = volume / 100.0);
-      }
-    });
+    _playerStateManager.setupListeners(
+      player: widget.player,
+      onPlayingChanged: (playing) {
+        if (mounted) {
+          setState(() => _isPlaying = playing);
+        }
+      },
+      onPositionChanged: (position) {
+        if (mounted && !_userIsDraggingSlider) {
+          setState(() => _currentPosition = position);
+        }
+      },
+      onDurationChanged: (duration) {
+        if (mounted && duration > Duration.zero) {
+          setState(() => _totalDuration = duration);
+        }
+      },
+      onRateChanged: (rate) {
+        if (mounted) {
+          setState(() => _currentRate = rate);
+        }
+      },
+      onVolumeChanged: (volume) {
+        if (mounted) {
+          setState(() => _selectedVolume = volume);
+        }
+      },
+    );
   }
 
   @override
   void dispose() {
-    _hideTimer?.cancel();
-    _playingSubscription?.cancel();
-    _positionSubscription?.cancel();
-    _durationSubscription?.cancel();
-    _rateSubscription?.cancel();
-    _volumeSubscription?.cancel();
-    _pip.dispose();
+    _hideManager.dispose();
+    _playerStateManager.dispose();
+    _pipManager.dispose();
     _exitFullScreenMode();
     super.dispose();
   }
@@ -187,12 +168,13 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   }
 
   void _startHideTimer() {
-    _hideTimer?.cancel();
-    _hideTimer = Timer(const Duration(seconds: 4), () {
-      if (mounted) {
-        setState(() => _showControls = false);
-      }
-    });
+    _hideManager.startTimer(
+      onHide: () {
+        if (mounted) {
+          setState(() => _showControls = false);
+        }
+      },
+    );
   }
 
   void _onTapVideo() {
@@ -200,7 +182,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
     if (_showControls) {
       _startHideTimer();
     } else {
-      _hideTimer?.cancel();
+      _hideManager.cancelTimer();
     }
   }
 
@@ -208,7 +190,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
     _wasPlaying = widget.player.state.playing;
     _userIsDraggingSlider = true;
     _pendingSeekPosition = Duration(milliseconds: value.toInt());
-    _hideTimer?.cancel();
+    _hideManager.cancelTimer();
   }
 
   void _onSliderChangeEnd(double value) {
@@ -227,17 +209,6 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
     if (mounted) {
       setState(() => _currentPosition = _pendingSeekPosition);
     }
-  }
-
-  String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-    final seconds = duration.inSeconds.remainder(60);
-    if (hours > 0) {
-      return '$hours:${twoDigits(minutes)}:${twoDigits(seconds)}';
-    }
-    return '${twoDigits(minutes)}:${twoDigits(seconds)}';
   }
 
   void _skipForward() {
@@ -264,29 +235,20 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   }
 
   Future<void> _togglePipMode() async {
-    if (!_isPipSupported) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('当前设备不支持画中画功能')),
-        );
-      }
-      return;
-    }
-
-    if (_isInPipMode) {
-      await _pip.stop();
-    } else {
-      final result = await _pip.start();
-      if (result && mounted) {
+    await _pipManager.togglePipMode(
+      onPipSuccess: () {
         if (!_isPlaying) {
           widget.player.play();
         }
-      } else if (!result && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('进入画中画模式失败')),
-        );
-      }
-    }
+      },
+      onPipFailed: (message) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
+          );
+        }
+      },
+    );
   }
 
   @override
@@ -306,7 +268,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
                 child: Video(
                   controller: widget.videoController,
                   fill: Colors.black,
-                  fit: _isInPipMode ? BoxFit.fill : _getBoxFit(_videoFit),
+                  fit: _pipManager.isInPipMode ? BoxFit.fill : VideoPlayerUtils.getFullScreenBoxFit(_videoFit),
                   controls: null,
                   subtitleViewConfiguration: const SubtitleViewConfiguration(
                     visible: false,
@@ -324,23 +286,6 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
         ),
       ),
     );
-  }
-
-  BoxFit _getBoxFit(int fitMode) {
-    switch (fitMode) {
-      case 0:
-        return BoxFit.contain;
-      case 1:
-        return BoxFit.none;
-      case 2:
-        return BoxFit.fill;
-      case 3:
-        return BoxFit.cover;
-      case 4:
-        return BoxFit.contain;
-      default:
-        return BoxFit.contain;
-    }
   }
 
   Widget _buildTopBar() {
@@ -382,15 +327,15 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
               ),
             ),
             const SizedBox(width: 8),
-            if (_isPipSupported)
+            if (_pipManager.isPipSupported)
               CupertinoButton(
                 padding: EdgeInsets.zero,
                 onPressed: _togglePipMode,
                 child: Icon(
-                  _isInPipMode
+                  _pipManager.isInPipMode
                       ? CupertinoIcons.rectangle_on_rectangle_angled
                       : CupertinoIcons.rectangle_on_rectangle,
-                  color: _isInPipMode ? Colors.blue : Colors.white,
+                  color: _pipManager.isInPipMode ? Colors.blue : Colors.white,
                   size: 22,
                 ),
               ),
@@ -410,7 +355,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
                   _showSettings = true;
                   _showControls = false;
                 });
-                _hideTimer?.cancel();
+                _hideManager.cancelTimer();
               },
               child: const Icon(
                 CupertinoIcons.settings,
@@ -494,7 +439,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
               ),
             ),
             Text(
-              _formatDuration(_currentPosition),
+              VideoPlayerUtils.formatDuration(_currentPosition),
               style: const TextStyle(color: Colors.white, fontSize: 13),
             ),
             Expanded(
@@ -519,7 +464,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
               ),
             ),
             Text(
-              _formatDuration(_totalDuration),
+              VideoPlayerUtils.formatDuration(_totalDuration),
               style: const TextStyle(color: Colors.white, fontSize: 13),
             ),
             const SizedBox(width: 8),
@@ -802,7 +747,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
           width: 40,
           child: Text(
             isTime
-                ? _formatDuration(Duration(seconds: value.toInt()))
+                ? VideoPlayerUtils.formatDuration(Duration(seconds: value.toInt()))
                 : '${(value * 100).toInt()}%',
             style: const TextStyle(color: Colors.white, fontSize: 12),
             textAlign: TextAlign.right,
