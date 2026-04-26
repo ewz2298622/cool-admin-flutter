@@ -703,6 +703,7 @@ class Live_DetailState extends State<Live_Detail>
             controller: videoController,
             fill: Colors.transparent,
             fit: BoxFit.contain,
+            controls: null,
           ),
         ],
       ),

@@ -1,12 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
 import '../../entity/video_detail_entity.dart';
-import '../../style/color_styles.dart';
 import '../../utils/share_util.dart';
 import '../../utils/video.dart';
 import 'side_action_item.dart';
@@ -61,11 +58,8 @@ class ShortVideoItemWidget extends StatefulWidget {
 class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
   Player? _player;
   VideoController? _videoController;
-  bool _isPlaying = false;
   bool _isLoading = true;
-  bool _showControls = true;
-  Timer? _hideTimer;
-  StreamSubscription? _positionSubscription;
+  bool _showOverlay = true;
 
   @override
   void initState() {
@@ -75,8 +69,6 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
 
   @override
   void dispose() {
-    _hideTimer?.cancel();
-    _positionSubscription?.cancel();
     _disposePlayer();
     super.dispose();
   }
@@ -93,8 +85,7 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
     _videoController = VideoController(_player!);
 
     await _player!.open(Media(widget.videoItem.videoUrl), play: false);
-
-    _positionSubscription = _player!.stream.playing.listen(_videoListener);
+    await _player!.setRate(widget.playbackSpeed);
 
     if (mounted) {
       setState(() => _isLoading = false);
@@ -102,14 +93,7 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
     }
   }
 
-  void _videoListener(bool? playing) {
-    if (playing != null && playing != _isPlaying) {
-      setState(() => _isPlaying = playing);
-    }
-  }
-
   void _disposePlayer() {
-    _positionSubscription?.cancel();
     _player?.stop();
     _player?.dispose();
     _player = null;
@@ -124,25 +108,6 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
     _player?.pause();
   }
 
-  void _togglePlayPause() {
-    if (_isPlaying) {
-      _pausePlaying();
-    } else {
-      _startPlaying();
-    }
-    setState(() => _showControls = true);
-    _scheduleHideControls();
-  }
-
-  void _scheduleHideControls() {
-    _hideTimer?.cancel();
-    _hideTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted && _isPlaying) {
-        setState(() => _showControls = false);
-      }
-    });
-  }
-
   @override
   void didUpdateWidget(covariant ShortVideoItemWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -155,25 +120,23 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
       _disposePlayer();
       _initializePlayer();
     }
+    if (oldWidget.playbackSpeed != widget.playbackSpeed && _player != null) {
+      _player!.setRate(widget.playbackSpeed);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _togglePlayPause,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          _buildVideoContent(),
-          if (_showControls) ...[
-            _buildPlayPauseIndicator(),
-            _buildRightActionBar(),
-            _buildBottomInfo(),
-            _buildProgressIndicator(),
-            _buildBottomBar(),
-          ],
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        _buildVideoContent(),
+        if (_showOverlay) ...[
+          _buildRightActionBar(),
+          _buildBottomInfo(),
         ],
-      ),
+        _buildBottomBar(),
+      ],
     );
   }
 
@@ -184,14 +147,47 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
       return Positioned.fill(
         left: 0,
         right: 0,
-        bottom: 100,
+        bottom: 60,
         child: Center(
           child: SizedBox(
-            height: MediaQuery.of(context).size.height - 80,
+            height: MediaQuery.of(context).size.height,
             child: Video(
               controller: controller,
               fill: Colors.black,
               fit: BoxFit.cover,
+              controls: (state) => StreamBuilder<bool>(
+                stream: state.widget.controller.player.stream.playing,
+                initialData: state.widget.controller.player.state.playing,
+                builder: (context, playingSnapshot) {
+                  final isPlaying = playingSnapshot.data ?? false;
+                  return Stack(
+                    children: [
+                      Center(
+                        child: IconButton(
+                          icon: Icon(
+                            isPlaying ? Icons.pause : Icons.play_arrow,
+                            color: Colors.white,
+                            size: 50,
+                          ),
+                          onPressed: () {
+                            if (isPlaying) {
+                              state.widget.controller.player.pause();
+                            } else {
+                              state.widget.controller.player.play();
+                            }
+                          },
+                        ),
+                      ),
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: _buildProgressBar(state),
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -223,54 +219,98 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
     );
   }
 
-  Widget _buildPlayPauseIndicator() {
-    return Center(
-      child: AnimatedOpacity(
-        opacity: _isPlaying ? 0 : 1,
-        duration: const Duration(milliseconds: 200),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.black45,
-            borderRadius: BorderRadius.circular(50),
-          ),
-          child: const Icon(Icons.play_arrow, color: Colors.white, size: 50),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProgressIndicator() {
-    final player = _player;
-    if (player == null) {
-      return const SizedBox.shrink();
-    }
+  Widget _buildProgressBar(VideoState state) {
     return StreamBuilder<Duration>(
-      stream: player.stream.position,
-      builder: (context, positionSnapshot) {
-        return StreamBuilder<Duration?>(
-          stream: player.stream.duration,
+      stream: state.widget.controller.player.stream.position,
+      initialData: state.widget.controller.player.state.position,
+      builder: (context, snapshot) {
+        final position = snapshot.data ?? Duration.zero;
+        return StreamBuilder<Duration>(
+          stream: state.widget.controller.player.stream.duration,
+          initialData: state.widget.controller.player.state.duration,
           builder: (context, durationSnapshot) {
-            final position = positionSnapshot.data ?? Duration.zero;
             final duration = durationSnapshot.data ?? Duration.zero;
-            final progress =
-                duration.inMilliseconds > 0
-                    ? position.inMilliseconds / duration.inMilliseconds
-                    : 0.0;
-
-            return Positioned(
-              left: 0,
-              right: 0,
-              bottom: 65,
-              child: Container(
-                height: 2,
-                color: Colors.white24,
-                child: FractionallySizedBox(
-                  alignment: Alignment.centerLeft,
-                  widthFactor: progress,
-                  child: Container(color: ColorStyles.colorPrimary),
-                ),
-              ),
+            if (duration.inMilliseconds <= 0) return const SizedBox.shrink();
+            final progress = position.inMilliseconds / duration.inMilliseconds;
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onHorizontalDragStart: (_) {
+                    state.widget.controller.player.pause();
+                  },
+                  onHorizontalDragUpdate: (details) {
+                    final width = constraints.maxWidth;
+                    if (width > 0 && duration.inMilliseconds > 0) {
+                      final double localDx = details.localPosition.dx.clamp(0.0, width);
+                      final double dragProgress = localDx / width;
+                      final Duration seekPosition = Duration(
+                        milliseconds: (duration.inMilliseconds * dragProgress).round(),
+                      );
+                      state.widget.controller.player.seek(seekPosition);
+                    }
+                  },
+                  onHorizontalDragEnd: (_) {
+                    state.widget.controller.player.play();
+                  },
+                  onTapDown: (details) {
+                    final width = constraints.maxWidth;
+                    if (width > 0 && duration.inMilliseconds > 0) {
+                      final double localDx = details.localPosition.dx.clamp(0.0, width);
+                      final double tapProgress = localDx / width;
+                      final Duration seekPosition = Duration(
+                        milliseconds: (duration.inMilliseconds * tapProgress).round(),
+                      );
+                      state.widget.controller.player.seek(seekPosition);
+                    }
+                  },
+                  child: SizedBox(
+                    height: 20,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          height: 2,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(1),
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: FractionallySizedBox(
+                            widthFactor: progress.clamp(0.0, 1.0),
+                            child: Container(
+                              height: 2,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(1),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: FractionallySizedBox(
+                            widthFactor: progress.clamp(0.0, 1.0),
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: Container(
+                                width: 12,
+                                height: 12,
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             );
           },
         );
@@ -421,80 +461,104 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           return Center(
-            child: GestureDetector(
-              onTap: widget.onEpisodeTap,
-              child: Container(
-                width: constraints.maxWidth * 0.95,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: widget.onEpisodeTap,
+                  child: Container(
+                    width: constraints.maxWidth * 0.8,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF222222),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.list, color: Colors.white, size: 16),
+                        const SizedBox(width: 8),
+                        Text(
+                          '选集',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '·',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                          ).copyWith(color: const Color.fromARGB(179, 255, 255, 255)),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '已完结',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '·',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                          ).copyWith(color: const Color.fromARGB(179, 255, 255, 255)),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '全${widget.totalCount}集',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Transform.rotate(
+                          angle: 3.14159,
+                          child: const Icon(
+                            Icons.keyboard_arrow_down,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                margin: const EdgeInsets.only(bottom: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF222222),
-                  borderRadius: BorderRadius.circular(10),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _showOverlay = !_showOverlay;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF222222),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      _showOverlay ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.list, color: Colors.white, size: 16),
-                    const SizedBox(width: 8),
-                    Text(
-                      '选集',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '·',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                      ).copyWith(color: const Color.fromARGB(179, 255, 255, 255)),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '已完结',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '·',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                      ).copyWith(color: const Color.fromARGB(179, 255, 255, 255)),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '全${widget.totalCount}集',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Transform.rotate(
-                      angle: 3.14159,
-                      child: const Icon(
-                        Icons.keyboard_arrow_down,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              ],
             ),
           );
         },
