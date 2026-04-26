@@ -295,6 +295,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
       backgroundColor: Colors.black,
       body: GestureDetector(
         onTap: _onTapVideo,
+        onDoubleTap: _togglePlayPause,
         child: Container(
           width: double.infinity,
           height: double.infinity,

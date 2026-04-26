@@ -277,6 +277,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: _onTapVideo,
+      onDoubleTap: _togglePlayPause,
       child: Container(
         width: double.infinity,
         height: 200,
