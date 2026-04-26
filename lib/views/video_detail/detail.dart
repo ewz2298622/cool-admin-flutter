@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:fplayer/fplayer.dart';
 import 'package:get/get.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
@@ -31,10 +32,20 @@ import '../../utils/video.dart';
 import 'Components/guess_you_like.dart';
 import 'Components/video_info_view.dart';
 import 'Components/sponsor_bar.dart';
+import 'Components/video_player_widget.dart';
+import 'Components/fullscreen_video_page.dart';
 import 'utils/casting_helper.dart';
 import 'utils/video_download_helper.dart';
 
 String TAG = 'Video_Detail';
+
+class VideoItem {
+  final String title;
+  final String url;
+  final String subTitle;
+
+  VideoItem({required this.title, required this.url, required this.subTitle});
+}
 
 class Video_Detail extends StatefulWidget {
   const Video_Detail({super.key});
@@ -48,10 +59,10 @@ class _Video_DetailState extends State<Video_Detail>
     with RouteAware, WidgetsBindingObserver {
   final ValueNotifier<int> currentLine = ValueNotifier<int>(0);
   final ValueNotifier<int> currentPlay = ValueNotifier<int>(0);
-  
+
   // 投屏助手
   late final CastingHelper _castingHelper;
-  
+
   // 线路切换对话框状态
   StateSetter? showModalBottomSheetListSate;
 
@@ -68,7 +79,12 @@ class _Video_DetailState extends State<Video_Detail>
   List<DictDataDataVideoCategory>? videoCategory = [];
   List<DictDataDataLanguage>? language = [];
   final PageController pageController = PageController(initialPage: 0);
-  late FPlayer player;
+  late Player player;
+  late VideoController videoController;
+  int _videoFit = 0;
+  final List<String> _fitModes = ['默认', '原始', '拉伸', '填充', '4:3'];
+  double _videoRate = 1.0;
+  final List<double> _rateList = [0.75, 1.0, 1.25, 1.5, 2.0];
 
   @override
   void initState() {
@@ -77,7 +93,7 @@ class _Video_DetailState extends State<Video_Detail>
 
     // 3. 【修改】: 注册 App 生命周期监听器
     WidgetsBinding.instance.addObserver(this);
-    
+
     // 初始化页面活跃状态
     _isPageActive = true;
 
@@ -89,19 +105,18 @@ class _Video_DetailState extends State<Video_Detail>
       },
     );
 
-    player = FPlayer();
+    player = Player();
+    videoController = VideoController(player);
     _futureBuilderFuture = init();
   }
 
   @override
   void dispose() {
     debugPrint('Video_Detail: dispose called');
-    
+
     // 立即暂停播放器，防止音频继续播放
     try {
-      if (player.isPlayable()) {
-        player.pause();
-      }
+      player.pause();
     } catch (e) {
       debugPrint('Video_Detail: Error pausing player in dispose: $e');
     }
@@ -114,15 +129,14 @@ class _Video_DetailState extends State<Video_Detail>
     _onPageLeave();
     // 停止监听播放进度
     _stopPositionListener();
-    
+
     // 确保播放器完全停止并释放资源
     try {
-      player.reset();
       player.dispose();
     } catch (e) {
       debugPrint('Video_Detail: Error disposing player: $e');
     }
-    
+
     // 释放投屏助手资源
     _castingHelper.dispose();
 
@@ -135,12 +149,13 @@ class _Video_DetailState extends State<Video_Detail>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     debugPrint('App lifecycle state changed to: $state');
-    
+
     // 执行安全检查
     _ensurePlayerSafety();
-    
+
     // 当App进入后台或失去焦点时，立即暂停播放
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       debugPrint('App is in background/inactive, pausing player.');
       _pausePlayerImmediately();
     }
@@ -150,12 +165,10 @@ class _Video_DetailState extends State<Video_Detail>
       _resumePlayerIfNeeded();
     }
   }
-  
-  // 立即暂停播放器的方法
+
   void _pausePlayerImmediately() {
     try {
-      // 只有在页面活跃且播放器可播放时才暂停
-      if (_isPageActive && player.isPlayable()) {
+      if (_isPageActive) {
         player.pause();
         debugPrint('Player paused immediately');
       } else {
@@ -165,30 +178,28 @@ class _Video_DetailState extends State<Video_Detail>
       debugPrint('Error pausing player immediately: $e');
     }
   }
-  
+
   // 根据需要恢复播放的方法
   void _resumePlayerIfNeeded() {
     try {
-      // 只有在播放器已初始化且之前是播放状态时才恢复
-      if (_isPlayerInitialized && !_isPlayerReleased && player.isPlayable()) {
-        // 可以选择是否自动恢复播放，这里暂时不自动恢复
+      if (_isPlayerInitialized && !_isPlayerReleased) {
         debugPrint('Player ready to resume, but not auto-resuming');
       }
     } catch (e) {
       debugPrint('Error resuming player: $e');
     }
   }
-  
+
   // 全局播放器状态安全检查
   void _ensurePlayerSafety() {
     try {
-      // 如果页面不活跃但播放器仍在播放，则强制暂停
-      if (!_isPageActive && player.isPlayable() && player.value.state == FState.started) {
-        debugPrint('Safety check: Page inactive but player playing, forcing pause');
+      if (!_isPageActive && player.state.playing) {
+        debugPrint(
+          'Safety check: Page inactive but player playing, forcing pause',
+        );
         player.pause();
       }
-      
-      // 如果播放器已释放但仍被标记为初始化，则修正状态
+
       if (_isPlayerReleased && _isPlayerInitialized) {
         _isPlayerInitialized = false;
         debugPrint('Safety check: Corrected player initialization state');
@@ -209,14 +220,6 @@ class _Video_DetailState extends State<Video_Detail>
 
   //定义视频总时长
   int duration = 0;
-
-  // 倍速列表
-  final Map<String, double> speedList = {
-    "2.0": 2.0,
-    "1.5": 1.5,
-    "1.0": 1.0,
-    "0.5": 0.5,
-  };
 
   // 模拟播放记录视频初始化完需要跳转的进度
   int seekTime = 100000;
@@ -264,8 +267,8 @@ class _Video_DetailState extends State<Video_Detail>
     try {
       debugPrint('Starting getDictAreaData');
       final response = await Api.getDictData({
-                "types": ["area"],
-              }).timeout(
+        "types": ["area"],
+      }).timeout(
         const Duration(seconds: 10),
         onTimeout: () {
           debugPrint('Get dict area data timeout');
@@ -288,8 +291,8 @@ class _Video_DetailState extends State<Video_Detail>
     try {
       debugPrint('Starting getDictVideoCategoryData');
       final response = await Api.getDictData({
-                "types": ["video_category"],
-              }).timeout(
+        "types": ["video_category"],
+      }).timeout(
         const Duration(seconds: 10),
         onTimeout: () {
           debugPrint('Get dict video category data timeout');
@@ -298,7 +301,9 @@ class _Video_DetailState extends State<Video_Detail>
       );
       final dictData = response.data as DictDataData;
       videoCategory = dictData.videoCategory;
-      debugPrint('Get dict video category data success, count: ${videoCategory?.length ?? 0}');
+      debugPrint(
+        'Get dict video category data success, count: ${videoCategory?.length ?? 0}',
+      );
     } catch (e, stackTrace) {
       // 捕获并处理异常
       debugPrint('Initialization getDictVideoCategoryData failed: $e');
@@ -364,13 +369,7 @@ class _Video_DetailState extends State<Video_Detail>
       debugPrint('Stack trace: $stackTrace');
       // 设置默认值，确保UI能够正常显示
       tabs = [TDTab(text: "默认线路")];
-      videoList = [
-        VideoItem(
-          title: "视频",
-          url: "",
-          subTitle: "暂无播放链接",
-        ),
-      ];
+      videoList = [VideoItem(title: "视频", url: "", subTitle: "暂无播放链接")];
     }
   }
 
@@ -378,8 +377,8 @@ class _Video_DetailState extends State<Video_Detail>
     try {
       debugPrint('Starting getDictLanguageData');
       final response = await Api.getDictData({
-                "types": ["language"],
-              }).timeout(
+        "types": ["language"],
+      }).timeout(
         const Duration(seconds: 10),
         onTimeout: () {
           debugPrint('Get dict language data timeout');
@@ -388,7 +387,9 @@ class _Video_DetailState extends State<Video_Detail>
       );
       final dictData = response.data as DictDataData;
       language = dictData.language;
-      debugPrint('Get dict language data success, count: ${language?.length ?? 0}');
+      debugPrint(
+        'Get dict language data success, count: ${language?.length ?? 0}',
+      );
     } catch (e, stackTrace) {
       // 捕获并处理异常
       debugPrint('Initialization getDictLanguageData failed: $e');
@@ -412,7 +413,8 @@ class _Video_DetailState extends State<Video_Detail>
           throw TimeoutException('Get video pages timeout');
         },
       );
-      List<VideoPageDataList> list = response.data?.list ?? [] as List<VideoPageDataList>;
+      List<VideoPageDataList> list =
+          response.data?.list ?? [] as List<VideoPageDataList>;
       debugPrint('Get video pages success, count: ${list.length}');
       if (mounted) {
         setState(() {
@@ -442,7 +444,8 @@ class _Video_DetailState extends State<Video_Detail>
           throw TimeoutException('Get select video pages timeout');
         },
       );
-      List<VideoPageDataList> list = response.data?.list ?? [] as List<VideoPageDataList>;
+      List<VideoPageDataList> list =
+          response.data?.list ?? [] as List<VideoPageDataList>;
       debugPrint('Get select video pages success, count: ${list.length}');
       selectVideoPageData = list;
       if (mounted) {
@@ -466,7 +469,7 @@ class _Video_DetailState extends State<Video_Detail>
 
   //视频监听
   void _videoListener() {
-    player.onCurrentPosUpdate
+    player.stream.position
         .listen((pos) {
           if (!mounted) return;
           setState(() {
@@ -484,11 +487,10 @@ class _Video_DetailState extends State<Video_Detail>
     }
     try {
       if (videoInfoData.video?.id != null) {
-        // 添加空值检查，防止player.value.duration在播放器未初始化时抛出异常
         int videoDuration = 0;
-        if (player.value.duration != null &&
-            !player.value.duration.isNegative) {
-          videoDuration = player.value.duration.inMilliseconds ~/ 1000;
+        final duration = player.state.duration;
+        if (duration.inMilliseconds > 0) {
+          videoDuration = duration.inMilliseconds ~/ 1000;
         }
 
         await Api.addViews({
@@ -629,17 +631,9 @@ class _Video_DetailState extends State<Video_Detail>
   }
 
   _errorListener() {
-    // player._errorListener(() => {});
-    //监听播放器错误
-    player.addListener(playerValueChanged);
-  }
-
-  playerValueChanged() {
-    try {
-      FValue value = player.value;
-      if (value.state == FState.error) {
-        debugPrint("播放失败");
-        // 添加容错处理
+    player.stream.error.listen((error) {
+      if (error != null) {
+        debugPrint("播放失败: $error");
         if (videoInfoData.lines != null &&
             videoInfoData.lines!.isNotEmpty &&
             currentPlay.value < videoInfoData.lines!.length) {
@@ -649,41 +643,28 @@ class _Video_DetailState extends State<Video_Detail>
           });
         }
       }
-    } catch (e) {
-      debugPrint('playerValueChanged error: $e');
-    }
+    });
   }
 
-/**
- * 设置视频播放地址
- * @param url 视频播放地址
- * 处理视频播放的核心方法，包括播放器状态管理、数据源设置和错误处理
- */
+  playerValueChanged() {}
+
   Future<void> setVideoUrl(String url) async {
     try {
       debugPrint('Setting video URL: $url');
-      
-      // 如果播放器已被释放，重新初始化
+
       if (_isPlayerReleased) {
         _isPlayerReleased = false;
         _isPlayerInitialized = true;
       }
-      
-      // 添加容错处理，如果url为空则不播放
+
       if (url.isNotEmpty) {
-        // 重置播放器并设置新的数据源
-        await player.reset();
-        await player.setDataSource(url, autoPlay: true, showCover: true);
+        await player.open(Media(url), play: true);
         debugPrint('Video URL set successfully');
       } else {
         debugPrint('Empty URL provided, not setting video source');
-        // 如果URL为空，暂停当前播放
-        if (player.isPlayable()) {
-          player.pause();
-        }
+        player.pause();
       }
-      
-      // 开始监听播放进度
+
       _startPositionListener();
       if (mounted) {
         setState(() {});
@@ -691,11 +672,8 @@ class _Video_DetailState extends State<Video_Detail>
     } catch (error, stackTrace) {
       debugPrint('setVideoUrl error: $error');
       debugPrint('Stack trace: $stackTrace');
-      // 出错时确保播放器处于暂停状态
       try {
-        if (player.isPlayable()) {
-          player.pause();
-        }
+        player.pause();
       } catch (e) {
         debugPrint('Error pausing player after setVideoUrl failure: $e');
       }
@@ -745,10 +723,10 @@ class _Video_DetailState extends State<Video_Detail>
       'Video_Detail: didPopNext called - page is becoming visible again.',
     );
     _isPageActive = true;
-    
+
     // 执行安全检查
     _ensurePlayerSafety();
-    
+
     // 页面重新变为可见时，如果播放器已被释放则重新初始化
     if (_isPlayerReleased && _isPlayerInitialized) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -765,10 +743,6 @@ class _Video_DetailState extends State<Video_Detail>
           }
         }
       });
-    } else if (player.isPlayable()) {
-      // 如果播放器只是被暂停，则恢复播放
-      // 注意：这里不自动恢复播放，让用户手动控制
-      debugPrint('Player is playable but not auto-starting');
     }
   }
 
@@ -804,19 +778,13 @@ class _Video_DetailState extends State<Video_Detail>
 
   void removeVideo() {
     debugPrint('Video_Detail: removeVideo called');
-    // 立即暂停播放
     _pausePlayerImmediately();
-    // 在视频被销毁前调用addViews记录观看历史
     _onPageLeave();
-    // 停止监听播放进度
     _stopPositionListener();
-    // 重置播放器
     try {
-      if (player.isPlayable()) {
-        player.reset();
-      }
+      player.stop();
     } catch (e) {
-      debugPrint('Error resetting player in removeVideo: $e');
+      debugPrint('Error stopping player in removeVideo: $e');
     }
     _isPlayerReleased = true;
   }
@@ -883,10 +851,7 @@ class _Video_DetailState extends State<Video_Detail>
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
-                      tabs: [
-                        Tab(text: '详情'),
-                        Tab(text: '简介'),
-                      ],
+                      tabs: [Tab(text: '详情'), Tab(text: '简介')],
                     ),
                     IconButton(
                       onPressed: goFeedbackPage,
@@ -987,12 +952,14 @@ class _Video_DetailState extends State<Video_Detail>
             child: Row(
               children:
                   [
-                        Text(videoInfoData.video?.year.toString() ?? "暂无数据",
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF1F2937),
-                            )),
+                        Text(
+                          videoInfoData.video?.year.toString() ?? "暂无数据",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF1F2937),
+                          ),
+                        ),
                         Text(
                           Dict.getDictName(
                             videoInfoData.video?.region ?? 0,
@@ -1152,9 +1119,10 @@ class _Video_DetailState extends State<Video_Detail>
                                     borderRadius: BorderRadius.circular(10.0),
                                   ),
                                   elevation: playIndex == index ? 2 : 0,
-                                  shadowColor: playIndex == index
-                                      ? Color.fromRGBO(252, 119, 66, 0.3)
-                                      : Colors.transparent,
+                                  shadowColor:
+                                      playIndex == index
+                                          ? Color.fromRGBO(252, 119, 66, 0.3)
+                                          : Colors.transparent,
                                 ),
                                 onPressed: () {
                                   try {
@@ -1184,9 +1152,10 @@ class _Video_DetailState extends State<Video_Detail>
                                   item.name ?? '',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    fontWeight: playIndex == index
-                                        ? FontWeight.w600
-                                        : FontWeight.w500,
+                                    fontWeight:
+                                        playIndex == index
+                                            ? FontWeight.w600
+                                            : FontWeight.w500,
                                     color:
                                         playIndex == index
                                             ? Colors.white
@@ -1263,10 +1232,7 @@ class _Video_DetailState extends State<Video_Detail>
         alignment: Alignment.centerLeft,
         child: Text(
           "暂无播放线路",
-          style: TextStyle(
-            color: Color(0xFF6B7280),
-            fontSize: 14,
-          ),
+          style: TextStyle(color: Color(0xFF6B7280), fontSize: 14),
         ),
       );
     }
@@ -1300,11 +1266,7 @@ class _Video_DetailState extends State<Video_Detail>
               padding: const EdgeInsets.only(top: 16),
               height: 650,
               child: Padding(
-                padding: const EdgeInsets.only(
-                  left: 20,
-                  right: 20,
-                  bottom: 20,
-                ),
+                padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
                 child: Column(
                   children: [
                     Row(
@@ -1370,8 +1332,7 @@ class _Video_DetailState extends State<Video_Detail>
                               if (selectedLine?.playLines != null &&
                                   selectedIndices.isNotEmpty &&
                                   selectedIndices.first <
-                                      (selectedLine?.playLines?.length ??
-                                          0)) {
+                                      (selectedLine?.playLines?.length ?? 0)) {
                                 setState(() {
                                   currentPlay.value = selectedIndices.first;
                                 });
@@ -1421,10 +1382,7 @@ class _Video_DetailState extends State<Video_Detail>
   }
 
   Widget _buildRecommendations() {
-    return GuessYouLike(
-      videoPageData: videoPageData,
-      onVideoTap: removeVideo,
-    );
+    return GuessYouLike(videoPageData: videoPageData, onVideoTap: removeVideo);
   }
 
   Widget _buildTabsVideoInfo() {
@@ -1446,7 +1404,6 @@ class _Video_DetailState extends State<Video_Detail>
     }
     return [str];
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -1470,6 +1427,112 @@ class _Video_DetailState extends State<Video_Detail>
     );
   }
 
+  Widget _buildVideo() {
+    return VideoPlayerWidget(
+      player: player,
+      videoController: videoController,
+      videoUrl: '',
+      videoFit: _videoFit,
+      videoRate: _videoRate,
+      rateList: _rateList,
+      showControls: true,
+      onSettingsPressed: _showSettingsSheet,
+      onFullScreenPressed: _enterFullScreen,
+      onCastingPressed: tvDevice,
+      onPlayPause: () {
+        if (player.state.playing) {
+          player.pause();
+        } else {
+          player.play();
+        }
+      },
+      onSkipForward: () {
+        final currentPos = player.state.position;
+        player.seek(currentPos + const Duration(seconds: 10));
+      },
+      onSkipBackward: () {
+        final currentPos = player.state.position;
+        final newPos = currentPos - const Duration(seconds: 10);
+        player.seek(newPos < Duration.zero ? Duration.zero : newPos);
+      },
+      onNextVideo: () {
+        if (currentPlay.value < videoList.length - 1) {
+          currentPlay.value++;
+          final nextVideo = videoList[currentPlay.value];
+          setVideoUrl(nextVideo.url);
+        }
+      },
+      onPreviousVideo: () {
+        if (currentPlay.value > 0) {
+          currentPlay.value--;
+          final prevVideo = videoList[currentPlay.value];
+          setVideoUrl(prevVideo.url);
+        }
+      },
+      onRateChanged: (rate) {
+        int currentIndex = _rateList.indexOf(_videoRate);
+        if (currentIndex == -1 || currentIndex >= _rateList.length - 1) {
+          currentIndex = 0;
+        } else {
+          currentIndex++;
+        }
+        final newRate = _rateList[currentIndex];
+        setState(() {
+          _videoRate = newRate;
+        });
+        player.setRate(newRate);
+      },
+    );
+  }
+
+  void _enterFullScreen() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder:
+            (context) => FullScreenVideoPage(
+              player: player,
+              videoController: videoController,
+              videoTitle: videoInfoData.video?.title ?? '',
+              videoRate: _videoRate,
+              currentVideoFit: _videoFit,
+              onVideoFitChanged: (fit) {
+                setState(() => _videoFit = fit);
+              },
+              rateList: _rateList,
+              fitModes: _fitModes,
+              onCastingPressed: tvDevice,
+              onRateChanged: () {
+                int currentIndex = _rateList.indexOf(_videoRate);
+                if (currentIndex == -1 || currentIndex >= _rateList.length - 1) {
+                  currentIndex = 0;
+                } else {
+                  currentIndex++;
+                }
+                final newRate = _rateList[currentIndex];
+                setState(() {
+                  _videoRate = newRate;
+                });
+                player.setRate(newRate);
+              },
+              onNextVideo: () {
+                if (currentPlay.value < videoList.length - 1) {
+                  currentPlay.value++;
+                  final nextVideo = videoList[currentPlay.value];
+                  setVideoUrl(nextVideo.url);
+                }
+              },
+              onPreviousVideo: () {
+                if (currentPlay.value > 0) {
+                  currentPlay.value--;
+                  final prevVideo = videoList[currentPlay.value];
+                  setVideoUrl(prevVideo.url);
+                }
+              },
+            ),
+      ),
+    );
+  }
+
   /// 显示投屏对话框
   void tvDevice() {
     _castingHelper.showCastingDialog(
@@ -1489,162 +1552,851 @@ class _Video_DetailState extends State<Video_Detail>
     );
   }
 
-  Widget _buildVideo() {
-    // 添加容错处理
-    String videoUrl = "";
-    String videoTitle = videoInfoData.video?.title ?? "";
-    String videoName = "";
+  void _showSettingsSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder:
+          (context) => _VideoSettingsSheet(
+            player: player,
+            currentRate: _videoRate,
+            videoInfoData: videoInfoData,
+            currentLine: currentLine.value,
+            currentPlay: currentPlay.value,
+            currentVideoFit: _videoFit,
+            fitModes: _fitModes,
+            rateList: _rateList,
+            onVideoFitChanged: (fit) {
+              setState(() => _videoFit = fit);
+            },
+            onVideoRateChanged: (rate) {
+              setState(() => _videoRate = rate);
+            },
+          ),
+    );
+  }
+}
 
-    if (videoInfoData.lines != null &&
-        videoInfoData.lines!.isNotEmpty &&
-        currentLine.value < videoInfoData.lines!.length) {
-      final selectedLine = videoInfoData.lines?[currentLine.value];
-      if (selectedLine?.playLines != null &&
-          currentPlay.value < (selectedLine?.playLines?.length ?? 0)) {
-        final selectedPlayLine = selectedLine?.playLines?[currentPlay.value];
-        videoUrl = selectedPlayLine?.file ?? "";
-        videoName = selectedPlayLine?.name ?? "";
-      }
-    }
+class _VideoSettingsSheet extends StatefulWidget {
+  final Player player;
+  final double currentRate;
+  final VideoDetailDataData videoInfoData;
+  final int currentLine;
+  final int currentPlay;
+  final int currentVideoFit;
+  final Function(int) onVideoFitChanged;
+  final List<String> fitModes;
+  final List<double> rateList;
+  final Function(double) onVideoRateChanged;
 
-    return Column(
+  const _VideoSettingsSheet({
+    required this.player,
+    required this.currentRate,
+    required this.videoInfoData,
+    required this.currentLine,
+    required this.currentPlay,
+    required this.currentVideoFit,
+    required this.onVideoFitChanged,
+    required this.fitModes,
+    required this.rateList,
+    required this.onVideoRateChanged,
+  });
+
+  @override
+  State<_VideoSettingsSheet> createState() => _VideoSettingsSheetState();
+}
+
+class _VideoSettingsSheetState extends State<_VideoSettingsSheet> {
+  late double _selectedRate;
+  double _selectedVolume = 1.0;
+  double _selectedBrightness = 1.0;
+  int _videoFit = 0;
+  double _skipOpening = 0.0;
+  double _skipEnding = 0.0;
+  double _longPressRate = 2.0;
+
+  final List<double> _longPressRates = [1.25, 1.5, 2.0, 2.5, 3.0];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedRate = widget.currentRate;
+    _selectedVolume = widget.player.state.volume / 100.0;
+    _videoFit = widget.currentVideoFit;
+    _initBrightness();
+  }
+
+  Future<void> _initBrightness() async {
+    // 初始化时设置默认亮度为 100%
+    setState(() {
+      _selectedBrightness = 1.0;
+    });
+  }
+
+  void _setBrightness(double value) async {
+    setState(() {
+      _selectedBrightness = value;
+    });
+    // 注意：Flutter 标准 API 不直接支持系统亮度控制
+    // 如需实际控制亮度，需要添加 screen_brightness 等第三方插件
+    // 当前仅做 UI 展示，实际亮度控制需要原生平台支持
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final maxHeight = screenSize.height * 0.7; // 限制最大高度为屏幕的 70%
+
+    return Container(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      decoration: const BoxDecoration(
+        color: Color(0xFF1A1A1A),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black54,
+            blurRadius: 20,
+            offset: Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 顶部拖动手柄
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(top: 16, bottom: 8),
+              decoration: BoxDecoration(
+                color: Colors.white38,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // 标题栏
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 16),
+              child: Row(
+                children: [
+                  const Text(
+                    '播放设置',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const Spacer(),
+                  // 恢复默认按钮
+                  GestureDetector(
+                    onTap: _resetToDefaults,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white12,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Text(
+                        '恢复默认',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: Colors.white12,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white70,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(color: Colors.white12, height: 1),
+            // 可滚动内容区
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(10, 0, 10, 12),
+                child: Column(
+                  children: [
+                    // 音量和亮度并排
+                    _buildVolumeAndBrightnessRow(),
+                    const SizedBox(height: 24),
+                    // 跳过片头和片尾并排
+                    _buildSkipRow(),
+                    const SizedBox(height: 24),
+                    // 倍速播放
+                    _buildSectionTitle('倍速播放'),
+                    _buildRateSelector(),
+                    const SizedBox(height: 24),
+                    // 画面尺寸
+                    _buildSectionTitle('画面尺寸'),
+                    _buildFitSelector(),
+                    const SizedBox(height: 24),
+                    // 长按加速
+                    _buildSectionTitle('长按加速'),
+                    _buildLongPressSelector(),
+                    const SizedBox(height: 24),
+                    // 线路选择
+                    _buildSectionTitle('线路选择'),
+                    _buildLineSelector(),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _resetToDefaults() {
+    setState(() {
+      _selectedRate = 1.0;
+      _selectedVolume = 1.0;
+      _selectedBrightness = 1.0;
+      _videoFit = 0;
+      _skipOpening = 0.0;
+      _skipEnding = 0.0;
+      _longPressRate = 2.0;
+    });
+    widget.player.setRate(1.0);
+    widget.player.setVolume(100);
+    _setBrightness(1.0);
+  }
+
+  Widget _buildBrightnessSlider() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.white12,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.brightness_high,
+              color: Colors.white70,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: SliderTheme(
+              data: SliderThemeData(
+                activeTrackColor: const Color(0xFFE53935),
+                inactiveTrackColor: Colors.white24,
+                thumbColor: Colors.white,
+                overlayColor: const Color(0xFFE53935).withValues(alpha: 0.2),
+                trackHeight: 5,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+                overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
+              ),
+              child: Slider(
+                value: _selectedBrightness,
+                onChanged: (value) {
+                  _setBrightness(value);
+                },
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Container(
+            width: 50,
+            height: 32,
+            decoration: BoxDecoration(
+              color: const Color(0xFF2A2A2A),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: Text(
+                '${(_selectedBrightness * 100).toInt()}%',
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSection(String title, Widget content) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16, bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+            child: Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white60,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.3,
+              ),
+            ),
+          ),
+          content,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white60,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            letterSpacing: 0.3,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVolumeAndBrightnessRow() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        FView(
-          player: player,
-          width: double.infinity,
-          height: 200,
-          // 需自行设置，此处宽度/高度=16/9
-          color: Colors.black,
-          fsFit: FFit.contain,
-          // 全屏模式下的填充
-          fit: FFit.fill,
-          // 正常模式下的填充
-          panelBuilder: fPanelBuilder(
-            // 视频列表开关
-            isVideos: true,
-            // 右下方截屏按钮
-            isSnapShot: false,
-            // 右上方按钮组开关
-            isRightButton: true,
-            // 右上方按钮组
-            rightButtonList: [
-              InkWell(
-                onTap: () {
-                  showModalBottomSheetList();
+        Expanded(
+          child: Column(
+            children: [
+              _buildSliderLabel('音量调节', '${(_selectedVolume * 100).toInt()}%'),
+              const SizedBox(height: 12),
+              _buildGradientSlider(
+                value: _selectedVolume,
+                onChanged: (value) {
+                  setState(() => _selectedVolume = value);
+                  widget.player.setVolume(value * 100);
                 },
-                child: Container(
-                  // 10. 【修复】: 减小垂直内边距，防止全屏时布局溢出
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColorLight,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(5),
-                    ),
-                  ),
-                  child: Text(
-                    '选集',
-                    style: TextStyle(color: Theme.of(context).primaryColor),
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  tvDevice();
-                },
-                child: Container(
-                  // 10. 【修复】: 减小垂直内边距
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColorLight,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(5),
-                    ),
-                  ),
-                  child: Icon(Icons.tv, color: Theme.of(context).primaryColor),
-                ),
-              ),
-
-              ///下载按钮
-              InkWell(
-                onTap: () {
-                  videoDownload();
-                },
-                child: Container(
-                  // 10. 【修复】: 减小垂直内边距
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColorLight,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(5),
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.cloud_download,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ),
               ),
             ],
-            // 视频列表列表
-            videoList:
-                videoList.isEmpty
-                    ? [
-                      VideoItem(
-                        url: "",
-                        title: videoInfoData.video?.title ?? "加载失败",
-                        subTitle: "",
-                      ),
-                    ]
-                    : videoList,
-            // 当前视频索引
-            videoIndex: currentPlay.value,
-            // 全屏模式下点击播放下一集视频回调
-            playNextVideoFun: () {
-              setState(() {
-                // 添加容错处理
-                if (videoList.isNotEmpty &&
-                    currentPlay.value < videoList.length - 1) {
-                  currentPlay.value += 1;
-                  // 确保播放器加载新的视频
-                  setVideoUrl(videoList[currentPlay.value].url);
-                }
-              });
-            },
-            // 视频播放完成回调
-            onVideoEnd: () async {
-              var index = currentPlay.value + 1;
-              // 视频播放完成时记录观看历史
-              _onPageLeave();
-              // 停止监听播放进度
-              _stopPositionListener();
-              // 添加容错处理
-              if (index < videoList.length) {
-                await player.reset();
-                setState(() {
-                  currentPlay.value = index;
-                });
-                setVideoUrl(videoList[index].url);
-              }
-            },
-            // 视频播放错误点击刷新回调
-            onError: () async {
-              await player.reset();
-            },
-            onVideoTimeChange: () {
-              // 视频时间变动则触发一次，可以保存视频历史
-            },
+          ),
+        ),
+        const SizedBox(width: 24),
+        Expanded(
+          child: Column(
+            children: [
+              _buildSliderLabel(
+                '屏幕亮度',
+                '${(_selectedBrightness * 100).toInt()}%',
+              ),
+              const SizedBox(height: 12),
+              _buildGradientSlider(
+                value: _selectedBrightness,
+                onChanged: (value) {
+                  _setBrightness(value);
+                },
+              ),
+            ],
           ),
         ),
       ],
     );
+  }
+
+  Widget _buildSliderLabel(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGradientSlider({
+    required double value,
+    required ValueChanged<double> onChanged,
+    ValueChanged<double>? onChangeStart,
+    ValueChanged<double>? onChangeEnd,
+    double min = 0.0,
+    double max = 1.0,
+    int? divisions,
+  }) {
+    return SizedBox(
+      height: 24,
+      child: SliderTheme(
+        data: SliderThemeData(
+          activeTrackColor: const Color(0xFFE53935),
+          inactiveTrackColor: const Color(0xFF4A4A4A),
+          thumbColor: Colors.white,
+          overlayColor: Colors.transparent,
+          trackHeight: 2,
+          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+          overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+        ),
+        child: Slider(
+          value: value,
+          min: min,
+          max: max,
+          divisions: divisions,
+          onChanged: onChanged,
+          onChangeStart: onChangeStart,
+          onChangeEnd: onChangeEnd,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSkipRow() {
+    return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              children: [
+                _buildSliderLabel('跳过片头', _formatDuration(_skipOpening)),
+                const SizedBox(height: 12),
+                _buildGradientSlider(
+                  value: _skipOpening,
+                  min: 0,
+                  max: 300,
+                  divisions: 30,
+                  onChanged: (value) {
+                    setState(() => _skipOpening = value);
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 24),
+          Expanded(
+            child: Column(
+              children: [
+                _buildSliderLabel('跳过片尾', _formatDuration(_skipEnding)),
+                const SizedBox(height: 12),
+                _buildGradientSlider(
+                  value: _skipEnding,
+                  min: 0,
+                  max: 300,
+                  divisions: 30,
+                  onChanged: (value) {
+                    setState(() => _skipEnding = value);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+  }
+
+  Widget _buildRateSelector() {
+    return SizedBox(
+      height: 36,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.zero,
+        itemCount: widget.rateList.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final rate = widget.rateList[index];
+          final isSelected = (_selectedRate - rate).abs() < 0.01;
+          return GestureDetector(
+            onTap: () {
+              setState(() => _selectedRate = rate);
+              widget.player.setRate(rate);
+              widget.onVideoRateChanged(rate);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color:
+                    isSelected
+                        ? const Color(0xFFE53935)
+                        : const Color(0xFF2A2A2A),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Center(
+                child: Text(
+                  rate == 1.0 ? '1.0x' : '${rate}x',
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.white70,
+                    fontSize: 13,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildVolumeSlider() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.white12,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.volume_up, color: Colors.white70, size: 22),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: SliderTheme(
+              data: SliderThemeData(
+                activeTrackColor: const Color(0xFFE53935),
+                inactiveTrackColor: Colors.white24,
+                thumbColor: Colors.white,
+                overlayColor: const Color(0xFFE53935).withValues(alpha: 0.2),
+                trackHeight: 5,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+                overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
+              ),
+              child: Slider(
+                value: _selectedVolume,
+                onChanged: (value) {
+                  setState(() => _selectedVolume = value);
+                  widget.player.setVolume(value * 100);
+                },
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Container(
+            width: 50,
+            height: 32,
+            decoration: BoxDecoration(
+              color: const Color(0xFF2A2A2A),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: Text(
+                '${(_selectedVolume * 100).toInt()}%',
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFitSelector() {
+    return SizedBox(
+      height: 36,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.zero,
+        itemCount: widget.fitModes.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final mode = widget.fitModes[index];
+          final isSelected = _videoFit == index;
+          return GestureDetector(
+            onTap: () {
+              setState(() => _videoFit = index);
+              widget.onVideoFitChanged(index);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color:
+                    isSelected
+                        ? const Color(0xFFE53935)
+                        : const Color(0xFF2A2A2A),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Center(
+                child: Text(
+                  mode,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.white70,
+                    fontSize: 13,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLongPressSelector() {
+    return SizedBox(
+      height: 36,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.zero,
+        itemCount: _longPressRates.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final rate = _longPressRates[index];
+          final isSelected = (_longPressRate - rate).abs() < 0.01;
+          return GestureDetector(
+            onTap: () {
+              setState(() => _longPressRate = rate);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color:
+                    isSelected
+                        ? const Color(0xFFE53935)
+                        : const Color(0xFF2A2A2A),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Center(
+                child: Text(
+                  '${rate}x',
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.white70,
+                    fontSize: 13,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLineSelector() {
+    return GestureDetector(
+      onTap: () {
+        // TODO: 实现线路切换逻辑
+        Fluttertoast.showToast(
+          msg: '正在检测线路...',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2A2A2A),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.network_check, color: Colors.white70, size: 20),
+            const SizedBox(width: 12),
+            const Text(
+              '卡顿？检测切换线路',
+              style: TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+            const Spacer(),
+            const Icon(Icons.chevron_right, color: Colors.white70, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSkipOpeningSlider() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.white12,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.skip_next, color: Colors.white70, size: 22),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: SliderTheme(
+              data: SliderThemeData(
+                activeTrackColor: const Color(0xFFE53935),
+                inactiveTrackColor: Colors.white24,
+                thumbColor: Colors.white,
+                overlayColor: const Color(0xFFE53935).withValues(alpha: 0.2),
+                trackHeight: 5,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+                overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
+              ),
+              child: Slider(
+                value: _skipOpening,
+                min: 0,
+                max: 300,
+                divisions: 30,
+                onChanged: (value) {
+                  setState(() => _skipOpening = value);
+                },
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Container(
+            width: 60,
+            height: 32,
+            decoration: BoxDecoration(
+              color: const Color(0xFF2A2A2A),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: Text(
+                _formatDuration(_skipOpening),
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSkipEndingSlider() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.white12,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.skip_previous,
+              color: Colors.white70,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: SliderTheme(
+              data: SliderThemeData(
+                activeTrackColor: const Color(0xFFE53935),
+                inactiveTrackColor: Colors.white24,
+                thumbColor: Colors.white,
+                overlayColor: const Color(0xFFE53935).withValues(alpha: 0.2),
+                trackHeight: 5,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+                overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
+              ),
+              child: Slider(
+                value: _skipEnding,
+                min: 0,
+                max: 300,
+                divisions: 30,
+                onChanged: (value) {
+                  setState(() => _skipEnding = value);
+                },
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Container(
+            width: 60,
+            height: 32,
+            decoration: BoxDecoration(
+              color: const Color(0xFF2A2A2A),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: Text(
+                _formatDuration(_skipEnding),
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDuration(double seconds) {
+    final mins = (seconds / 60).floor();
+    final secs = (seconds % 60).floor();
+    return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
+}
+
+class CustomTrackShape extends RoundedRectSliderTrackShape {
+  @override
+  Rect getPreferredRect({
+    required RenderBox parentBox,
+    Offset offset = Offset.zero,
+    SliderThemeData sliderTheme = const SliderThemeData(),
+    bool isEnabled = false,
+    bool isDiscrete = false,
+  }) {
+    final double trackHeight = sliderTheme.trackHeight ?? 4;
+    final double trackLeft = offset.dx;
+    final double trackTop =
+        offset.dy + (parentBox.size.height - trackHeight) / 2;
+    final double trackWidth = parentBox.size.width;
+    return Rect.fromLTWH(trackLeft, trackTop, trackWidth, trackHeight);
   }
 }

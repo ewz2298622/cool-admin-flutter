@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:video_player/video_player.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 
 import '../../entity/video_detail_entity.dart';
 import '../../style/color_styles.dart';
@@ -58,11 +59,13 @@ class ShortVideoItemWidget extends StatefulWidget {
 }
 
 class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
-  VideoPlayerController? _videoPlayerController;
+  Player? _player;
+  VideoController? _videoController;
   bool _isPlaying = false;
   bool _isLoading = true;
   bool _showControls = true;
   Timer? _hideTimer;
+  StreamSubscription? _positionSubscription;
 
   @override
   void initState() {
@@ -73,6 +76,7 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
   @override
   void dispose() {
     _hideTimer?.cancel();
+    _positionSubscription?.cancel();
     _disposePlayer();
     super.dispose();
   }
@@ -85,13 +89,12 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
 
     setState(() => _isLoading = true);
 
-    _videoPlayerController = VideoPlayerController.networkUrl(
-      Uri.parse(widget.videoItem.videoUrl),
-    );
+    _player = Player();
+    _videoController = VideoController(_player!);
 
-    if (!mounted) return;
-    await _videoPlayerController?.initialize();
-    _videoPlayerController?.addListener(_videoListener);
+    await _player!.open(Media(widget.videoItem.videoUrl), play: false);
+
+    _positionSubscription = _player!.stream.playing.listen(_videoListener);
 
     if (mounted) {
       setState(() => _isLoading = false);
@@ -99,28 +102,26 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
     }
   }
 
-  void _videoListener() {
-    if (_videoPlayerController == null) return;
-    final playing = _videoPlayerController!.value.isPlaying;
-    if (playing != _isPlaying) {
+  void _videoListener(bool? playing) {
+    if (playing != null && playing != _isPlaying) {
       setState(() => _isPlaying = playing);
     }
   }
 
   void _disposePlayer() {
-    _videoPlayerController?.removeListener(_videoListener);
-    _videoPlayerController?.pause();
-    _videoPlayerController?.dispose();
-    _videoPlayerController = null;
+    _positionSubscription?.cancel();
+    _player?.stop();
+    _player?.dispose();
+    _player = null;
+    _videoController = null;
   }
 
   void _startPlaying() {
-    _videoPlayerController?.play();
-    _videoPlayerController?.setPlaybackSpeed(widget.playbackSpeed);
+    _player?.play();
   }
 
   void _pausePlaying() {
-    _videoPlayerController?.pause();
+    _player?.pause();
   }
 
   void _togglePlayPause() {
@@ -154,9 +155,6 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
       _disposePlayer();
       _initializePlayer();
     }
-    if (oldWidget.playbackSpeed != widget.playbackSpeed) {
-      _videoPlayerController?.setPlaybackSpeed(widget.playbackSpeed);
-    }
   }
 
   @override
@@ -180,8 +178,9 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
   }
 
   Widget _buildVideoContent() {
-    final controller = _videoPlayerController;
-    if (controller != null && controller.value.isInitialized) {
+    final controller = _videoController;
+    final player = _player;
+    if (controller != null && player != null) {
       return Positioned.fill(
         left: 0,
         right: 0,
@@ -189,7 +188,11 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
         child: Center(
           child: SizedBox(
             height: MediaQuery.of(context).size.height - 80,
-            child: VideoPlayer(controller),
+            child: Video(
+              controller: controller,
+              fill: Colors.black,
+              fit: BoxFit.cover,
+            ),
           ),
         ),
       );
@@ -238,30 +241,40 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
   }
 
   Widget _buildProgressIndicator() {
-    final controller = _videoPlayerController;
-    if (controller == null || !controller.value.isInitialized) {
+    final player = _player;
+    if (player == null) {
       return const SizedBox.shrink();
     }
-    final position = controller.value.position;
-    final duration = controller.value.duration;
-    final progress =
-        duration.inMilliseconds > 0
-            ? position.inMilliseconds / duration.inMilliseconds
-            : 0.0;
+    return StreamBuilder<Duration>(
+      stream: player.stream.position,
+      builder: (context, positionSnapshot) {
+        return StreamBuilder<Duration?>(
+          stream: player.stream.duration,
+          builder: (context, durationSnapshot) {
+            final position = positionSnapshot.data ?? Duration.zero;
+            final duration = durationSnapshot.data ?? Duration.zero;
+            final progress =
+                duration.inMilliseconds > 0
+                    ? position.inMilliseconds / duration.inMilliseconds
+                    : 0.0;
 
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 65,
-      child: Container(
-        height: 2,
-        color: Colors.white24,
-        child: FractionallySizedBox(
-          alignment: Alignment.centerLeft,
-          widthFactor: progress,
-          child: Container(color: ColorStyles.colorPrimary),
-        ),
-      ),
+            return Positioned(
+              left: 0,
+              right: 0,
+              bottom: 65,
+              child: Container(
+                height: 2,
+                color: Colors.white24,
+                child: FractionallySizedBox(
+                  alignment: Alignment.centerLeft,
+                  widthFactor: progress,
+                  child: Container(color: ColorStyles.colorPrimary),
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 

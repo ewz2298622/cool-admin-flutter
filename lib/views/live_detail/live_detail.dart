@@ -4,7 +4,8 @@ import 'dart:math';
 import 'package:dlna_dart/dlna.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:fplayer/fplayer.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:get/get.dart';
 
 import '../../api/api.dart';
@@ -32,8 +33,8 @@ class Live_DetailState extends State<Live_Detail>
   late Future<void> _loadFuture;
   LiveInfoData? videoData;
   List<VideoPageDataList> videoPageData = [];
-  List<VideoItem> videoList = [];
-  final FPlayer player = FPlayer();
+  late Player player;
+  late VideoController videoController;
   List<dynamic> deviceList = [];
   StateSetter? TVshowModalBottomSheetListSate;
   String? _errorMessage;
@@ -103,12 +104,7 @@ class Live_DetailState extends State<Live_Detail>
         debugPrint('setVideoUrl skip: empty url');
         return;
       }
-      try {
-        await player.reset();
-      } catch (_) {
-        // ignore reset error
-      }
-      await player.setDataSource(trimmed, autoPlay: true, showCover: true);
+      await player.open(Media(trimmed), play: true);
       debugPrint('setVideoUrl success: $trimmed');
     } catch (error) {
       debugPrint('setVideoUrl error: $error');
@@ -119,6 +115,8 @@ class Live_DetailState extends State<Live_Detail>
   @override
   void initState() {
     super.initState();
+    player = Player();
+    videoController = VideoController(player);
     _viewerSeed = 1200 + (id % 7300);
     _loadFuture = _loadInitialData();
     _startTimeTimer();
@@ -127,7 +125,7 @@ class Live_DetailState extends State<Live_Detail>
   @override
   void dispose() {
     currentPlay.dispose();
-    player.release();
+    player.dispose();
     _timeTimer?.cancel();
     _commentController.dispose();
     super.dispose();
@@ -701,104 +699,10 @@ class Live_DetailState extends State<Live_Detail>
             )
           else
             Container(color: Colors.black),
-          FView(
-            player: player,
-            width: double.infinity,
-            height: double.infinity,
-            color: Colors.transparent,
-            fsFit: FFit.contain,
-            fit: FFit.fill,
-            panelBuilder: (
-              FPlayer player,
-              FData data,
-              BuildContext context,
-              Size viewSize,
-              Rect texturePos,
-            ) {
-              // 只有在视频加载中时才显示加载动画
-              if (player.state == FState.asyncPreparing) {
-                return Stack(
-                  children: [
-                    // 加载动画
-                    Center(
-                      child: Container(
-                        width: 48,
-                        height: 48,
-                        child: const CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 3,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              }
-              // 视频加载完成后只显示控制按钮
-              return Stack(
-                children: [
-                  // 播放控制按钮
-                  Positioned(
-                    bottom: 16,
-                    left: 16,
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.pause,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                          onPressed: () {
-                            player.pause();
-                          },
-                        ),
-                        const SizedBox(width: 16),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.volume_up,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                          onPressed: () {
-                            // 音量控制
-                          },
-                        ),
-                        const SizedBox(width: 16),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.5),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Text(
-                            '默认',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // 全屏按钮
-                  Positioned(
-                    bottom: 16,
-                    right: 16,
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.fullscreen,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                      onPressed: () {
-                        player.enterFullScreen();
-                      },
-                    ),
-                  ),
-                ],
-              );
-            },
+          Video(
+            controller: videoController,
+            fill: Colors.transparent,
+            fit: BoxFit.contain,
           ),
         ],
       ),

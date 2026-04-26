@@ -39,6 +39,7 @@ import 'package:flutter_app/views/week/week.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -56,13 +57,12 @@ import 'services/video_filter_prefetch_service.dart';
  * 负责初始化应用环境、设置系统 UI 样式、启动应用并执行预加载任务
  */
 Future<void> main() async {
-  // 确保 Flutter 绑定已初始化
+  MediaKit.ensureInitialized();
+  
   WidgetsFlutterBinding.ensureInitialized();
   
-  // 设置系统 UI 模式为边缘到边缘
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   
-  // 设置系统 UI 覆盖样式
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -75,7 +75,6 @@ Future<void> main() async {
     ),
   );
 
-  // 先启动 App，再执行预加载，避免阻塞首帧
   runApp(const AppBootstrap());
 
   // 使用 addPostFrameCallback 确保在第一帧绘制完成后再开始繁重的预加载任务
