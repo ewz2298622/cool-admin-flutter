@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
@@ -21,6 +23,7 @@ import '../../entity/video_detail_data_entity.dart';
 import '../../entity/video_detail_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../main.dart'; // 导入 main.dart 以访问 routeObserver
+import '../../store/player/player_state_notifier.dart';
 import '../../style/layout.dart';
 import '../../utils/ads_config.dart';
 import '../../utils/bus/bus.dart';
@@ -81,9 +84,8 @@ class _Video_DetailState extends State<Video_Detail>
   final PageController pageController = PageController(initialPage: 0);
   late Player player;
   late VideoController videoController;
-  int _videoFit = 0;
+  late PlayerStateNotifier _playerStateNotifier;
   final List<String> _fitModes = ['默认', '原始', '拉伸', '填充', '4:3'];
-  double _videoRate = 1.0;
   final List<double> _rateList = [0.75, 1.0, 1.25, 1.5, 2.0];
 
   @override
@@ -107,6 +109,7 @@ class _Video_DetailState extends State<Video_Detail>
 
     player = Player();
     videoController = VideoController(player);
+    _playerStateNotifier = PlayerStateNotifier();
     _futureBuilderFuture = init();
   }
 
@@ -157,7 +160,9 @@ class _Video_DetailState extends State<Video_Detail>
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       if (_isInPipMode || _isEnteringPipMode) {
-        debugPrint('App is in background/inactive but in PiP mode, keeping player playing.');
+        debugPrint(
+          'App is in background/inactive but in PiP mode, keeping player playing.',
+        );
         return;
       }
       debugPrint('App is in background/inactive, pausing player.');
@@ -1438,13 +1443,24 @@ class _Video_DetailState extends State<Video_Detail>
       player: player,
       videoController: videoController,
       videoUrl: '',
-      videoFit: _videoFit,
-      videoRate: _videoRate,
+      videoFit: _playerStateNotifier.videoFit,
+      videoRate: _playerStateNotifier.videoRate,
       rateList: _rateList,
       showControls: true,
+      skipOpening: _playerStateNotifier.skipOpening,
+      skipEnding: _playerStateNotifier.skipEnding,
+      brightness: _playerStateNotifier.brightness,
       onSettingsPressed: _showSettingsSheet,
       onFullScreenPressed: _enterFullScreen,
       onCastingPressed: tvDevice,
+      onUpdate: (settings) {
+        debugPrint('播放设置 倍速: ${settings.videoRate}');
+        debugPrint('播放设置 画面: ${settings.videoFit}');
+        debugPrint('播放设置 音量: ${settings.volume}');
+        debugPrint('播放设置 亮度: ${settings.brightness}');
+        debugPrint('播放设置 跳过片头: ${_formatDuration(settings.skipOpening)}');
+        debugPrint('播放设置 跳过片尾: ${_formatDuration(settings.skipEnding)}');
+      },
       onPipEntering: () {
         setState(() {
           _isEnteringPipMode = true;
@@ -1492,17 +1508,18 @@ class _Video_DetailState extends State<Video_Detail>
         }
       },
       onRateChanged: (rate) {
-        int currentIndex = _rateList.indexOf(_videoRate);
+        int currentIndex = _rateList.indexOf(_playerStateNotifier.videoRate);
         if (currentIndex == -1 || currentIndex >= _rateList.length - 1) {
           currentIndex = 0;
         } else {
           currentIndex++;
         }
         final newRate = _rateList[currentIndex];
-        setState(() {
-          _videoRate = newRate;
-        });
+        _playerStateNotifier.setVideoRate(newRate);
         player.setRate(newRate);
+      },
+      onVideoFitChanged: (fit) {
+        _playerStateNotifier.setVideoFit(fit);
       },
     );
   }
@@ -1515,25 +1532,24 @@ class _Video_DetailState extends State<Video_Detail>
               player: player,
               videoController: videoController,
               videoTitle: videoInfoData.video?.title ?? '',
-              videoRate: _videoRate,
-              currentVideoFit: _videoFit,
-              onVideoFitChanged: (fit) {
-                setState(() => _videoFit = fit);
-              },
+              videoRate: _playerStateNotifier.videoRate,
+              currentVideoFit: _playerStateNotifier.videoFit,
               rateList: _rateList,
               fitModes: _fitModes,
               onCastingPressed: tvDevice,
+              onVideoFitChanged: (fit) {
+                _playerStateNotifier.setVideoFit(fit);
+              },
               onRateChanged: () {
-                int currentIndex = _rateList.indexOf(_videoRate);
-                if (currentIndex == -1 || currentIndex >= _rateList.length - 1) {
+                int currentIndex = _rateList.indexOf(_playerStateNotifier.videoRate);
+                if (currentIndex == -1 ||
+                    currentIndex >= _rateList.length - 1) {
                   currentIndex = 0;
                 } else {
                   currentIndex++;
                 }
                 final newRate = _rateList[currentIndex];
-                setState(() {
-                  _videoRate = newRate;
-                });
+                _playerStateNotifier.setVideoRate(newRate);
                 player.setRate(newRate);
               },
               onNextVideo: () {
@@ -1565,6 +1581,16 @@ class _Video_DetailState extends State<Video_Detail>
     );
   }
 
+  String _formatDuration(double seconds) {
+    final hours = (seconds / 3600).floor();
+    final mins = ((seconds % 3600) / 60).floor();
+    final secs = (seconds % 60).floor();
+    if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}:${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+    }
+    return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
+
   /// 下载视频
   void videoDownload() async {
     await VideoDownloadHelper.downloadVideo(
@@ -1582,18 +1608,27 @@ class _Video_DetailState extends State<Video_Detail>
       builder:
           (context) => _VideoSettingsSheet(
             player: player,
-            currentRate: _videoRate,
+            currentRate: _playerStateNotifier.videoRate,
             videoInfoData: videoInfoData,
             currentLine: currentLine.value,
             currentPlay: currentPlay.value,
-            currentVideoFit: _videoFit,
+            currentVideoFit: _playerStateNotifier.videoFit,
             fitModes: _fitModes,
             rateList: _rateList,
             onVideoFitChanged: (fit) {
-              setState(() => _videoFit = fit);
+              _playerStateNotifier.setVideoFit(fit);
             },
             onVideoRateChanged: (rate) {
-              setState(() => _videoRate = rate);
+              _playerStateNotifier.setVideoRate(rate);
+            },
+            onBrightnessChanged: (brightness) {
+              _playerStateNotifier.setBrightness(brightness);
+            },
+            onSkipOpeningChanged: (seconds) {
+              _playerStateNotifier.setSkipOpening(seconds);
+            },
+            onSkipEndingChanged: (seconds) {
+              _playerStateNotifier.setSkipEnding(seconds);
             },
           ),
     );
@@ -1611,6 +1646,9 @@ class _VideoSettingsSheet extends StatefulWidget {
   final List<String> fitModes;
   final List<double> rateList;
   final Function(double) onVideoRateChanged;
+  final Function(double) onBrightnessChanged;
+  final Function(double) onSkipOpeningChanged;
+  final Function(double) onSkipEndingChanged;
 
   const _VideoSettingsSheet({
     required this.player,
@@ -1623,6 +1661,9 @@ class _VideoSettingsSheet extends StatefulWidget {
     required this.fitModes,
     required this.rateList,
     required this.onVideoRateChanged,
+    required this.onBrightnessChanged,
+    required this.onSkipOpeningChanged,
+    required this.onSkipEndingChanged,
   });
 
   @override
@@ -1646,23 +1687,16 @@ class _VideoSettingsSheetState extends State<_VideoSettingsSheet> {
     _selectedRate = widget.currentRate;
     _selectedVolume = widget.player.state.volume / 100.0;
     _videoFit = widget.currentVideoFit;
-    _initBrightness();
-  }
-
-  Future<void> _initBrightness() async {
-    // 初始化时设置默认亮度为 100%
-    setState(() {
-      _selectedBrightness = 1.0;
-    });
+    _selectedBrightness = 1.0;
+    _skipOpening = 0.0;
+    _skipEnding = 0.0;
   }
 
   void _setBrightness(double value) async {
     setState(() {
       _selectedBrightness = value;
     });
-    // 注意：Flutter 标准 API 不直接支持系统亮度控制
-    // 如需实际控制亮度，需要添加 screen_brightness 等第三方插件
-    // 当前仅做 UI 展示，实际亮度控制需要原生平台支持
+    widget.onBrightnessChanged(value);
   }
 
   @override
@@ -2013,45 +2047,47 @@ class _VideoSettingsSheetState extends State<_VideoSettingsSheet> {
 
   Widget _buildSkipRow() {
     return Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              children: [
-                _buildSliderLabel('跳过片头', _formatDuration(_skipOpening)),
-                const SizedBox(height: 12),
-                _buildGradientSlider(
-                  value: _skipOpening,
-                  min: 0,
-                  max: 300,
-                  divisions: 30,
-                  onChanged: (value) {
-                    setState(() => _skipOpening = value);
-                  },
-                ),
-              ],
-            ),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            children: [
+              _buildSliderLabel('跳过片头', _formatDuration(_skipOpening)),
+              const SizedBox(height: 12),
+              _buildGradientSlider(
+                value: _skipOpening,
+                min: 0,
+                max: 300,
+                divisions: 30,
+                onChanged: (value) {
+                  setState(() => _skipOpening = value);
+                  widget.onSkipOpeningChanged(value);
+                },
+              ),
+            ],
           ),
-          const SizedBox(width: 24),
-          Expanded(
-            child: Column(
-              children: [
-                _buildSliderLabel('跳过片尾', _formatDuration(_skipEnding)),
-                const SizedBox(height: 12),
-                _buildGradientSlider(
-                  value: _skipEnding,
-                  min: 0,
-                  max: 300,
-                  divisions: 30,
-                  onChanged: (value) {
-                    setState(() => _skipEnding = value);
-                  },
-                ),
-              ],
-            ),
+        ),
+        const SizedBox(width: 24),
+        Expanded(
+          child: Column(
+            children: [
+              _buildSliderLabel('跳过片尾', _formatDuration(_skipEnding)),
+              const SizedBox(height: 12),
+              _buildGradientSlider(
+                value: _skipEnding,
+                min: 0,
+                max: 300,
+                divisions: 30,
+                onChanged: (value) {
+                  setState(() => _skipEnding = value);
+                  widget.onSkipEndingChanged(value);
+                },
+              ),
+            ],
           ),
-        ],
-      );
+        ),
+      ],
+    );
   }
 
   Widget _buildRateSelector() {
@@ -2399,8 +2435,12 @@ class _VideoSettingsSheetState extends State<_VideoSettingsSheet> {
   }
 
   String _formatDuration(double seconds) {
-    final mins = (seconds / 60).floor();
+    final hours = (seconds / 3600).floor();
+    final mins = ((seconds % 3600) / 60).floor();
     final secs = (seconds % 60).floor();
+    if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}:${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+    }
     return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 }

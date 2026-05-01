@@ -7,6 +7,24 @@ import 'package:media_kit_video/media_kit_video.dart';
 
 import '../../../utils/video_player_utils.dart';
 
+class VideoPlayerSettings {
+  final int videoFit;
+  final double videoRate;
+  final double volume;
+  final double brightness;
+  final double skipOpening;
+  final double skipEnding;
+
+  VideoPlayerSettings({
+    required this.videoFit,
+    required this.videoRate,
+    required this.volume,
+    required this.brightness,
+    required this.skipOpening,
+    required this.skipEnding,
+  });
+}
+
 class VideoPlayerWidget extends StatefulWidget {
   final Player player;
   final VideoController videoController;
@@ -28,6 +46,10 @@ class VideoPlayerWidget extends StatefulWidget {
   final VoidCallback? onSkipBackward;
   final VoidCallback? onNextVideo;
   final VoidCallback? onPreviousVideo;
+  final Function(VideoPlayerSettings)? onUpdate;
+  final double skipOpening;
+  final double skipEnding;
+  final double brightness;
 
   const VideoPlayerWidget({
     super.key,
@@ -51,6 +73,10 @@ class VideoPlayerWidget extends StatefulWidget {
     this.onSkipBackward,
     this.onNextVideo,
     this.onPreviousVideo,
+    this.onUpdate,
+    this.skipOpening = 0.0,
+    this.skipEnding = 0.0,
+    this.brightness = 1.0,
   });
 
   @override
@@ -76,6 +102,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     _currentPosition = widget.player.state.position;
     _isPlaying = widget.player.state.playing;
     _initPip();
+    _notifyUpdate();
     _playerStateManager.setupListeners(
       player: widget.player,
       onPlayingChanged: (playing) {
@@ -93,6 +120,25 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
           setState(() => _currentPosition = position);
         }
       },
+      onRateChanged: (rate) {
+        _notifyUpdate();
+      },
+      onVolumeChanged: (volume) {
+        _notifyUpdate();
+      },
+    );
+  }
+
+  void _notifyUpdate() {
+    widget.onUpdate?.call(
+      VideoPlayerSettings(
+        videoFit: widget.videoFit,
+        videoRate: widget.videoRate,
+        volume: widget.player.state.volume / 100.0,
+        brightness: widget.brightness,
+        skipOpening: widget.skipOpening,
+        skipEnding: widget.skipEnding,
+      ),
     );
   }
 
@@ -127,6 +173,13 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     super.didUpdateWidget(oldWidget);
     if (widget.showControls != oldWidget.showControls) {
       _localShowControls = widget.showControls;
+    }
+    if (widget.videoFit != oldWidget.videoFit ||
+        widget.videoRate != oldWidget.videoRate ||
+        widget.skipOpening != oldWidget.skipOpening ||
+        widget.skipEnding != oldWidget.skipEnding ||
+        widget.brightness != oldWidget.brightness) {
+      _notifyUpdate();
     }
   }
 
