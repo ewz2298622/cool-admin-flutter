@@ -33,7 +33,7 @@ import '../../style/layout.dart';
 import '../../utils/app_updater.dart';
 import '../../utils/color.dart';
 import '../../utils/context_manager.dart';
-import '../../utils/store/home/color_notifier.dart';
+import '../../store/home/color_notifier.dart';
 
 class GradientTabIndicator extends Decoration {
   final Gradient gradient;

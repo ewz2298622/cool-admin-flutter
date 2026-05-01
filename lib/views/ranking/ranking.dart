@@ -11,7 +11,7 @@ import '../../components/loading.dart';
 import '../../components/no_data.dart';
 import '../../components/video_one.dart';
 import '../../entity/video_page_entity.dart';
-import '../../utils/store/ranking/ranking_background_notifier.dart';
+import '../../store/ranking/ranking_background_notifier.dart';
 
 /**
  * 视频排行榜页面

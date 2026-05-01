@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../db/entity/UserEntity.dart';
-import '../../bus/bus.dart';
-import '../../bus/constant.dart';
+import '../../db/entity/UserEntity.dart';
+import '../../utils/bus/bus.dart';
+import '../../utils/bus/constant.dart';
 
 class UserState extends ChangeNotifier {
   UserEntity? _userInfoData;

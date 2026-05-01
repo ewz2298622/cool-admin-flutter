@@ -19,7 +19,7 @@ import '../../entity/notice_Info_entity.dart';
 import '../../entity/user_info_entity.dart';
 import '../../style/layout.dart';
 import '../../utils/routes.dart';
-import '../../utils/store/user/user.dart';
+import '../../store/user/user.dart';
 
 /// 登录页面常量定义
 class LoginConstants {

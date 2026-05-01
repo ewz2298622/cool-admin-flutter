@@ -9,9 +9,9 @@ import '../../db/manager/aldult_database_helper.dart';
 import '../../db/manager/helper.dart';
 import '../../http/cache_interceptor.dart';
 import '../../utils/routes.dart';
-import '../../utils/store/app/app_state.dart';
-import '../../utils/store/theme/theme.dart';
-import '../../utils/store/user/user.dart';
+import '../../store/app/app_state.dart';
+import '../../store/theme/theme.dart';
+import '../../store/user/user.dart';
 import '../../utils/user.dart';
 
 // 定义一个名为 Setting 的有状态组件，用于展示一个包含 WebView 的页面
