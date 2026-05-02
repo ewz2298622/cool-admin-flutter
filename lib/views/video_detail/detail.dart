@@ -1,19 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
-import 'package:provider/provider.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../api/api.dart';
-import '../../components/banner_ads.dart';
 import '../../components/detail_tabs_views.dart';
-import '../../components/loading.dart';
-import '../../entity/app_ads_entity.dart';
+import '../../db/entity/VideoPlayerSettingsEntity.dart';
+import '../../db/manager/video_player_settings_database_helper.dart';
 import '../../entity/dict_data_entity.dart';
 import '../../entity/play_line_entity.dart';
 import '../../entity/video_detail_data_entity.dart';
@@ -21,23 +17,16 @@ import '../../entity/video_detail_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../main.dart';
 import '../../store/player/player_state_notifier.dart';
-import '../../style/layout.dart';
 import '../../utils/ads_config.dart';
 import '../../utils/bus/bus.dart';
 import '../../utils/bus/constant.dart';
-import '../../utils/cast_screen_manager.dart';
-import '../../utils/dict.dart';
 import '../../utils/player_utils.dart';
 import '../../utils/user.dart';
 import '../../utils/video.dart';
-import 'Components/guess_you_like.dart';
-import 'Components/video_info_view.dart';
-import 'Components/sponsor_bar.dart';
-import 'Components/video_player_widget.dart';
 import 'Components/fullscreen_video_page.dart';
-import 'components/video_settings_sheet.dart';
-import 'components/video_info_section.dart';
+import 'Components/video_player_widget.dart';
 import 'components/detail_content_view.dart';
+import 'components/video_settings_sheet.dart';
 import 'utils/casting_helper.dart';
 import 'utils/video_download_helper.dart';
 
@@ -77,6 +66,7 @@ class _Video_DetailState extends State<Video_Detail>
   late Player player;
   late VideoController videoController;
   late PlayerStateNotifier _playerStateNotifier;
+  late VideoPlayerSettingsDatabaseHelper _settingsDbHelper;
   final List<String> _fitModes = ['默认', '原始', '拉伸', '填充', '4:3'];
   final List<double> _rateList = [0.75, 1.0, 1.25, 1.5, 2.0];
 
@@ -112,6 +102,7 @@ class _Video_DetailState extends State<Video_Detail>
     player = Player();
     videoController = VideoController(player);
     _playerStateNotifier = PlayerStateNotifier();
+    _settingsDbHelper = VideoPlayerSettingsDatabaseHelper();
     _futureBuilderFuture = init();
   }
 
@@ -235,12 +226,14 @@ class _Video_DetailState extends State<Video_Detail>
   }
 
   void _videoListener() {
-    player.stream.position.listen((pos) {
-      if (!mounted) return;
-      setState(() => progress = pos.inSeconds);
-    }).onError((error) {
-      debugPrint('Video position listener error: $error');
-    });
+    player.stream.position
+        .listen((pos) {
+          if (!mounted) return;
+          setState(() => progress = pos.inSeconds);
+        })
+        .onError((error) {
+          debugPrint('Video position listener error: $error');
+        });
   }
 
   void _errorListener() {
@@ -325,7 +318,8 @@ class _Video_DetailState extends State<Video_Detail>
 
       await getVideoDetail().timeout(
         const Duration(seconds: 15),
-        onTimeout: () => throw TimeoutException('Video detail initialization timeout'),
+        onTimeout:
+            () => throw TimeoutException('Video detail initialization timeout'),
       );
 
       await Future.wait([
@@ -333,10 +327,7 @@ class _Video_DetailState extends State<Video_Detail>
         getDictLanguageData(),
         getDictAreaData(),
         getVideoPages(),
-      ]).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () => [],
-      );
+      ]).timeout(const Duration(seconds: 10), onTimeout: () => []);
 
       _errorListener();
       _loadAd();
@@ -360,6 +351,7 @@ class _Video_DetailState extends State<Video_Detail>
         onTimeout: () => throw TimeoutException('Get video detail timeout'),
       );
       videoInfoData = response.data as VideoDetailDataData;
+      _selectPlayerSettings();
 
       if (videoInfoData.lines != null && videoInfoData.lines!.isNotEmpty) {
         for (var element in videoInfoData.lines!) {
@@ -374,21 +366,25 @@ class _Video_DetailState extends State<Video_Detail>
           final playerLineData = selectedLine?.playLines ?? [];
           if (playerLineData.isNotEmpty) {
             videoList.addAll(
-              playerLineData.map((playLine) => VideoItem(
-                title: playLine.videoName ?? "",
-                url: playLine.file ?? "",
-                subTitle: playLine.subTitle ?? "",
-              )),
+              playerLineData.map(
+                (playLine) => VideoItem(
+                  title: playLine.videoName ?? "",
+                  url: playLine.file ?? "",
+                  subTitle: playLine.subTitle ?? "",
+                ),
+              ),
             );
           }
         }
       } else {
         tabs.add(TDTab(text: "默认线路"));
-        videoList.add(VideoItem(
-          title: videoInfoData.video?.title ?? "视频",
-          url: "",
-          subTitle: "暂无播放链接",
-        ));
+        videoList.add(
+          VideoItem(
+            title: videoInfoData.video?.title ?? "视频",
+            url: "",
+            subTitle: "暂无播放链接",
+          ),
+        );
       }
     } catch (e) {
       debugPrint('Get video detail failed: $e');
@@ -399,7 +395,9 @@ class _Video_DetailState extends State<Video_Detail>
 
   Future<void> getDictAreaData() async {
     try {
-      final response = await Api.getDictData({"types": ["area"]}).timeout(
+      final response = await Api.getDictData({
+        "types": ["area"],
+      }).timeout(
         const Duration(seconds: 10),
         onTimeout: () => throw TimeoutException('Get dict area data timeout'),
       );
@@ -413,9 +411,13 @@ class _Video_DetailState extends State<Video_Detail>
 
   Future<void> getDictVideoCategoryData() async {
     try {
-      final response = await Api.getDictData({"types": ["video_category"]}).timeout(
+      final response = await Api.getDictData({
+        "types": ["video_category"],
+      }).timeout(
         const Duration(seconds: 10),
-        onTimeout: () => throw TimeoutException('Get dict video category data timeout'),
+        onTimeout:
+            () =>
+                throw TimeoutException('Get dict video category data timeout'),
       );
       final dictData = response.data as DictDataData;
       videoCategory = dictData.videoCategory;
@@ -427,9 +429,12 @@ class _Video_DetailState extends State<Video_Detail>
 
   Future<void> getDictLanguageData() async {
     try {
-      final response = await Api.getDictData({"types": ["language"]}).timeout(
+      final response = await Api.getDictData({
+        "types": ["language"],
+      }).timeout(
         const Duration(seconds: 10),
-        onTimeout: () => throw TimeoutException('Get dict language data timeout'),
+        onTimeout:
+            () => throw TimeoutException('Get dict language data timeout'),
       );
       final dictData = response.data as DictDataData;
       language = dictData.language;
@@ -471,9 +476,10 @@ class _Video_DetailState extends State<Video_Detail>
       final adsList = response.data?.list ?? [];
       if (!mounted) return;
 
-      final filteredAds = adsList.where((adsData) {
-        return adsData.adsPage == 897 && adsData.type == 680;
-      }).toList();
+      final filteredAds =
+          adsList.where((adsData) {
+            return adsData.adsPage == 897 && adsData.type == 680;
+          }).toList();
 
       if (filteredAds.isNotEmpty) {
         final adsData = filteredAds[0];
@@ -535,40 +541,44 @@ class _Video_DetailState extends State<Video_Detail>
   void _enterFullScreen() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => FullScreenVideoPage(
-          player: player,
-          videoController: videoController,
-          videoTitle: videoInfoData.video?.title ?? '',
-          videoRate: _playerStateNotifier.videoRate,
-          currentVideoFit: _playerStateNotifier.videoFit,
-          rateList: _rateList,
-          fitModes: _fitModes,
-          onCastingPressed: tvDevice,
-          onVideoFitChanged: (fit) => _playerStateNotifier.setVideoFit(fit),
-          onRateChanged: () {
-            int currentIndex = _rateList.indexOf(_playerStateNotifier.videoRate);
-            if (currentIndex == -1 || currentIndex >= _rateList.length - 1) {
-              currentIndex = 0;
-            } else {
-              currentIndex++;
-            }
-            final newRate = _rateList[currentIndex];
-            _playerStateNotifier.setVideoRate(newRate);
-            player.setRate(newRate);
-          },
-          onNextVideo: () {
-            if (currentPlay.value < videoList.length - 1) {
-              currentPlay.value++;
-              setVideoUrl(videoList[currentPlay.value].url);
-            }
-          },
-          onPreviousVideo: () {
-            if (currentPlay.value > 0) {
-              currentPlay.value--;
-              setVideoUrl(videoList[currentPlay.value].url);
-            }
-          },
-        ),
+        builder:
+            (context) => FullScreenVideoPage(
+              player: player,
+              videoController: videoController,
+              videoTitle: videoInfoData.video?.title ?? '',
+              videoRate: _playerStateNotifier.videoRate,
+              currentVideoFit: _playerStateNotifier.videoFit,
+              rateList: _rateList,
+              fitModes: _fitModes,
+              onCastingPressed: tvDevice,
+              onVideoFitChanged: (fit) => _playerStateNotifier.setVideoFit(fit),
+              onRateChanged: () {
+                int currentIndex = _rateList.indexOf(
+                  _playerStateNotifier.videoRate,
+                );
+                if (currentIndex == -1 ||
+                    currentIndex >= _rateList.length - 1) {
+                  currentIndex = 0;
+                } else {
+                  currentIndex++;
+                }
+                final newRate = _rateList[currentIndex];
+                _playerStateNotifier.setVideoRate(newRate);
+                player.setRate(newRate);
+              },
+              onNextVideo: () {
+                if (currentPlay.value < videoList.length - 1) {
+                  currentPlay.value++;
+                  setVideoUrl(videoList[currentPlay.value].url);
+                }
+              },
+              onPreviousVideo: () {
+                if (currentPlay.value > 0) {
+                  currentPlay.value--;
+                  setVideoUrl(videoList[currentPlay.value].url);
+                }
+              },
+            ),
       ),
     );
   }
@@ -590,29 +600,57 @@ class _Video_DetailState extends State<Video_Detail>
     );
   }
 
-  void _showSettingsSheet() {
+  Future<void> _showSettingsSheet() async {
+    await _selectPlayerSettings();
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => VideoSettingsSheet(
-        player: player,
-        currentRate: _playerStateNotifier.videoRate,
-        videoInfoData: videoInfoData,
-        currentLine: currentLine.value,
-        currentPlay: currentPlay.value,
-        currentVideoFit: _playerStateNotifier.videoFit,
-        fitModes: _fitModes,
-        rateList: _rateList,
-        onVideoFitChanged: (fit) => _playerStateNotifier.setVideoFit(fit),
-        onVideoRateChanged: (rate) => _playerStateNotifier.setVideoRate(rate),
-        onBrightnessChanged: (brightness) =>
-            _playerStateNotifier.setBrightness(brightness),
-        onSkipOpeningChanged: (seconds) =>
-            _playerStateNotifier.setSkipOpening(seconds),
-        onSkipEndingChanged: (seconds) =>
-            _playerStateNotifier.setSkipEnding(seconds),
-      ),
+      builder:
+          (context) => VideoSettingsSheet(
+            player: player,
+            currentRate: _playerStateNotifier.videoRate,
+            videoInfoData: videoInfoData,
+            currentLine: currentLine.value,
+            currentPlay: currentPlay.value,
+            currentVideoFit: _playerStateNotifier.videoFit,
+            fitModes: _fitModes,
+            rateList: _rateList,
+            onVideoFitChanged: (fit) {
+              _playerStateNotifier.setVideoFit(fit);
+              _saveCurrentSettings();
+            },
+            onVideoRateChanged: (rate) {
+              _playerStateNotifier.setVideoRate(rate);
+              _saveCurrentSettings();
+            },
+            onBrightnessChanged: (brightness) {
+              _playerStateNotifier.setBrightness(brightness);
+              _saveCurrentSettings();
+            },
+            onSkipOpeningChanged: (seconds) {
+              _playerStateNotifier.setSkipOpening(seconds);
+              _saveCurrentSettings();
+            },
+            onSkipEndingChanged: (seconds) {
+              _playerStateNotifier.setSkipEnding(seconds);
+              _saveCurrentSettings();
+            },
+            currentBrightness: _playerStateNotifier.brightness,
+            currentSkipOpening: _playerStateNotifier.skipOpening,
+            currentSkipEnding: _playerStateNotifier.skipEnding,
+            currentVolume: _playerStateNotifier.volume,
+            currentLongPressRate: _playerStateNotifier.longPressRate,
+            onVolumeChanged: (volume) {
+              _playerStateNotifier.setVolume(volume);
+              _saveCurrentSettings();
+            },
+            onLongPressRateChanged: (rate) {
+              _playerStateNotifier.setLongPressRate(rate);
+              _saveCurrentSettings();
+            },
+            playerStateNotifier: _playerStateNotifier,
+          ),
     );
   }
 
@@ -714,7 +752,8 @@ class _Video_DetailState extends State<Video_Detail>
                                 });
 
                                 final selectedPlayLine =
-                                    selectedLine?.playLines?[selectedIndices.first];
+                                    selectedLine?.playLines?[selectedIndices
+                                        .first];
                                 setVideoUrl(selectedPlayLine?.file ?? "");
                               }
                             }
@@ -781,6 +820,7 @@ class _Video_DetailState extends State<Video_Detail>
       videoUrl: '',
       videoFit: _playerStateNotifier.videoFit,
       videoRate: _playerStateNotifier.videoRate,
+      longPressRate: _playerStateNotifier.longPressRate,
       rateList: _rateList,
       showControls: true,
       skipOpening: _playerStateNotifier.skipOpening,
@@ -790,12 +830,20 @@ class _Video_DetailState extends State<Video_Detail>
       onFullScreenPressed: _enterFullScreen,
       onCastingPressed: tvDevice,
       onUpdate: (settings) {
+        debugPrint('播放设置 视频Id: ${videoInfoData.video?.id ?? ''}');
         debugPrint('播放设置 倍速: ${settings.videoRate}');
         debugPrint('播放设置 画面: ${settings.videoFit}');
         debugPrint('播放设置 音量: ${settings.volume}');
         debugPrint('播放设置 亮度: ${settings.brightness}');
-        debugPrint('播放设置 跳过片头: ${VideoUtil.formatDuration(settings.skipOpening)}');
-        debugPrint('播放设置 跳过片尾: ${VideoUtil.formatDuration(settings.skipEnding)}');
+        debugPrint('播放设置 长安倍数: ${settings.longPressRate}');
+        debugPrint(
+          '播放设置 跳过片头: ${VideoUtil.formatDuration(settings.skipOpening)}',
+        );
+        debugPrint(
+          '播放设置 跳过片尾: ${VideoUtil.formatDuration(settings.skipEnding)}',
+        );
+
+        _savePlayerSettings(settings);
       },
       onPipEntering: () => setState(() => _isEnteringPipMode = true),
       onPipModeChanged: (isInPipMode) {
@@ -850,5 +898,95 @@ class _Video_DetailState extends State<Video_Detail>
       },
       onVideoFitChanged: (fit) => _playerStateNotifier.setVideoFit(fit),
     );
+  }
+
+  void _saveCurrentSettings() {
+    final videoId = videoInfoData.video?.id;
+    if (videoId == null) return;
+
+    try {
+      final entity = VideoPlayerSettingsEntity(
+        videoId: videoId.toString(),
+        videoTitle: videoInfoData.video?.title ?? '未知视频',
+        skipOpening: _playerStateNotifier.skipOpening,
+        skipEnding: _playerStateNotifier.skipEnding,
+        volume: _playerStateNotifier.volume,
+        brightness: _playerStateNotifier.brightness,
+        videoFit: _playerStateNotifier.videoFit,
+        playbackRate: _playerStateNotifier.videoRate,
+        longPressRate: _playerStateNotifier.longPressRate,
+        updatedAt: DateTime.now(),
+      );
+
+      _settingsDbHelper.insertOrUpdate(entity);
+      debugPrint('播放器设置已保存: videoId=$videoId');
+    } catch (e) {
+      debugPrint('保存播放器设置失败: $e');
+    }
+  }
+
+  void _savePlayerSettings(settings) {
+    final videoId = videoInfoData.video?.id;
+    if (videoId == null) return;
+
+    try {
+      final entity = VideoPlayerSettingsEntity(
+        videoId: videoId.toString(),
+        videoTitle: videoInfoData.video?.title ?? '未知视频',
+        skipOpening: settings.skipOpening,
+        skipEnding: settings.skipEnding,
+        volume: settings.volume,
+        brightness: settings.brightness,
+        videoFit: settings.videoFit,
+        playbackRate: settings.videoRate,
+        longPressRate: settings.longPressRate,
+        updatedAt: DateTime.now(),
+      );
+
+      _settingsDbHelper.insertOrUpdate(entity);
+      debugPrint('播放器设置已保存: videoId=$videoId');
+    } catch (e) {
+      debugPrint('保存播放器设置失败: $e');
+    }
+  }
+
+  Future<void> _selectPlayerSettings() async {
+    final videoId = videoInfoData.video?.id;
+    debugPrint('查询到历史播放设置1: videoId=$videoId');
+    if (videoId == null) return;
+    debugPrint('查询到历史播放设置2: videoId=$videoId');
+    try {
+      final settings = _settingsDbHelper.getByVideoId(videoId.toString());
+      debugPrint('查询到历史播放设置3: ${settings?.id}');
+      if (settings != null) {
+        debugPrint('查询到历史播放设置: videoId=$videoId');
+        debugPrint('查询到历史播放设置  跳过片头: ${settings.skipOpening}秒');
+        debugPrint('查询到历史播放设置  跳过片尾: ${settings.skipEnding}秒');
+        debugPrint('查询到历史播放设置  音量: ${settings.volume}');
+        debugPrint('查询到历史播放设置  亮度: ${settings.brightness}');
+        debugPrint('查询到历史播放设置  画面比例: ${settings.videoFit}');
+        debugPrint('查询到历史播放设置  播放倍速: ${settings.playbackRate}');
+        debugPrint('查询到历史播放设置  更新时间: ${settings.updatedAt}');
+        debugPrint('查询到历史播放设置  长按倍速: ${settings.longPressRate}');
+
+        setState(() {
+          _playerStateNotifier.applySettings(
+            videoRate: settings.playbackRate,
+            videoFit: settings.videoFit,
+            volume: settings.volume,
+            brightness: settings.brightness,
+            skipOpening: settings.skipOpening,
+            skipEnding: settings.skipEnding,
+            longPressRate: settings.longPressRate,
+          );
+        });
+        player.setRate(settings.playbackRate);
+        player.setVolume(settings.volume * 100);
+      } else {
+        debugPrint('未找到历史播放设置: videoId=$videoId');
+      }
+    } catch (e) {
+      debugPrint('查询播放器设置失败: $e');
+    }
   }
 }

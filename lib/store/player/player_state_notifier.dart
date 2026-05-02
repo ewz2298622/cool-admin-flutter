@@ -7,6 +7,7 @@ class PlayerStateNotifier extends ChangeNotifier {
   double _brightness = 1.0;
   double _skipOpening = 0.0;
   double _skipEnding = 0.0;
+  double _longPressRate = 2.0;
 
   double get videoRate => _videoRate;
   int get videoFit => _videoFit;
@@ -14,6 +15,7 @@ class PlayerStateNotifier extends ChangeNotifier {
   double get brightness => _brightness;
   double get skipOpening => _skipOpening;
   double get skipEnding => _skipEnding;
+  double get longPressRate => _longPressRate;
 
   void setVideoRate(double rate) {
     _videoRate = rate;
@@ -45,6 +47,11 @@ class PlayerStateNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setLongPressRate(double rate) {
+    _longPressRate = rate;
+    notifyListeners();
+  }
+
   void resetToDefaults() {
     _videoRate = 1.0;
     _videoFit = 0;
@@ -52,6 +59,26 @@ class PlayerStateNotifier extends ChangeNotifier {
     _brightness = 1.0;
     _skipOpening = 0.0;
     _skipEnding = 0.0;
+    _longPressRate = 2.0;
+    notifyListeners();
+  }
+
+  void applySettings({
+    double? videoRate,
+    int? videoFit,
+    double? volume,
+    double? brightness,
+    double? skipOpening,
+    double? skipEnding,
+    double? longPressRate,
+  }) {
+    if (videoRate != null) _videoRate = videoRate;
+    if (videoFit != null) _videoFit = videoFit;
+    if (volume != null) _volume = volume;
+    if (brightness != null) _brightness = brightness;
+    if (skipOpening != null) _skipOpening = skipOpening;
+    if (skipEnding != null) _skipEnding = skipEnding;
+    if (longPressRate != null) _longPressRate = longPressRate;
     notifyListeners();
   }
 }

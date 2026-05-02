@@ -14,6 +14,7 @@ class VideoPlayerSettings {
   final double brightness;
   final double skipOpening;
   final double skipEnding;
+  final double longPressRate;
 
   VideoPlayerSettings({
     required this.videoFit,
@@ -22,6 +23,7 @@ class VideoPlayerSettings {
     required this.brightness,
     required this.skipOpening,
     required this.skipEnding,
+    required this.longPressRate,
   });
 }
 
@@ -31,6 +33,7 @@ class VideoPlayerWidget extends StatefulWidget {
   final String videoUrl;
   final int videoFit;
   final double videoRate;
+  final double longPressRate;
   final List<double> rateList;
   final VoidCallback? onSettingsPressed;
   final VoidCallback? onFullScreenPressed;
@@ -58,6 +61,7 @@ class VideoPlayerWidget extends StatefulWidget {
     required this.videoUrl,
     this.videoFit = 0,
     this.videoRate = 1.0,
+    this.longPressRate = 2.0,
     this.rateList = const [0.75, 1.0, 1.25, 1.5, 2.0],
     this.onSettingsPressed,
     this.onFullScreenPressed,
@@ -91,6 +95,8 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   Duration _pendingSeekPosition = Duration.zero;
   bool _isDragging = false;
   bool _isPlaying = false;
+  bool _isLongPressing = false;
+  double _previousRate = 1.0;
   final PlayerStateManager _playerStateManager = PlayerStateManager();
   final PipManager _pipManager = PipManager();
 
@@ -138,6 +144,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         brightness: widget.brightness,
         skipOpening: widget.skipOpening,
         skipEnding: widget.skipEnding,
+        longPressRate: widget.longPressRate,
       ),
     );
   }
@@ -174,11 +181,13 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     if (widget.showControls != oldWidget.showControls) {
       _localShowControls = widget.showControls;
     }
-    if (widget.videoFit != oldWidget.videoFit ||
-        widget.videoRate != oldWidget.videoRate ||
-        widget.skipOpening != oldWidget.skipOpening ||
+    if (widget.videoRate != oldWidget.videoRate) {
+      widget.player.setRate(widget.videoRate);
+    }
+    if (widget.skipOpening != oldWidget.skipOpening ||
         widget.skipEnding != oldWidget.skipEnding ||
-        widget.brightness != oldWidget.brightness) {
+        widget.brightness != oldWidget.brightness ||
+        widget.videoFit != oldWidget.videoFit) {
       _notifyUpdate();
     }
   }
@@ -278,6 +287,15 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     return GestureDetector(
       onTap: _onTapVideo,
       onDoubleTap: _togglePlayPause,
+      onLongPressStart: (_) {
+        _previousRate = widget.player.state.rate;
+        widget.player.setRate(widget.longPressRate);
+        setState(() => _isLongPressing = true);
+      },
+      onLongPressEnd: (_) {
+        widget.player.setRate(_previousRate);
+        setState(() => _isLongPressing = false);
+      },
       child: Container(
         width: double.infinity,
         height: 200,
@@ -298,6 +316,26 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
               _buildMiddleControls(),
               _buildBottomBar(),
             ],
+            if (_isLongPressing)
+              Positioned(
+                top: 12,
+                right: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    '${widget.longPressRate}x',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),

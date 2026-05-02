@@ -8,6 +8,7 @@ class VideoPlayerSettingsEntity {
   double brightness;
   int videoFit;
   double playbackRate;
+  double longPressRate;
   DateTime updatedAt;
 
   VideoPlayerSettingsEntity({
@@ -20,6 +21,7 @@ class VideoPlayerSettingsEntity {
     this.brightness = 1.0,
     this.videoFit = 0,
     this.playbackRate = 1.0,
+    this.longPressRate = 2.0,
     required this.updatedAt,
   });
 
@@ -34,6 +36,7 @@ class VideoPlayerSettingsEntity {
       'brightness': brightness,
       'video_fit': videoFit,
       'playback_rate': playbackRate,
+      'long_press_rate': longPressRate,
       'updated_at': updatedAt.toIso8601String(),
     };
   }
@@ -49,6 +52,7 @@ class VideoPlayerSettingsEntity {
       brightness: (map['brightness'] as num?)?.toDouble() ?? 1.0,
       videoFit: (map['video_fit'] as num?)?.toInt() ?? 0,
       playbackRate: (map['playback_rate'] as num?)?.toDouble() ?? 1.0,
+      longPressRate: (map['long_press_rate'] as num?)?.toDouble() ?? 2.0,
       updatedAt: DateTime.parse(map['updated_at']),
     );
   }
@@ -63,6 +67,7 @@ class VideoPlayerSettingsEntity {
     double? brightness,
     int? videoFit,
     double? playbackRate,
+    double? longPressRate,
     DateTime? updatedAt,
   }) {
     return VideoPlayerSettingsEntity(
@@ -75,6 +80,7 @@ class VideoPlayerSettingsEntity {
       brightness: brightness ?? this.brightness,
       videoFit: videoFit ?? this.videoFit,
       playbackRate: playbackRate ?? this.playbackRate,
+      longPressRate: longPressRate ?? this.longPressRate,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }

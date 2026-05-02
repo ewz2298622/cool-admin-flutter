@@ -23,6 +23,7 @@ class VideoPlayerSettingsDatabaseHelper {
         brightness REAL NOT NULL DEFAULT 1.0,
         video_fit INTEGER NOT NULL DEFAULT 0,
         playback_rate REAL NOT NULL DEFAULT 1.0,
+        long_press_rate REAL NOT NULL DEFAULT 2.0,
         updated_at TEXT NOT NULL
       );
     ''');
@@ -30,6 +31,23 @@ class VideoPlayerSettingsDatabaseHelper {
       CREATE INDEX IF NOT EXISTS idx_video_player_settings_video_id
       ON video_player_settings(video_id);
     ''');
+    _addColumnIfExists();
+  }
+
+  void _addColumnIfExists() {
+    try {
+      final result = _database.select(
+        "PRAGMA table_info(video_player_settings);",
+      );
+      final hasColumn = result.any((row) => row.columnAt(1) == 'long_press_rate');
+      if (!hasColumn) {
+        _database.execute(
+          'ALTER TABLE video_player_settings ADD COLUMN long_press_rate REAL NOT NULL DEFAULT 2.0;',
+        );
+      }
+    } catch (e) {
+      print('[VideoSettings] Migration check error: $e');
+    }
   }
 
   void insertOrUpdate(VideoPlayerSettingsEntity entity) {
@@ -44,7 +62,7 @@ class VideoPlayerSettingsDatabaseHelper {
       _database.execute('''
         UPDATE video_player_settings
         SET video_title = ?, skip_opening = ?, skip_ending = ?,
-            volume = ?, brightness = ?, video_fit = ?, playback_rate = ?, updated_at = ?
+            volume = ?, brightness = ?, video_fit = ?, playback_rate = ?, long_press_rate = ?, updated_at = ?
         WHERE video_id = ?;
       ''', [
         entity.videoTitle,
@@ -54,6 +72,7 @@ class VideoPlayerSettingsDatabaseHelper {
         entity.brightness,
         entity.videoFit,
         entity.playbackRate,
+        entity.longPressRate,
         entity.updatedAt.toIso8601String(),
         entity.videoId,
       ]);
@@ -61,8 +80,8 @@ class VideoPlayerSettingsDatabaseHelper {
       print('[VideoSettings] DB INSERT new record');
       _database.execute('''
         INSERT INTO video_player_settings (video_id, video_title, skip_opening, skip_ending,
-            volume, brightness, video_fit, playback_rate, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+            volume, brightness, video_fit, playback_rate, long_press_rate, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
       ''', [
         entity.videoId,
         entity.videoTitle,
@@ -72,6 +91,7 @@ class VideoPlayerSettingsDatabaseHelper {
         entity.brightness,
         entity.videoFit,
         entity.playbackRate,
+        entity.longPressRate,
         entity.updatedAt.toIso8601String(),
       ]);
     }
@@ -101,7 +121,8 @@ class VideoPlayerSettingsDatabaseHelper {
       'brightness': result.first.columnAt(6),
       'video_fit': result.first.columnAt(7),
       'playback_rate': result.first.columnAt(8),
-      'updated_at': result.first.columnAt(9),
+      'long_press_rate': result.first.columnAt(9),
+      'updated_at': result.first.columnAt(10),
     });
     print('[VideoSettings] DB entity skipOpening=${entity.skipOpening}, skipEnding=${entity.skipEnding}');
     return entity;
@@ -123,7 +144,8 @@ class VideoPlayerSettingsDatabaseHelper {
         'brightness': row.columnAt(6),
         'video_fit': row.columnAt(7),
         'playback_rate': row.columnAt(8),
-        'updated_at': row.columnAt(9),
+        'long_press_rate': row.columnAt(9),
+        'updated_at': row.columnAt(10),
       });
     }).toList();
   }

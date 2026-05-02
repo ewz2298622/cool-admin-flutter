@@ -5,11 +5,10 @@ import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
-import '../../api/api.dart';
-import '../../entity/dict_data_entity.dart';
-import '../../entity/play_line_entity.dart';
-import '../../entity/video_detail_data_entity.dart';
-import '../../entity/video_page_entity.dart';
+import '../../../api/api.dart';
+import '../../../entity/dict_data_entity.dart';
+import '../../../entity/video_detail_data_entity.dart';
+import '../../../entity/video_page_entity.dart';
 
 class VideoItem {
   final String title;
@@ -41,7 +40,9 @@ class VideoDetailService {
         onTimeout: () => throw TimeoutException('Get dict area data timeout'),
       );
       final dictData = response.data as DictDataData;
-      debugPrint('Get dict area data success, count: ${dictData.area?.length ?? 0}');
+      debugPrint(
+        'Get dict area data success, count: ${dictData.area?.length ?? 0}',
+      );
       return dictData.area;
     } catch (e) {
       debugPrint('Get dict area data failed: $e');
@@ -55,10 +56,14 @@ class VideoDetailService {
         "types": ["video_category"],
       }).timeout(
         const Duration(seconds: 10),
-        onTimeout: () => throw TimeoutException('Get dict video category data timeout'),
+        onTimeout:
+            () =>
+                throw TimeoutException('Get dict video category data timeout'),
       );
       final dictData = response.data as DictDataData;
-      debugPrint('Get dict video category data success, count: ${dictData.videoCategory?.length ?? 0}');
+      debugPrint(
+        'Get dict video category data success, count: ${dictData.videoCategory?.length ?? 0}',
+      );
       return dictData.videoCategory;
     } catch (e) {
       debugPrint('Get dict video category data failed: $e');
@@ -72,10 +77,13 @@ class VideoDetailService {
         "types": ["language"],
       }).timeout(
         const Duration(seconds: 10),
-        onTimeout: () => throw TimeoutException('Get dict language data timeout'),
+        onTimeout:
+            () => throw TimeoutException('Get dict language data timeout'),
       );
       final dictData = response.data as DictDataData;
-      debugPrint('Get dict language data success, count: ${dictData.language?.length ?? 0}');
+      debugPrint(
+        'Get dict language data success, count: ${dictData.language?.length ?? 0}',
+      );
       return dictData.language;
     } catch (e) {
       debugPrint('Get dict language data failed: $e');
@@ -114,11 +122,14 @@ class VideoDetailService {
     }
   }
 
-  Future<List<VideoPageDataList>> getSelectVideoPages(Map<String, dynamic> params) async {
+  Future<List<VideoPageDataList>> getSelectVideoPages(
+    Map<String, dynamic> params,
+  ) async {
     try {
       final response = await Api.getVideoPages(params).timeout(
         const Duration(seconds: 10),
-        onTimeout: () => throw TimeoutException('Get select video pages timeout'),
+        onTimeout:
+            () => throw TimeoutException('Get select video pages timeout'),
       );
       return response.data?.list ?? [];
     } catch (e) {
@@ -173,7 +184,8 @@ class VideoDetailService {
 
       final data = await getVideoDetail().timeout(
         const Duration(seconds: 15),
-        onTimeout: () => throw TimeoutException('Video detail initialization timeout'),
+        onTimeout:
+            () => throw TimeoutException('Video detail initialization timeout'),
       );
 
       videoInfoData.lines = data.lines;
@@ -192,21 +204,25 @@ class VideoDetailService {
           final playerLineData = selectedLine?.playLines ?? [];
           if (playerLineData.isNotEmpty) {
             videoList.addAll(
-              playerLineData.map((playLine) => VideoItem(
-                title: playLine.videoName ?? "",
-                url: playLine.file ?? "",
-                subTitle: playLine.subTitle ?? "",
-              )),
+              playerLineData.map(
+                (playLine) => VideoItem(
+                  title: playLine.videoName ?? "",
+                  url: playLine.file ?? "",
+                  subTitle: playLine.subTitle ?? "",
+                ),
+              ),
             );
           }
         }
       } else {
         tabs.add(TDTab(text: "默认线路"));
-        videoList.add(VideoItem(
-          title: videoInfoData.video?.title ?? "视频",
-          url: "",
-          subTitle: "暂无播放链接",
-        ));
+        videoList.add(
+          VideoItem(
+            title: videoInfoData.video?.title ?? "视频",
+            url: "",
+            subTitle: "暂无播放链接",
+          ),
+        );
       }
 
       await Future.wait([
@@ -214,10 +230,7 @@ class VideoDetailService {
         getDictLanguageData().then((data) {}),
         getDictAreaData().then((data) {}),
         getVideoPages(videoInfoData.video?.categoryId ?? 0).then((data) {}),
-      ]).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () => [],
-      );
+      ]).timeout(const Duration(seconds: 10), onTimeout: () => []);
 
       errorListener();
       loadAd();
