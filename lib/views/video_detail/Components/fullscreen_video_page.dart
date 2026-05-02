@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
+import '../../../components/loading.dart';
 import '../../../store/player/player_state_notifier.dart';
 import '../../../utils/video_player_utils.dart';
 
@@ -54,6 +55,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   bool _isPlaying = false;
   bool _showSettings = false;
   bool _isLongPressing = false;
+  bool _isBuffering = false;
   double _previousRate = 1.0;
   final PlayerStateManager _playerStateManager = PlayerStateManager();
   final PipManager _pipManager = PipManager();
@@ -125,6 +127,11 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
       onDurationChanged: (duration) {
         if (mounted && duration > Duration.zero) {
           setState(() => _totalDuration = duration);
+        }
+      },
+      onBufferingChanged: (buffering) {
+        if (mounted) {
+          setState(() => _isBuffering = buffering);
         }
       },
     );
@@ -275,11 +282,13 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
                       ),
                     ),
                   ),
-                  if (_showControls) ...[
+                  if (_showControls && !_isBuffering) ...[
                     _buildTopBar(),
                     _buildMiddleControls(),
                     _buildBottomBar(),
                   ],
+                  if (_isBuffering)
+                    const Center(child: PageLoading()),
                   if (_showSettings) _buildSettingsPanel(),
                   if (_isLongPressing)
                     Positioned(

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
+import '../../../components/loading.dart';
 import '../../../utils/video_player_utils.dart';
 
 class VideoPlayerSettings {
@@ -96,6 +97,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   bool _isDragging = false;
   bool _isPlaying = false;
   bool _isLongPressing = false;
+  bool _isBuffering = false;
   double _previousRate = 1.0;
   final PlayerStateManager _playerStateManager = PlayerStateManager();
   final PipManager _pipManager = PipManager();
@@ -131,6 +133,11 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       },
       onVolumeChanged: (volume) {
         _notifyUpdate();
+      },
+      onBufferingChanged: (buffering) {
+        if (mounted) {
+          setState(() => _isBuffering = buffering);
+        }
       },
     );
   }
@@ -311,7 +318,8 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                 visible: false,
               ),
             ),
-            if (_localShowControls) ...[
+            if (_isBuffering) const Center(child: PageLoading())
+            else if (_localShowControls) ...[
               _buildTopBar(),
               _buildMiddleControls(),
               _buildBottomBar(),

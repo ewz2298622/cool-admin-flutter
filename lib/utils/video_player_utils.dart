@@ -170,6 +170,10 @@ class PlayerStateManager {
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<double>? _rateSubscription;
   StreamSubscription<double>? _volumeSubscription;
+  StreamSubscription<bool>? _bufferingSubscription;
+
+  bool _isBuffering = false;
+  bool get isBuffering => _isBuffering;
 
   /// 设置播放器状态监听
   void setupListeners({
@@ -179,6 +183,7 @@ class PlayerStateManager {
     ValueChanged<Duration>? onPositionChanged,
     ValueChanged<double>? onRateChanged,
     ValueChanged<double>? onVolumeChanged,
+    ValueChanged<bool>? onBufferingChanged,
     bool Function()? shouldUpdatePosition,
   }) {
     _playingSubscription = player.stream.playing.listen((playing) {
@@ -204,6 +209,13 @@ class PlayerStateManager {
     _volumeSubscription = player.stream.volume.listen((volume) {
       onVolumeChanged?.call(volume / 100.0);
     });
+
+    _bufferingSubscription = player.stream.buffering.listen((buffering) {
+      if (_isBuffering != buffering) {
+        _isBuffering = buffering;
+        onBufferingChanged?.call(buffering);
+      }
+    });
   }
 
   /// 取消所有监听
@@ -213,6 +225,7 @@ class PlayerStateManager {
     _positionSubscription?.cancel();
     _rateSubscription?.cancel();
     _volumeSubscription?.cancel();
+    _bufferingSubscription?.cancel();
   }
 }
 
