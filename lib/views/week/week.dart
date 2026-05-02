@@ -8,7 +8,7 @@ import '../../components/loading.dart';
 import '../../components/no_data.dart';
 import '../../entity/dict_data_entity.dart';
 import '../../entity/week_entity.dart';
-import '../../utils/routes.dart';
+import '../../router/routes.dart';
 import '../../utils/video.dart';
 
 /// 周播放时间表页面

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
-import '../../utils/routes.dart';
+import '../../router/routes.dart';
 
 // 定义一个名为 ConnectionError 的有状态组件，用于展示一个包含 WebView 的页面
 class EnvironmentError extends StatefulWidget {

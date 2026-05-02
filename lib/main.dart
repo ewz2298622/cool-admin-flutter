@@ -6,36 +6,18 @@ import 'package:flutter_app/style/color_styles.dart';
 import 'package:flutter_app/utils/ads.dart';
 import 'package:flutter_app/utils/context_manager.dart';
 import 'package:flutter_app/utils/device_info.dart';
+import 'package:flutter_app/router/routes.dart';
 import 'package:flutter_app/utils/share_util.dart';
 import 'package:flutter_app/store/app/app_state.dart';
 import 'package:flutter_app/store/home/color_notifier.dart';
 import 'package:flutter_app/store/theme/theme.dart';
 import 'package:flutter_app/store/user/user.dart';
 import 'package:flutter_app/utils/user.dart';
-import 'package:flutter_app/views/album/album.dart';
-import 'package:flutter_app/views/cash/cash.dart';
-import 'package:flutter_app/views/cash_order/cash_order.dart';
-import 'package:flutter_app/views/connection_error/connection_error.dart';
-import 'package:flutter_app/views/environment_error/environment_error.dart';
-import 'package:flutter_app/views/feedback/feedback.dart';
 import 'package:flutter_app/views/home/home.dart';
-import 'package:flutter_app/views/htmlPage/html.dart';
-import 'package:flutter_app/views/invite/invite.dart';
-import 'package:flutter_app/views/live_detail/live_detail.dart';
-import 'package:flutter_app/views/login/login.dart';
 import 'package:flutter_app/views/my/my.dart';
-import 'package:flutter_app/views/notice/notice.dart';
 import 'package:flutter_app/views/ranking/ranking.dart';
-import 'package:flutter_app/views/score/score.dart';
-import 'package:flutter_app/views/score_order/score_order.dart';
-import 'package:flutter_app/views/search/result/search_result.dart';
-import 'package:flutter_app/views/search/search.dart';
 import 'package:flutter_app/views/service/service.dart';
-import 'package:flutter_app/views/short_drama/short_drama.dart';
-import 'package:flutter_app/views/splash_page/splash_page.dart';
-import 'package:flutter_app/views/video_detail/detail.dart';
 import 'package:flutter_app/views/video_filter/video_filter.dart';
-import 'package:flutter_app/views/week/week.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -49,7 +31,7 @@ import 'components/loading.dart';
 import 'db/manager/db_manager.dart';
 import 'entity/app_ads_entity.dart';
 import 'services/home_prefetch_service.dart';
-import 'utils/routes.dart';
+import 'router/app_pages.dart';
 import 'services/video_filter_prefetch_service.dart';
 
 /**
@@ -214,31 +196,7 @@ class _MyAppState extends State<MyApp> {
               ),
             ),
             initialRoute: AppRoutes.splash,
-            getPages: [
-              GetPage(name: AppRoutes.splash, page: () => SplashPage()),
-              GetPage(name: AppRoutes.main, page: () => MainPage()),
-              GetPage(name: AppRoutes.videoDetail, page: () => VideoDetail()),
-              GetPage(name: AppRoutes.shortDrama, page: () => ShortDrama()),
-              GetPage(name: AppRoutes.notice, page: () => Notice()),
-              GetPage(name: AppRoutes.html, page: () => HtmlPage()),
-              GetPage(name: AppRoutes.week, page: () => WeekPage()),
-              GetPage(name: AppRoutes.search, page: () => VideoSearch()),
-              GetPage(name: AppRoutes.searchResult, page: () => SearchResult()),
-              GetPage(name: AppRoutes.login, page: () => Login()),
-              GetPage(name: AppRoutes.feedback, page: () => FeedbackPage()),
-              GetPage(name: AppRoutes.score, page: () => TaskCenterPage()),
-              GetPage(name: AppRoutes.scoreOrder, page: () => ScoreOrder()),
-              GetPage(name: AppRoutes.connectionError, page: () => ConnectionError()),
-              GetPage(name: AppRoutes.videoAlbum, page: () => VideoAlbum()),
-              GetPage(name: AppRoutes.liveDetail, page: () => Live_Detail()),
-              GetPage(name: AppRoutes.inviteRecord, page: () => InviteCenterPage()),
-              GetPage(name: AppRoutes.cashPage, page: () => CashPage()),
-              GetPage(name: AppRoutes.cashOrder, page: () => CashOrder()),
-              GetPage(
-                name: AppRoutes.environmentError,
-                page: () => EnvironmentError(),
-              ),
-            ],
+            getPages: appGetPages,
             navigatorKey: ContextManager.navigatorKey,
             navigatorObservers: [routeObserver], // 添加路由观察者
           ),
@@ -308,17 +266,11 @@ class _MainPageState extends State<MainPage> {
    * 构建应用视图
    */
   Widget AppView() {
-    bool status = deviceInfo?["checkIsTheDeveloperModeOn"] == true ||
-        deviceInfo?["isphysicaldevice"] == false ||
-        deviceInfo?["deviceUseVPN"] == true;
-    if (false) {
-      return EnvironmentError();
-    } else {
-      return Scaffold(
-        body: IndexedStack(index: _selectedIndex, children: _pages),
-        bottomNavigationBar: BottomNavigationBar(
-          items: [
-            BottomNavigationBarItem(
+    return Scaffold(
+      body: IndexedStack(index: _selectedIndex, children: _pages),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(
               activeIcon: SvgPicture.asset(
                 'assets/images/sy_ic01h.svg',
                 width: 25,
@@ -394,7 +346,6 @@ class _MainPageState extends State<MainPage> {
           selectedFontSize: 14,
         ),
       );
-    }
   }
 
   /**

@@ -18,7 +18,7 @@ import '../../entity/login_entity.dart';
 import '../../entity/notice_Info_entity.dart';
 import '../../entity/user_info_entity.dart';
 import '../../style/layout.dart';
-import '../../utils/routes.dart';
+import '../../router/routes.dart';
 import '../../store/user/user.dart';
 
 /// 登录页面常量定义

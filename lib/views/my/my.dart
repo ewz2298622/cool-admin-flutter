@@ -23,7 +23,7 @@ import '../../utils/ads.dart';
 import '../../utils/ads_config.dart';
 import '../../utils/bus/bus.dart';
 import '../../utils/bus/constant.dart';
-import '../../utils/routes.dart';
+import '../../router/routes.dart';
 import '../../utils/user.dart';
 import '../history/history.dart';
 import '../login/login.dart';

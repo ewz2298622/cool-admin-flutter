@@ -14,7 +14,7 @@ import '../../entity/video_hot_words_entity.dart';
 import '../../entity/video_rank_entity.dart';
 import '../../style/layout.dart';
 import '../../utils/color.dart';
-import '../../utils/routes.dart';
+import '../../router/routes.dart';
 import '../../utils/video.dart';
 
 /// 渐变标签指示器

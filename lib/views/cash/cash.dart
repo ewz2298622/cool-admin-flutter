@@ -8,7 +8,7 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 import '../../api/api.dart';
 import '../../components/loading.dart';
 import '../../entity/score_withdrawal_config_entity.dart';
-import '../../utils/routes.dart';
+import '../../router/routes.dart';
 
 /// 现金页面
 class CashPage extends StatefulWidget {

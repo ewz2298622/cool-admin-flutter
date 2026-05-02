@@ -27,7 +27,7 @@ import '../../entity/dict_data_entity.dart';
 import '../../entity/dict_info_list_entity.dart';
 import '../../entity/notice_Info_entity.dart';
 import '../../entity/swiper_entity.dart';
-import '../../utils/routes.dart';
+import '../../router/routes.dart';
 import '../../services/home_prefetch_service.dart';
 import '../../style/layout.dart';
 import '../../utils/app_updater.dart';

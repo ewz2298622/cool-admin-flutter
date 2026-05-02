@@ -9,7 +9,7 @@ import '../../api/api.dart';
 import '../../entity/app_ads_entity.dart';
 import '../../utils/ads.dart';
 import '../../utils/ads_config.dart';
-import '../../utils/routes.dart';
+import '../../router/routes.dart';
 
 /// 描述：开屏广告页
 /// @author guozi
