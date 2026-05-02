@@ -6,11 +6,13 @@ import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
+import '../../../store/player/player_state_notifier.dart';
 import '../../../utils/video_player_utils.dart';
 
 class FullScreenVideoPage extends StatefulWidget {
   final Player player;
   final VideoController videoController;
+  final PlayerStateNotifier playerStateNotifier;
   final VoidCallback? onSettingsPressed;
   final VoidCallback? onCastingPressed;
   final VoidCallback? onPipPressed;
@@ -18,9 +20,6 @@ class FullScreenVideoPage extends StatefulWidget {
   final VoidCallback? onNextVideo;
   final VoidCallback? onPreviousVideo;
   final String videoTitle;
-  final double videoRate;
-  final int currentVideoFit;
-  final Function(int) onVideoFitChanged;
   final List<double> rateList;
   final List<String> fitModes;
 
@@ -28,6 +27,7 @@ class FullScreenVideoPage extends StatefulWidget {
     super.key,
     required this.player,
     required this.videoController,
+    required this.playerStateNotifier,
     this.onSettingsPressed,
     this.onCastingPressed,
     this.onPipPressed,
@@ -35,9 +35,6 @@ class FullScreenVideoPage extends StatefulWidget {
     this.onNextVideo,
     this.onPreviousVideo,
     this.videoTitle = '',
-    this.videoRate = 1.0,
-    this.currentVideoFit = 0,
-    required this.onVideoFitChanged,
     required this.rateList,
     required this.fitModes,
   });
@@ -55,15 +52,19 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   Duration _currentPosition = Duration.zero;
   Duration _totalDuration = Duration.zero;
   bool _isPlaying = false;
-  double _currentRate = 1.0;
   bool _showSettings = false;
-  double _selectedVolume = 1.0;
-  double _selectedBrightness = 1.0;
-  int _videoFit = 0;
-  double _skipOpening = 0.0;
-  double _skipEnding = 0.0;
+  bool _isLongPressing = false;
+  double _previousRate = 1.0;
   final PlayerStateManager _playerStateManager = PlayerStateManager();
   final PipManager _pipManager = PipManager();
+
+  int get _videoFit => widget.playerStateNotifier.videoFit;
+  double get _volume => widget.playerStateNotifier.volume;
+  double get _brightness => widget.playerStateNotifier.brightness;
+  double get _skipOpening => widget.playerStateNotifier.skipOpening;
+  double get _skipEnding => widget.playerStateNotifier.skipEnding;
+  double get _videoRate => widget.playerStateNotifier.videoRate;
+  double get _longPressRate => widget.playerStateNotifier.longPressRate;
 
   @override
   void initState() {
@@ -106,9 +107,6 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
     _isPlaying = widget.player.state.playing;
     _currentPosition = widget.player.state.position;
     _totalDuration = widget.player.state.duration;
-    _currentRate = widget.player.state.rate;
-    _selectedVolume = widget.player.state.volume / 100.0;
-    _videoFit = widget.currentVideoFit;
   }
 
   void _setupListeners() {
@@ -127,16 +125,6 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
       onDurationChanged: (duration) {
         if (mounted && duration > Duration.zero) {
           setState(() => _totalDuration = duration);
-        }
-      },
-      onRateChanged: (rate) {
-        if (mounted) {
-          setState(() => _currentRate = rate);
-        }
-      },
-      onVolumeChanged: (volume) {
-        if (mounted) {
-          setState(() => _selectedVolume = volume);
         }
       },
     );
@@ -253,38 +241,72 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: GestureDetector(
-        onTap: _onTapVideo,
-        onDoubleTap: _togglePlayPause,
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          color: Colors.black,
-          child: Stack(
-            children: [
-              Center(
-                child: Video(
-                  controller: widget.videoController,
-                  fill: Colors.black,
-                  fit: _pipManager.isInPipMode ? BoxFit.fill : VideoPlayerUtils.getFullScreenBoxFit(_videoFit),
-                  controls: null,
-                  subtitleViewConfiguration: const SubtitleViewConfiguration(
-                    visible: false,
+    return ListenableBuilder(
+      listenable: widget.playerStateNotifier,
+      builder: (context, child) {
+        return Scaffold(
+          backgroundColor: Colors.black,
+          body: GestureDetector(
+            onTap: _onTapVideo,
+            onDoubleTap: _togglePlayPause,
+            onLongPressStart: (_) {
+              _previousRate = widget.player.state.rate;
+              widget.player.setRate(_longPressRate);
+              setState(() => _isLongPressing = true);
+            },
+            onLongPressEnd: (_) {
+              widget.player.setRate(_previousRate);
+              setState(() => _isLongPressing = false);
+            },
+            child: Container(
+              width: double.infinity,
+              height: double.infinity,
+              color: Colors.black,
+              child: Stack(
+                children: [
+                  Center(
+                    child: Video(
+                      controller: widget.videoController,
+                      fill: Colors.black,
+                      fit: _pipManager.isInPipMode ? BoxFit.fill : VideoPlayerUtils.getFullScreenBoxFit(_videoFit),
+                      controls: null,
+                      subtitleViewConfiguration: const SubtitleViewConfiguration(
+                        visible: false,
+                      ),
+                    ),
                   ),
-                ),
+                  if (_showControls) ...[
+                    _buildTopBar(),
+                    _buildMiddleControls(),
+                    _buildBottomBar(),
+                  ],
+                  if (_showSettings) _buildSettingsPanel(),
+                  if (_isLongPressing)
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          '${_longPressRate}x',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
-              if (_showControls) ...[
-                _buildTopBar(),
-                _buildMiddleControls(),
-                _buildBottomBar(),
-              ],
-              if (_showSettings) _buildSettingsPanel(),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -474,7 +496,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
               child: GestureDetector(
               onTap: widget.onRateChanged,
               child: Text(
-                '${_currentRate}x',
+                '${_videoRate}x',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 13,
@@ -582,34 +604,34 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
                       children: [
                         _buildSliderRow(
                           '音量调节',
-                          _selectedVolume,
+                          _volume,
                           (v) {
-                            setState(() => _selectedVolume = v);
+                            widget.playerStateNotifier.setVolume(v);
                             widget.player.setVolume(v * 100);
                           },
                         ),
                         const SizedBox(height: 16),
                         _buildSliderRow(
                           '屏幕亮度',
-                          _selectedBrightness,
+                          _brightness,
                           (v) {
-                            setState(() => _selectedBrightness = v);
+                            widget.playerStateNotifier.setBrightness(v);
                           },
                         ),
                         const SizedBox(height: 16),
                         _buildSliderRow(
                           '跳过片头',
                           _skipOpening,
-                          (v) => setState(() => _skipOpening = v),
-                          max: 120,
+                          (v) => widget.playerStateNotifier.setSkipOpening(v),
+                          max: 300,
                           isTime: true,
                         ),
                         const SizedBox(height: 16),
                         _buildSliderRow(
                           '跳过片尾',
                           _skipEnding,
-                          (v) => setState(() => _skipEnding = v),
-                          max: 120,
+                          (v) => widget.playerStateNotifier.setSkipEnding(v),
+                          max: 300,
                           isTime: true,
                         ),
                         const SizedBox(height: 20),
@@ -629,7 +651,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
                             for (final rate in widget.rateList)
                               GestureDetector(
                                 onTap: () {
-                                  setState(() => _currentRate = rate);
+                                  widget.playerStateNotifier.setVideoRate(rate);
                                   widget.player.setRate(rate);
                                 },
                                 child: Container(
@@ -639,7 +661,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
                                   ),
                                   decoration: BoxDecoration(
                                     color:
-                                        _currentRate == rate
+                                        _videoRate == rate
                                             ? const Color(0xFFE53935)
                                             : Colors.white12,
                                     borderRadius: BorderRadius.circular(16),
@@ -672,8 +694,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
                             for (int i = 0; i < widget.fitModes.length; i++)
                               GestureDetector(
                                 onTap: () {
-                                  setState(() => _videoFit = i);
-                                  widget.onVideoFitChanged(i);
+                                  widget.playerStateNotifier.setVideoFit(i);
                                 },
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
@@ -758,16 +779,8 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   }
 
   void _resetToDefaults() {
-    setState(() {
-      _selectedVolume = 1.0;
-      _selectedBrightness = 1.0;
-      _videoFit = 0;
-      _skipOpening = 0.0;
-      _skipEnding = 0.0;
-      _currentRate = 1.0;
-    });
+    widget.playerStateNotifier.resetToDefaults();
     widget.player.setVolume(100);
     widget.player.setRate(1.0);
-    widget.onVideoFitChanged(0);
   }
 }

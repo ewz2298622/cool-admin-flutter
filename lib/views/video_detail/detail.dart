@@ -545,13 +545,11 @@ class _Video_DetailState extends State<Video_Detail>
             (context) => FullScreenVideoPage(
               player: player,
               videoController: videoController,
+              playerStateNotifier: _playerStateNotifier,
               videoTitle: videoInfoData.video?.title ?? '',
-              videoRate: _playerStateNotifier.videoRate,
-              currentVideoFit: _playerStateNotifier.videoFit,
               rateList: _rateList,
               fitModes: _fitModes,
               onCastingPressed: tvDevice,
-              onVideoFitChanged: (fit) => _playerStateNotifier.setVideoFit(fit),
               onRateChanged: () {
                 int currentIndex = _rateList.indexOf(
                   _playerStateNotifier.videoRate,
