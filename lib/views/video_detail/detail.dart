@@ -38,14 +38,14 @@ class VideoItem {
   VideoItem({required this.title, required this.url, required this.subTitle});
 }
 
-class Video_Detail extends StatefulWidget {
-  const Video_Detail({super.key});
+class VideoDetail extends StatefulWidget {
+  const VideoDetail({super.key});
 
   @override
-  _Video_DetailState createState() => _Video_DetailState();
+  _VideoDetailState createState() => _VideoDetailState();
 }
 
-class _Video_DetailState extends State<Video_Detail>
+class _VideoDetailState extends State<VideoDetail>
     with RouteAware, WidgetsBindingObserver {
   final ValueNotifier<int> currentLine = ValueNotifier<int>(0);
   final ValueNotifier<int> currentPlay = ValueNotifier<int>(0);
@@ -53,7 +53,7 @@ class _Video_DetailState extends State<Video_Detail>
   late final CastingHelper _castingHelper;
   StateSetter? showModalBottomSheetListSate;
 
-  var _futureBuilderFuture;
+  Future<String>? _futureBuilderFuture;
   VideoDetailData? videoData;
   List<VideoPageDataList> videoPageData = [];
   List<VideoPageDataList> selectVideoPageData = [];
@@ -238,7 +238,7 @@ class _Video_DetailState extends State<Video_Detail>
 
   void _errorListener() {
     player.stream.error.listen((error) {
-      if (error != null) {
+      if (error.isNotEmpty) {
         debugPrint("播放失败: $error");
         if (videoInfoData.lines != null &&
             videoInfoData.lines!.isNotEmpty &&
@@ -789,7 +789,7 @@ class _Video_DetailState extends State<Video_Detail>
           Container(
             margin: const EdgeInsets.only(top: 200),
             child: DetailContentView(
-              future: _futureBuilderFuture,
+              future: _futureBuilderFuture!,
               videoInfoData: videoInfoData,
               area: area,
               videoCategory: videoCategory,

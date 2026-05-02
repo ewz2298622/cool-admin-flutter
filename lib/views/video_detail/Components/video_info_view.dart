@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../../../../api/api.dart';
 import '../../../../entity/video_page_entity.dart';

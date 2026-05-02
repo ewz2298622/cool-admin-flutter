@@ -217,7 +217,7 @@ class _MyAppState extends State<MyApp> {
             getPages: [
               GetPage(name: AppRoutes.splash, page: () => SplashPage()),
               GetPage(name: AppRoutes.main, page: () => MainPage()),
-              GetPage(name: AppRoutes.videoDetail, page: () => Video_Detail()),
+              GetPage(name: AppRoutes.videoDetail, page: () => VideoDetail()),
               GetPage(name: AppRoutes.shortDrama, page: () => ShortDrama()),
               GetPage(name: AppRoutes.notice, page: () => Notice()),
               GetPage(name: AppRoutes.html, page: () => HtmlPage()),

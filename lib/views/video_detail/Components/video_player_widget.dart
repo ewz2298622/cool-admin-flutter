@@ -258,10 +258,6 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     widget.onNextVideo?.call();
   }
 
-  void _playPrevious() {
-    widget.onPreviousVideo?.call();
-  }
-
   void _togglePlayPause() {
     if (widget.onPlayPause != null) {
       widget.onPlayPause!();
@@ -361,7 +357,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+            colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent],
           ),
         ),
         child: Row(
@@ -441,7 +437,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
-            colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+            colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent],
           ),
         ),
         child: Row(
@@ -534,7 +530,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                 Container(
                   height: 2,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(1),
                   ),
                 ),
