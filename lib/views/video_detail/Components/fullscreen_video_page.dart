@@ -59,6 +59,8 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   double _previousRate = 1.0;
   final PlayerStateManager _playerStateManager = PlayerStateManager();
   final PipManager _pipManager = PipManager();
+  bool _hasSkippedOpening = false;
+  bool _hasTriggeredEnding = false;
 
   int get _videoFit => widget.playerStateNotifier.videoFit;
   double get _volume => widget.playerStateNotifier.volume;
@@ -122,11 +124,13 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
       onPositionChanged: (position) {
         if (mounted && !_userIsDraggingSlider) {
           setState(() => _currentPosition = position);
+          _handleSkipLogic(position);
         }
       },
       onDurationChanged: (duration) {
         if (mounted && duration > Duration.zero) {
           setState(() => _totalDuration = duration);
+          _resetSkipFlags();
         }
       },
       onBufferingChanged: (buffering) {
@@ -135,6 +139,31 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
         }
       },
     );
+  }
+
+  void _resetSkipFlags() {
+    _hasSkippedOpening = false;
+    _hasTriggeredEnding = false;
+  }
+
+  void _handleSkipLogic(Duration position) {
+    if (_skipOpening > 0 && !_hasSkippedOpening) {
+      final openingSeconds = _skipOpening;
+      if (position.inSeconds < openingSeconds.toInt()) {
+        widget.player.seek(Duration(seconds: openingSeconds.toInt()));
+        _hasSkippedOpening = true;
+      }
+    }
+
+    if (_skipEnding > 0 && _totalDuration.inSeconds > 0 && !_hasTriggeredEnding) {
+      final endingSeconds = _skipEnding;
+      final remainingSeconds = _totalDuration.inSeconds - position.inSeconds;
+      
+      if (remainingSeconds <= endingSeconds.toInt()) {
+        _hasTriggeredEnding = true;
+        widget.onNextVideo?.call();
+      }
+    }
   }
 
   @override

@@ -101,6 +101,8 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   double _previousRate = 1.0;
   final PlayerStateManager _playerStateManager = PlayerStateManager();
   final PipManager _pipManager = PipManager();
+  bool _hasSkippedOpening = false;
+  bool _hasTriggeredEnding = false;
 
   @override
   void initState() {
@@ -121,11 +123,13 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       onDurationChanged: (duration) {
         if (duration > Duration.zero && _totalDuration != duration) {
           setState(() => _totalDuration = duration);
+          _resetSkipFlags();
         }
       },
       onPositionChanged: (position) {
         if (mounted && !_isDragging) {
           setState(() => _currentPosition = position);
+          _handleSkipLogic(position);
         }
       },
       onRateChanged: (rate) {
@@ -140,6 +144,31 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         }
       },
     );
+  }
+
+  void _resetSkipFlags() {
+    _hasSkippedOpening = false;
+    _hasTriggeredEnding = false;
+  }
+
+  void _handleSkipLogic(Duration position) {
+    if (widget.skipOpening > 0 && !_hasSkippedOpening) {
+      final openingSeconds = widget.skipOpening;
+      if (position.inSeconds < openingSeconds.toInt()) {
+        widget.player.seek(Duration(seconds: openingSeconds.toInt()));
+        _hasSkippedOpening = true;
+      }
+    }
+
+    if (widget.skipEnding > 0 && _totalDuration.inSeconds > 0 && !_hasTriggeredEnding) {
+      final endingSeconds = widget.skipEnding;
+      final remainingSeconds = _totalDuration.inSeconds - position.inSeconds;
+      
+      if (remainingSeconds <= endingSeconds.toInt()) {
+        _hasTriggeredEnding = true;
+        widget.onNextVideo?.call();
+      }
+    }
   }
 
   void _notifyUpdate() {
