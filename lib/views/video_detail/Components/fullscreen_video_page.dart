@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:screen_brightness/screen_brightness.dart';
 
 import '../../../components/loading.dart';
 import '../../../store/player/player_state_notifier.dart';
@@ -59,8 +60,10 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   double _previousRate = 1.0;
   final PlayerStateManager _playerStateManager = PlayerStateManager();
   final PipManager _pipManager = PipManager();
+  final ScreenBrightness _screenBrightness = ScreenBrightness();
   bool _hasSkippedOpening = false;
   bool _hasTriggeredEnding = false;
+  double _originalBrightness = 0.0;
 
   int get _videoFit => widget.playerStateNotifier.videoFit;
   double get _volume => widget.playerStateNotifier.volume;
@@ -78,6 +81,18 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
     _initializeState();
     _setupListeners();
     _initPip();
+    _initBrightness();
+  }
+
+  Future<void> _initBrightness() async {
+    try {
+      _originalBrightness = await _screenBrightness.current;
+      if (_brightness > 0 && _brightness <= 1.0) {
+        await _screenBrightness.setScreenBrightness(_brightness);
+      }
+    } catch (e) {
+      debugPrint('初始化亮度失败: $e');
+    }
   }
 
   Future<void> _initPip() async {
@@ -168,11 +183,30 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
 
   @override
   void dispose() {
+    _resetBrightness();
     _hideManager.dispose();
     _playerStateManager.dispose();
     _pipManager.dispose();
     _exitFullScreenMode();
     super.dispose();
+  }
+
+  Future<void> _resetBrightness() async {
+    try {
+      if (_originalBrightness > 0) {
+        await _screenBrightness.resetScreenBrightness();
+      }
+    } catch (e) {
+      debugPrint('重置亮度失败: $e');
+    }
+  }
+
+  Future<void> _setBrightness(double value) async {
+    try {
+      await _screenBrightness.setScreenBrightness(value);
+    } catch (e) {
+      debugPrint('设置亮度失败: $e');
+    }
   }
 
   void _enterFullScreenMode() {
@@ -654,6 +688,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
                           _brightness,
                           (v) {
                             widget.playerStateNotifier.setBrightness(v);
+                            _setBrightness(v);
                           },
                         ),
                         const SizedBox(height: 16),

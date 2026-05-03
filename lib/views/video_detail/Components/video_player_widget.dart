@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:screen_brightness/screen_brightness.dart';
 
 import '../../../components/loading.dart';
 import '../../../utils/video_player_utils.dart';
@@ -101,8 +102,10 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   double _previousRate = 1.0;
   final PlayerStateManager _playerStateManager = PlayerStateManager();
   final PipManager _pipManager = PipManager();
+  final ScreenBrightness _screenBrightness = ScreenBrightness();
   bool _hasSkippedOpening = false;
   bool _hasTriggeredEnding = false;
+  double _originalBrightness = 0.0;
 
   @override
   void initState() {
@@ -112,6 +115,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     _currentPosition = widget.player.state.position;
     _isPlaying = widget.player.state.playing;
     _initPip();
+    _initBrightness();
     _notifyUpdate();
     _playerStateManager.setupListeners(
       player: widget.player,
@@ -144,6 +148,17 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         }
       },
     );
+  }
+
+  Future<void> _initBrightness() async {
+    try {
+      _originalBrightness = await _screenBrightness.current;
+      if (widget.brightness > 0 && widget.brightness <= 1.0) {
+        await _screenBrightness.setScreenBrightness(widget.brightness);
+      }
+    } catch (e) {
+      debugPrint('初始化亮度失败: $e');
+    }
   }
 
   void _resetSkipFlags() {
@@ -220,20 +235,41 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     if (widget.videoRate != oldWidget.videoRate) {
       widget.player.setRate(widget.videoRate);
     }
+    if (widget.brightness != oldWidget.brightness) {
+      _setBrightness(widget.brightness);
+    }
     if (widget.skipOpening != oldWidget.skipOpening ||
         widget.skipEnding != oldWidget.skipEnding ||
-        widget.brightness != oldWidget.brightness ||
         widget.videoFit != oldWidget.videoFit) {
       _notifyUpdate();
     }
   }
 
+  Future<void> _setBrightness(double value) async {
+    try {
+      await _screenBrightness.setScreenBrightness(value);
+    } catch (e) {
+      debugPrint('设置亮度失败: $e');
+    }
+  }
+
   @override
   void dispose() {
+    _resetBrightness();
     _hideManager.dispose();
     _playerStateManager.dispose();
     _pipManager.dispose();
     super.dispose();
+  }
+
+  Future<void> _resetBrightness() async {
+    try {
+      if (_originalBrightness > 0) {
+        await _screenBrightness.resetScreenBrightness();
+      }
+    } catch (e) {
+      debugPrint('重置亮度失败: $e');
+    }
   }
 
   void _startHideTimer() {
