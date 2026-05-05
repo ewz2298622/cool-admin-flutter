@@ -9,6 +9,9 @@ import 'package:screen_brightness/screen_brightness.dart';
 import '../../../components/loading.dart';
 import '../../../utils/video_player_utils.dart';
 
+import '../../../components/danmaku_view_components.dart';
+import '../../../data/danmaku_mock_data.dart' as mock_data;
+
 class VideoPlayerSettings {
   final int videoFit;
   final double videoRate;
@@ -106,6 +109,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   bool _hasSkippedOpening = false;
   bool _hasTriggeredEnding = false;
   double _originalBrightness = 0.0;
+  List<mock_data.DanmakuItem> _danmakuList = [];
 
   @override
   void initState() {
@@ -148,6 +152,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         }
       },
     );
+    _loadDanmakuData();
   }
 
   Future<void> _initBrightness() async {
@@ -158,6 +163,13 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       }
     } catch (e) {
       debugPrint('初始化亮度失败: $e');
+    }
+  }
+
+  Future<void> _loadDanmakuData() async {
+    final list = await mock_data.DanmakuMockData.loadDanmakuData();
+    if (mounted) {
+      setState(() => _danmakuList = list);
     }
   }
 
@@ -175,10 +187,12 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       }
     }
 
-    if (widget.skipEnding > 0 && _totalDuration.inSeconds > 0 && !_hasTriggeredEnding) {
+    if (widget.skipEnding > 0 &&
+        _totalDuration.inSeconds > 0 &&
+        !_hasTriggeredEnding) {
       final endingSeconds = widget.skipEnding;
       final remainingSeconds = _totalDuration.inSeconds - position.inSeconds;
-      
+
       if (remainingSeconds <= endingSeconds.toInt()) {
         _hasTriggeredEnding = true;
         widget.onNextVideo?.call();
@@ -341,9 +355,9 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       onPipSuccess: () => widget.player.play(),
       onPipFailed: (message) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(message)));
           widget.onPipModeChanged?.call(false);
         }
       },
@@ -353,60 +367,69 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: _onTapVideo,
-      onDoubleTap: _togglePlayPause,
-      onLongPressStart: (_) {
-        _previousRate = widget.player.state.rate;
-        widget.player.setRate(widget.longPressRate);
-        setState(() => _isLongPressing = true);
-      },
-      onLongPressEnd: (_) {
-        widget.player.setRate(_previousRate);
-        setState(() => _isLongPressing = false);
-      },
-      child: Container(
-        width: double.infinity,
+      child: DanmakuViewComponents(
+        danmakuList: _danmakuList,
         height: 200,
-        color: Colors.black,
-        child: Stack(
-          children: [
-            Video(
-              controller: widget.videoController,
-              fill: Colors.black,
-              fit: _pipManager.isInPipMode ? BoxFit.fill : VideoPlayerUtils.getBoxFit(widget.videoFit),
-              controls: null,
-              subtitleViewConfiguration: const SubtitleViewConfiguration(
-                visible: false,
+        child: GestureDetector(
+          onTap: _onTapVideo,
+          onDoubleTap: _togglePlayPause,
+          onLongPressStart: (_) {
+            _previousRate = widget.player.state.rate;
+            widget.player.setRate(widget.longPressRate);
+            setState(() => _isLongPressing = true);
+          },
+          onLongPressEnd: (_) {
+            widget.player.setRate(_previousRate);
+            setState(() => _isLongPressing = false);
+          },
+          child: Stack(
+            children: [
+              Video(
+                controller: widget.videoController,
+                fill: Colors.black,
+                fit:
+                    _pipManager.isInPipMode
+                        ? BoxFit.fill
+                        : VideoPlayerUtils.getBoxFit(widget.videoFit),
+                controls: null,
+                subtitleViewConfiguration: const SubtitleViewConfiguration(
+                  visible: false,
+                ),
               ),
-            ),
-            if (_isBuffering) const Center(child: PageLoading())
-            else if (_localShowControls) ...[
-              _buildTopBar(),
-              _buildMiddleControls(),
-              _buildBottomBar(),
-            ],
-            if (_isLongPressing)
-              Positioned(
-                top: 12,
-                right: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    '${widget.longPressRate}x',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+              if (_isBuffering)
+                const Center(child: PageLoading())
+              else if (_localShowControls) ...[
+                _buildTopBar(),
+                _buildMiddleControls(),
+                _buildBottomBar(),
+              ],
+              if (_isLongPressing)
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      '${widget.longPressRate}x',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
+        showDanmaku: true,
       ),
     );
   }
@@ -480,12 +503,20 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         children: [
           GestureDetector(
             onTap: _skipBackward,
-            child: const Icon(CupertinoIcons.gobackward_10, color: Colors.white, size: 34),
+            child: const Icon(
+              CupertinoIcons.gobackward_10,
+              color: Colors.white,
+              size: 34,
+            ),
           ),
           const SizedBox(width: 60),
           GestureDetector(
             onTap: _skipForward,
-            child: const Icon(CupertinoIcons.goforward_10, color: Colors.white, size: 34),
+            child: const Icon(
+              CupertinoIcons.goforward_10,
+              color: Colors.white,
+              size: 34,
+            ),
           ),
         ],
       ),
@@ -511,7 +542,9 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
               padding: EdgeInsets.zero,
               onPressed: _togglePlayPause,
               child: Icon(
-                _isPlaying ? CupertinoIcons.pause_fill : CupertinoIcons.play_fill,
+                _isPlaying
+                    ? CupertinoIcons.pause_fill
+                    : CupertinoIcons.play_fill,
                 color: Colors.white,
                 size: 24,
               ),
@@ -575,7 +608,8 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
               final double localDx = details.localPosition.dx.clamp(0.0, width);
               final double progress = localDx / width;
               final Duration seekPosition = Duration(
-                milliseconds: (_totalDuration.inMilliseconds * progress).round(),
+                milliseconds:
+                    (_totalDuration.inMilliseconds * progress).round(),
               );
               _updateSeekPosition(seekPosition);
             }
@@ -609,10 +643,12 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   }
 
   Widget _buildProgressIndicator() {
-    final displayPosition = _isDragging ? _pendingSeekPosition : _currentPosition;
-    final progress = _totalDuration.inMilliseconds > 0
-        ? displayPosition.inMilliseconds / _totalDuration.inMilliseconds
-        : 0.0;
+    final displayPosition =
+        _isDragging ? _pendingSeekPosition : _currentPosition;
+    final progress =
+        _totalDuration.inMilliseconds > 0
+            ? displayPosition.inMilliseconds / _totalDuration.inMilliseconds
+            : 0.0;
 
     return Stack(
       children: [

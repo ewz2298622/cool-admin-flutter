@@ -1,0 +1,182 @@
+[
+  {
+    "time": 3,
+    "text": "来了来了",
+    "type": "scroll",
+    "color": "#FFFFFF"
+  },
+  {
+    "time": 5,
+    "text": "哈哈哈哈哈",
+    "type": "scroll",
+    "color": "#FF6B6B"
+  },
+  {
+    "time": 8,
+    "text": "太好看了！",
+    "type": "scroll",
+    "color": "#4ECDC4"
+  },
+  {
+    "time": 12,
+    "text": "前方高能",
+    "type": "top",
+    "color": "#FFE66D"
+  },
+  {
+    "time": 15,
+    "text": "666",
+    "type": "scroll",
+    "color": "#95E1D3"
+  },
+  {
+    "time": 18,
+    "text": "awsl",
+    "type": "scroll",
+    "color": "#F38181"
+  },
+  {
+    "time": 22,
+    "text": "名场面！",
+    "type": "top",
+    "color": "#AA96DA"
+  },
+  {
+    "time": 25,
+    "text": "泪目了",
+    "type": "scroll",
+    "color": "#FCBAD3"
+  },
+  {
+    "time": 28,
+    "text": "爷青回",
+    "type": "scroll",
+    "color": "#FFFFD2"
+  },
+  {
+    "time": 32,
+    "text": "笑死我了",
+    "type": "scroll",
+    "color": "#A8E6CF"
+  },
+  {
+    "time": 35,
+    "text": "这也太帅了吧",
+    "type": "scroll",
+    "color": "#FFD3B6"
+  },
+  {
+    "time": 38,
+    "text": "我哭了",
+    "type": "bottom",
+    "color": "#FFAAA5"
+  },
+  {
+    "time": 42,
+    "text": "绝了",
+    "type": "scroll",
+    "color": "#FF8B94"
+  },
+  {
+    "time": 45,
+    "text": "这也太可爱了吧",
+    "type": "scroll",
+    "color": "#FF6F91"
+  },
+  {
+    "time": 48,
+    "text": "啊啊啊啊啊",
+    "type": "scroll",
+    "color": "#FF9671"
+  },
+  {
+    "time": 52,
+    "text": "我没了",
+    "type": "scroll",
+    "color": "#FFC75F"
+  },
+  {
+    "time": 55,
+    "text": "神仙打架",
+    "type": "top",
+    "color": "#F9F871"
+  },
+  {
+    "time": 58,
+    "text": "太燃了",
+    "type": "scroll",
+    "color": "#D65DB1"
+  },
+  {
+    "time": 62,
+    "text": "这也太美了吧",
+    "type": "scroll",
+    "color": "#FF6F61"
+  },
+  {
+    "time": 65,
+    "text": "我直接好家伙",
+    "type": "scroll",
+    "color": "#00C9A7"
+  },
+  {
+    "time": 68,
+    "text": "破防了",
+    "type": "scroll",
+    "color": "#FFB6B9"
+  },
+  {
+    "time": 72,
+    "text": "这也太厉害了吧",
+    "type": "scroll",
+    "color": "#FA7070"
+  },
+  {
+    "time": 75,
+    "text": "我直接泪目",
+    "type": "scroll",
+    "color": "#845EC2"
+  },
+  {
+    "time": 78,
+    "text": "这也太绝了吧",
+    "type": "scroll",
+    "color": "#D65DB1"
+  },
+  {
+    "time": 82,
+    "text": "我直接跪了",
+    "type": "scroll",
+    "color": "#FF6F91"
+  },
+  {
+    "time": 85,
+    "text": "这也太强了吧",
+    "type": "scroll",
+    "color": "#00C9A7"
+  },
+  {
+    "time": 88,
+    "text": "我直接傻了",
+    "type": "scroll",
+    "color": "#FFC75F"
+  },
+  {
+    "time": 92,
+    "text": "这也太牛了吧",
+    "type": "scroll",
+    "color": "#F9F871"
+  },
+  {
+    "time": 95,
+    "text": "我直接惊了",
+    "type": "scroll",
+    "color": "#FF9671"
+  },
+  {
+    "time": 98,
+    "text": "这也太秀了吧",
+    "type": "scroll",
+    "color": "#FFD3B6"
+  }
+]

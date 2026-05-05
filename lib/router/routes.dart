@@ -22,4 +22,5 @@ class AppRoutes {
   static const String cashPage = '/cashPage';
   static const String cashOrder = '/cash_order';
   static const String environmentError = '/environment_error';
+    static const String danmu = '/danmu';
 }

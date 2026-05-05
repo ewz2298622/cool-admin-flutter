@@ -684,6 +684,8 @@ class MyState extends State<My>
                   ),
                   "意见反馈",
                 ),
+                //跳转按钮
+                ElevatedButton(onPressed: () => Get.toNamed(AppRoutes.danmu), child: Text("111"))
               ],
             ),
           ],
