@@ -370,6 +370,8 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       child: DanmakuViewComponents(
         danmakuList: _danmakuList,
         height: 200,
+        paused: !_isPlaying,
+        currentPosition: _currentPosition,
         child: GestureDetector(
           onTap: _onTapVideo,
           onDoubleTap: _togglePlayPause,

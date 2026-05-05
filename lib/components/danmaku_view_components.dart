@@ -13,6 +13,8 @@ class DanmakuViewComponents extends StatefulWidget {
   final DanmakuOption? danmakuOption;
   final double? width;
   final double? height;
+  final bool paused;
+  final Duration currentPosition;
 
   const DanmakuViewComponents({
     super.key,
@@ -23,6 +25,8 @@ class DanmakuViewComponents extends StatefulWidget {
     this.danmakuOption,
     this.width,
     this.height,
+    this.paused = false,
+    this.currentPosition = Duration.zero,
   });
 
   @override
@@ -55,6 +59,36 @@ class _DanmakuViewState extends State<DanmakuViewComponents> {
         _controller?.resume();
       } else {
         _controller?.pause();
+      }
+    }
+    if (widget.paused != oldWidget.paused) {
+      if (widget.paused) {
+        _controller?.pause();
+        _stopTimer();
+      } else {
+        _controller?.resume();
+        _startPlay();
+      }
+    }
+    if (widget.currentPosition != oldWidget.currentPosition) {
+      final newMs = widget.currentPosition.inMilliseconds;
+      final oldMs = oldWidget.currentPosition.inMilliseconds;
+      if ((newMs - oldMs).abs() > 2000) {
+        _seekTo(newMs);
+      }
+    }
+  }
+
+  void _seekTo(int milliseconds) {
+    _currentSecond = milliseconds ~/ 1000;
+    _lastDanmakuIndex = 0;
+    _controller?.clear();
+    while (_lastDanmakuIndex < _danmakuList.length) {
+      final nextDanmaku = _danmakuList[_lastDanmakuIndex];
+      if (nextDanmaku.time <= milliseconds) {
+        _lastDanmakuIndex++;
+      } else {
+        break;
       }
     }
   }

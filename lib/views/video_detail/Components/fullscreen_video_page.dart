@@ -8,6 +8,8 @@ import 'package:media_kit_video/media_kit_video.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 
 import '../../../components/loading.dart';
+import '../../../components/danmaku_view_components.dart';
+import '../../../data/danmaku_mock_data.dart' as mock_data;
 import '../../../store/player/player_state_notifier.dart';
 import '../../../utils/video_player_utils.dart';
 
@@ -64,6 +66,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   bool _hasSkippedOpening = false;
   bool _hasTriggeredEnding = false;
   double _originalBrightness = 0.0;
+  List<mock_data.DanmakuItem> _danmakuList = [];
 
   int get _videoFit => widget.playerStateNotifier.videoFit;
   double get _volume => widget.playerStateNotifier.volume;
@@ -82,6 +85,14 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
     _setupListeners();
     _initPip();
     _initBrightness();
+    _loadDanmakuData();
+  }
+
+  Future<void> _loadDanmakuData() async {
+    final list = await mock_data.DanmakuMockData.loadDanmakuData();
+    if (mounted) {
+      setState(() => _danmakuList = list);
+    }
   }
 
   Future<void> _initBrightness() async {
@@ -332,48 +343,53 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
               width: double.infinity,
               height: double.infinity,
               color: Colors.black,
-              child: Stack(
-                children: [
-                  Center(
-                    child: Video(
-                      controller: widget.videoController,
-                      fill: Colors.black,
-                      fit: _pipManager.isInPipMode ? BoxFit.fill : VideoPlayerUtils.getFullScreenBoxFit(_videoFit),
-                      controls: null,
-                      subtitleViewConfiguration: const SubtitleViewConfiguration(
-                        visible: false,
+              child: DanmakuViewComponents(
+                danmakuList: _danmakuList,
+                paused: !_isPlaying,
+                currentPosition: _currentPosition,
+                child: Stack(
+                  children: [
+                    Center(
+                      child: Video(
+                        controller: widget.videoController,
+                        fill: Colors.black,
+                        fit: _pipManager.isInPipMode ? BoxFit.fill : VideoPlayerUtils.getFullScreenBoxFit(_videoFit),
+                        controls: null,
+                        subtitleViewConfiguration: const SubtitleViewConfiguration(
+                          visible: false,
+                        ),
                       ),
                     ),
-                  ),
-                  if (_showControls && !_isBuffering) ...[
-                    _buildTopBar(),
-                    _buildMiddleControls(),
-                    _buildBottomBar(),
-                  ],
-                  if (_isBuffering)
-                    const Center(child: PageLoading()),
-                  if (_showSettings) _buildSettingsPanel(),
-                  if (_isLongPressing)
-                    Positioned(
-                      top: 12,
-                      right: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.black54,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          '${_longPressRate}x',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                    if (_showControls && !_isBuffering) ...[
+                      _buildTopBar(),
+                      _buildMiddleControls(),
+                      _buildBottomBar(),
+                    ],
+                    if (_isBuffering)
+                      const Center(child: PageLoading()),
+                    if (_showSettings) _buildSettingsPanel(),
+                    if (_isLongPressing)
+                      Positioned(
+                        top: 12,
+                        right: 12,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Text(
+                            '${_longPressRate}x',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
