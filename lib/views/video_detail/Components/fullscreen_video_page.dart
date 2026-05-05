@@ -81,6 +81,9 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   double _originalBrightness = 0.0;
   List<mock_data.DanmakuItem> _danmakuList = [];
   bool _showDanmaku = true;
+  bool _isMuted = false;
+  double _previousVolume = 1.0;
+  bool _isLocked = false;
 
   int get _videoFit => widget.playerStateNotifier.videoFit;
   double get _volume => widget.playerStateNotifier.volume;
@@ -319,6 +322,36 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
     }
   }
 
+  void _toggleMute() {
+    setState(() {
+      if (!_isMuted) {
+        // 静音：保存当前音量，然后设置为0
+        _previousVolume = _volume > 0 ? _volume : 1.0;
+        widget.player.setVolume(0);
+        _isMuted = true;
+      } else {
+        // 恢复声音：使用保存的音量值
+        widget.player.setVolume(_previousVolume);
+        _isMuted = false;
+      }
+    });
+  }
+
+  void _toggleLock() {
+    setState(() {
+      _isLocked = !_isLocked;
+      if (_isLocked) {
+        // 锁定时隐藏控制面板
+        _showControls = false;
+        _hideManager.cancelTimer();
+      } else {
+        // 解锁时显示控制面板
+        _showControls = true;
+        _startHideTimer();
+      }
+    });
+  }
+
   Future<void> _togglePipMode() async {
     await _pipManager.togglePipMode(
       onPipSuccess: () {
@@ -344,14 +377,14 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
         return Scaffold(
           backgroundColor: Colors.black,
           body: GestureDetector(
-            onTap: _onTapVideo,
-            onDoubleTap: _togglePlayPause,
-            onLongPressStart: (_) {
+            onTap: _isLocked ? null : _onTapVideo,
+            onDoubleTap: _isLocked ? null : _togglePlayPause,
+            onLongPressStart: _isLocked ? null : (_) {
               _previousRate = widget.player.state.rate;
               widget.player.setRate(_longPressRate);
               setState(() => _isLongPressing = true);
             },
-            onLongPressEnd: (_) {
+            onLongPressEnd: _isLocked ? null : (_) {
               widget.player.setRate(_previousRate);
               setState(() => _isLongPressing = false);
             },
@@ -381,14 +414,19 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
                             const SubtitleViewConfiguration(visible: false),
                       ),
                     ),
-                    if (_showControls && !_isBuffering) ...[
+                    // 锁定时只显示锁定按钮
+                    if (_isLocked) ...[
+                      _buildMiddleControls(),
+                    ],
+                    // 未锁定时显示所有控制
+                    if (!_isLocked && _showControls && !_isBuffering) ...[
                       _buildTopBar(),
                       _buildMiddleControls(),
                       _buildBottomBar(),
                     ],
                     if (_isBuffering) const Center(child: PageLoading()),
-                    if (_showSettings) _buildSettingsPanel(),
-                    if (_showEpisodeSelection) ...[
+                    if (_showSettings && !_isLocked) _buildSettingsPanel(),
+                    if (_showEpisodeSelection && !_isLocked) ...[
                       _buildEpisodeSelectionPanel(),
                       _buildEpisodeSelectionContent(),
                     ],
@@ -507,29 +545,50 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   }
 
   Widget _buildMiddleControls() {
-    return Positioned.fill(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          GestureDetector(
-            onTap: _skipBackward,
-            child: const Icon(
-              CupertinoIcons.gobackward_10,
-              color: Colors.white,
-              size: 34,
-            ),
+    return Stack(
+      children: [
+        // 左侧锁定按钮
+        Positioned(
+          left: 20,
+          top: 0,
+          bottom: 0,
+          child: GestureDetector(
+            onTap: _toggleLock,
+            child: Icon(
+                _isLocked
+                    ? CupertinoIcons.lock_fill
+                    : CupertinoIcons.lock_open_fill,
+                color: Colors.white,
+                size: 24,
+              ),
           ),
-          const SizedBox(width: 60),
-          GestureDetector(
-            onTap: _skipForward,
-            child: const Icon(
-              CupertinoIcons.goforward_10,
-              color: Colors.white,
-              size: 34,
-            ),
+        ),
+        // 中间控制按钮
+        Positioned.fill(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: _isLocked ? null : _skipBackward,
+                child: Icon(
+                  CupertinoIcons.gobackward_10,
+                  color: _isLocked ? Colors.white.withValues(alpha: 0.3) : Colors.white,
+                  size: 34,
+                ),
+              ),
+              const SizedBox(width: 60),
+              GestureDetector(
+                onTap: _isLocked ? null : _skipForward,
+                child: Icon(
+                  CupertinoIcons.goforward_10,
+                  color: _isLocked ? Colors.white.withValues(alpha: 0.3) : Colors.white,
+                  size: 34,
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -622,6 +681,17 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
                 ),
                 const SizedBox(width: 8),
                 //视频静音和恢复开关
+                GestureDetector(
+                  onTap: _toggleMute,
+                  child: Icon(
+                    _isMuted
+                        ? CupertinoIcons.speaker_slash_fill
+                        : CupertinoIcons.speaker_fill,
+                    color: _isMuted ? Colors.red : Colors.white,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 8),
                 // 弹幕开关
                 GestureDetector(
                   onTap: () {
