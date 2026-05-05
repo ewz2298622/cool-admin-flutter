@@ -102,6 +102,12 @@ class _VideoSettingsSheetState extends State<VideoSettingsSheet> {
     });
     widget.player.setRate(1.0);
     widget.player.setVolume(100);
+    widget.onVideoRateChanged(1.0);
+    widget.onVolumeChanged(1.0);
+    widget.onSkipOpeningChanged(0.0);
+    widget.onSkipEndingChanged(0.0);
+    widget.onLongPressRateChanged(2.0);
+    widget.onVideoFitChanged(0);
     _setBrightness(1.0);
   }
 

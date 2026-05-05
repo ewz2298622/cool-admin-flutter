@@ -7,8 +7,8 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 
-import '../../../components/loading.dart';
 import '../../../components/danmaku_view_components.dart';
+import '../../../components/loading.dart';
 import '../../../data/danmaku_mock_data.dart' as mock_data;
 import '../../../store/player/player_state_notifier.dart';
 import '../../../utils/video_player_utils.dart';
@@ -23,6 +23,7 @@ class FullScreenVideoPage extends StatefulWidget {
   final VoidCallback? onRateChanged;
   final VoidCallback? onNextVideo;
   final VoidCallback? onPreviousVideo;
+  final VoidCallback? onResetToDefaults;
   final String videoTitle;
   final List<double> rateList;
   final List<String> fitModes;
@@ -41,6 +42,7 @@ class FullScreenVideoPage extends StatefulWidget {
     this.videoTitle = '',
     required this.rateList,
     required this.fitModes,
+    this.onResetToDefaults,
   });
 
   @override
@@ -181,10 +183,12 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
       }
     }
 
-    if (_skipEnding > 0 && _totalDuration.inSeconds > 0 && !_hasTriggeredEnding) {
+    if (_skipEnding > 0 &&
+        _totalDuration.inSeconds > 0 &&
+        !_hasTriggeredEnding) {
       final endingSeconds = _skipEnding;
       final remainingSeconds = _totalDuration.inSeconds - position.inSeconds;
-      
+
       if (remainingSeconds <= endingSeconds.toInt()) {
         _hasTriggeredEnding = true;
         widget.onNextVideo?.call();
@@ -312,9 +316,9 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
       },
       onPipFailed: (message) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(message)));
         }
       },
     );
@@ -353,11 +357,15 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
                       child: Video(
                         controller: widget.videoController,
                         fill: Colors.black,
-                        fit: _pipManager.isInPipMode ? BoxFit.fill : VideoPlayerUtils.getFullScreenBoxFit(_videoFit),
+                        fit:
+                            _pipManager.isInPipMode
+                                ? BoxFit.fill
+                                : VideoPlayerUtils.getFullScreenBoxFit(
+                                  _videoFit,
+                                ),
                         controls: null,
-                        subtitleViewConfiguration: const SubtitleViewConfiguration(
-                          visible: false,
-                        ),
+                        subtitleViewConfiguration:
+                            const SubtitleViewConfiguration(visible: false),
                       ),
                     ),
                     if (_showControls && !_isBuffering) ...[
@@ -365,15 +373,17 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
                       _buildMiddleControls(),
                       _buildBottomBar(),
                     ],
-                    if (_isBuffering)
-                      const Center(child: PageLoading()),
+                    if (_isBuffering) const Center(child: PageLoading()),
                     if (_showSettings) _buildSettingsPanel(),
                     if (_isLongPressing)
                       Positioned(
                         top: 12,
                         right: 12,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.black54,
                             borderRadius: BorderRadius.circular(16),
@@ -507,12 +517,17 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   }
 
   Widget _buildBottomBar() {
-    final maxValue = _totalDuration.inMilliseconds > 0
-        ? _totalDuration.inMilliseconds.toDouble()
-        : 1.0;
-    final currentValue = _userIsDraggingSlider
-        ? _pendingSeekPosition.inMilliseconds.toDouble().clamp(0.0, maxValue)
-        : _currentPosition.inMilliseconds.toDouble().clamp(0.0, maxValue);
+    final maxValue =
+        _totalDuration.inMilliseconds > 0
+            ? _totalDuration.inMilliseconds.toDouble()
+            : 1.0;
+    final currentValue =
+        _userIsDraggingSlider
+            ? _pendingSeekPosition.inMilliseconds.toDouble().clamp(
+              0.0,
+              maxValue,
+            )
+            : _currentPosition.inMilliseconds.toDouble().clamp(0.0, maxValue);
 
     return Positioned(
       bottom: 0,
@@ -582,17 +597,14 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
             SizedBox(
               width: 40,
               child: GestureDetector(
-              onTap: widget.onRateChanged,
-              child: Text(
-                '${_videoRate}x',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
+                onTap: widget.onRateChanged,
+                child: Text(
+                  '${_videoRate}x',
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
                 ),
               ),
             ),
-            ),
-              const SizedBox(width: 8),
+            const SizedBox(width: 8),
             CupertinoButton(
               padding: EdgeInsets.zero,
               onPressed: () => Navigator.of(context).pop(),
@@ -624,9 +636,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
           Container(
             width: 360,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-            decoration: const BoxDecoration(
-              color: Color(0x991A1A1A),
-            ),
+            decoration: const BoxDecoration(color: Color(0x991A1A1A)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -654,10 +664,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
                         ),
                         child: const Text(
                           '恢复默认设置',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
                         ),
                       ),
                     ),
@@ -690,23 +697,15 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildSliderRow(
-                          '音量调节',
-                          _volume,
-                          (v) {
-                            widget.playerStateNotifier.setVolume(v);
-                            widget.player.setVolume(v * 100);
-                          },
-                        ),
+                        _buildSliderRow('音量调节', _volume, (v) {
+                          widget.playerStateNotifier.setVolume(v);
+                          widget.player.setVolume(v * 100);
+                        }),
                         const SizedBox(height: 16),
-                        _buildSliderRow(
-                          '屏幕亮度',
-                          _brightness,
-                          (v) {
-                            widget.playerStateNotifier.setBrightness(v);
-                            _setBrightness(v);
-                          },
-                        ),
+                        _buildSliderRow('屏幕亮度', _brightness, (v) {
+                          widget.playerStateNotifier.setBrightness(v);
+                          _setBrightness(v);
+                        }),
                         const SizedBox(height: 16),
                         _buildSliderRow(
                           '跳过片头',
@@ -846,18 +845,16 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
               trackHeight: 3,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
             ),
-            child: Slider(
-              value: value,
-              max: max,
-              onChanged: onChanged,
-            ),
+            child: Slider(value: value, max: max, onChanged: onChanged),
           ),
         ),
         SizedBox(
           width: 40,
           child: Text(
             isTime
-                ? VideoPlayerUtils.formatDuration(Duration(seconds: value.toInt()))
+                ? VideoPlayerUtils.formatDuration(
+                  Duration(seconds: value.toInt()),
+                )
                 : '${(value * 100).toInt()}%',
             style: const TextStyle(color: Colors.white, fontSize: 12),
             textAlign: TextAlign.right,
@@ -871,5 +868,6 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
     widget.playerStateNotifier.resetToDefaults();
     widget.player.setVolume(100);
     widget.player.setRate(1.0);
+    widget.onResetToDefaults?.call();
   }
 }

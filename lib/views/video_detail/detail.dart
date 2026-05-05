@@ -576,6 +576,7 @@ class _VideoDetailState extends State<VideoDetail>
                   setVideoUrl(videoList[currentPlay.value].url);
                 }
               },
+              onResetToDefaults: _saveCurrentSettings,
             ),
       ),
     );
