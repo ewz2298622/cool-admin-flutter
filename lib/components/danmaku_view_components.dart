@@ -57,8 +57,22 @@ class _DanmakuViewState extends State<DanmakuViewComponents> {
     if (widget.showDanmaku != oldWidget.showDanmaku) {
       if (widget.showDanmaku) {
         _controller?.resume();
+        _currentSecond = widget.currentPosition.inSeconds;
+        _lastDanmakuIndex = 0;
+        _controller?.clear();
+        while (_lastDanmakuIndex < _danmakuList.length) {
+          final nextDanmaku = _danmakuList[_lastDanmakuIndex];
+          if (nextDanmaku.time <= widget.currentPosition.inMilliseconds) {
+            _lastDanmakuIndex++;
+          } else {
+            break;
+          }
+        }
+        _startPlayFromCurrent();
       } else {
         _controller?.pause();
+        _controller?.clear();
+        _stopTimer();
       }
     }
     if (widget.paused != oldWidget.paused) {
@@ -97,6 +111,18 @@ class _DanmakuViewState extends State<DanmakuViewComponents> {
     _stopTimer();
     _currentSecond = 0;
     _lastDanmakuIndex = 0;
+    _playTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted && widget.showDanmaku) {
+        setState(() {
+          _currentSecond++;
+        });
+        _checkAndShowDanmaku();
+      }
+    });
+  }
+
+  void _startPlayFromCurrent() {
+    _stopTimer();
     _playTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted && widget.showDanmaku) {
         setState(() {

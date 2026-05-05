@@ -6,14 +6,14 @@ import '../entity/video_detail_data_entity.dart';
 
 /// 视频详情页的线路选择标签页组件
 /// 支持多标签页切换，每个标签页显示可选择的播放线路列表
-class DetailTabsView extends StatefulWidget {
+class FullscreenDetailTabsView extends StatefulWidget {
   final List<VideoDetailDataDataLines> tabData;
   /// 选中项改变时的回调函数
   final Function(int tabIndex, Set<int> selectedIndices)? onSelectionChanged;
   /// 默认选中项，key为tab索引，value为选中项的索引集合
   final Map<int, Set<int>>? defaultSelectedItems;
 
-  const DetailTabsView({
+  const FullscreenDetailTabsView({
     super.key,
     required this.tabData,
     this.onSelectionChanged,
@@ -24,7 +24,7 @@ class DetailTabsView extends StatefulWidget {
   _DetailTabsViewState createState() => _DetailTabsViewState();
 }
 
-class _DetailTabsViewState extends State<DetailTabsView>
+class _DetailTabsViewState extends State<FullscreenDetailTabsView>
     with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late TabController _tabController;
 
@@ -32,7 +32,7 @@ class _DetailTabsViewState extends State<DetailTabsView>
   final Map<int, Set<int>> _selectedItems = {};
 
   // 布局常量
-  static const double kElementWidth = 100.0;
+  static const double kElementWidth = 80.0;
   static const double kElementHeight = 35.0;
   static const double kContainerPadding = 8.0;
   static const double kRowMargin = 6.0;
@@ -68,7 +68,7 @@ class _DetailTabsViewState extends State<DetailTabsView>
   }
 
   @override
-  void didUpdateWidget(DetailTabsView oldWidget) {
+  void didUpdateWidget(FullscreenDetailTabsView oldWidget) {
     super.didUpdateWidget(oldWidget);
     // 当tabData长度改变时，更新TabController
     if (oldWidget.tabData.length != widget.tabData.length) {
@@ -248,20 +248,19 @@ class _DetailTabsViewState extends State<DetailTabsView>
                   key: rowKey,
                   margin: const EdgeInsets.only(bottom: kRowMargin),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.max,
                     children: List.generate(
                       rowItems.length,
                       (index) {
                         final item = rowItems[index];
                         final itemIndex = rowIndex * crossAxisCount + index;
                         final isSelected = _isItemSelected(tabIndex, itemIndex);
-                        // 为每个按钮创建唯一的key，提高渲染性能
                         final buttonKey = ValueKey('button_$tabIndex$itemIndex');
 
                         return Padding(
                           key: buttonKey,
-                          padding: EdgeInsets.only(right: index < rowItems.length - 1 ? 8.0 : 0),
+                          padding: EdgeInsets.symmetric(horizontal: 4.0),
                           child: _buildPlayLineButton(
                             item: item,
                             isSelected: isSelected,

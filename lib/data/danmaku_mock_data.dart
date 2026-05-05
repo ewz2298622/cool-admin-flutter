@@ -10,7 +10,9 @@ const String _danmakuJsonString = '''
     "time": 3000,
     "text": "来了来了",
     "type": "scroll",
-    "color": "#FFFFFF"
+    "color": "#FFFFFF",
+    "videoId": "111",
+    "fontSize": 14
   },
   {
     "time": 5000,

@@ -8,8 +8,10 @@ import 'package:media_kit_video/media_kit_video.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 
 import '../../../components/danmaku_view_components.dart';
+import '../../../components/fullscreen_detail_tabs_views.dart';
 import '../../../components/loading.dart';
 import '../../../data/danmaku_mock_data.dart' as mock_data;
+import '../../../entity/video_detail_data_entity.dart';
 import '../../../store/player/player_state_notifier.dart';
 import '../../../utils/video_player_utils.dart';
 
@@ -27,6 +29,10 @@ class FullScreenVideoPage extends StatefulWidget {
   final String videoTitle;
   final List<double> rateList;
   final List<String> fitModes;
+  final List<VideoDetailDataDataLines>? tabData;
+  final int currentLine;
+  final int currentPlay;
+  final Function(int tabIndex, Set<int> selectedIndices)? onSelectionChanged;
 
   const FullScreenVideoPage({
     super.key,
@@ -43,6 +49,10 @@ class FullScreenVideoPage extends StatefulWidget {
     required this.rateList,
     required this.fitModes,
     this.onResetToDefaults,
+    this.tabData,
+    this.currentLine = 0,
+    this.currentPlay = 0,
+    this.onSelectionChanged,
   });
 
   @override
@@ -59,6 +69,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   Duration _totalDuration = Duration.zero;
   bool _isPlaying = false;
   bool _showSettings = false;
+  bool _showEpisodeSelection = false;
   bool _isLongPressing = false;
   bool _isBuffering = false;
   double _previousRate = 1.0;
@@ -69,6 +80,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   bool _hasTriggeredEnding = false;
   double _originalBrightness = 0.0;
   List<mock_data.DanmakuItem> _danmakuList = [];
+  bool _showDanmaku = true;
 
   int get _videoFit => widget.playerStateNotifier.videoFit;
   double get _volume => widget.playerStateNotifier.volume;
@@ -349,6 +361,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
               color: Colors.black,
               child: DanmakuViewComponents(
                 danmakuList: _danmakuList,
+                showDanmaku: _showDanmaku,
                 paused: !_isPlaying,
                 currentPosition: _currentPosition,
                 child: Stack(
@@ -375,6 +388,10 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
                     ],
                     if (_isBuffering) const Center(child: PageLoading()),
                     if (_showSettings) _buildSettingsPanel(),
+                    if (_showEpisodeSelection) ...[
+                      _buildEpisodeSelectionPanel(),
+                      _buildEpisodeSelectionContent(),
+                    ],
                     if (_isLongPressing)
                       Positioned(
                         top: 12,
@@ -534,85 +551,168 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
       left: 0,
       right: 0,
       child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
-            colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent],
+            colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent],
           ),
         ),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: _togglePlayPause,
-              child: Icon(
-                _isPlaying
-                    ? CupertinoIcons.pause_fill
-                    : CupertinoIcons.play_fill,
-                color: Colors.white,
-                size: 28,
-              ),
-            ),
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: _playNext,
-              child: const Icon(
-                CupertinoIcons.forward_end_fill,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
-            Text(
-              VideoPlayerUtils.formatDuration(_currentPosition),
-              style: const TextStyle(color: Colors.white, fontSize: 13),
-            ),
-            Expanded(
-              child: SliderTheme(
-                data: SliderThemeData(
-                  activeTrackColor: const Color(0xFFE53935),
-                  inactiveTrackColor: Colors.white.withValues(alpha: 0.3),
-                  thumbColor: const Color(0xFFE53935),
-                  overlayColor: Colors.transparent,
-                  trackHeight: 3,
-                  thumbShape: const RoundSliderThumbShape(
-                    enabledThumbRadius: 6,
+            Row(
+              children: [
+                Text(
+                  VideoPlayerUtils.formatDuration(_currentPosition),
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: SliderTheme(
+                    data: SliderThemeData(
+                      activeTrackColor: const Color(0xFFE53935),
+                      inactiveTrackColor: Colors.white.withValues(alpha: 0.3),
+                      thumbColor: const Color(0xFFE53935),
+                      overlayColor: Colors.transparent,
+                      trackHeight: 2,
+                      thumbShape: const RoundSliderThumbShape(
+                        enabledThumbRadius: 5,
+                      ),
+                    ),
+                    child: Slider(
+                      value: currentValue,
+                      max: maxValue,
+                      onChangeStart: _onSliderChangeStart,
+                      onChangeEnd: _onSliderChangeEnd,
+                      onChanged: _onSliderChanged,
+                    ),
                   ),
                 ),
-                child: Slider(
-                  value: currentValue,
-                  max: maxValue,
-                  onChangeStart: _onSliderChangeStart,
-                  onChangeEnd: _onSliderChangeEnd,
-                  onChanged: _onSliderChanged,
+                const SizedBox(width: 8),
+                Text(
+                  VideoPlayerUtils.formatDuration(_totalDuration),
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
                 ),
-              ),
+              ],
             ),
-            Text(
-              VideoPlayerUtils.formatDuration(_totalDuration),
-              style: const TextStyle(color: Colors.white, fontSize: 13),
-            ),
-            const SizedBox(width: 8),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 40,
-              child: GestureDetector(
-                onTap: widget.onRateChanged,
-                child: Text(
-                  '${_videoRate}x',
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                // 左侧控制按钮
+                GestureDetector(
+                  onTap: _togglePlayPause,
+                  child: Icon(
+                    _isPlaying
+                        ? CupertinoIcons.pause_fill
+                        : CupertinoIcons.play_fill,
+                    color: Colors.white,
+                    size: 24,
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Icon(
-                CupertinoIcons.fullscreen_exit,
-                color: Colors.white,
-                size: 22,
-              ),
+                const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: _playNext,
+                  child: const Icon(
+                    CupertinoIcons.forward_end_fill,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                //视频静音和恢复开关
+                // 弹幕开关
+                GestureDetector(
+                  onTap: () {
+                    setState(() => _showDanmaku = !_showDanmaku);
+                  },
+                  child: Container(
+                    width: 42,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: _showDanmaku
+                          ? const Color(0xFFE53935)
+                          : const Color(0xFFB0B0B0),
+                      borderRadius: BorderRadius.circular(11),
+                    ),
+                    child: Stack(
+                      children: [
+                        AnimatedAlign(
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeInOut,
+                          alignment: _showDanmaku
+                              ? Alignment.centerRight
+                              : Alignment.centerLeft,
+                          child: Container(
+                            width: 18,
+                            height: 18,
+                            margin: const EdgeInsets.all(2),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '弹',
+                                style: TextStyle(
+                                  color: _showDanmaku
+                                      ? const Color(0xFFE53935)
+                                      : const Color(0xFFB0B0B0),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // 中间弹幕输入框
+                Expanded(
+                  child: Container(
+                    height: 32,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          '发个友善的弹幕见证当下',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.5),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // 右侧功能按钮
+                GestureDetector(
+                  onTap: () {
+                    setState(() => _showEpisodeSelection = !_showEpisodeSelection);
+                  },
+                  child: const Text(
+                    '选集',
+                    style: TextStyle(color: Colors.white, fontSize: 13),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                GestureDetector(
+                  onTap: widget.onRateChanged,
+                  child: Text(
+                    '${_videoRate}x',
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -815,6 +915,97 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEpisodeSelectionPanel() {
+    return Positioned.fill(
+      child: GestureDetector(
+        onTap: () {
+          setState(() => _showEpisodeSelection = false);
+          _startHideTimer();
+        },
+        child: Container(color: Colors.black.withValues(alpha: 0.5)),
+      ),
+    );
+  }
+
+  Widget _buildEpisodeSelectionContent() {
+    return Positioned(
+      top: 0,
+      right: 0,
+      bottom: 0,
+      child: AnimatedSlide(
+        offset: _showEpisodeSelection ? Offset.zero : const Offset(1.0, 0),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        child: Container(
+          width: 315,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          decoration: const BoxDecoration(color: Color(0x991A1A1A)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text(
+                    '选集',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() => _showEpisodeSelection = false);
+                      _startHideTimer();
+                    },
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: Colors.white12,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white70,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: widget.tabData != null && widget.tabData!.isNotEmpty
+                    ? FullscreenDetailTabsView(
+                        tabData: widget.tabData!,
+                        defaultSelectedItems: {
+                          widget.currentLine: {widget.currentPlay},
+                        },
+                        onSelectionChanged: (tabIndex, selectedIndices) {
+                          widget.onSelectionChanged?.call(
+                            tabIndex,
+                            selectedIndices,
+                          );
+                          setState(() => _showEpisodeSelection = false);
+                          _startHideTimer();
+                        },
+                      )
+                    : const Center(
+                        child: Text(
+                          '暂无选集数据',
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

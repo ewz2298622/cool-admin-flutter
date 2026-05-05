@@ -262,8 +262,11 @@ class _VideoDetailState extends State<VideoDetail>
       }
 
       if (url.isNotEmpty) {
+        debugPrint('[Player] Opening video, URL: $url');
+        debugPrint('[Player] Before open - position: ${player.state.position}');
         await player.open(Media(url), play: true);
-        debugPrint('Video URL set successfully');
+        debugPrint('[Player] After open - position: ${player.state.position}, duration: ${player.state.duration}');
+        debugPrint('[Player] Video opened successfully');
       } else {
         player.pause();
       }
@@ -549,6 +552,33 @@ class _VideoDetailState extends State<VideoDetail>
               videoTitle: videoInfoData.video?.title ?? '',
               rateList: _rateList,
               fitModes: _fitModes,
+              tabData: videoInfoData.lines,
+              currentLine: currentLine.value,
+              currentPlay: currentPlay.value,
+              onSelectionChanged: (tabIndex, selectedIndices) {
+                try {
+                  if (videoInfoData.lines != null &&
+                      tabIndex < videoInfoData.lines!.length) {
+                    setState(() => currentLine.value = tabIndex);
+
+                    final selectedLine = videoInfoData.lines?[tabIndex];
+                    if (selectedLine?.playLines != null &&
+                        selectedIndices.isNotEmpty &&
+                        selectedIndices.first <
+                            (selectedLine?.playLines?.length ?? 0)) {
+                      setState(() {
+                        currentPlay.value = selectedIndices.first;
+                      });
+
+                      final selectedPlayLine =
+                          selectedLine?.playLines?[selectedIndices.first];
+                      setVideoUrl(selectedPlayLine?.file ?? "");
+                    }
+                  }
+                } catch (e) {
+                  debugPrint("切换选集错误：${e.toString()}");
+                }
+              },
               onCastingPressed: tvDevice,
               onRateChanged: () {
                 int currentIndex = _rateList.indexOf(
@@ -665,10 +695,10 @@ class _VideoDetailState extends State<VideoDetail>
             return Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(24.0),
-                  topRight: Radius.circular(24.0),
-                ),
+                // borderRadius: const BorderRadius.only(
+                //   topLeft: Radius.circular(24.0),
+                //   topRight: Radius.circular(24.0),
+                // ),
                 boxShadow: [
                   BoxShadow(
                     color: Color(0x14000000),
@@ -679,7 +709,7 @@ class _VideoDetailState extends State<VideoDetail>
               ),
               width: MediaQuery.of(context).size.width,
               padding: const EdgeInsets.only(top: 16),
-              height: 650,
+              height: 640,
               child: Padding(
                 padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
                 child: Column(

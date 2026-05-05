@@ -114,6 +114,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   @override
   void initState() {
     super.initState();
+    debugPrint('[VideoPlayerWidget] initState, position=${widget.player.state.position}, skipOpening=${widget.skipOpening}');
     _localShowControls = widget.showControls;
     _totalDuration = widget.player.state.duration;
     _currentPosition = widget.player.state.position;
@@ -179,9 +180,12 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   }
 
   void _handleSkipLogic(Duration position) {
+    debugPrint('[SkipLogic] position=${position.inSeconds}s, skipOpening=${widget.skipOpening}, skipEnding=${widget.skipEnding}, hasSkippedOpening=$_hasSkippedOpening');
     if (widget.skipOpening > 0 && !_hasSkippedOpening) {
       final openingSeconds = widget.skipOpening;
+      debugPrint('[SkipLogic] 触发跳过片头: 跳转到${openingSeconds.toInt()}秒');
       if (position.inSeconds < openingSeconds.toInt()) {
+        debugPrint('[Seek] 跳过片头 seek to ${openingSeconds.toInt()}s');
         widget.player.seek(Duration(seconds: openingSeconds.toInt()));
         _hasSkippedOpening = true;
       }
@@ -192,8 +196,10 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         !_hasTriggeredEnding) {
       final endingSeconds = widget.skipEnding;
       final remainingSeconds = _totalDuration.inSeconds - position.inSeconds;
+      debugPrint('[SkipLogic] 剩余时间=${remainingSeconds}s, 跳过片尾阈值=${endingSeconds.toInt()}s');
 
       if (remainingSeconds <= endingSeconds.toInt()) {
+        debugPrint('[SkipLogic] 触发跳过片尾: 跳转下一集');
         _hasTriggeredEnding = true;
         widget.onNextVideo?.call();
       }
