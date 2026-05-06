@@ -855,9 +855,19 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
               onTap: _playNext,
               child: const Icon(CupertinoIcons.forward_end_fill, color: Colors.white, size: 20),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 8),
+            Text(
+              VideoPlayerUtils.formatDuration(_currentPosition),
+              style: const TextStyle(color: Colors.white, fontSize: 13),
+            ),
+            const SizedBox(width: 8),
             Expanded(
               child: _buildProgressIndicator(),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              VideoPlayerUtils.formatDuration(_totalDuration),
+              style: const TextStyle(color: Colors.white, fontSize: 13),
             ),
             const SizedBox(width: 8),
             GestureDetector(
