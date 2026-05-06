@@ -26,6 +26,7 @@ import 'package:flutter_app/entity/score_withdrawal_config_entity.dart';
 import 'package:flutter_app/entity/swiper_entity.dart';
 import 'package:flutter_app/entity/user_info_entity.dart';
 import 'package:flutter_app/entity/video_album_entity.dart';
+import 'package:flutter_app/entity/video_barrage_entity.dart';
 import 'package:flutter_app/entity/video_category_entity.dart';
 import 'package:flutter_app/entity/video_detail_data_entity.dart';
 import 'package:flutter_app/entity/video_detail_entity.dart';
@@ -831,6 +832,39 @@ class JsonConvert {
               .toList()
           as M;
     }
+    if (<VideoBarrageEntity>[] is M) {
+      return data
+              .map<VideoBarrageEntity>(
+                (Map<String, dynamic> e) => VideoBarrageEntity.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<VideoBarrageData>[] is M) {
+      return data
+              .map<VideoBarrageData>(
+                (Map<String, dynamic> e) => VideoBarrageData.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<VideoBarrageDataList>[] is M) {
+      return data
+              .map<VideoBarrageDataList>(
+                (Map<String, dynamic> e) => VideoBarrageDataList.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
+    if (<VideoBarrageDataPagination>[] is M) {
+      return data
+              .map<VideoBarrageDataPagination>(
+                (Map<String, dynamic> e) =>
+                    VideoBarrageDataPagination.fromJson(e),
+              )
+              .toList()
+          as M;
+    }
     if (<VideoCategoryEntity>[] is M) {
       return data
               .map<VideoCategoryEntity>(
@@ -1286,6 +1320,11 @@ class JsonConvertClassCollection {
     (UserInfoData).toString(): UserInfoData.fromJson,
     (VideoAlbumEntity).toString(): VideoAlbumEntity.fromJson,
     (VideoAlbumData).toString(): VideoAlbumData.fromJson,
+    (VideoBarrageEntity).toString(): VideoBarrageEntity.fromJson,
+    (VideoBarrageData).toString(): VideoBarrageData.fromJson,
+    (VideoBarrageDataList).toString(): VideoBarrageDataList.fromJson,
+    (VideoBarrageDataPagination).toString():
+        VideoBarrageDataPagination.fromJson,
     (VideoCategoryEntity).toString(): VideoCategoryEntity.fromJson,
     (VideoCategoryData).toString(): VideoCategoryData.fromJson,
     (VideoCategoryDataList).toString(): VideoCategoryDataList.fromJson,

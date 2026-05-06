@@ -1,17 +1,17 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_app/entity/dict_data_entity.dart';
-import 'package:flutter_app/entity/login_entity.dart';
 
 import '../entity/album_entity.dart';
 import '../entity/album_video_list_entity.dart';
 import '../entity/app_ads_entity.dart';
 import '../entity/captcha_entity.dart';
 import '../entity/cash_order_entity.dart';
+import '../entity/dict_data_entity.dart';
 import '../entity/dict_info_list_entity.dart';
 import '../entity/hot_keyWord_entity.dart';
 import '../entity/invite_record_entity.dart';
 import '../entity/is_valid_member_entity.dart';
 import '../entity/live_info_entity.dart';
+import '../entity/login_entity.dart';
 import '../entity/member_exchange_config_entity.dart';
 import '../entity/monthly_checkinConfig_entity.dart';
 import '../entity/notice_Info_entity.dart';
@@ -22,6 +22,7 @@ import '../entity/score_withdrawal_config_entity.dart';
 import '../entity/swiper_entity.dart';
 import '../entity/user_info_entity.dart';
 import '../entity/video_album_entity.dart';
+import '../entity/video_barrage_entity.dart';
 import '../entity/video_category_entity.dart';
 import '../entity/video_detail_data_entity.dart';
 import '../entity/video_detail_entity.dart';
@@ -840,6 +841,22 @@ class Api {
         data: data,
       ); // 添加注释说明 ONE 的含义});
       return CashOrderEntity.fromJson(response.data);
+    } catch (error) {
+      // 重新抛出异常以便上层处理
+      rethrow;
+    }
+  }
+
+  //视频弹幕
+  static Future<VideoBarrageEntity> videoBarrage(
+    Map<String, dynamic>? data,
+  ) async {
+    try {
+      final response = await server.post(
+        "/app/video/barrage/page",
+        data: data,
+      ); // 添加注释说明 ONE 的含义});
+      return VideoBarrageEntity.fromJson(response.data);
     } catch (error) {
       // 重新抛出异常以便上层处理
       rethrow;
