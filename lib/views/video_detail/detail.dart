@@ -23,8 +23,7 @@ import '../../utils/bus/constant.dart';
 import '../../utils/player_utils.dart';
 import '../../utils/user.dart';
 import '../../utils/video.dart';
-import 'Components/fullscreen_video_page.dart';
-import 'Components/video_player_widget.dart';
+import 'Components/unified_video_player.dart';
 import 'components/detail_content_view.dart';
 import 'components/video_settings_sheet.dart';
 import 'utils/casting_helper.dart';
@@ -545,7 +544,7 @@ class _VideoDetailState extends State<VideoDetail>
     Navigator.of(context).push(
       MaterialPageRoute(
         builder:
-            (context) => FullScreenVideoPage(
+            (context) => UnifiedVideoPlayer(
               player: player,
               videoController: videoController,
               playerStateNotifier: _playerStateNotifier,
@@ -555,6 +554,7 @@ class _VideoDetailState extends State<VideoDetail>
               tabData: videoInfoData.lines,
               currentLine: currentLine.value,
               currentPlay: currentPlay.value,
+              isFullScreen: true,
               onSelectionChanged: (tabIndex, selectedIndices) {
                 try {
                   if (videoInfoData.lines != null &&
@@ -843,9 +843,10 @@ class _VideoDetailState extends State<VideoDetail>
   }
 
   Widget _buildVideo() {
-    return VideoPlayerWidget(
+    return UnifiedVideoPlayer(
       player: player,
       videoController: videoController,
+      playerStateNotifier: _playerStateNotifier,
       videoUrl: '',
       videoFit: _playerStateNotifier.videoFit,
       videoRate: _playerStateNotifier.videoRate,
@@ -855,24 +856,37 @@ class _VideoDetailState extends State<VideoDetail>
       skipOpening: _playerStateNotifier.skipOpening,
       skipEnding: _playerStateNotifier.skipEnding,
       brightness: _playerStateNotifier.brightness,
+      isFullScreen: false,
       onSettingsPressed: _showSettingsSheet,
       onFullScreenPressed: _enterFullScreen,
       onCastingPressed: tvDevice,
-      onUpdate: (settings) {
+      onUpdate: () {
         debugPrint('播放设置 视频Id: ${videoInfoData.video?.id ?? ''}');
-        debugPrint('播放设置 倍速: ${settings.videoRate}');
-        debugPrint('播放设置 画面: ${settings.videoFit}');
-        debugPrint('播放设置 音量: ${settings.volume}');
-        debugPrint('播放设置 亮度: ${settings.brightness}');
-        debugPrint('播放设置 长安倍数: ${settings.longPressRate}');
+        debugPrint('播放设置 倍速: ${_playerStateNotifier.videoRate}');
+        debugPrint('播放设置 画面: ${_playerStateNotifier.videoFit}');
+        debugPrint('播放设置 音量: ${_playerStateNotifier.volume}');
+        debugPrint('播放设置 亮度: ${_playerStateNotifier.brightness}');
+        debugPrint('播放设置 长安倍数: ${_playerStateNotifier.longPressRate}');
         debugPrint(
-          '播放设置 跳过片头: ${VideoUtil.formatDuration(settings.skipOpening)}',
+          '播放设置 跳过片头: ${VideoUtil.formatDuration(_playerStateNotifier.skipOpening)}',
         );
         debugPrint(
-          '播放设置 跳过片尾: ${VideoUtil.formatDuration(settings.skipEnding)}',
+          '播放设置 跳过片尾: ${VideoUtil.formatDuration(_playerStateNotifier.skipEnding)}',
         );
 
-        _savePlayerSettings(settings);
+        final entity = VideoPlayerSettingsEntity(
+          videoId: (videoInfoData.video?.id ?? '').toString(),
+          videoTitle: videoInfoData.video?.title ?? '',
+          skipOpening: _playerStateNotifier.skipOpening,
+          skipEnding: _playerStateNotifier.skipEnding,
+          volume: _playerStateNotifier.volume,
+          brightness: _playerStateNotifier.brightness,
+          videoFit: _playerStateNotifier.videoFit,
+          playbackRate: _playerStateNotifier.videoRate,
+          longPressRate: _playerStateNotifier.longPressRate,
+          updatedAt: DateTime.now(),
+        );
+        _settingsDbHelper.insertOrUpdate(entity);
       },
       onPipEntering: () => setState(() => _isEnteringPipMode = true),
       onPipModeChanged: (isInPipMode) {
@@ -914,7 +928,7 @@ class _VideoDetailState extends State<VideoDetail>
           setVideoUrl(videoList[currentPlay.value].url);
         }
       },
-      onRateChanged: (rate) {
+      onRateChanged: () {
         int currentIndex = _rateList.indexOf(_playerStateNotifier.videoRate);
         if (currentIndex == -1 || currentIndex >= _rateList.length - 1) {
           currentIndex = 0;
@@ -925,7 +939,7 @@ class _VideoDetailState extends State<VideoDetail>
         _playerStateNotifier.setVideoRate(newRate);
         player.setRate(newRate);
       },
-      onVideoFitChanged: (fit) => _playerStateNotifier.setVideoFit(fit),
+      onVideoFitChanged: () => _playerStateNotifier.setVideoFit(_playerStateNotifier.videoFit),
     );
   }
 
