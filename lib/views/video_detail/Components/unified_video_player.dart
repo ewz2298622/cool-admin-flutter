@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:screen_brightness/screen_brightness.dart';
@@ -489,11 +490,13 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
       onLongPressStart: _isLocked ? null : (_) {
         _previousRate = widget.player.state.rate;
         widget.player.setRate(_longPressRate);
-        setState(() => _isLongPressing = true);
+        Fluttertoast.showToast(
+          msg: "${_longPressRate}x 倍速播放",
+          toastLength: Toast.LENGTH_SHORT,
+        );
       },
       onLongPressEnd: _isLocked ? null : (_) {
         widget.player.setRate(_previousRate);
-        setState(() => _isLongPressing = false);
       },
       child: Container(
         width: double.infinity,
@@ -531,26 +534,6 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
                 _buildEpisodeSelectionPanel(),
                 _buildEpisodeSelectionContent(),
               ],
-              if (_isLongPressing)
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.black54,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      '${_longPressRate}x',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
             ],
           ),
         ),
@@ -572,11 +555,13 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
           onLongPressStart: (_) {
             _previousRate = widget.player.state.rate;
             widget.player.setRate(widget.longPressRate);
-            setState(() => _isLongPressing = true);
+            Fluttertoast.showToast(
+              msg: "${widget.longPressRate}x 倍速播放",
+              toastLength: Toast.LENGTH_SHORT,
+            );
           },
           onLongPressEnd: (_) {
             widget.player.setRate(_previousRate);
-            setState(() => _isLongPressing = false);
           },
           child: Stack(
             children: [
@@ -596,26 +581,6 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
                 _buildNormalMiddleControls(),
                 _buildNormalBottomBar(),
               ],
-              if (_isLongPressing)
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.black54,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      '${widget.longPressRate}x',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
             ],
           ),
         ),
