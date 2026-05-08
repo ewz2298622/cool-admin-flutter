@@ -10,7 +10,6 @@ import '../../../components/loading.dart';
 import '../../../utils/video_player_utils.dart';
 
 import '../../../components/danmaku_view_components.dart';
-import '../../../data/danmaku_mock_data.dart' as mock_data;
 
 class VideoPlayerSettings {
   final int videoFit;
@@ -109,7 +108,6 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   bool _hasSkippedOpening = false;
   bool _hasTriggeredEnding = false;
   double _originalBrightness = 0.0;
-  List<mock_data.DanmakuItem> _danmakuList = [];
 
   @override
   void initState() {
@@ -153,7 +151,6 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         }
       },
     );
-    _loadDanmakuData();
   }
 
   Future<void> _initBrightness() async {
@@ -167,12 +164,6 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     }
   }
 
-  Future<void> _loadDanmakuData() async {
-    final list = await mock_data.DanmakuMockData.loadDanmakuData();
-    if (mounted) {
-      setState(() => _danmakuList = list);
-    }
-  }
 
   void _resetSkipFlags() {
     _hasSkippedOpening = false;
@@ -373,12 +364,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      child: DanmakuViewComponents(
-        danmakuList: _danmakuList,
-        height: 200,
-        paused: !_isPlaying,
-        currentPosition: _currentPosition,
-        child: GestureDetector(
+      child: GestureDetector(
           onTap: _onTapVideo,
           onDoubleTap: _togglePlayPause,
           onLongPressStart: (_) {
@@ -437,8 +423,6 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
             ],
           ),
         ),
-        showDanmaku: true,
-      ),
     );
   }
 

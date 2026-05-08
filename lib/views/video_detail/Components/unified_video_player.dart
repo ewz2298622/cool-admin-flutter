@@ -8,9 +8,10 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 
+import '../../../api/api.dart';
 import '../../../components/danmaku_view_components.dart';
 import '../../../components/loading.dart';
-import '../../../data/danmaku_mock_data.dart' as mock_data;
+import '../../../entity/video_barrage_entity.dart';
 import '../../../entity/video_detail_data_entity.dart';
 import '../../../store/player/player_state_notifier.dart';
 import '../../../utils/video_player_utils.dart';
@@ -119,12 +120,12 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
   bool _hasSkippedOpening = false;
   bool _hasTriggeredEnding = false;
   double _originalBrightness = 0.0;
-  List<mock_data.DanmakuItem> _danmakuList = [];
   bool _showDanmaku = true;
   bool _isMuted = false;
   double _previousVolume = 1.0;
   bool _isLocked = false;
   Duration? _lastDanmakuRequestPosition;
+  List<VideoBarrageDataList> danmakuList = [];
 
   int get _videoFit => widget.playerStateNotifier?.videoFit ?? widget.videoFit;
   double get _volume => widget.playerStateNotifier?.volume ?? 1.0;
@@ -151,7 +152,6 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
     _setupListeners();
     _initPip();
     _initBrightness();
-    _loadDanmakuData();
     _notifyUpdate();
   }
 
@@ -161,12 +161,6 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
     }
   }
 
-  Future<void> _loadDanmakuData() async {
-    final list = await mock_data.DanmakuMockData.loadDanmakuData();
-    if (mounted) {
-      setState(() => _danmakuList = list);
-    }
-  }
 
   Future<void> _initBrightness() async {
     try {
@@ -264,6 +258,14 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
     final milliseconds = currentPosition;
     debugPrint('requestDanmaku 执行: position=$position 转化成毫秒数=$milliseconds');
     debugPrint('requestDanmaku videoId: ${widget.videoId}  索引: ${widget.currentEpisodeIndex}');
+    danmakuList =( await Api.videoBarrage({
+      'videoId': widget.videoId,
+      'startTime': milliseconds,
+      'endTime': milliseconds+1000*60,
+    })).data?.list ?? [];
+    setState( () {});
+    debugPrint('requestDanmaku 执行: danmakuList=${danmakuList.length}');
+
   }
 
    void _resetSkipFlags() {
@@ -536,7 +538,7 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
         height: double.infinity,
         color: Colors.black,
         child: DanmakuViewComponents(
-          danmakuList: _danmakuList,
+          danmakuList: danmakuList,
           showDanmaku: _showDanmaku,
           paused: !_isPlaying,
           currentPosition: _currentPosition,
@@ -577,7 +579,7 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
   Widget _buildNormalContent() {
     return GestureDetector(
       child: DanmakuViewComponents(
-        danmakuList: _danmakuList,
+        danmakuList: danmakuList,
         height: 200,
         paused: !_isPlaying,
         currentPosition: _currentPosition,

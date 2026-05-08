@@ -10,7 +10,6 @@ import 'package:screen_brightness/screen_brightness.dart';
 import '../../../components/danmaku_view_components.dart';
 import '../../../components/fullscreen_detail_tabs_views.dart';
 import '../../../components/loading.dart';
-import '../../../data/danmaku_mock_data.dart' as mock_data;
 import '../../../entity/video_detail_data_entity.dart';
 import '../../../store/player/player_state_notifier.dart';
 import '../../../utils/video_player_utils.dart';
@@ -79,7 +78,6 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   bool _hasSkippedOpening = false;
   bool _hasTriggeredEnding = false;
   double _originalBrightness = 0.0;
-  List<mock_data.DanmakuItem> _danmakuList = [];
   bool _showDanmaku = true;
   bool _isMuted = false;
   double _previousVolume = 1.0;
@@ -102,15 +100,9 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
     _setupListeners();
     _initPip();
     _initBrightness();
-    _loadDanmakuData();
   }
 
-  Future<void> _loadDanmakuData() async {
-    final list = await mock_data.DanmakuMockData.loadDanmakuData();
-    if (mounted) {
-      setState(() => _danmakuList = list);
-    }
-  }
+
 
   Future<void> _initBrightness() async {
     try {
@@ -392,12 +384,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
               width: double.infinity,
               height: double.infinity,
               color: Colors.black,
-              child: DanmakuViewComponents(
-                danmakuList: _danmakuList,
-                showDanmaku: _showDanmaku,
-                paused: !_isPlaying,
-                currentPosition: _currentPosition,
-                child: Stack(
+              child:Stack(
                   children: [
                     Center(
                       child: Video(
@@ -455,7 +442,6 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
                       ),
                   ],
                 ),
-              ),
             ),
           ),
         );

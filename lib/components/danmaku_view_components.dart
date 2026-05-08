@@ -1,12 +1,13 @@
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:flutter/material.dart';
+import 'dart:math';
 
-import '../data/danmaku_mock_data.dart' as mock_data;
+import '../entity/video_barrage_entity.dart';
 
 class DanmakuViewComponents extends StatefulWidget {
   final Widget? child;
   final Widget? overlayWidget;
-  final List<mock_data.DanmakuItem> danmakuList;
+  final List<VideoBarrageDataList> danmakuList;
   final bool showDanmaku;
   final DanmakuOption? danmakuOption;
   final double? width;
@@ -33,10 +34,11 @@ class DanmakuViewComponents extends StatefulWidget {
 
 class _DanmakuViewState extends State<DanmakuViewComponents> {
   DanmakuController<int>? _controller;
+  final Random _random = Random();
 
   int _lastDanmakuIndex = 0;
 
-  List<mock_data.DanmakuItem> get _danmakuList => widget.danmakuList;
+  List<VideoBarrageDataList> get _danmakuList => widget.danmakuList;
 
   @override
   void initState() {
@@ -70,23 +72,26 @@ class _DanmakuViewState extends State<DanmakuViewComponents> {
   }
 
   void _checkAndShowDanmaku(int currentMilliseconds) {
-    if (_controller == null) return;
-
-    while (_lastDanmakuIndex < _danmakuList.length) {
-      final nextDanmaku = _danmakuList[_lastDanmakuIndex];
-      if (currentMilliseconds >= nextDanmaku.time) {
-        _controller?.addDanmaku(
+    _danmakuList.forEach((element) {
+    _controller?.addDanmaku(
           DanmakuContentItem(
-            nextDanmaku.text,
-            color: nextDanmaku.color,
-            type: nextDanmaku.type,
+            element.text ?? '',
+            color:getRandomColor(element.color ?? '#FFFFFF'),
+            type: (element.type is DanmakuItemType) ? element.type as DanmakuItemType : const [
+                          DanmakuItemType.top,
+                          DanmakuItemType.bottom,
+                          DanmakuItemType.scroll,
+                        ][_random.nextInt(3)], 
           ),
         );
-        _lastDanmakuIndex++;
-      } else {
-        break;
-      }
-    }
+    });
+  }
+
+    // 生成随机颜色
+  static Color getRandomColor(String color) {
+    final hexColor = color.replaceAll('#', '');
+    final intColor = int.parse(hexColor, radix: 16);
+    return Color(0xFF000000 | intColor);
   }
 
   void reset() {
@@ -103,7 +108,10 @@ class _DanmakuViewState extends State<DanmakuViewComponents> {
         fit: StackFit.expand,
         children: [
           if (widget.child != null) widget.child!,
-          DanmakuScreen<int>(
+         SizedBox(
+          width: widget.width,
+          height: widget.height * 0.6,
+          child:  DanmakuScreen<int>(
             createdController: (e) {
               _controller = e;
               if (widget.showDanmaku && widget.danmakuList.isNotEmpty) {
@@ -118,9 +126,10 @@ class _DanmakuViewState extends State<DanmakuViewComponents> {
               strokeWidth: 1.5,
               lineHeight: 1.6,
               opacity: 1.0,
-              safeArea: false,
+              safeArea: true,
             ),
           ),
+         ),
           if (widget.overlayWidget != null) widget.overlayWidget!,
         ],
       ),

@@ -16,7 +16,6 @@ import 'package:get/get.dart';
 
 import '../main.dart';
 import '../views/cash_order/cash_order.dart';
-import '../views/danmu/Example.dart';
 import '../views/notice/notice.dart';
 import '../views/score_order/score_order.dart';
 import '../views/search/search.dart';
@@ -44,5 +43,4 @@ final List<GetPage> appGetPages = [
   GetPage(name: AppRoutes.cashPage, page: () => CashPage()),
   GetPage(name: AppRoutes.cashOrder, page: () => CashOrder()),
   GetPage(name: AppRoutes.environmentError, page: () => EnvironmentError()),
-  GetPage(name: AppRoutes.danmu, page: () => DanmakuExamplePage()),
 ];
