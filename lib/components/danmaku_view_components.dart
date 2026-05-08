@@ -73,21 +73,22 @@ class _DanmakuViewState extends State<DanmakuViewComponents> {
 
   void _checkAndShowDanmaku(int currentMilliseconds) {
     _danmakuList.forEach((element) {
-    _controller?.addDanmaku(
-          DanmakuContentItem(
-            element.text ?? '',
-            color:getRandomColor(element.color ?? '#FFFFFF'),
-            type: (element.type is DanmakuItemType) ? element.type as DanmakuItemType : const [
-                          DanmakuItemType.top,
-                          DanmakuItemType.bottom,
-                          DanmakuItemType.scroll,
-                        ][_random.nextInt(3)], 
-          ),
-        );
+      _controller?.addDanmaku(
+        DanmakuContentItem(
+          element.text ?? '',
+          color: getRandomColor(element.color ?? '#FFFFFF'),
+          // type: (element.type is DanmakuItemType) ? element.type as DanmakuItemType : const [
+          //               DanmakuItemType.top,
+          //               DanmakuItemType.bottom,
+          //               DanmakuItemType.scroll,
+          //             ][_random.nextInt(3)],
+          type: DanmakuItemType.values[element.type ?? 0],
+        ),
+      );
     });
   }
 
-    // 生成随机颜色
+  // 生成随机颜色
   static Color getRandomColor(String color) {
     final hexColor = color.replaceAll('#', '');
     final intColor = int.parse(hexColor, radix: 16);
@@ -108,28 +109,30 @@ class _DanmakuViewState extends State<DanmakuViewComponents> {
         fit: StackFit.expand,
         children: [
           if (widget.child != null) widget.child!,
-         SizedBox(
-          width: widget.width,
-          height: widget.height * 0.6,
-          child:  DanmakuScreen<int>(
-            createdController: (e) {
-              _controller = e;
-              if (widget.showDanmaku && widget.danmakuList.isNotEmpty) {
-                _checkAndShowDanmaku(widget.currentPosition.inMilliseconds);
-              }
-            },
-            option: widget.danmakuOption ?? const DanmakuOption(
-              fontSize: 16,
-              fontWeight: 4,
-              duration: 8.0,
-              staticDuration: 3.0,
-              strokeWidth: 1.5,
-              lineHeight: 1.6,
-              opacity: 1.0,
-              safeArea: true,
+          SizedBox(
+            width: widget.width,
+            height: (widget.height ?? 200) * 0.6,
+            child: DanmakuScreen<int>(
+              createdController: (e) {
+                _controller = e;
+                if (widget.showDanmaku && widget.danmakuList.isNotEmpty) {
+                  _checkAndShowDanmaku(widget.currentPosition.inMilliseconds);
+                }
+              },
+              option:
+                  widget.danmakuOption ??
+                  const DanmakuOption(
+                    fontSize: 16,
+                    fontWeight: 4,
+                    duration: 8.0,
+                    staticDuration: 3.0,
+                    strokeWidth: 1.5,
+                    lineHeight: 1.6,
+                    opacity: 1.0,
+                    safeArea: true,
+                  ),
             ),
           ),
-         ),
           if (widget.overlayWidget != null) widget.overlayWidget!,
         ],
       ),
