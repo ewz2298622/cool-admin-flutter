@@ -20,6 +20,8 @@ class UnifiedVideoPlayer extends StatefulWidget {
   final VideoController videoController;
   final PlayerStateNotifier? playerStateNotifier;
   final String videoUrl;
+  final String? videoId;
+  final int currentEpisodeIndex;
   final int videoFit;
   final double videoRate;
   final double longPressRate;
@@ -58,6 +60,8 @@ class UnifiedVideoPlayer extends StatefulWidget {
     required this.videoController,
     this.playerStateNotifier,
     this.videoUrl = '',
+    this.videoId,
+    this.currentEpisodeIndex = 0,
     this.videoFit = 0,
     this.videoRate = 1.0,
     this.longPressRate = 2.0,
@@ -120,6 +124,7 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
   bool _isMuted = false;
   double _previousVolume = 1.0;
   bool _isLocked = false;
+  Duration? _lastDanmakuRequestPosition;
 
   int get _videoFit => widget.playerStateNotifier?.videoFit ?? widget.videoFit;
   double get _volume => widget.playerStateNotifier?.volume ?? 1.0;
@@ -222,6 +227,7 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
         if (mounted && !_userIsDraggingSlider) {
           setState(() => _currentPosition = position);
           _handleSkipLogic(position);
+          _requestDanmaku(position.toString());
         }
       },
       onDurationChanged: (duration) {
@@ -237,8 +243,30 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
       },
     );
   }
+  
+  //0:01:53.303000 转毫秒 函数
+  double _convertTimeToMilliseconds(String timeStr) {
+    final parts = timeStr.split(':');
+    final hours = int.parse(parts[0]);
+    final minutes = int.parse(parts[1]);
+    final seconds = double.parse(parts[2]);
+    return (hours * 3600 + minutes * 60 + seconds) * 1000;
+  
+  }
 
-  void _resetSkipFlags() {
+  //请求函数
+  Future<void> _requestDanmaku(String position, {bool forceExecute = false}) async {
+    final currentPosition = _convertTimeToMilliseconds(position);
+    if (!forceExecute && _lastDanmakuRequestPosition != null && (currentPosition - _lastDanmakuRequestPosition!.inMilliseconds).abs() < 180000) {
+      return;
+    }
+    _lastDanmakuRequestPosition = Duration(milliseconds: currentPosition.toInt());
+    final milliseconds = currentPosition;
+    debugPrint('requestDanmaku 执行: position=$position 转化成毫秒数=$milliseconds');
+    debugPrint('requestDanmaku videoId: ${widget.videoId}  索引: ${widget.currentEpisodeIndex}');
+  }
+
+   void _resetSkipFlags() {
     _hasSkippedOpening = false;
     _hasTriggeredEnding = false;
   }
@@ -268,6 +296,10 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
   @override
   void didUpdateWidget(UnifiedVideoPlayer oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.currentEpisodeIndex != oldWidget.currentEpisodeIndex) {
+      _lastDanmakuRequestPosition = null;
+      _requestDanmaku('00:00:00');
+    }
     if (widget.showControls != oldWidget.showControls) {
       _showControls = widget.showControls;
     }
@@ -361,6 +393,7 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
       widget.player.play();
     }
     _startHideTimer();
+    _requestDanmaku(VideoPlayerUtils.formatDuration(_pendingSeekPosition), forceExecute: true);
   }
 
   void _onSliderChanged(double value) {
