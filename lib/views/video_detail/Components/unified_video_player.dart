@@ -100,7 +100,8 @@ class UnifiedVideoPlayer extends StatefulWidget {
   State<UnifiedVideoPlayer> createState() => _UnifiedVideoPlayerState();
 }
 
-class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
+class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
+    with SingleTickerProviderStateMixin {
   bool _showControls = true;
   final ControlsHideManager _hideManager = ControlsHideManager();
   bool _wasPlaying = false;
@@ -126,6 +127,8 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
   bool _isLocked = false;
   Duration? _lastDanmakuRequestPosition;
   List<VideoBarrageDataList> danmakuList = [];
+  int _episodeTabIndex = 0;
+  TabController? _tabController;
 
   int get _videoFit => widget.playerStateNotifier?.videoFit ?? widget.videoFit;
   double get _volume => widget.playerStateNotifier?.volume ?? 1.0;
@@ -1584,6 +1587,8 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
   }
 
   Widget _buildEpisodeSelectionContent() {
+    _episodeTabIndex = widget.currentLine.clamp(0, widget.tabData?.length ?? 1 - 1);
+
     return Positioned(
       right: 0,
       top: 0,
@@ -1632,100 +1637,136 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
                 ],
               ),
             ),
-            Expanded(
-              child:
-                  widget.tabData != null
-                      ? ListView.builder(
-                        padding: const EdgeInsets.all(12),
-                        itemCount: widget.tabData!.length,
-                        itemBuilder: (context, index) {
-                          final line = widget.tabData![index];
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                ),
-                                child: Text(
-                                  line.collectionName ?? '线路${index + 1}',
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children:
-                                    (line.playLines ?? []).asMap().entries.map((
-                                      entry,
-                                    ) {
-                                      final playIndex = entry.key;
-                                      final isSelected =
-                                          widget.currentLine == index &&
-                                          widget.currentPlay == playIndex;
-
-                                      return GestureDetector(
-                                        onTap: () {
-                                          widget.onSelectionChanged?.call(
-                                            index,
-                                            {playIndex},
-                                          );
-                                          setState(
-                                            () => _showEpisodeSelection = false,
-                                          );
-                                        },
-                                        child: Container(
-                                          width: 60,
-                                          height: 36,
-                                          decoration: BoxDecoration(
-                                            color:
-                                                isSelected
-                                                    ? const Color(0xFFE53935)
-                                                    : Colors.white.withValues(
-                                                      alpha: 0.1,
-                                                    ),
-                                            borderRadius: BorderRadius.circular(
-                                              6,
-                                            ),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              '${playIndex + 1}',
-                                              style: TextStyle(
-                                                color:
-                                                    isSelected
-                                                        ? Colors.white
-                                                        : Colors.white70,
-                                                fontSize: 14,
-                                                fontWeight:
-                                                    isSelected
-                                                        ? FontWeight.w600
-                                                        : FontWeight.normal,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                              ),
-                            ],
-                          );
-                        },
-                      )
-                      : const Center(
-                        child: Text(
-                          '暂无选集信息',
-                          style: TextStyle(color: Colors.white54, fontSize: 14),
-                        ),
-                      ),
-            ),
+            if (widget.tabData != null && widget.tabData!.isNotEmpty) ...[
+              _buildTabBar(),
+              Expanded(
+                child: _buildTabBarView(),
+              ),
+            ] else ...[
+              const Expanded(
+                child: Center(
+                  child: Text(
+                    '暂无选集信息',
+                    style: TextStyle(color: Colors.white54, fontSize: 14),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTabBar() {
+    if (_tabController == null || _tabController!.length != widget.tabData!.length) {
+      _tabController?.dispose();
+      _tabController = TabController(
+        length: widget.tabData!.length,
+        vsync: this,
+        initialIndex: _episodeTabIndex,
+      );
+      _tabController!.addListener(() {
+        if (_tabController!.indexIsChanging) {
+          setState(() => _episodeTabIndex = _tabController!.index);
+        }
+      });
+    }
+
+    return TabBar(
+      controller: _tabController,
+      isScrollable: true,
+      tabAlignment: TabAlignment.center,
+      dividerHeight: 0,
+      indicator: const UnderlineTabIndicator(
+        borderSide: BorderSide(
+          width: 2.0,
+          color: Color(0xFFE53935),
+        ),
+        insets: EdgeInsets.symmetric(horizontal: 16),
+      ),
+      indicatorSize: TabBarIndicatorSize.label,
+      labelColor: const Color(0xFFE53935),
+      unselectedLabelColor: Colors.white70,
+      labelStyle: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+      ),
+      unselectedLabelStyle: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.normal,
+      ),
+      tabs: widget.tabData!
+          .map((tab) => Tab(text: tab.collectionName ?? '线路'))
+          .toList(),
+    );
+  }
+
+  Widget _buildTabBarView() {
+    return TabBarView(
+      controller: _tabController,
+      physics: const BouncingScrollPhysics(),
+      children: widget.tabData!.map((line) {
+        final tabIndex = widget.tabData!.indexOf(line);
+        final playLines = line.playLines ?? [];
+
+        if (playLines.isEmpty) {
+          return const Center(
+            child: Text(
+              '暂无播放线路',
+              style: TextStyle(
+                color: Colors.white54,
+                fontSize: 14,
+              ),
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(12),
+          itemCount: playLines.length,
+          itemBuilder: (context, index) {
+            final playLine = playLines[index];
+            final isSelected =
+                widget.currentLine == tabIndex &&
+                widget.currentPlay == index;
+
+            return GestureDetector(
+              onTap: () {
+                widget.onSelectionChanged?.call(
+                  tabIndex,
+                  {index},
+                );
+                setState(() => _showEpisodeSelection = false);
+              },
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                height: 36,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? const Color(0xFFE53935)
+                      : Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Center(
+                  child: Text(
+                    playLine.name ?? '${index + 1}',
+                    style: TextStyle(
+                      color:
+                          isSelected ? Colors.white : Colors.white70,
+                      fontSize: 14,
+                      fontWeight:
+                          isSelected
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      }).toList(),
     );
   }
 }
