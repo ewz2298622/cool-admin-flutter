@@ -129,11 +129,16 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
 
   int get _videoFit => widget.playerStateNotifier?.videoFit ?? widget.videoFit;
   double get _volume => widget.playerStateNotifier?.volume ?? 1.0;
-  double get _brightness => widget.playerStateNotifier?.brightness ?? widget.brightness;
-  double get _skipOpening => widget.playerStateNotifier?.skipOpening ?? widget.skipOpening;
-  double get _skipEnding => widget.playerStateNotifier?.skipEnding ?? widget.skipEnding;
-  double get _videoRate => widget.playerStateNotifier?.videoRate ?? widget.videoRate;
-  double get _longPressRate => widget.playerStateNotifier?.longPressRate ?? widget.longPressRate;
+  double get _brightness =>
+      widget.playerStateNotifier?.brightness ?? widget.brightness;
+  double get _skipOpening =>
+      widget.playerStateNotifier?.skipOpening ?? widget.skipOpening;
+  double get _skipEnding =>
+      widget.playerStateNotifier?.skipEnding ?? widget.skipEnding;
+  double get _videoRate =>
+      widget.playerStateNotifier?.videoRate ?? widget.videoRate;
+  double get _longPressRate =>
+      widget.playerStateNotifier?.longPressRate ?? widget.longPressRate;
 
   @override
   void initState() {
@@ -160,7 +165,6 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
       widget.onUpdate!();
     }
   }
-
 
   Future<void> _initBrightness() async {
     try {
@@ -237,7 +241,7 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
       },
     );
   }
-  
+
   //0:01:53.303000 转毫秒 函数
   double _convertTimeToMilliseconds(String timeStr) {
     final parts = timeStr.split(':');
@@ -245,30 +249,40 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
     final minutes = int.parse(parts[1]);
     final seconds = double.parse(parts[2]);
     return (hours * 3600 + minutes * 60 + seconds) * 1000;
-  
   }
 
   //请求函数
-  Future<void> _requestDanmaku(String position, {bool forceExecute = false}) async {
+  Future<void> _requestDanmaku(
+    String position, {
+    bool forceExecute = false,
+  }) async {
     final currentPosition = _convertTimeToMilliseconds(position);
-    if (!forceExecute && _lastDanmakuRequestPosition != null && (currentPosition - _lastDanmakuRequestPosition!.inMilliseconds).abs() < 180000) {
+    if (!forceExecute &&
+        _lastDanmakuRequestPosition != null &&
+        (currentPosition - _lastDanmakuRequestPosition!.inMilliseconds).abs() <
+            180000) {
       return;
     }
-    _lastDanmakuRequestPosition = Duration(milliseconds: currentPosition.toInt());
+    _lastDanmakuRequestPosition = Duration(
+      milliseconds: currentPosition.toInt(),
+    );
     final milliseconds = currentPosition;
     debugPrint('requestDanmaku 执行: position=$position 转化成毫秒数=$milliseconds');
-    debugPrint('requestDanmaku videoId: ${widget.videoId}  索引: ${widget.currentEpisodeIndex}');
-    danmakuList =( await Api.videoBarrage({
-      'videoId': widget.videoId,
-      'startTime': milliseconds,
-      'endTime': milliseconds+1000*60,
-    })).data?.list ?? [];
-    setState( () {});
+    debugPrint(
+      'requestDanmaku videoId: ${widget.videoId}  索引: ${widget.currentEpisodeIndex}',
+    );
+    danmakuList =
+        (await Api.videoBarrage({
+          'videoId': widget.videoId,
+          'startTime': milliseconds,
+          'endTime': milliseconds + 1000 * 60,
+        })).data?.list ??
+        [];
+    setState(() {});
     debugPrint('requestDanmaku 执行: danmakuList=${danmakuList.length}');
-
   }
 
-   void _resetSkipFlags() {
+  void _resetSkipFlags() {
     _hasSkippedOpening = false;
     _hasTriggeredEnding = false;
   }
@@ -395,7 +409,10 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
       widget.player.play();
     }
     _startHideTimer();
-    _requestDanmaku(VideoPlayerUtils.formatDuration(_pendingSeekPosition), forceExecute: true);
+    _requestDanmaku(
+      VideoPlayerUtils.formatDuration(_pendingSeekPosition),
+      forceExecute: true,
+    );
   }
 
   void _onSliderChanged(double value) {
@@ -493,9 +510,8 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
   Widget build(BuildContext context) {
     final playerNotifier = widget.playerStateNotifier;
 
-    Widget content = widget.isFullScreen
-        ? _buildFullScreenContent()
-        : _buildNormalContent();
+    Widget content =
+        widget.isFullScreen ? _buildFullScreenContent() : _buildNormalContent();
 
     if (playerNotifier != null) {
       content = ListenableBuilder(
@@ -509,10 +525,7 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
     }
 
     if (widget.isFullScreen) {
-      return Scaffold(
-        backgroundColor: Colors.black,
-        body: content,
-      );
+      return Scaffold(backgroundColor: Colors.black, body: content);
     }
 
     return content;
@@ -522,17 +535,23 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
     return GestureDetector(
       onTap: _onTapVideo,
       onDoubleTap: _isLocked ? null : _togglePlayPause,
-      onLongPressStart: _isLocked ? null : (_) {
-        _previousRate = widget.player.state.rate;
-        widget.player.setRate(_longPressRate);
-        Fluttertoast.showToast(
-          msg: "${_longPressRate}x 倍速播放",
-          toastLength: Toast.LENGTH_SHORT,
-        );
-      },
-      onLongPressEnd: _isLocked ? null : (_) {
-        widget.player.setRate(_previousRate);
-      },
+      onLongPressStart:
+          _isLocked
+              ? null
+              : (_) {
+                _previousRate = widget.player.state.rate;
+                widget.player.setRate(_longPressRate);
+                Fluttertoast.showToast(
+                  msg: "${_longPressRate}x 倍速播放",
+                  toastLength: Toast.LENGTH_SHORT,
+                );
+              },
+      onLongPressEnd:
+          _isLocked
+              ? null
+              : (_) {
+                widget.player.setRate(_previousRate);
+              },
       child: Container(
         width: double.infinity,
         height: double.infinity,
@@ -548,16 +567,17 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
                 child: Video(
                   controller: widget.videoController,
                   fill: Colors.black,
-                  fit: _pipManager.isInPipMode
-                      ? BoxFit.fill
-                      : VideoPlayerUtils.getFullScreenBoxFit(_videoFit),
+                  fit:
+                      _pipManager.isInPipMode
+                          ? BoxFit.fill
+                          : VideoPlayerUtils.getFullScreenBoxFit(_videoFit),
                   controls: null,
-                  subtitleViewConfiguration: const SubtitleViewConfiguration(visible: false),
+                  subtitleViewConfiguration: const SubtitleViewConfiguration(
+                    visible: false,
+                  ),
                 ),
               ),
-              if (_isLocked) ...[
-                _buildMiddleControls(),
-              ],
+              if (_isLocked) ...[_buildMiddleControls()],
               if (!_isLocked && _showControls && !_isBuffering) ...[
                 _buildTopBar(),
                 _buildMiddleControls(),
@@ -568,6 +588,25 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
               if (_showEpisodeSelection && !_isLocked) ...[
                 _buildEpisodeSelectionPanel(),
                 _buildEpisodeSelectionContent(),
+              ],
+              if (widget.isFullScreen) ...[
+                Positioned(
+                  top: 0,
+                  bottom: 0,
+                  left: 20,
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: _toggleLock,
+                      child: Icon(
+                        _isLocked
+                            ? CupertinoIcons.lock_fill
+                            : CupertinoIcons.lock_open_fill,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ],
           ),
@@ -603,11 +642,14 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
               Video(
                 controller: widget.videoController,
                 fill: Colors.black,
-                fit: _pipManager.isInPipMode
-                    ? BoxFit.fill
-                    : VideoPlayerUtils.getBoxFit(_videoFit),
+                fit:
+                    _pipManager.isInPipMode
+                        ? BoxFit.fill
+                        : VideoPlayerUtils.getBoxFit(_videoFit),
                 controls: null,
-                subtitleViewConfiguration: const SubtitleViewConfiguration(visible: false),
+                subtitleViewConfiguration: const SubtitleViewConfiguration(
+                  visible: false,
+                ),
               ),
               if (_isBuffering)
                 const Center(child: PageLoading())
@@ -643,19 +685,31 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
               CupertinoButton(
                 padding: EdgeInsets.zero,
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Icon(CupertinoIcons.back, color: Colors.white, size: 24),
+                child: const Icon(
+                  CupertinoIcons.back,
+                  color: Colors.white,
+                  size: 24,
+                ),
               ),
             if (!widget.isFullScreen)
               CupertinoButton(
                 padding: EdgeInsets.zero,
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Icon(CupertinoIcons.back, color: Colors.white, size: 24),
+                child: const Icon(
+                  CupertinoIcons.back,
+                  color: Colors.white,
+                  size: 24,
+                ),
               ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 widget.videoTitle,
-                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -677,7 +731,11 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
               CupertinoButton(
                 padding: EdgeInsets.zero,
                 onPressed: widget.onCastingPressed,
-                child: const Icon(CupertinoIcons.tv, color: Colors.white, size: 22),
+                child: const Icon(
+                  CupertinoIcons.tv,
+                  color: Colors.white,
+                  size: 22,
+                ),
               ),
               CupertinoButton(
                 padding: EdgeInsets.zero,
@@ -688,7 +746,11 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
                   });
                   _hideManager.cancelTimer();
                 },
-                child: const Icon(CupertinoIcons.settings, color: Colors.white, size: 22),
+                child: const Icon(
+                  CupertinoIcons.settings,
+                  color: Colors.white,
+                  size: 22,
+                ),
               ),
             ] else ...[
               if (_pipManager.isPipSupported)
@@ -706,12 +768,20 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
               CupertinoButton(
                 padding: EdgeInsets.zero,
                 onPressed: widget.onCastingPressed,
-                child: const Icon(CupertinoIcons.tv, color: Colors.white, size: 22),
+                child: const Icon(
+                  CupertinoIcons.tv,
+                  color: Colors.white,
+                  size: 22,
+                ),
               ),
               CupertinoButton(
                 padding: EdgeInsets.zero,
                 onPressed: widget.onSettingsPressed,
-                child: const Icon(CupertinoIcons.settings, color: Colors.white, size: 22),
+                child: const Icon(
+                  CupertinoIcons.settings,
+                  color: Colors.white,
+                  size: 22,
+                ),
               ),
             ],
           ],
@@ -725,22 +795,14 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (widget.isFullScreen) ...[
-            GestureDetector(
-              onTap: _toggleLock,
-              child: Icon(
-                _isLocked ? CupertinoIcons.lock_fill : CupertinoIcons.lock_open_fill,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 40),
-          ],
           GestureDetector(
             onTap: _isLocked ? null : _skipBackward,
             child: Icon(
               CupertinoIcons.gobackward_10,
-              color: _isLocked ? Colors.white.withValues(alpha: 0.3) : Colors.white,
+              color:
+                  _isLocked
+                      ? Colors.white.withValues(alpha: 0.3)
+                      : Colors.white,
               size: 34,
             ),
           ),
@@ -749,7 +811,10 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
             onTap: _isLocked ? null : _skipForward,
             child: Icon(
               CupertinoIcons.goforward_10,
-              color: _isLocked ? Colors.white.withValues(alpha: 0.3) : Colors.white,
+              color:
+                  _isLocked
+                      ? Colors.white.withValues(alpha: 0.3)
+                      : Colors.white,
               size: 34,
             ),
           ),
@@ -776,7 +841,11 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
             CupertinoButton(
               padding: EdgeInsets.zero,
               onPressed: () => Navigator.of(context).pop(),
-              child: const Icon(CupertinoIcons.back, color: Colors.white, size: 24),
+              child: const Icon(
+                CupertinoIcons.back,
+                color: Colors.white,
+                size: 24,
+              ),
             ),
             const Spacer(),
             if (_pipManager.isPipSupported)
@@ -794,12 +863,20 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
             CupertinoButton(
               padding: EdgeInsets.zero,
               onPressed: widget.onCastingPressed,
-              child: const Icon(CupertinoIcons.tv, color: Colors.white, size: 22),
+              child: const Icon(
+                CupertinoIcons.tv,
+                color: Colors.white,
+                size: 22,
+              ),
             ),
             CupertinoButton(
               padding: EdgeInsets.zero,
               onPressed: widget.onSettingsPressed,
-              child: const Icon(CupertinoIcons.settings, color: Colors.white, size: 22),
+              child: const Icon(
+                CupertinoIcons.settings,
+                color: Colors.white,
+                size: 22,
+              ),
             ),
           ],
         ),
@@ -814,12 +891,20 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
         children: [
           GestureDetector(
             onTap: _skipBackward,
-            child: const Icon(CupertinoIcons.gobackward_10, color: Colors.white, size: 34),
+            child: const Icon(
+              CupertinoIcons.gobackward_10,
+              color: Colors.white,
+              size: 34,
+            ),
           ),
           const SizedBox(width: 60),
           GestureDetector(
             onTap: _skipForward,
-            child: const Icon(CupertinoIcons.goforward_10, color: Colors.white, size: 34),
+            child: const Icon(
+              CupertinoIcons.goforward_10,
+              color: Colors.white,
+              size: 34,
+            ),
           ),
         ],
       ),
@@ -845,7 +930,9 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
             GestureDetector(
               onTap: _togglePlayPause,
               child: Icon(
-                _isPlaying ? CupertinoIcons.pause_fill : CupertinoIcons.play_fill,
+                _isPlaying
+                    ? CupertinoIcons.pause_fill
+                    : CupertinoIcons.play_fill,
                 color: Colors.white,
                 size: 24,
               ),
@@ -853,7 +940,11 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
             const SizedBox(width: 12),
             GestureDetector(
               onTap: _playNext,
-              child: const Icon(CupertinoIcons.forward_end_fill, color: Colors.white, size: 20),
+              child: const Icon(
+                CupertinoIcons.forward_end_fill,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
             const SizedBox(width: 8),
             Text(
@@ -861,9 +952,7 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
               style: const TextStyle(color: Colors.white, fontSize: 13),
             ),
             const SizedBox(width: 8),
-            Expanded(
-              child: _buildProgressIndicator(),
-            ),
+            Expanded(child: _buildProgressIndicator()),
             const SizedBox(width: 8),
             Text(
               VideoPlayerUtils.formatDuration(_totalDuration),
@@ -872,12 +961,19 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
             const SizedBox(width: 8),
             GestureDetector(
               onTap: () => widget.onRateValueChanged?.call(),
-              child: Text('${widget.videoRate}x', style: const TextStyle(color: Colors.white, fontSize: 13)),
+              child: Text(
+                '${widget.videoRate}x',
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+              ),
             ),
             const SizedBox(width: 8),
             GestureDetector(
               onTap: widget.onFullScreenPressed,
-              child: const Icon(CupertinoIcons.arrow_up_left_arrow_down_right, color: Colors.white, size: 24),
+              child: const Icon(
+                CupertinoIcons.arrow_up_left_arrow_down_right,
+                color: Colors.white,
+                size: 24,
+              ),
             ),
           ],
         ),
@@ -886,10 +982,17 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
   }
 
   Widget _buildBottomBar() {
-    final maxValue = _totalDuration.inMilliseconds > 0 ? _totalDuration.inMilliseconds.toDouble() : 1.0;
-    final currentValue = _userIsDraggingSlider
-        ? _pendingSeekPosition.inMilliseconds.toDouble().clamp(0.0, maxValue)
-        : _currentPosition.inMilliseconds.toDouble().clamp(0.0, maxValue);
+    final maxValue =
+        _totalDuration.inMilliseconds > 0
+            ? _totalDuration.inMilliseconds.toDouble()
+            : 1.0;
+    final currentValue =
+        _userIsDraggingSlider
+            ? _pendingSeekPosition.inMilliseconds.toDouble().clamp(
+              0.0,
+              maxValue,
+            )
+            : _currentPosition.inMilliseconds.toDouble().clamp(0.0, maxValue);
 
     return Positioned(
       bottom: 0,
@@ -907,7 +1010,8 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (widget.isFullScreen) _buildProgressSlider(currentValue, maxValue),
+            if (widget.isFullScreen)
+              _buildProgressSlider(currentValue, maxValue),
             if (!widget.isFullScreen) _buildSimpleBottomBar(),
             if (widget.isFullScreen) _buildFullScreenBottomControls(),
           ],
@@ -966,31 +1070,42 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
         const SizedBox(width: 12),
         GestureDetector(
           onTap: _playNext,
-          child: const Icon(CupertinoIcons.forward_end_fill, color: Colors.white, size: 20),
+          child: const Icon(
+            CupertinoIcons.forward_end_fill,
+            color: Colors.white,
+            size: 20,
+          ),
         ),
         const SizedBox(width: 12),
-        Expanded(
-          child: _buildProgressIndicator(),
-        ),
+        Expanded(child: _buildProgressIndicator()),
         const SizedBox(width: 8),
         GestureDetector(
           onTap: () => widget.onRateValueChanged?.call(),
-          child: Text('${widget.videoRate}x', style: const TextStyle(color: Colors.white, fontSize: 13)),
+          child: Text(
+            '${widget.videoRate}x',
+            style: const TextStyle(color: Colors.white, fontSize: 13),
+          ),
         ),
         const SizedBox(width: 8),
         GestureDetector(
           onTap: widget.onFullScreenPressed,
-          child: const Icon(CupertinoIcons.arrow_up_left_arrow_down_right, color: Colors.white, size: 24),
+          child: const Icon(
+            CupertinoIcons.arrow_up_left_arrow_down_right,
+            color: Colors.white,
+            size: 24,
+          ),
         ),
       ],
     );
   }
 
   Widget _buildProgressIndicator() {
-    final displayPosition = _userIsDraggingSlider ? _pendingSeekPosition : _currentPosition;
-    final progress = _totalDuration.inMilliseconds > 0
-        ? displayPosition.inMilliseconds / _totalDuration.inMilliseconds
-        : 0.0;
+    final displayPosition =
+        _userIsDraggingSlider ? _pendingSeekPosition : _currentPosition;
+    final progress =
+        _totalDuration.inMilliseconds > 0
+            ? displayPosition.inMilliseconds / _totalDuration.inMilliseconds
+            : 0.0;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -1006,7 +1121,8 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
               final double localDx = details.localPosition.dx.clamp(0.0, width);
               final double progressFactor = localDx / width;
               final Duration seekPosition = Duration(
-                milliseconds: (_totalDuration.inMilliseconds * progressFactor).round(),
+                milliseconds:
+                    (_totalDuration.inMilliseconds * progressFactor).round(),
               );
               _pendingSeekPosition = seekPosition;
               setState(() => _currentPosition = seekPosition);
@@ -1083,13 +1199,19 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
         const SizedBox(width: 12),
         GestureDetector(
           onTap: _playNext,
-          child: const Icon(CupertinoIcons.forward_end_fill, color: Colors.white, size: 20),
+          child: const Icon(
+            CupertinoIcons.forward_end_fill,
+            color: Colors.white,
+            size: 20,
+          ),
         ),
         const SizedBox(width: 8),
         GestureDetector(
           onTap: _toggleMute,
           child: Icon(
-            _isMuted ? CupertinoIcons.speaker_slash_fill : CupertinoIcons.speaker_fill,
+            _isMuted
+                ? CupertinoIcons.speaker_slash_fill
+                : CupertinoIcons.speaker_fill,
             color: _isMuted ? Colors.red : Colors.white,
             size: 22,
           ),
@@ -1103,7 +1225,10 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
             width: 42,
             height: 22,
             decoration: BoxDecoration(
-              color: _showDanmaku ? const Color(0xFFE53935) : const Color(0xFFB0B0B0),
+              color:
+                  _showDanmaku
+                      ? const Color(0xFFE53935)
+                      : const Color(0xFFB0B0B0),
               borderRadius: BorderRadius.circular(11),
             ),
             child: Stack(
@@ -1111,7 +1236,10 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
                 AnimatedAlign(
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeInOut,
-                  alignment: _showDanmaku ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment:
+                      _showDanmaku
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
                   child: Container(
                     width: 18,
                     height: 18,
@@ -1124,7 +1252,10 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
                       child: Text(
                         '弹',
                         style: TextStyle(
-                          color: _showDanmaku ? const Color(0xFFE53935) : const Color(0xFFB0B0B0),
+                          color:
+                              _showDanmaku
+                                  ? const Color(0xFFE53935)
+                                  : const Color(0xFFB0B0B0),
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
@@ -1149,7 +1280,10 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
               children: [
                 Text(
                   '发个友善的弹幕见证当下',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12),
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.5),
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -1160,12 +1294,18 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
           onTap: () {
             setState(() => _showEpisodeSelection = !_showEpisodeSelection);
           },
-          child: const Text('选集', style: TextStyle(color: Colors.white, fontSize: 13)),
+          child: const Text(
+            '选集',
+            style: TextStyle(color: Colors.white, fontSize: 13),
+          ),
         ),
         const SizedBox(width: 16),
         GestureDetector(
           onTap: widget.onRateChanged,
-          child: Text('${_videoRate}x', style: const TextStyle(color: Colors.white, fontSize: 13)),
+          child: Text(
+            '${_videoRate}x',
+            style: const TextStyle(color: Colors.white, fontSize: 13),
+          ),
         ),
       ],
     );
@@ -1195,18 +1335,28 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
                   children: [
                     const Text(
                       '播放设置',
-                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const Spacer(),
                     GestureDetector(
                       onTap: _resetToDefaults,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white12,
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Text('恢复默认设置', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        child: const Text(
+                          '恢复默认设置',
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -1222,7 +1372,11 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
                           color: Colors.white12,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.close, color: Colors.white70, size: 18),
+                        child: const Icon(
+                          Icons.close,
+                          color: Colors.white70,
+                          size: 18,
+                        ),
                       ),
                     ),
                   ],
@@ -1262,68 +1416,106 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
                         const SizedBox(height: 20),
                         const Text(
                           '倍速播放',
-                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                         const SizedBox(height: 12),
                         Wrap(
                           spacing: 12,
-                          children: widget.rateList.map((rate) {
-                            final isSelected = _videoRate == rate;
-                            return GestureDetector(
-                              onTap: () {
-                                widget.playerStateNotifier?.setVideoRate(rate);
-                                widget.player.setRate(rate);
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: isSelected ? const Color(0xFFE53935) : Colors.white12,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  '${rate}x',
-                                  style: TextStyle(
-                                    color: isSelected ? Colors.white : Colors.white70,
-                                    fontSize: 14,
-                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                          children:
+                              widget.rateList.map((rate) {
+                                final isSelected = _videoRate == rate;
+                                return GestureDetector(
+                                  onTap: () {
+                                    widget.playerStateNotifier?.setVideoRate(
+                                      rate,
+                                    );
+                                    widget.player.setRate(rate);
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          isSelected
+                                              ? const Color(0xFFE53935)
+                                              : Colors.white12,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      '${rate}x',
+                                      style: TextStyle(
+                                        color:
+                                            isSelected
+                                                ? Colors.white
+                                                : Colors.white70,
+                                        fontSize: 14,
+                                        fontWeight:
+                                            isSelected
+                                                ? FontWeight.w600
+                                                : FontWeight.normal,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
+                                );
+                              }).toList(),
                         ),
                         const SizedBox(height: 20),
                         const Text(
                           '画面填充',
-                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                         const SizedBox(height: 12),
                         Wrap(
                           spacing: 12,
-                          children: widget.fitModes.asMap().entries.map((entry) {
-                            final isSelected = _videoFit == entry.key;
-                            return GestureDetector(
-                              onTap: () {
-                                widget.playerStateNotifier?.setVideoFit(entry.key);
-                                widget.onVideoFitChanged?.call();
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: isSelected ? const Color(0xFFE53935) : Colors.white12,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  entry.value,
-                                  style: TextStyle(
-                                    color: isSelected ? Colors.white : Colors.white70,
-                                    fontSize: 14,
-                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                          children:
+                              widget.fitModes.asMap().entries.map((entry) {
+                                final isSelected = _videoFit == entry.key;
+                                return GestureDetector(
+                                  onTap: () {
+                                    widget.playerStateNotifier?.setVideoFit(
+                                      entry.key,
+                                    );
+                                    widget.onVideoFitChanged?.call();
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          isSelected
+                                              ? const Color(0xFFE53935)
+                                              : Colors.white12,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      entry.value,
+                                      style: TextStyle(
+                                        color:
+                                            isSelected
+                                                ? Colors.white
+                                                : Colors.white70,
+                                        fontSize: 14,
+                                        fontWeight:
+                                            isSelected
+                                                ? FontWeight.w600
+                                                : FontWeight.normal,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
+                                );
+                              }).toList(),
                         ),
                       ],
                     ),
@@ -1337,14 +1529,23 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
     );
   }
 
-  Widget _buildSliderRow(String label, double value, Function(double) onChanged, {double max = 1.0, bool isTime = false}) {
+  Widget _buildSliderRow(
+    String label,
+    double value,
+    Function(double) onChanged, {
+    double max = 1.0,
+    bool isTime = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+            Text(
+              label,
+              style: const TextStyle(color: Colors.white70, fontSize: 14),
+            ),
             Text(
               isTime ? '${value.toInt()}秒' : '${(value * 100).toInt()}%',
               style: const TextStyle(color: Colors.white70, fontSize: 14),
@@ -1402,7 +1603,9 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                  bottom: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.1),
+                  ),
                 ),
               ),
               child: Row(
@@ -1420,78 +1623,105 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer> {
                     onTap: () {
                       setState(() => _showEpisodeSelection = false);
                     },
-                    child: const Icon(Icons.close, color: Colors.white70, size: 22),
+                    child: const Icon(
+                      Icons.close,
+                      color: Colors.white70,
+                      size: 22,
+                    ),
                   ),
                 ],
               ),
             ),
             Expanded(
-              child: widget.tabData != null
-                  ? ListView.builder(
-                      padding: const EdgeInsets.all(12),
-                      itemCount: widget.tabData!.length,
-                      itemBuilder: (context, index) {
-                        final line = widget.tabData![index];
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: Text(
-                                line.collectionName ?? '线路${index + 1}',
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
+              child:
+                  widget.tabData != null
+                      ? ListView.builder(
+                        padding: const EdgeInsets.all(12),
+                        itemCount: widget.tabData!.length,
+                        itemBuilder: (context, index) {
+                          final line = widget.tabData![index];
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                ),
+                                child: Text(
+                                  line.collectionName ?? '线路${index + 1}',
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
-                            ),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: (line.playLines ?? []).asMap().entries.map((entry) {
-                                final playIndex = entry.key;
-                                final isSelected = widget.currentLine == index &&
-                                    widget.currentPlay == playIndex;
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children:
+                                    (line.playLines ?? []).asMap().entries.map((
+                                      entry,
+                                    ) {
+                                      final playIndex = entry.key;
+                                      final isSelected =
+                                          widget.currentLine == index &&
+                                          widget.currentPlay == playIndex;
 
-                                return GestureDetector(
-                                  onTap: () {
-                                    widget.onSelectionChanged?.call(index, {playIndex});
-                                    setState(() => _showEpisodeSelection = false);
-                                  },
-                                  child: Container(
-                                    width: 60,
-                                    height: 36,
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? const Color(0xFFE53935)
-                                          : Colors.white.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        '${playIndex + 1}',
-                                        style: TextStyle(
-                                          color: isSelected ? Colors.white : Colors.white70,
-                                          fontSize: 14,
-                                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                      return GestureDetector(
+                                        onTap: () {
+                                          widget.onSelectionChanged?.call(
+                                            index,
+                                            {playIndex},
+                                          );
+                                          setState(
+                                            () => _showEpisodeSelection = false,
+                                          );
+                                        },
+                                        child: Container(
+                                          width: 60,
+                                          height: 36,
+                                          decoration: BoxDecoration(
+                                            color:
+                                                isSelected
+                                                    ? const Color(0xFFE53935)
+                                                    : Colors.white.withValues(
+                                                      alpha: 0.1,
+                                                    ),
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              '${playIndex + 1}',
+                                              style: TextStyle(
+                                                color:
+                                                    isSelected
+                                                        ? Colors.white
+                                                        : Colors.white70,
+                                                fontSize: 14,
+                                                fontWeight:
+                                                    isSelected
+                                                        ? FontWeight.w600
+                                                        : FontWeight.normal,
+                                              ),
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ],
-                        );
-                      },
-                    )
-                  : const Center(
-                      child: Text(
-                        '暂无选集信息',
-                        style: TextStyle(color: Colors.white54, fontSize: 14),
+                                      );
+                                    }).toList(),
+                              ),
+                            ],
+                          );
+                        },
+                      )
+                      : const Center(
+                        child: Text(
+                          '暂无选集信息',
+                          style: TextStyle(color: Colors.white54, fontSize: 14),
+                        ),
                       ),
-                    ),
             ),
           ],
         ),
