@@ -31,8 +31,8 @@ class UnifiedVideoPlayer extends StatefulWidget {
   final String videoTitle;
   final List<String> fitModes;
   final List<VideoDetailDataDataLines>? tabData;
-  final int currentLine;
-  final int currentPlay;
+  final ValueNotifier<int> currentLine;
+  final ValueNotifier<int> currentPlay;
   final Function(int tabIndex, Set<int> selectedIndices)? onSelectionChanged;
   final VoidCallback? onSettingsPressed;
   final VoidCallback? onFullScreenPressed;
@@ -71,8 +71,8 @@ class UnifiedVideoPlayer extends StatefulWidget {
     this.videoTitle = '',
     this.fitModes = const ['contain', 'cover', 'fill', 'fitWidth', 'fitHeight'],
     this.tabData,
-    this.currentLine = 0,
-    this.currentPlay = 0,
+    required this.currentLine,
+    required this.currentPlay,
     this.onSelectionChanged,
     this.onSettingsPressed,
     this.onFullScreenPressed,
@@ -150,6 +150,10 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
     _totalDuration = widget.player.state.duration;
     _currentPosition = widget.player.state.position;
     _isPlaying = widget.player.state.playing;
+    _episodeTabIndex = widget.currentLine.value.clamp(0, (widget.tabData?.length ?? 1) - 1);
+
+    widget.currentLine.addListener(_onCurrentLineChanged);
+    widget.currentPlay.addListener(_onCurrentPlayChanged);
 
     if (widget.isFullScreen) {
       _enterFullScreenMode();
@@ -161,6 +165,30 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
     _initPip();
     _initBrightness();
     _notifyUpdate();
+  }
+
+  void _onCurrentLineChanged() {
+    if (mounted) {
+      _episodeTabIndex = widget.currentLine.value.clamp(0, (widget.tabData?.length ?? 1) - 1);
+      _updateTabController();
+      setState(() {});
+    }
+  }
+
+  void _onCurrentPlayChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _updateTabController() {
+    if (_tabController != null &&
+        widget.tabData != null &&
+        _tabController!.length == widget.tabData!.length) {
+      if (_tabController!.index != _episodeTabIndex) {
+        _tabController!.animateTo(_episodeTabIndex);
+      }
+    }
   }
 
   void _notifyUpdate() {
@@ -319,6 +347,11 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
       _lastDanmakuRequestPosition = null;
       _requestDanmaku('00:00:00');
     }
+    if (oldWidget.currentLine.value != widget.currentLine.value ||
+        oldWidget.currentPlay.value != widget.currentPlay.value) {
+      _episodeTabIndex = widget.currentLine.value.clamp(0, (widget.tabData?.length ?? 1) - 1);
+      _updateTabController();
+    }
     if (widget.showControls != oldWidget.showControls) {
       _showControls = widget.showControls;
     }
@@ -332,10 +365,13 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
 
   @override
   void dispose() {
+    widget.currentLine.removeListener(_onCurrentLineChanged);
+    widget.currentPlay.removeListener(_onCurrentPlayChanged);
     _resetBrightness();
     _hideManager.dispose();
     _playerStateManager.dispose();
     _pipManager.dispose();
+    _tabController?.dispose();
     if (widget.isFullScreen) {
       _exitFullScreenMode();
     }
@@ -1587,7 +1623,7 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
   }
 
   Widget _buildEpisodeSelectionContent() {
-    _episodeTabIndex = widget.currentLine.clamp(0, widget.tabData?.length ?? 1 - 1);
+    _episodeTabIndex = widget.currentLine.value.clamp(0, (widget.tabData?.length ?? 1) - 1);
 
     return Positioned(
       right: 0,
@@ -1597,10 +1633,6 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
       child: Container(
         decoration: const BoxDecoration(
           color: Color(0xCC1A1A1A),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(12),
-            bottomLeft: Radius.circular(12),
-          ),
         ),
         child: Column(
           children: [
@@ -1703,70 +1735,80 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
   }
 
   Widget _buildTabBarView() {
-    return TabBarView(
-      controller: _tabController,
-      physics: const BouncingScrollPhysics(),
-      children: widget.tabData!.map((line) {
-        final tabIndex = widget.tabData!.indexOf(line);
-        final playLines = line.playLines ?? [];
+    return ValueListenableBuilder<int>(
+      valueListenable: widget.currentLine,
+      builder: (context, currentLineValue, _) {
+        return ValueListenableBuilder<int>(
+          valueListenable: widget.currentPlay,
+          builder: (context, currentPlayValue, _) {
+            return TabBarView(
+              controller: _tabController,
+              physics: const BouncingScrollPhysics(),
+              children: widget.tabData!.map((line) {
+                final tabIndex = widget.tabData!.indexOf(line);
+                final playLines = line.playLines ?? [];
 
-        if (playLines.isEmpty) {
-          return const Center(
-            child: Text(
-              '暂无播放线路',
-              style: TextStyle(
-                color: Colors.white54,
-                fontSize: 14,
-              ),
-            ),
-          );
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.all(12),
-          itemCount: playLines.length,
-          itemBuilder: (context, index) {
-            final playLine = playLines[index];
-            final isSelected =
-                widget.currentLine == tabIndex &&
-                widget.currentPlay == index;
-
-            return GestureDetector(
-              onTap: () {
-                widget.onSelectionChanged?.call(
-                  tabIndex,
-                  {index},
-                );
-                setState(() => _showEpisodeSelection = false);
-              },
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                height: 36,
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFFE53935)
-                      : Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Center(
-                  child: Text(
-                    playLine.name ?? '${index + 1}',
-                    style: TextStyle(
-                      color:
-                          isSelected ? Colors.white : Colors.white70,
-                      fontSize: 14,
-                      fontWeight:
-                          isSelected
-                              ? FontWeight.w600
-                              : FontWeight.normal,
+                if (playLines.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      '暂无播放线路',
+                      style: TextStyle(
+                        color: Colors.white54,
+                        fontSize: 14,
+                      ),
                     ),
-                  ),
-                ),
-              ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: playLines.length,
+                  itemBuilder: (context, index) {
+                    final playLine = playLines[index];
+                    final isSelected =
+                        currentLineValue == tabIndex &&
+                        currentPlayValue == index;
+
+                    return GestureDetector(
+                      onTap: () {
+                        widget.onSelectionChanged?.call(
+                          tabIndex,
+                          {index},
+                        );
+                        setState(() => _showEpisodeSelection = false);
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? const Color(0xFFE53935)
+                              : Colors.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Center(
+                          child: Text(
+                            playLine.name ?? '${index + 1}',
+                            style: TextStyle(
+                              color:
+                                  isSelected ? Colors.white : Colors.white70,
+                              fontSize: 14,
+                              fontWeight:
+                                  isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }).toList(),
             );
           },
         );
-      }).toList(),
+      },
     );
   }
 }

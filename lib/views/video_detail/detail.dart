@@ -554,8 +554,8 @@ class _VideoDetailState extends State<VideoDetail>
               rateList: _rateList,
               fitModes: _fitModes,
               tabData: videoInfoData.lines,
-              currentLine: currentLine.value,
-              currentPlay: currentPlay.value,
+              currentLine: currentLine,
+              currentPlay: currentPlay,
               isFullScreen: true,
               onSelectionChanged: (tabIndex, selectedIndices) {
                 try {
@@ -861,6 +861,9 @@ class _VideoDetailState extends State<VideoDetail>
       skipEnding: _playerStateNotifier.skipEnding,
       brightness: _playerStateNotifier.brightness,
       isFullScreen: false,
+      tabData: videoInfoData.lines,
+      currentLine: currentLine,
+      currentPlay: currentPlay,
       onSettingsPressed: _showSettingsSheet,
       onFullScreenPressed: _enterFullScreen,
       onCastingPressed: tvDevice,
