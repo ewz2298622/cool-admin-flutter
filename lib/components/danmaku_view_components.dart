@@ -14,6 +14,7 @@ class DanmakuViewComponents extends StatefulWidget {
   final double? height;
   final bool paused;
   final Duration currentPosition;
+  final Function(String text)? onDanmakuLongPress;
 
   const DanmakuViewComponents({
     super.key,
@@ -26,6 +27,7 @@ class DanmakuViewComponents extends StatefulWidget {
     this.height,
     this.paused = false,
     this.currentPosition = Duration.zero,
+    this.onDanmakuLongPress,
   });
 
   @override
@@ -103,14 +105,14 @@ class _DanmakuViewState extends State<DanmakuViewComponents> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: widget.width,
-      height: widget.height,
+      width: widget.width ?? double.infinity,
+      height: widget.height ?? double.infinity,
       child: Stack(
         fit: StackFit.expand,
         children: [
           if (widget.child != null) widget.child!,
           SizedBox(
-            width: widget.width,
+            width: widget.width ?? double.infinity,
             height: (widget.height ?? 200) * 0.6,
             child: DanmakuScreen<int>(
               createdController: (e) {

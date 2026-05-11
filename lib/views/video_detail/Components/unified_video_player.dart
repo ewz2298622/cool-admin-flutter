@@ -9,6 +9,7 @@ import 'package:media_kit_video/media_kit_video.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 
 import '../../../api/api.dart';
+import '../../../components/danmaku_input_panel.dart';
 import '../../../components/danmaku_view_components.dart';
 import '../../../components/loading.dart';
 import '../../../entity/video_barrage_entity.dart';
@@ -122,11 +123,13 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
   bool _hasTriggeredEnding = false;
   double _originalBrightness = 0.0;
   bool _showDanmaku = true;
+  bool _showDanmakuInput = false;
   bool _isMuted = false;
   double _previousVolume = 1.0;
   bool _isLocked = false;
   Duration? _lastDanmakuRequestPosition;
   List<VideoBarrageDataList> danmakuList = [];
+  String? _danmakuPlusOneText;
   int _episodeTabIndex = 0;
   TabController? _tabController;
 
@@ -311,6 +314,26 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
         [];
     setState(() {});
     debugPrint('requestDanmaku 执行: danmakuList=${danmakuList.length}');
+  }
+
+  Future<void> _sendDanmaku(String text, int position, Color color) async {
+    if (text.isEmpty) return;
+
+    try {
+      final hexColor =
+          '#${(color.value & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';
+      final newDanmaku = VideoBarrageDataList()
+        ..text = text
+        ..color = hexColor
+        ..type = position
+        ..time = _currentPosition.inMilliseconds;
+      setState(() {
+        danmakuList.insert(0, newDanmaku);
+      });
+    } catch (e) {
+      debugPrint('发送弹幕失败: $e');
+      Fluttertoast.showToast(msg: '网络错误，发送失败');
+    }
   }
 
   void _resetSkipFlags() {
@@ -564,7 +587,11 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
     }
 
     if (widget.isFullScreen) {
-      return Scaffold(backgroundColor: Colors.black, body: content);
+      return Scaffold(
+        backgroundColor: Colors.black,
+        resizeToAvoidBottomInset: false,
+        body: content,
+      );
     }
 
     return content;
@@ -628,6 +655,18 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
                 _buildEpisodeSelectionPanel(),
                 _buildEpisodeSelectionContent(),
               ],
+              if (_showDanmakuInput && !_isLocked)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                  child: DanmakuInputPanel(
+                    isFullScreen: widget.isFullScreen,
+                    onSend: _sendDanmaku,
+                    onClose: () => setState(() => _showDanmakuInput = false),
+                    initialText: _danmakuPlusOneText,
+                  ),
+                ),
               if (widget.isFullScreen) ...[
                 Positioned(
                   top: 0,
@@ -1308,23 +1347,34 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: Container(
-            height: 32,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                Text(
-                  '发个友善的弹幕见证当下',
-                  style: TextStyle(
+          child: GestureDetector(
+            onTap: () {
+              setState(() => _showDanmakuInput = true);
+            },
+            child: Container(
+              height: 32,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.chat_bubble_outline,
                     color: Colors.white.withValues(alpha: 0.5),
-                    fontSize: 12,
+                    size: 16,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 4),
+                  Text(
+                    '点我发弹幕',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
