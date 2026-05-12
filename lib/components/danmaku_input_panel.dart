@@ -122,43 +122,22 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-    final isKeyboardVisible = keyboardHeight > 0;
-
-    // 核心修复逻辑：检测系统键盘收起事件并清除焦点
-    if (_wasKeyboardVisible && !isKeyboardVisible) {
-      if (_focusNode.hasFocus) {
-        // 使用 addPostFrameCallback 避免在 build 期间调用 setState 报错
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            _focusNode.unfocus();
-          }
-        });
-      }
-    }
-    _wasKeyboardVisible = isKeyboardVisible;
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return GestureDetector(
-          onTap: () {
-            FocusScope.of(context).unfocus();
-            widget.onClose?.call();
-          },
-          child: Container(
-            width: constraints.maxWidth,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                _buildTopBar(),
-                if (!isKeyboardVisible) _buildSettingsPanel(),
-              ],
-            ),
-          ),
-        );
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+        widget.onClose?.call();
       },
+      child: Container(
+        width: double.infinity,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildTopBar(),
+            _buildSettingsPanel(),
+          ],
+        ),
+      ),
     );
   }
 
@@ -273,7 +252,7 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
 
   Widget _buildSettingsPanel() {
     return Container(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 65),
       decoration: const BoxDecoration(color: _bgColor),
       child: Column(
         mainAxisSize: MainAxisSize.min,

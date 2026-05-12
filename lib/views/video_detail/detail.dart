@@ -847,7 +847,7 @@ class _VideoDetailState extends State<VideoDetail>
             Positioned(
               left: 0,
               right: 0,
-              bottom: MediaQuery.of(context).viewInsets.bottom,
+              bottom: 0,
               child: DanmakuInputPanel(
                 isFullScreen: false,
                 onSend: _sendDanmaku,
