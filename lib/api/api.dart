@@ -862,4 +862,18 @@ class Api {
       rethrow;
     }
   }
+
+  //发送弹幕
+  static Future<void> sendBarrage(
+    Map<String, dynamic>? data,
+  ) async {
+    try {
+      await server.post(
+        "/app/video/barrage",
+        data: data,
+      );
+    } catch (error) {
+      rethrow;
+    }
+  }
 }

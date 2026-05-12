@@ -29,7 +29,7 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
   int _fontSize = 0;
   Color _currentColor = Colors.white;
   bool _isSending = false;
-  
+
   // 新增：用于记录上一帧键盘是否可见
   bool _wasKeyboardVisible = false;
 
@@ -66,10 +66,10 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
       _controller.text = widget.initialText!;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-     if (mounted && !_hasInitialFocused) {
-      _focusNode.requestFocus();
-      _hasInitialFocused = true; // 执行一次后锁定
-    }
+      if (mounted && !_hasInitialFocused) {
+        _focusNode.requestFocus();
+        _hasInitialFocused = true; // 执行一次后锁定
+      }
     });
   }
 
@@ -89,16 +89,16 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
     if (text.isEmpty || _isSending) return;
 
     if (!widget.isLoggedIn) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请先登录')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('请先登录')));
       return;
     }
 
     if (!widget.canSendDanmaku) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('账号无发送权限')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('账号无发送权限')));
       return;
     }
 
@@ -108,9 +108,9 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
       widget.onSend(text, _currentPosition, _currentColor);
       _controller.clear();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('发送失败: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('发送失败: $e')));
     } finally {
       setState(() => _isSending = false);
     }
@@ -147,7 +147,6 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
           },
           child: Container(
             width: constraints.maxWidth,
-            color: Colors.black.withValues(alpha: 0.5),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -177,7 +176,8 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
             const SizedBox(width: 46),
             Expanded(
               child: Container(
-                height: 40,
+                height: 32,
+                alignment: Alignment.center, // 确保子组件在容器内居中
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
@@ -186,11 +186,18 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
                   controller: _controller,
                   focusNode: _focusNode,
                   maxLength: _maxLength,
+                  textAlignVertical: TextAlignVertical.center, // 1. 垂直居中
                   style: const TextStyle(
                     color: _labelColor,
-                    fontSize: 16,
+                    fontSize: 14, // 建议：32高度容器，字体不宜超过14-16
+                    textBaseline: TextBaseline.alphabetic, // 辅助基线对齐
                   ),
                   decoration: InputDecoration(
+                    isDense: true, // 2. 开启紧凑模式
+                    contentPadding: const EdgeInsets.only(
+                      left: 16,
+                      right: 0,
+                    ), // 3. 调整内边距
                     hintText: '发个友善的弹幕见证当下',
                     hintStyle: TextStyle(
                       color: _unselectedText.withValues(alpha: 0.4),
@@ -198,30 +205,34 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
                     ),
                     counterText: '',
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+                    // 4. 优化后缀图标的垂直对齐
+                    suffixIcon:
+                        _controller.text.isNotEmpty
+                            ? GestureDetector(
+                              onTap: _clearInput,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0), // 增加点击区域
+                                child: Container(
+                                  width: 16,
+                                  height: 16,
+                                  alignment: Alignment.center,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFCCCCCC),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.close,
+                                    color: Colors.white,
+                                    size: 10,
+                                  ),
+                                ),
+                              ),
+                            )
+                            : null,
+                    suffixIconConstraints: const BoxConstraints(
+                      minHeight: 32,
+                      minWidth: 32,
                     ),
-                    suffixIcon: _controller.text.isNotEmpty
-                        ? GestureDetector(
-                            onTap: _clearInput,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              margin: const EdgeInsets.only(right: 10),
-                              alignment: Alignment.center,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFCCCCCC),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.close,
-                                color: Colors.white,
-                                size: 8,
-                              ),
-                            ),
-                          )
-                        : null,
                   ),
                   onChanged: (value) => setState(() {}),
                 ),
@@ -234,22 +245,24 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
                 width: 36,
                 height: 36,
                 alignment: Alignment.center,
-                child: _isSending
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: _primaryColor,
+                child:
+                    _isSending
+                        ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: _primaryColor,
+                          ),
+                        )
+                        : Icon(
+                          Icons.send,
+                          color:
+                              _controller.text.trim().isNotEmpty
+                                  ? _primaryColor
+                                  : _unselectedText.withValues(alpha: 0.25),
+                          size: 20,
                         ),
-                      )
-                    : Icon(
-                        Icons.send,
-                        color: _controller.text.trim().isNotEmpty
-                            ? _primaryColor
-                            : _unselectedText.withValues(alpha: 0.25),
-                        size: 20,
-                      ),
               ),
             ),
           ],
@@ -260,12 +273,7 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
 
   Widget _buildSettingsPanel() {
     return Container(
-      padding: const EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: 80
-      ),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
       decoration: const BoxDecoration(color: _bgColor),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -311,10 +319,16 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
         height: 32,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: isSelected ? _primaryColor.withValues(alpha: 0.1) : Colors.transparent,
+          color:
+              isSelected
+                  ? _primaryColor.withValues(alpha: 0.1)
+                  : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? _primaryColor : _unselectedText.withValues(alpha: 0.5),
+            color:
+                isSelected
+                    ? _primaryColor
+                    : _unselectedText.withValues(alpha: 0.5),
             width: 1.5,
           ),
         ),
@@ -375,10 +389,16 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
         height: 32,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: isSelected ? _primaryColor.withValues(alpha: 0.1) : Colors.transparent,
+          color:
+              isSelected
+                  ? _primaryColor.withValues(alpha: 0.1)
+                  : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? _primaryColor : _unselectedText.withValues(alpha: 0.5),
+            color:
+                isSelected
+                    ? _primaryColor
+                    : _unselectedText.withValues(alpha: 0.5),
             width: 1.5,
           ),
         ),
@@ -426,72 +446,75 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
           child: Wrap(
             spacing: 12,
             runSpacing: 12,
-            children: _availableColors.asMap().entries.map((entry) {
-              final colorData = entry.value;
-              final color = colorData['color'] as Color;
-              final isVip = colorData['isVip'] as bool;
-              final isSelected = _currentColor == color;
+            children:
+                _availableColors.asMap().entries.map((entry) {
+                  final colorData = entry.value;
+                  final color = colorData['color'] as Color;
+                  final isVip = colorData['isVip'] as bool;
+                  final isSelected = _currentColor == color;
 
-              return GestureDetector(
-                onTap: () {
-                  if (isVip) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('开通会员可使用更多颜色')),
-                    );
-                    return;
-                  }
-                  setState(() => _currentColor = color);
-                },
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: color,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: isSelected
-                              ? _primaryColor
-                              : Colors.grey.withValues(alpha: 0.3),
-                          width: isSelected ? 2 : 1,
-                        ),
-                      ),
-                      child: isSelected
-                          ? const Icon(
-                              Icons.check,
-                              color: _primaryColor,
-                              size: 16,
-                            )
-                          : null,
-                    ),
-                    if (isVip)
-                      Positioned(
-                        top: -6,
-                        right: -6,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                            vertical: 1,
-                          ),
+                  return GestureDetector(
+                    onTap: () {
+                      if (isVip) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('开通会员可使用更多颜色')),
+                        );
+                        return;
+                      }
+                      setState(() => _currentColor = color);
+                    },
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
                           decoration: BoxDecoration(
-                            color: _primaryColor,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Text(
-                            '会员',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 8,
+                            color: color,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color:
+                                  isSelected
+                                      ? _primaryColor
+                                      : Colors.grey.withValues(alpha: 0.3),
+                              width: isSelected ? 2 : 1,
                             ),
                           ),
+                          child:
+                              isSelected
+                                  ? const Icon(
+                                    Icons.check,
+                                    color: _primaryColor,
+                                    size: 16,
+                                  )
+                                  : null,
                         ),
-                      ),
-                  ],
-                ),
-              );
-            }).toList(),
+                        if (isVip)
+                          Positioned(
+                            top: -6,
+                            right: -6,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 1,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _primaryColor,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                '会员',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 8,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                }).toList(),
           ),
         ),
       ],

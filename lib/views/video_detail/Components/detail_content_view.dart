@@ -23,6 +23,7 @@ class DetailContentView extends StatelessWidget {
   final Function(String) setVideoUrl;
   final VoidCallback onVideoTap;
   final VoidCallback onFeedbackTap;
+  final VoidCallback onDanmakuTap;
   final String androidCodeId;
   final String iosCodeId;
   final bool isAdAvailable;
@@ -41,6 +42,7 @@ class DetailContentView extends StatelessWidget {
     required this.setVideoUrl,
     required this.onVideoTap,
     required this.onFeedbackTap,
+    required this.onDanmakuTap,
     required this.androidCodeId,
     required this.iosCodeId,
     required this.isAdAvailable,
@@ -125,12 +127,44 @@ class DetailContentView extends StatelessWidget {
           ),
           tabs: const [Tab(text: '详情'), Tab(text: '简介')],
         ),
+        //实现一个弹幕控制按钮
         IconButton(
           onPressed: onFeedbackTap,
           icon: const Icon(Icons.warning_rounded, color: Color(0xFF6B7280)),
           iconSize: 24,
           padding: const EdgeInsets.all(8),
           constraints: const BoxConstraints(),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: GestureDetector(
+            onTap: onDanmakuTap,
+            child: Container(
+              height: 32,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.chat_bubble_outline,
+                    color: Color(0xFF888888),
+                    size: 16,
+                  ),
+                  const SizedBox(width: 4),
+                  const Text(
+                    '点我发弹幕',
+                    style: TextStyle(
+                      color: Color(0xFF888888),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ],
     );

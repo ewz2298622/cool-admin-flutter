@@ -5,8 +5,10 @@ import 'package:get/get.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../../api/api.dart';
+import '../../components/danmaku_input_panel.dart';
 import '../../components/detail_tabs_views.dart';
 import '../../db/entity/VideoPlayerSettingsEntity.dart';
 import '../../db/manager/video_player_settings_database_helper.dart';
@@ -84,6 +86,7 @@ class _VideoDetailState extends State<VideoDetail>
   bool _isInPipMode = false;
   bool _isEnteringPipMode = false;
   bool _isAdAvailable = false;
+  bool _showDanmakuInput = false;
 
   @override
   void initState() {
@@ -834,11 +837,23 @@ class _VideoDetailState extends State<VideoDetail>
               setVideoUrl: setVideoUrl,
               onVideoTap: removeVideo,
               onFeedbackTap: goFeedbackPage,
+              onDanmakuTap: () => setState(() => _showDanmakuInput = true),
               androidCodeId: androidCodeId,
               iosCodeId: iosCodeId,
               isAdAvailable: _isAdAvailable,
             ),
           ),
+          if (_showDanmakuInput)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              child: DanmakuInputPanel(
+                isFullScreen: false,
+                onSend: _sendDanmaku,
+                onClose: () => setState(() => _showDanmakuInput = false),
+              ),
+            ),
         ],
       ),
     );
@@ -1037,6 +1052,27 @@ class _VideoDetailState extends State<VideoDetail>
       }
     } catch (e) {
       debugPrint('查询播放器设置失败: $e');
+    }
+  }
+
+  Future<void> _sendDanmaku(String text, int position, Color color) async {
+    if (text.isEmpty) return;
+
+    try {
+      final hexColor =
+          '#${(color.value & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';
+      await Api.sendBarrage({
+        'videoId': videoInfoData.video?.id?.toString() ?? '',
+        'text': text,
+        'color': hexColor,
+        'type': position,
+        'time': player.state.position.inMilliseconds,
+      });
+      Fluttertoast.showToast(msg: '弹幕发送成功');
+      setState(() => _showDanmakuInput = false);
+    } catch (e) {
+      debugPrint('发送弹幕失败: $e');
+      Fluttertoast.showToast(msg: '网络错误，发送失败');
     }
   }
 }
