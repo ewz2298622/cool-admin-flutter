@@ -7,7 +7,7 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 
-import '../../../components/danmaku_view_components.dart';
+
 import '../../../components/fullscreen_detail_tabs_views.dart';
 import '../../../components/loading.dart';
 import '../../../entity/video_detail_data_entity.dart';

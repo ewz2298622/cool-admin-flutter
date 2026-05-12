@@ -447,6 +447,10 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
 
   void _onTapVideo() {
     if (_isLocked) return;
+    if (_showDanmakuInput) {
+      setState(() => _showDanmakuInput = false);
+      return;
+    }
     setState(() => _showControls = !_showControls);
     if (_showControls) {
       _startHideTimer();
@@ -667,7 +671,7 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
                     initialText: _danmakuPlusOneText,
                   ),
                 ),
-              if (widget.isFullScreen) ...[
+              if (widget.isFullScreen && !_showDanmakuInput) ...[
                 Positioned(
                   top: 0,
                   bottom: 0,
