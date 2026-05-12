@@ -671,7 +671,7 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
                 Positioned(
                   top: 0,
                   bottom: 0,
-                  left: 20,
+                  left: 40,
                   child: Center(
                     child: GestureDetector(
                       onTap: _toggleLock,
