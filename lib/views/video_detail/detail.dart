@@ -844,10 +844,8 @@ class _VideoDetailState extends State<VideoDetail>
             ),
           ),
           if (_showDanmakuInput)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
+            Align(
+              alignment: Alignment.bottomCenter,
               child: DanmakuInputPanel(
                 isFullScreen: false,
                 onSend: _sendDanmaku,

@@ -148,104 +148,100 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
         color: _bgColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          children: [
-            const SizedBox(width: 46),
-            Expanded(
-              child: Container(
-                height: 32,
-                alignment: Alignment.center, // 确保子组件在容器内居中
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+      child: Row(
+        children: [
+          const SizedBox(width: 46),
+          Expanded(
+            child: Container(
+              height: 32,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: TextField(
+                controller: _controller,
+                focusNode: _focusNode,
+                maxLength: _maxLength,
+                textAlignVertical: TextAlignVertical.center,
+                style: const TextStyle(
+                  color: _labelColor,
+                  fontSize: 14,
+                  textBaseline: TextBaseline.alphabetic,
                 ),
-                child: TextField(
-                  controller: _controller,
-                  focusNode: _focusNode,
-                  maxLength: _maxLength,
-                  textAlignVertical: TextAlignVertical.center, // 1. 垂直居中
-                  style: const TextStyle(
-                    color: _labelColor,
-                    fontSize: 14, // 建议：32高度容器，字体不宜超过14-16
-                    textBaseline: TextBaseline.alphabetic, // 辅助基线对齐
+                decoration: InputDecoration(
+                  isDense: true,
+                  contentPadding: const EdgeInsets.only(
+                    left: 16,
+                    right: 0,
                   ),
-                  decoration: InputDecoration(
-                    isDense: true, // 2. 开启紧凑模式
-                    contentPadding: const EdgeInsets.only(
-                      left: 16,
-                      right: 0,
-                    ), // 3. 调整内边距
-                    hintText: '发个友善的弹幕见证当下',
-                    hintStyle: TextStyle(
-                      color: _unselectedText.withValues(alpha: 0.4),
-                      fontSize: 14,
-                    ),
-                    counterText: '',
-                    border: InputBorder.none,
-                    // 4. 优化后缀图标的垂直对齐
-                    suffixIcon:
-                        _controller.text.isNotEmpty
-                            ? GestureDetector(
-                              onTap: _clearInput,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0), // 增加点击区域
-                                child: Container(
-                                  width: 16,
-                                  height: 16,
-                                  alignment: Alignment.center,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFCCCCCC),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.close,
-                                    color: Colors.white,
-                                    size: 10,
-                                  ),
+                  hintText: '发个友善的弹幕见证当下',
+                  hintStyle: TextStyle(
+                    color: _unselectedText.withValues(alpha: 0.4),
+                    fontSize: 14,
+                  ),
+                  counterText: '',
+                  border: InputBorder.none,
+                  suffixIcon:
+                      _controller.text.isNotEmpty
+                          ? GestureDetector(
+                            onTap: _clearInput,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Container(
+                                width: 16,
+                                height: 16,
+                                alignment: Alignment.center,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFCCCCCC),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.close,
+                                  color: Colors.white,
+                                  size: 10,
                                 ),
                               ),
-                            )
-                            : null,
-                    suffixIconConstraints: const BoxConstraints(
-                      minHeight: 32,
-                      minWidth: 32,
-                    ),
+                            ),
+                          )
+                          : null,
+                  suffixIconConstraints: const BoxConstraints(
+                    minHeight: 32,
+                    minWidth: 32,
                   ),
-                  onChanged: (value) => setState(() {}),
                 ),
+                onChanged: (value) => setState(() {}),
               ),
             ),
-            const SizedBox(width: 6),
-            GestureDetector(
-              onTap: _controller.text.trim().isNotEmpty ? _sendDanmaku : null,
-              child: Container(
-                width: 36,
-                height: 36,
-                alignment: Alignment.center,
-                child:
-                    _isSending
-                        ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: _primaryColor,
-                          ),
-                        )
-                        : Icon(
-                          Icons.send,
-                          color:
-                              _controller.text.trim().isNotEmpty
-                                  ? _primaryColor
-                                  : _unselectedText.withValues(alpha: 0.25),
-                          size: 20,
+          ),
+          const SizedBox(width: 6),
+          GestureDetector(
+            onTap: _controller.text.trim().isNotEmpty ? _sendDanmaku : null,
+            child: Container(
+              width: 36,
+              height: 36,
+              alignment: Alignment.center,
+              child:
+                  _isSending
+                      ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: _primaryColor,
                         ),
-              ),
+                      )
+                      : Icon(
+                        Icons.send,
+                        color:
+                            _controller.text.trim().isNotEmpty
+                                ? _primaryColor
+                                : _unselectedText.withValues(alpha: 0.25),
+                        size: 20,
+                      ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
