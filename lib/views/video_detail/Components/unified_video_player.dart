@@ -663,7 +663,7 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
                 Positioned(
                   left: 0,
                   right: 0,
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                  bottom: 0,
                   child: DanmakuInputPanel(
                     isFullScreen: widget.isFullScreen,
                     onSend: _sendDanmaku,
