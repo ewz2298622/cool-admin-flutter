@@ -150,7 +150,33 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
       ),
       child: Row(
         children: [
-          const SizedBox(width: 46),
+          GestureDetector(
+            onTap: () {
+              if (_focusNode.hasFocus) {
+                _focusNode.unfocus();
+              } else {
+                _focusNode.requestFocus();
+              }
+            },
+            child: Text(
+              "A",
+              style: TextStyle(
+                color:
+                    _focusNode.hasFocus
+                        ? _primaryColor
+                        : _unselectedText.withValues(alpha: 0.5),
+                fontSize: 20,
+                decoration: TextDecoration.underline,
+                decorationColor:
+                    _focusNode.hasFocus
+                        ? _primaryColor
+                        : _unselectedText.withValues(alpha: 0.5),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 15,
+          ),
           Expanded(
             child: Container(
               height: 32,

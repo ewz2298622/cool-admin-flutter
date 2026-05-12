@@ -819,40 +819,51 @@ class _VideoDetailState extends State<VideoDetail>
         automaticallyImplyLeading: false,
       ),
       resizeToAvoidBottomInset: false,
-      body: Stack(
-        children: [
-          _buildVideo(),
-          Container(
-            margin: const EdgeInsets.only(top: 200),
-            child: DetailContentView(
-              future: _futureBuilderFuture!,
-              videoInfoData: videoInfoData,
-              area: area,
-              videoCategory: videoCategory,
-              language: language,
-              videoPageData: videoPageData,
-              currentLine: currentLine,
-              currentPlay: currentPlay,
-              showModalBottomSheetList: showModalBottomSheetList,
-              setVideoUrl: setVideoUrl,
-              onVideoTap: removeVideo,
-              onFeedbackTap: goFeedbackPage,
-              onDanmakuTap: () => setState(() => _showDanmakuInput = true),
-              androidCodeId: androidCodeId,
-              iosCodeId: iosCodeId,
-              isAdAvailable: _isAdAvailable,
-            ),
-          ),
-          if (_showDanmakuInput)
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: DanmakuInputPanel(
-                isFullScreen: false,
-                onSend: _sendDanmaku,
-                onClose: () => setState(() => _showDanmakuInput = false),
+      body: GestureDetector(
+        onTap: () {
+          if (_showDanmakuInput) {
+            setState(() => _showDanmakuInput = false);
+          }
+        },
+        behavior: HitTestBehavior.translucent,
+        child: Stack(
+          children: [
+            _buildVideo(),
+            Container(
+              margin: const EdgeInsets.only(top: 200),
+              child: DetailContentView(
+                future: _futureBuilderFuture!,
+                videoInfoData: videoInfoData,
+                area: area,
+                videoCategory: videoCategory,
+                language: language,
+                videoPageData: videoPageData,
+                currentLine: currentLine,
+                currentPlay: currentPlay,
+                showModalBottomSheetList: showModalBottomSheetList,
+                setVideoUrl: setVideoUrl,
+                onVideoTap: removeVideo,
+                onFeedbackTap: goFeedbackPage,
+                onDanmakuTap: () => setState(() => _showDanmakuInput = true),
+                androidCodeId: androidCodeId,
+                iosCodeId: iosCodeId,
+                isAdAvailable: _isAdAvailable,
               ),
             ),
-        ],
+            if (_showDanmakuInput)
+              GestureDetector(
+                onTap: () {},
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: DanmakuInputPanel(
+                    isFullScreen: false,
+                    onSend: _sendDanmaku,
+                    onClose: () => setState(() => _showDanmakuInput = false),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
