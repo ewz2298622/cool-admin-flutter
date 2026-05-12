@@ -29,7 +29,9 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
   int _fontSize = 0;
   Color _currentColor = Colors.white;
   bool _isSending = false;
-  bool _showEmojiPanel = false;
+  
+  // 新增：用于记录上一帧键盘是否可见
+  bool _wasKeyboardVisible = false;
 
   static const int _maxLength = 100;
   static const Color _primaryColor = Color(0xFFFF6B9E);
@@ -100,7 +102,6 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
     try {
       widget.onSend(text, _currentPosition, _currentColor);
       _controller.clear();
-      setState(() => _showEmojiPanel = false);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('发送失败: $e')),
@@ -114,26 +115,23 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
     _controller.clear();
   }
 
-  void _insertEmoji(String emoji) {
-    final text = _controller.text;
-    final selection = _controller.selection;
-    final newText = text.replaceRange(
-      selection.start,
-      selection.end,
-      emoji,
-    );
-    _controller.value = TextEditingValue(
-      text: newText,
-      selection: TextSelection.collapsed(
-        offset: selection.start + emoji.length,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     final isKeyboardVisible = keyboardHeight > 0;
+
+    // 核心修复逻辑：检测系统键盘收起事件并清除焦点
+    if (_wasKeyboardVisible && !isKeyboardVisible) {
+      if (_focusNode.hasFocus) {
+        // 使用 addPostFrameCallback 避免在 build 期间调用 setState 报错
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _focusNode.unfocus();
+          }
+        });
+      }
+    }
+    _wasKeyboardVisible = isKeyboardVisible;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -150,20 +148,8 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                GestureDetector(
-                  onTap: () {},
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildTopBar(),
-                      if (!isKeyboardVisible) ...[
-                        if (_showEmojiPanel) _buildEmojiPanel(),
-                        _buildSettingsPanel(),
-                      ],
-                    ],
-                  ),
-                ),
+                _buildTopBar(),
+                if (!isKeyboardVisible) _buildSettingsPanel(),
               ],
             ),
           ),
@@ -183,24 +169,7 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
         top: false,
         child: Row(
           children: [
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  _showEmojiPanel = false;
-                });
-              },
-              child: Container(
-                width: 36,
-                height: 36,
-                alignment: Alignment.center,
-                child: Icon(
-                  Icons.format_size,
-                  color: _labelColor.withValues(alpha: 0.5),
-                  size: 22,
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 46),
             Expanded(
               child: Container(
                 height: 40,
@@ -232,8 +201,8 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
                         ? GestureDetector(
                             onTap: _clearInput,
                             child: Container(
-                              width: 22,
-                              height: 22,
+                              width: 8,
+                              height: 8,
                               margin: const EdgeInsets.only(right: 10),
                               alignment: Alignment.center,
                               decoration: const BoxDecoration(
@@ -243,33 +212,13 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
                               child: const Icon(
                                 Icons.close,
                                 color: Colors.white,
-                                size: 13,
+                                size: 8,
                               ),
                             ),
                           )
                         : null,
                   ),
                   onChanged: (value) => setState(() {}),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  _showEmojiPanel = !_showEmojiPanel;
-                });
-              },
-              child: Container(
-                width: 36,
-                height: 36,
-                alignment: Alignment.center,
-                child: Icon(
-                  Icons.emoji_emotions_outlined,
-                  color: _showEmojiPanel
-                      ? _primaryColor
-                      : _labelColor.withValues(alpha: 0.5),
-                  size: 22,
                 ),
               ),
             ),
@@ -306,7 +255,12 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
 
   Widget _buildSettingsPanel() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: 80
+      ),
       decoration: const BoxDecoration(color: _bgColor),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -536,41 +490,6 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildEmojiPanel() {
-    final emojis = [
-      '😀', '', '🥰', '😎', '🤔', '😱', '🥳', '😴',
-      '👍', '👎', '❤️', '💔', '🔥', '⭐', '', '🎊',
-      '😍', '🤗', '😏', '', '🤣', '😅', '🙄', '😬',
-      '', '🙌', '💪', '🤝', '✌️', '', '🤟', '👀',
-    ];
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: const BoxDecoration(
-        color: _bgColor,
-      ),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: emojis.map((emoji) {
-          return GestureDetector(
-            onTap: () => _insertEmoji(emoji),
-            child: Container(
-              width: 40,
-              height: 40,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(emoji, style: const TextStyle(fontSize: 20)),
-            ),
-          );
-        }).toList(),
-      ),
     );
   }
 }
