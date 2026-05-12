@@ -232,7 +232,10 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
   }
 
   void _enterFullScreenMode() {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [],
+    );
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
@@ -368,7 +371,15 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
       builder: (context, child) {
         return Scaffold(
           backgroundColor: Colors.black,
-          body: GestureDetector(
+          extendBody: true,
+          extendBodyBehindAppBar: true,
+          body: MediaQuery.removePadding(
+            context: context,
+            removeLeft: true,
+            removeRight: true,
+            removeTop: true,
+            removeBottom: true,
+            child: GestureDetector(
             onTap: _isLocked ? null : _onTapVideo,
             onDoubleTap: _isLocked ? null : _togglePlayPause,
             onLongPressStart: _isLocked ? null : (_) {
@@ -444,7 +455,8 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
                 ),
             ),
           ),
-        );
+        ),
+        ),
       },
     );
   }
