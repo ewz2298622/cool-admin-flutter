@@ -56,6 +56,8 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
     {'color': Color(0xFF8D6E63), 'isVip': false},
   ];
 
+  bool _hasInitialFocused = false; // 增加一个锁
+
   @override
   void initState() {
     super.initState();
@@ -64,7 +66,10 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
       _controller.text = widget.initialText!;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
+     if (mounted && !_hasInitialFocused) {
       _focusNode.requestFocus();
+      _hasInitialFocused = true; // 执行一次后锁定
+    }
     });
   }
 
