@@ -267,7 +267,9 @@ class _VideoDetailState extends State<VideoDetail>
         debugPrint('[Player] Opening video, URL: $url');
         debugPrint('[Player] Before open - position: ${player.state.position}');
         await player.open(Media(url), play: true);
-        debugPrint('[Player] After open - position: ${player.state.position}, duration: ${player.state.duration}');
+        debugPrint(
+          '[Player] After open - position: ${player.state.position}, duration: ${player.state.duration}',
+        );
         debugPrint('[Player] Video opened successfully');
       } else {
         player.pause();
@@ -551,7 +553,7 @@ class _VideoDetailState extends State<VideoDetail>
               player: player,
               videoController: videoController,
               playerStateNotifier: _playerStateNotifier,
-              videoId: id?.toString() ?? videoInfoData.video?.id?.toString(),
+              videoId: id ?? videoInfoData.video?.id,
               currentEpisodeIndex: currentPlay.value,
               videoTitle: videoInfoData.video?.title ?? '',
               rateList: _rateList,
@@ -856,6 +858,9 @@ class _VideoDetailState extends State<VideoDetail>
                 child: Align(
                   alignment: Alignment.bottomCenter,
                   child: DanmakuInputPanel(
+                    isLoggedIn: User.isLogin(),
+                    video_id: videoInfoData.video?.id,
+                    sort: currentLine.value,
                     isFullScreen: false,
                     onSend: _sendDanmaku,
                     onClose: () => setState(() => _showDanmakuInput = false),
@@ -874,7 +879,7 @@ class _VideoDetailState extends State<VideoDetail>
       videoController: videoController,
       playerStateNotifier: _playerStateNotifier,
       videoUrl: '',
-      videoId: id?.toString() ?? videoInfoData.video?.id?.toString(),
+      videoId: id ?? videoInfoData.video?.id,
       currentEpisodeIndex: currentPlay.value,
       videoFit: _playerStateNotifier.videoFit,
       videoRate: _playerStateNotifier.videoRate,
@@ -970,7 +975,8 @@ class _VideoDetailState extends State<VideoDetail>
         _playerStateNotifier.setVideoRate(newRate);
         player.setRate(newRate);
       },
-      onVideoFitChanged: () => _playerStateNotifier.setVideoFit(_playerStateNotifier.videoFit),
+      onVideoFitChanged:
+          () => _playerStateNotifier.setVideoFit(_playerStateNotifier.videoFit),
     );
   }
 
@@ -1070,8 +1076,9 @@ class _VideoDetailState extends State<VideoDetail>
     try {
       final hexColor =
           '#${(color.value & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';
-      await Api.sendBarrage({
-        'videoId': videoInfoData.video?.id?.toString() ?? '',
+      await Api.addBarrage({
+        'videoId': videoInfoData.video?.id,
+        'sort': currentPlay.value,
         'text': text,
         'color': hexColor,
         'type': position,

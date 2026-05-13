@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class DanmakuInputPanel extends StatefulWidget {
   final bool isFullScreen;
@@ -7,6 +8,8 @@ class DanmakuInputPanel extends StatefulWidget {
   final bool isLoggedIn;
   final bool canSendDanmaku;
   final String? initialText;
+  final int? video_id;
+  final int? sort;
 
   const DanmakuInputPanel({
     super.key,
@@ -16,6 +19,8 @@ class DanmakuInputPanel extends StatefulWidget {
     this.isLoggedIn = true,
     this.canSendDanmaku = true,
     this.initialText,
+    required this.video_id,
+    required this.sort,
   });
 
   @override
@@ -88,17 +93,19 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
     final text = _controller.text.trim();
     if (text.isEmpty || _isSending) return;
 
+    final int fontSize = _fontSize == 0 ? 16 : 14;
+    final String hexColor = '#${_currentColor.value.toRadixString(16).substring(2).toUpperCase()}';
+
+    debugPrint(
+      '发送弹幕: $text, 位置: $_currentPosition, 颜色: $hexColor, 字体大小: $fontSize, 排序: ${widget.sort} 视频ID: ${widget.video_id}',
+    );
     if (!widget.isLoggedIn) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('请先登录')));
+      Fluttertoast.showToast(msg: '请先登录', toastLength: Toast.LENGTH_SHORT);
       return;
     }
 
     if (!widget.canSendDanmaku) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('账号无发送权限')));
+      Fluttertoast.showToast(msg: '账号无发送权限', toastLength: Toast.LENGTH_SHORT);
       return;
     }
 
@@ -108,9 +115,7 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
       widget.onSend(text, _currentPosition, _currentColor);
       _controller.clear();
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('发送失败: $e')));
+      Fluttertoast.showToast(msg: '发送失败: $e', toastLength: Toast.LENGTH_SHORT);
     } finally {
       setState(() => _isSending = false);
     }
@@ -127,10 +132,7 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildTopBar(),
-          _buildSettingsPanel(),
-        ],
+        children: [_buildTopBar(), _buildSettingsPanel()],
       ),
     );
   }
@@ -168,9 +170,7 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
               ),
             ),
           ),
-          SizedBox(
-            width: 15,
-          ),
+          SizedBox(width: 15),
           Expanded(
             child: Container(
               height: 32,
@@ -191,10 +191,7 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
                 ),
                 decoration: InputDecoration(
                   isDense: true,
-                  contentPadding: const EdgeInsets.only(
-                    left: 16,
-                    right: 0,
-                  ),
+                  contentPadding: const EdgeInsets.only(left: 16, right: 0),
                   hintText: '发个友善的弹幕见证当下',
                   hintStyle: TextStyle(
                     color: _unselectedText.withValues(alpha: 0.4),

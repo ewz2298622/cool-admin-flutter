@@ -864,12 +864,12 @@ class Api {
   }
 
   //发送弹幕
-  static Future<void> sendBarrage(
+  static Future<void> addBarrage(
     Map<String, dynamic>? data,
   ) async {
     try {
       await server.post(
-        "/app/video/barrage",
+        "/app/video/barrage/add",
         data: data,
       );
     } catch (error) {

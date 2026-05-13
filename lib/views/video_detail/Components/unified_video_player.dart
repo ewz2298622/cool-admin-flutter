@@ -15,6 +15,7 @@ import '../../../components/loading.dart';
 import '../../../entity/video_barrage_entity.dart';
 import '../../../entity/video_detail_data_entity.dart';
 import '../../../store/player/player_state_notifier.dart';
+import '../../../utils/user.dart';
 import '../../../utils/video_player_utils.dart';
 
 class UnifiedVideoPlayer extends StatefulWidget {
@@ -22,7 +23,7 @@ class UnifiedVideoPlayer extends StatefulWidget {
   final VideoController videoController;
   final PlayerStateNotifier? playerStateNotifier;
   final String videoUrl;
-  final String? videoId;
+  final int? videoId;
   final int currentEpisodeIndex;
   final int videoFit;
   final double videoRate;
@@ -153,7 +154,10 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
     _totalDuration = widget.player.state.duration;
     _currentPosition = widget.player.state.position;
     _isPlaying = widget.player.state.playing;
-    _episodeTabIndex = widget.currentLine.value.clamp(0, (widget.tabData?.length ?? 1) - 1);
+    _episodeTabIndex = widget.currentLine.value.clamp(
+      0,
+      (widget.tabData?.length ?? 1) - 1,
+    );
 
     widget.currentLine.addListener(_onCurrentLineChanged);
     widget.currentPlay.addListener(_onCurrentPlayChanged);
@@ -172,7 +176,10 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
 
   void _onCurrentLineChanged() {
     if (mounted) {
-      _episodeTabIndex = widget.currentLine.value.clamp(0, (widget.tabData?.length ?? 1) - 1);
+      _episodeTabIndex = widget.currentLine.value.clamp(
+        0,
+        (widget.tabData?.length ?? 1) - 1,
+      );
       _updateTabController();
       setState(() {});
     }
@@ -308,7 +315,9 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
     danmakuList =
         (await Api.videoBarrage({
           'videoId': widget.videoId,
+          'sort': widget.currentEpisodeIndex,
           'startTime': milliseconds,
+          'status':1,
           'endTime': milliseconds + 1000 * 60,
         })).data?.list ??
         [];
@@ -322,11 +331,21 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
     try {
       final hexColor =
           '#${(color.value & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';
-      final newDanmaku = VideoBarrageDataList()
-        ..text = text
-        ..color = hexColor
-        ..type = position
-        ..time = _currentPosition.inMilliseconds;
+      final newDanmaku =
+          VideoBarrageDataList()
+            ..text = text
+            ..color = hexColor
+            ..type = position
+            ..time = _currentPosition.inMilliseconds;
+      await Api.addBarrage({
+        'videoId': widget.videoId,
+        'sort': widget.currentEpisodeIndex,
+        'text': text,
+        'color': hexColor,
+        'type': position,
+        'time': _currentPosition.inMilliseconds,
+      });
+      Fluttertoast.showToast(msg: '弹幕发送成功');
       setState(() {
         danmakuList.insert(0, newDanmaku);
       });
@@ -372,7 +391,10 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
     }
     if (oldWidget.currentLine.value != widget.currentLine.value ||
         oldWidget.currentPlay.value != widget.currentPlay.value) {
-      _episodeTabIndex = widget.currentLine.value.clamp(0, (widget.tabData?.length ?? 1) - 1);
+      _episodeTabIndex = widget.currentLine.value.clamp(
+        0,
+        (widget.tabData?.length ?? 1) - 1,
+      );
       _updateTabController();
     }
     if (widget.showControls != oldWidget.showControls) {
@@ -665,6 +687,9 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
                   right: 0,
                   bottom: 0,
                   child: DanmakuInputPanel(
+                    video_id: widget.videoId,
+                    sort: widget.currentEpisodeIndex,
+                    isLoggedIn: User.isLogin(),
                     isFullScreen: widget.isFullScreen,
                     onSend: _sendDanmaku,
                     onClose: () => setState(() => _showDanmakuInput = false),
@@ -1677,7 +1702,10 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
   }
 
   Widget _buildEpisodeSelectionContent() {
-    _episodeTabIndex = widget.currentLine.value.clamp(0, (widget.tabData?.length ?? 1) - 1);
+    _episodeTabIndex = widget.currentLine.value.clamp(
+      0,
+      (widget.tabData?.length ?? 1) - 1,
+    );
 
     return Positioned(
       right: 0,
@@ -1685,9 +1713,7 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
       bottom: 0,
       width: 300,
       child: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xCC1A1A1A),
-        ),
+        decoration: const BoxDecoration(color: Color(0xCC1A1A1A)),
         child: Column(
           children: [
             Container(
@@ -1725,9 +1751,7 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
             ),
             if (widget.tabData != null && widget.tabData!.isNotEmpty) ...[
               _buildTabBar(),
-              Expanded(
-                child: _buildTabBarView(),
-              ),
+              Expanded(child: _buildTabBarView()),
             ] else ...[
               const Expanded(
                 child: Center(
@@ -1745,7 +1769,8 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
   }
 
   Widget _buildTabBar() {
-    if (_tabController == null || _tabController!.length != widget.tabData!.length) {
+    if (_tabController == null ||
+        _tabController!.length != widget.tabData!.length) {
       _tabController?.dispose();
       _tabController = TabController(
         length: widget.tabData!.length,
@@ -1765,26 +1790,21 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
       tabAlignment: TabAlignment.center,
       dividerHeight: 0,
       indicator: const UnderlineTabIndicator(
-        borderSide: BorderSide(
-          width: 2.0,
-          color: Color(0xFFE53935),
-        ),
+        borderSide: BorderSide(width: 2.0, color: Color(0xFFE53935)),
         insets: EdgeInsets.symmetric(horizontal: 16),
       ),
       indicatorSize: TabBarIndicatorSize.label,
       labelColor: const Color(0xFFE53935),
       unselectedLabelColor: Colors.white70,
-      labelStyle: const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-      ),
+      labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       unselectedLabelStyle: const TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.normal,
       ),
-      tabs: widget.tabData!
-          .map((tab) => Tab(text: tab.collectionName ?? '线路'))
-          .toList(),
+      tabs:
+          widget.tabData!
+              .map((tab) => Tab(text: tab.collectionName ?? '线路'))
+              .toList(),
     );
   }
 
@@ -1798,67 +1818,65 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
             return TabBarView(
               controller: _tabController,
               physics: const BouncingScrollPhysics(),
-              children: widget.tabData!.map((line) {
-                final tabIndex = widget.tabData!.indexOf(line);
-                final playLines = line.playLines ?? [];
+              children:
+                  widget.tabData!.map((line) {
+                    final tabIndex = widget.tabData!.indexOf(line);
+                    final playLines = line.playLines ?? [];
 
-                if (playLines.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      '暂无播放线路',
-                      style: TextStyle(
-                        color: Colors.white54,
-                        fontSize: 14,
-                      ),
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: playLines.length,
-                  itemBuilder: (context, index) {
-                    final playLine = playLines[index];
-                    final isSelected =
-                        currentLineValue == tabIndex &&
-                        currentPlayValue == index;
-
-                    return GestureDetector(
-                      onTap: () {
-                        widget.onSelectionChanged?.call(
-                          tabIndex,
-                          {index},
-                        );
-                        setState(() => _showEpisodeSelection = false);
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? const Color(0xFFE53935)
-                              : Colors.white.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6),
+                    if (playLines.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          '暂无播放线路',
+                          style: TextStyle(color: Colors.white54, fontSize: 14),
                         ),
-                        child: Center(
-                          child: Text(
-                            playLine.name ?? '${index + 1}',
-                            style: TextStyle(
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(12),
+                      itemCount: playLines.length,
+                      itemBuilder: (context, index) {
+                        final playLine = playLines[index];
+                        final isSelected =
+                            currentLineValue == tabIndex &&
+                            currentPlayValue == index;
+
+                        return GestureDetector(
+                          onTap: () {
+                            widget.onSelectionChanged?.call(tabIndex, {index});
+                            setState(() => _showEpisodeSelection = false);
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            height: 36,
+                            decoration: BoxDecoration(
                               color:
-                                  isSelected ? Colors.white : Colors.white70,
-                              fontSize: 14,
-                              fontWeight:
                                   isSelected
-                                      ? FontWeight.w600
-                                      : FontWeight.normal,
+                                      ? const Color(0xFFE53935)
+                                      : Colors.white.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Center(
+                              child: Text(
+                                playLine.name ?? '${index + 1}',
+                                style: TextStyle(
+                                  color:
+                                      isSelected
+                                          ? Colors.white
+                                          : Colors.white70,
+                                  fontSize: 14,
+                                  fontWeight:
+                                      isSelected
+                                          ? FontWeight.w600
+                                          : FontWeight.normal,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     );
-                  },
-                );
-              }).toList(),
+                  }).toList(),
             );
           },
         );

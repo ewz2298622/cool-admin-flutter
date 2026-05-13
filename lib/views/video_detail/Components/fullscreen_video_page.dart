@@ -456,7 +456,7 @@ class _FullScreenVideoPageState extends State<FullScreenVideoPage> {
             ),
           ),
         ),
-        ),
+        );
       },
     );
   }
