@@ -15,6 +15,7 @@ import '../../db/manager/live_comment_database_helper.dart';
 import '../../entity/live_info_entity.dart';
 import '../../entity/video_page_entity.dart';
 import '../../utils/user.dart';
+import '../../utils/video.dart';
 
 String TAG = 'Video_Detail';
 
@@ -115,7 +116,9 @@ class Live_DetailState extends State<Live_Detail>
   @override
   void initState() {
     super.initState();
-    player = Player();
+    player = Player(
+      configuration: VideoUtil.getConfig(),
+    );
     videoController = VideoController(player);
     _viewerSeed = 1200 + (id % 7300);
     _loadFuture = _loadInitialData();

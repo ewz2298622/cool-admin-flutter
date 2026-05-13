@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:html/parser.dart';
+import 'package:media_kit/media_kit.dart';
 
 class VideoUtil {
   //tag格式化
@@ -160,5 +161,42 @@ class VideoUtil {
       return '${hours.toString().padLeft(2, '0')}:${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
     }
     return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
+
+  static PlayerConfiguration getConfig() {
+    return const PlayerConfiguration(
+      // ————————————————————————————
+      // 【1】解决 90% 卡顿的核心参数
+      // ————————————————————————————
+      bufferSize: 128 * 1024 * 1024, // 放大缓冲 → 不卡
+      async: true, // 异步加载 → 不卡UI
+      vo: 'null', // 自动最佳渲染 → 不掉帧
+      // ————————————————————————————
+      // 【2】关闭所有耗性能功能
+      // ————————————————————————————
+      libass: false, // 关闭复杂字幕 → 大幅提升流畅度
+      osc: false, // 关闭屏幕控制器 → 省性能
+      pitch: false, // 关闭音调修正 → 省性能
+      // ————————————————————————————
+      // 【3】网络协议完整支持
+      // ————————————————————————————
+      protocolWhitelist: [
+        'udp',
+        'rtp',
+        'tcp',
+        'tls',
+        'http',
+        'https',
+        'crypto',
+        'file',
+      ],
+
+      // ————————————————————————————
+      // 【4】基础设置
+      // ————————————————————————————
+      muted: false,
+      title: 'VideoPlayer',
+      logLevel: MPVLogLevel.error,
+    );
   }
 }

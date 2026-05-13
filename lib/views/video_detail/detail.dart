@@ -101,7 +101,11 @@ class _VideoDetailState extends State<VideoDetail>
       },
     );
 
-    player = Player();
+    player = Player(
+      configuration: VideoUtil.getConfig(),
+    );
+    // 初始化后，针对原生底层进行性能压榨
+
     videoController = VideoController(player);
     _playerStateNotifier = PlayerStateNotifier();
     _settingsDbHelper = VideoPlayerSettingsDatabaseHelper();

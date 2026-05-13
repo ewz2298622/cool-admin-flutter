@@ -81,7 +81,10 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
 
     setState(() => _isLoading = true);
 
-    _player = Player();
+    _player = Player(
+      configuration: VideoUtil.getConfig(),
+    );
+
     _videoController = VideoController(_player!);
 
     await _player!.open(Media(widget.videoItem.videoUrl), play: false);
@@ -131,10 +134,7 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
       fit: StackFit.expand,
       children: [
         _buildVideoContent(),
-        if (_showOverlay) ...[
-          _buildRightActionBar(),
-          _buildBottomInfo(),
-        ],
+        if (_showOverlay) ...[_buildRightActionBar(), _buildBottomInfo()],
         _buildBottomBar(),
       ],
     );
@@ -155,39 +155,40 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
               controller: controller,
               fill: Colors.black,
               fit: BoxFit.cover,
-              controls: (state) => StreamBuilder<bool>(
-                stream: state.widget.controller.player.stream.playing,
-                initialData: state.widget.controller.player.state.playing,
-                builder: (context, playingSnapshot) {
-                  final isPlaying = playingSnapshot.data ?? false;
-                  return Stack(
-                    children: [
-                      Center(
-                        child: IconButton(
-                          icon: Icon(
-                            isPlaying ? Icons.pause : Icons.play_arrow,
-                            color: Colors.white,
-                            size: 50,
+              controls:
+                  (state) => StreamBuilder<bool>(
+                    stream: state.widget.controller.player.stream.playing,
+                    initialData: state.widget.controller.player.state.playing,
+                    builder: (context, playingSnapshot) {
+                      final isPlaying = playingSnapshot.data ?? false;
+                      return Stack(
+                        children: [
+                          Center(
+                            child: IconButton(
+                              icon: Icon(
+                                isPlaying ? Icons.pause : Icons.play_arrow,
+                                color: Colors.white,
+                                size: 50,
+                              ),
+                              onPressed: () {
+                                if (isPlaying) {
+                                  state.widget.controller.player.pause();
+                                } else {
+                                  state.widget.controller.player.play();
+                                }
+                              },
+                            ),
                           ),
-                          onPressed: () {
-                            if (isPlaying) {
-                              state.widget.controller.player.pause();
-                            } else {
-                              state.widget.controller.player.play();
-                            }
-                          },
-                        ),
-                      ),
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        child: _buildProgressBar(state),
-                      ),
-                    ],
-                  );
-                },
-              ),
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: _buildProgressBar(state),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
             ),
           ),
         ),
@@ -242,10 +243,14 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
                   onHorizontalDragUpdate: (details) {
                     final width = constraints.maxWidth;
                     if (width > 0 && duration.inMilliseconds > 0) {
-                      final double localDx = details.localPosition.dx.clamp(0.0, width);
+                      final double localDx = details.localPosition.dx.clamp(
+                        0.0,
+                        width,
+                      );
                       final double dragProgress = localDx / width;
                       final Duration seekPosition = Duration(
-                        milliseconds: (duration.inMilliseconds * dragProgress).round(),
+                        milliseconds:
+                            (duration.inMilliseconds * dragProgress).round(),
                       );
                       state.widget.controller.player.seek(seekPosition);
                     }
@@ -256,10 +261,14 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
                   onTapDown: (details) {
                     final width = constraints.maxWidth;
                     if (width > 0 && duration.inMilliseconds > 0) {
-                      final double localDx = details.localPosition.dx.clamp(0.0, width);
+                      final double localDx = details.localPosition.dx.clamp(
+                        0.0,
+                        width,
+                      );
                       final double tapProgress = localDx / width;
                       final Duration seekPosition = Duration(
-                        milliseconds: (duration.inMilliseconds * tapProgress).round(),
+                        milliseconds:
+                            (duration.inMilliseconds * tapProgress).round(),
                       );
                       state.widget.controller.player.seek(seekPosition);
                     }
@@ -426,9 +435,7 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
                     fontWeight: FontWeight.w400,
                     height: 1.2,
                     letterSpacing: 0.3,
-                    shadows: [
-                      Shadow(color: Color(0x4DFFFFFF), blurRadius: 1),
-                    ],
+                    shadows: [Shadow(color: Color(0x4DFFFFFF), blurRadius: 1)],
                   ),
                   maxLines: widget.isExpanded ? 4 : 1,
                   overflow: TextOverflow.ellipsis,
@@ -495,7 +502,9 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 13,
-                          ).copyWith(color: const Color.fromARGB(179, 255, 255, 255)),
+                          ).copyWith(
+                            color: const Color.fromARGB(179, 255, 255, 255),
+                          ),
                         ),
                         const SizedBox(width: 6),
                         Text(
@@ -513,7 +522,9 @@ class _ShortVideoItemWidgetState extends State<ShortVideoItemWidget> {
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 13,
-                          ).copyWith(color: const Color.fromARGB(179, 255, 255, 255)),
+                          ).copyWith(
+                            color: const Color.fromARGB(179, 255, 255, 255),
+                          ),
                         ),
                         const SizedBox(width: 6),
                         Text(
