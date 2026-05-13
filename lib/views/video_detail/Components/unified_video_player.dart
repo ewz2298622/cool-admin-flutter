@@ -314,7 +314,7 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
     );
     danmakuList =
         (await Api.videoBarrage({
-          'videoId': widget.videoId,
+          'video_id': widget.videoId,
           'sort': widget.currentEpisodeIndex,
           'startTime': milliseconds,
           'status':1,
@@ -337,8 +337,21 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
             ..color = hexColor
             ..type = position
             ..time = _currentPosition.inMilliseconds;
+
+      final isDuplicate = danmakuList.any(
+        (d) =>
+            d.text == text &&
+            d.time == _currentPosition.inMilliseconds,
+      );
+
+      if (!isDuplicate) {
+        setState(() {
+          danmakuList.add(newDanmaku);
+        });
+      }
+
       await Api.addBarrage({
-        'videoId': widget.videoId,
+        'video_id': widget.videoId,
         'sort': widget.currentEpisodeIndex,
         'text': text,
         'color': hexColor,
@@ -346,9 +359,6 @@ class _UnifiedVideoPlayerState extends State<UnifiedVideoPlayer>
         'time': _currentPosition.inMilliseconds,
       });
       Fluttertoast.showToast(msg: '弹幕发送成功');
-      setState(() {
-        danmakuList.insert(0, newDanmaku);
-      });
     } catch (e) {
       debugPrint('发送弹幕失败: $e');
       Fluttertoast.showToast(msg: '网络错误，发送失败');

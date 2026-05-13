@@ -74,20 +74,22 @@ class _DanmakuViewState extends State<DanmakuViewComponents> {
   }
 
   void _checkAndShowDanmaku(int currentMilliseconds) {
-    _danmakuList.forEach((element) {
-      _controller?.addDanmaku(
-        DanmakuContentItem(
-          element.text ?? '',
-          color: getRandomColor(element.color ?? '#FFFFFF'),
-          // type: (element.type is DanmakuItemType) ? element.type as DanmakuItemType : const [
-          //               DanmakuItemType.top,
-          //               DanmakuItemType.bottom,
-          //               DanmakuItemType.scroll,
-          //             ][_random.nextInt(3)],
-          type: DanmakuItemType.values[element.type ?? 0],
-        ),
-      );
-    });
+    for (int i = _lastDanmakuIndex; i < _danmakuList.length; i++) {
+      final element = _danmakuList[i];
+      final danmakuTime = element.time ?? 0;
+      if (danmakuTime <= currentMilliseconds) {
+        _controller?.addDanmaku(
+          DanmakuContentItem(
+            element.text ?? '',
+            color: getRandomColor(element.color ?? '#FFFFFF'),
+            type: DanmakuItemType.values[element.type ?? 0],
+          ),
+        );
+        _lastDanmakuIndex = i + 1;
+      } else {
+        break;
+      }
+    }
   }
 
   // 生成随机颜色

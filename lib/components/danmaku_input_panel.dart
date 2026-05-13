@@ -448,9 +448,10 @@ class _DanmakuInputPanelState extends State<DanmakuInputPanel> {
                   return GestureDetector(
                     onTap: () {
                       if (isVip) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('开通会员可使用更多颜色')),
-                        );
+                        // ScaffoldMessenger.of(context).showSnackBar(
+                        //   const SnackBar(content: Text('开通会员可使用更多颜色')),
+                        // );
+                        Fluttertoast.showToast(msg: '开通会员可使用更多颜色');
                         return;
                       }
                       setState(() => _currentColor = color);

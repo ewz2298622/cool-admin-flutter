@@ -1072,12 +1072,11 @@ class _VideoDetailState extends State<VideoDetail>
 
   Future<void> _sendDanmaku(String text, int position, Color color) async {
     if (text.isEmpty) return;
-
     try {
       final hexColor =
           '#${(color.value & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';
       await Api.addBarrage({
-        'videoId': videoInfoData.video?.id,
+        'video_id': videoInfoData.video?.id,
         'sort': currentPlay.value,
         'text': text,
         'color': hexColor,
