@@ -43,7 +43,8 @@ class Live_DetailState extends State<Live_Detail>
   String _currentTime = '';
   Timer? _timeTimer;
 
-  final LiveCommentDatabaseHelper _commentDatabaseHelper = LiveCommentDatabaseHelper();
+  final LiveCommentDatabaseHelper _commentDatabaseHelper =
+      LiveCommentDatabaseHelper();
   List<LiveCommentEntity> _commentList = [];
   final TextEditingController _commentController = TextEditingController();
 
@@ -116,9 +117,7 @@ class Live_DetailState extends State<Live_Detail>
   @override
   void initState() {
     super.initState();
-    player = Player(
-      configuration: VideoUtil.getConfig(),
-    );
+    player = Player(configuration: VideoUtil.getConfig());
     videoController = VideoController(player);
     _viewerSeed = 1200 + (id % 7300);
     _loadFuture = _loadInitialData();
@@ -144,7 +143,8 @@ class Live_DetailState extends State<Live_Detail>
   void _updateTime() {
     final now = DateTime.now();
     setState(() {
-      _currentTime = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
+      _currentTime =
+          '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
     });
   }
 
@@ -166,9 +166,7 @@ class Live_DetailState extends State<Live_Detail>
         return Column(
           children: [
             _buildLiveSection(context),
-            Expanded(
-              child: _buildCommentSection(context),
-            ),
+            Expanded(child: _buildCommentSection(context)),
           ],
         );
       },
@@ -178,10 +176,7 @@ class Live_DetailState extends State<Live_Detail>
   Widget _buildLiveSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildVideo(context),
-        _buildVideoInfoSection(context),
-      ],
+      children: [_buildVideo(context), _buildVideoInfoSection(context)],
     );
   }
 
@@ -220,25 +215,26 @@ class Live_DetailState extends State<Live_Detail>
             children: [
               Text(
                 '在线: ${_viewerSeed + DateTime.now().second * 12}人',
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 12,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.star_border,
-                  color: Colors.white,
-                  size: 20,
-                ),
-                onPressed: () {
-                  // 收藏功能
-                },
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Container(
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCommentSection(BuildContext context) {
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
+    return Container(
+      color: const Color(0xFF121212),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Column(
+            children: [
+                Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: const Color(0xFF2A2A2A),
@@ -282,7 +278,10 @@ class Live_DetailState extends State<Live_Detail>
                           ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFFF4F5A),
                               borderRadius: BorderRadius.circular(4),
@@ -309,119 +308,104 @@ class Live_DetailState extends State<Live_Detail>
                     ],
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.thumb_up_off_alt,
-                    color: Colors.grey,
-                    size: 20,
-                  ),
-                  onPressed: () {
-                    // 点赞功能
-                  },
-                ),
+              
               ],
+            ),
+          ),
+              Expanded(
+                child:
+                    _commentList.isEmpty
+                        ? const Center(
+                          child: Text(
+                            '暂无留言，快来抢沙发吧~',
+                            style: TextStyle(color: Colors.grey, fontSize: 14),
+                          ),
+                        )
+                        : ListView.builder(
+                          padding: const EdgeInsets.only(
+                            left: 0,
+                            right: 0,
+                            top: 8,
+                            bottom: 70,
+                          ),
+                          itemCount: _commentList.length,
+                          itemBuilder: (context, index) {
+                            final comment = _commentList[index];
+                            return _buildCommentItem(comment);
+                          },
+                        ),
+              ),
+            ],
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              padding: EdgeInsets.only(
+                left: 12,
+                right: 12,
+                top: 8,
+                bottom: keyboardHeight+20,
+              ),
+              decoration: const BoxDecoration(
+                color: Color(0xFF121212),
+                border: Border(
+                  top: BorderSide(color: Color(0xFF333333), width: 1),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF333333),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: TextField(
+                        controller: _commentController,
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        decoration: const InputDecoration(
+                          hintText: '请输入留言内容~',
+                          hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        maxLines: 1,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  GestureDetector(
+                    onTap: () => _submitComment(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text(
+                        '发表',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildCommentSection(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-        
-        return Container(
-          color: const Color(0xFF121212),
-          child: Column(
-            children: [
-              Expanded(
-                child: _commentList.isEmpty
-                    ? const Center(
-                        child: Text(
-                          '暂无留言，快来抢沙发吧~',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
-                          ),
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        itemCount: _commentList.length,
-                        itemBuilder: (context, index) {
-                          final comment = _commentList[index];
-                          return _buildCommentItem(comment);
-                        },
-                      ),
-              ),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut,
-                padding: EdgeInsets.only(
-                  left: 12,
-                  right: 12,
-                  top: 8,
-                  bottom: 8 + keyboardHeight,
-                ),
-                decoration: const BoxDecoration(
-                  border: Border(
-                    top: BorderSide(
-                      color: Color(0xFF333333),
-                      width: 1,
-                    ),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF333333),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: TextField(
-                          controller: _commentController,
-                          style: const TextStyle(color: Colors.white, fontSize: 14),
-                          decoration: const InputDecoration(
-                            hintText: '请输入留言内容~',
-                            hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
-                            border: InputBorder.none,
-                            isDense: true,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                          maxLines: 1,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    GestureDetector(
-                      onTap: () => _submitComment(context),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFD700),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Text(
-                          '发表',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 
@@ -438,35 +422,36 @@ class Live_DetailState extends State<Live_Detail>
               shape: BoxShape.circle,
               color: Colors.grey[700],
             ),
-            child: comment.avatarUrl != null && comment.avatarUrl!.isNotEmpty
-                ? ClipOval(
-                    child: Image.network(
-                      comment.avatarUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Center(
-                          child: Text(
-                            comment.nickName?.substring(0, 1) ?? '用',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
+            child:
+                comment.avatarUrl != null && comment.avatarUrl!.isNotEmpty
+                    ? ClipOval(
+                      child: Image.network(
+                        comment.avatarUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Center(
+                            child: Text(
+                              comment.nickName?.substring(0, 1) ?? '用',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                  )
-                : Center(
-                    child: Text(
-                      comment.nickName?.substring(0, 1) ?? '用',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
+                          );
+                        },
+                      ),
+                    )
+                    : Center(
+                      child: Text(
+                        comment.nickName?.substring(0, 1) ?? '用',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -486,20 +471,14 @@ class Live_DetailState extends State<Live_Detail>
                     const SizedBox(width: 8),
                     Text(
                       _formatTime(comment.createTime),
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 12,
-                      ),
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(
                   comment.content ?? '',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
                 ),
               ],
             ),
@@ -538,10 +517,7 @@ class Live_DetailState extends State<Live_Detail>
     final content = _commentController.text.trim();
     if (content.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('请输入留言内容'),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text('请输入留言内容'), backgroundColor: Colors.red),
       );
       return;
     }
@@ -562,10 +538,7 @@ class Live_DetailState extends State<Live_Detail>
       setState(() {});
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('留言成功'),
-          backgroundColor: Colors.green,
-        ),
+        const SnackBar(content: Text('留言成功'), backgroundColor: Colors.green),
       );
     } catch (e) {
       debugPrint('Failed to submit comment: $e');
@@ -654,10 +627,7 @@ class Live_DetailState extends State<Live_Detail>
             fontWeight: FontWeight.bold,
           ),
         ),
-        actions: [
-         
-          const SizedBox(width: 8),
-        ],
+        actions: [const SizedBox(width: 8)],
       ),
       resizeToAvoidBottomInset: false,
       body: _buildContent(),
